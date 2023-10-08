@@ -47,5 +47,9 @@ namespace mag
     static_assert(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
     // Assert
-    #define ASSERT(x, ...) { if (!(x)) { LOG_ERROR("Assertion failed: {0}", __VA_ARGS__); exit(1); } }
+    #if !defined(MAG_RELEASE)
+        #define ASSERT(x, ...) { if (!(x)) { LOG_ERROR("Assertion failed: {0}", __VA_ARGS__); exit(1); } }
+    #else
+        #define ASSERT(x, ...)
+    #endif
 };
