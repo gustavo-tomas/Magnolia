@@ -9,7 +9,7 @@ workspace "magnolia"
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     location "magnolia"
-    kind "ConsoleApp"
+    kind "consoleapp"
 
     targetdir ("bin/%{cfg.system}/%{cfg.buildcfg}")
     objdir ("bin/%{cfg.system}/build/%{cfg.buildcfg}")
@@ -31,23 +31,23 @@ project "magnolia"
     }
 
     filter "system:linux"
-        pic "On"
+        pic "on"
 
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra" }
         defines { "MAG_DEBUG" }
-        symbols "On" -- '-g'
-        optimize "Off" -- '-O0'
+        symbols "on" -- '-g'
+        optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
         defines { "MAG_PROFILE" }
-        symbols "Off"
-        optimize "On" -- '-O2'
+        symbols "off"
+        optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         defines { "MAG_RELEASE" }
-        symbols "Off"
-        optimize "Full" -- '-O3'
+        symbols "off"
+        optimize "full" -- '-O3'
         runtime "release"
