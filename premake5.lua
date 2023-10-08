@@ -22,7 +22,7 @@ project "magnolia"
 
     includedirs 
     { 
-
+        "%{prj.name}/src"
     }
 
     links
