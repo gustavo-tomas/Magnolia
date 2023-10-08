@@ -2,7 +2,11 @@
 
 set positional-arguments
 
-@default: (build "release") (run "release")
+@default: (build "profile") (run "profile")
+
+@debug: (build "debug") (run "debug")
+@profile: (build "profile") (run "profile")
+@release: (build "release") (run "release")
 
 @build cfg:
   ./libs/premake/premake5_linux gmake2 && make config=$1 -j4
