@@ -3,7 +3,7 @@
 
 namespace mag
 {
-    bool Window::initialize(str title, u32 width, u32 height)
+    b8 Window::initialize(str title, u32 width, u32 height)
     {
         this->title = title;
         this->width = width;

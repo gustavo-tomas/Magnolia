@@ -12,7 +12,7 @@ namespace mag
             Application() = default;
             ~Application() = default;
 
-            bool initialize(str title, u32 width = 800, u32 height = 600);
+            b8 initialize(str title, u32 width = 800, u32 height = 600);
             void shutdown();
 
             void run();
