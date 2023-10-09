@@ -12,7 +12,7 @@ namespace mag
             Window() = default;
             ~Window() = default;
 
-            bool initialize(str title, u32 width = 800, u32 height = 600);
+            bool initialize(str title, u32 width, u32 height);
             void shutdown();
 
             u32 get_width();

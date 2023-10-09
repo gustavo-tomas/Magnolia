@@ -1,19 +1,18 @@
+#include "core/application.hpp"
 #include "core/logger.hpp"
-#include "core/window.hpp"
 
 int main(int, char**)
 {
-    auto window = mag::Window();
+    auto application = mag::Application();
 
-    if (!window.initialize("Magnolia"))
+    if (!application.initialize("Magnolia", 800, 600))
     {
-        LOG_ERROR("Failed to initialize window");
+        LOG_ERROR("Failed to initialize application");
         return 1;
     }
-    LOG_SUCCESS("Window initialized");
 
-    window.shutdown();
-    LOG_SUCCESS("Window destroyed");
+    application.run();
+    application.shutdown();
 
     return 0;
 }
