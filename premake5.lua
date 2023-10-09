@@ -27,14 +27,15 @@ project "magnolia"
 
     links
     {
-
+        "SDL2"
     }
 
     filter "system:linux"
         pic "on"
 
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra" }
+        buildoptions { "-Wall", "-Wextra", "-fsanitize=address", "-fno-omit-frame-pointer" }
+        linkoptions { "-fsanitize=address" }
         defines { "MAG_DEBUG" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
