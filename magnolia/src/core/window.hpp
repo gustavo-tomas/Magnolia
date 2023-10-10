@@ -15,6 +15,10 @@ namespace mag
             b8 initialize(str title, u32 width, u32 height);
             void shutdown();
 
+            void update();
+
+            b8 quit();
+
             u32 get_width();
             u32 get_height();
 
@@ -23,6 +27,7 @@ namespace mag
 
             str title;
             u32 width;
-            u32 height;        
+            u32 height;
+            b8 quit_requested;
     };
 };

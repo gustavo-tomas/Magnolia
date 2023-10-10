@@ -26,6 +26,9 @@ namespace mag
 
     void Application::run()
     {
-
+        while (!window->quit())
+        {
+            window->update();
+        }
     }
 };
