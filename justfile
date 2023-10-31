@@ -2,7 +2,7 @@
 
 set positional-arguments
 
-@default: (build "profile") (run "profile")
+@default: (build "debug") (run "debug")
 
 @debug: (build "debug") (run "debug")
 @profile: (build "profile") (run "profile")

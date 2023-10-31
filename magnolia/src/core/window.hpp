@@ -12,7 +12,7 @@ namespace mag
             Window() = default;
             ~Window() = default;
 
-            b8 initialize(str title, u32 width, u32 height);
+            b8 initialize(const str& title, const u32 width, const u32 height);
             void shutdown();
 
             void update();

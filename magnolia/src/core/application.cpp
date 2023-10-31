@@ -3,7 +3,7 @@
 
 namespace mag
 {
-    b8 Application::initialize(str title, u32 width, u32 height)
+    b8 Application::initialize(const str& title, const u32 width, const u32 height)
     {
         // Create the window
         window = std::make_unique<Window>();

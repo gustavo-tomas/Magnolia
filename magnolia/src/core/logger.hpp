@@ -16,7 +16,7 @@ namespace mag
     {
         public:
             template<typename... Args>
-            static void log(LogType log_type, std::string_view format, Args& ... args)
+            static void log(const LogType log_type, const std::string_view format, const Args& ... args)
             {
                 str color = "";
                 str reset = "\033[0m";
