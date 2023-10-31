@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/types.hpp"
-
 #include <SDL2/SDL.h>
+
+#include "core/types.hpp"
 
 namespace mag
 {
@@ -30,4 +30,4 @@ namespace mag
             u32 height;
             b8 quit_requested;
     };
-};
+};  // namespace mag

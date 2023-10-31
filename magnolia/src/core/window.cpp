@@ -1,4 +1,5 @@
 #include "core/window.hpp"
+
 #include "core/logger.hpp"
 
 namespace mag
@@ -15,22 +16,17 @@ namespace mag
         {
             const str error = SDL_GetError();
             LOG_ERROR("Error initializing SDL: {0}", error);
-            
+
             return false;
         }
 
         // Create application window
         if ((window = SDL_CreateWindow(
-            title.c_str(),
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            width,
-            height,
-            0)) == nullptr)
+                 title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0)) == nullptr)
         {
             const str error = SDL_GetError();
             LOG_ERROR("Error creating window: {0}", error);
-            
+
             return false;
         }
 
@@ -83,4 +79,4 @@ namespace mag
     {
         return height;
     }
-};
+};  // namespace mag

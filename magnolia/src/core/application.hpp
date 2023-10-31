@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/window.hpp"
-
 #include <memory>
+
+#include "core/window.hpp"
 
 namespace mag
 {
@@ -20,4 +20,4 @@ namespace mag
         private:
             std::unique_ptr<Window> window;
     };
-};
+};  // namespace mag
