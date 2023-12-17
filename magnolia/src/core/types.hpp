@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-
-#include <cassert>
+#include <cstdint>
 #include <string>
 
 namespace mag
@@ -22,10 +20,6 @@ namespace mag
     // Floats
     typedef float f32;
     typedef double f64;
-
-    // Chars
-    typedef int8_t ch;
-    typedef uint8_t uch;
 
     // Bool
     typedef bool b8;
@@ -49,14 +43,14 @@ namespace mag
 
 // Assert
 #if !defined(MAG_RELEASE)
-#define ASSERT(x, ...)                                       \
-    {                                                        \
-        if (!(x))                                            \
-        {                                                    \
-            LOG_ERROR("Assertion failed: {0}", __VA_ARGS__); \
-            exit(1);                                         \
-        }                                                    \
-    }
+#define ASSERT(assertion, ...)                                                          \
+{                                                                                       \
+    if (!(assertion))                                                                   \
+    {                                                                                   \
+        LOG_ERROR("Assertion failed: {0} at {1}:{2}", __VA_ARGS__, __FILE__, __LINE__); \
+        std::abort();                                                                   \
+    }                                                                                   \
+}
 #else
 #define ASSERT(x, ...)
 #endif
