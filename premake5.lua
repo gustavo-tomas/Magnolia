@@ -23,13 +23,14 @@ project "magnolia"
     includedirs 
     { 
         "%{prj.name}/src",
-        "libs/sdl/include"
+        "libs/sdl/include",
+        "libs/fmt/include"
     }
 
     -- @TODO: finish lib generation
     links
     {
-        "SDL2"
+        "SDL2", "bin/fmt"
     }
 
     filter "system:linux"

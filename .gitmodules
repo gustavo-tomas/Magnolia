@@ -1,3 +1,6 @@
 [submodule "libs/sdl"]
 	path = libs/sdl
 	url = https://github.com/gustavo-tomas/sdl.git
+[submodule "libs/fmt"]
+	path = libs/fmt
+	url = https://github.com/gustavo-tomas/fmt.git
