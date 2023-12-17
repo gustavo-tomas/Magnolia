@@ -36,36 +36,37 @@ namespace mag
         {
             const SDL_Keycode key = e.key.keysym.sym;
 
-            if (e.type == SDL_QUIT) return false;
-
-            if (e.type == SDL_KEYDOWN)
+            switch (e.type)
             {
-                this->key_press(key);
+                case SDL_QUIT:
+                    return false;
+                    break;
+                
+                case SDL_KEYDOWN:
+                    this->key_press(key);
 
-                if (e.key.repeat == 1) continue;
-                key_state[key] = true;
-                key_update[key] = update_counter;
-            }
+                    if (e.key.repeat == 1) continue;
+                    key_state[key] = true;
+                    key_update[key] = update_counter;
+                    break;
 
-            if (e.type == SDL_KEYUP)
-            {
-                this->key_release(key);
+                case SDL_KEYUP:
+                    this->key_release(key);
 
-                key_state[key] = false;
-                key_update[key] = update_counter;
-            }
+                    key_state[key] = false;
+                    key_update[key] = update_counter;
+                    break;
 
-            if (e.type == SDL_MOUSEMOTION)
-            {
-                // Ignore first mouse move after capturing cursor
-                if (!ignore_mouse_motion_events) mouse_move(ivec2(e.motion.xrel, e.motion.yrel));
-                ignore_mouse_motion_events = false;
-            }
+                case SDL_MOUSEMOTION:
+                    // Ignore first mouse move after capturing cursor
+                    if (!ignore_mouse_motion_events) mouse_move(ivec2(e.motion.xrel, e.motion.yrel));
+                    ignore_mouse_motion_events = false;
+                    break;
 
-            if (e.type == SDL_WINDOWEVENT)
-            {
-                if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                    this->resize(uvec2(e.window.data1, e.window.data2));
+                case SDL_WINDOWEVENT:
+                    if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                        this->resize(uvec2(e.window.data1, e.window.data2));
+                    break;
             }
         }
 
