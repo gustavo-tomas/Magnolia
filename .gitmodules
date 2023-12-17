@@ -1,0 +1,3 @@
+[submodule "libs/sdl"]
+	path = libs/sdl
+	url = https://github.com/gustavo-tomas/sdl.git

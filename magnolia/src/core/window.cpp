@@ -1,5 +1,4 @@
 #include "core/window.hpp"
-
 #include "core/logger.hpp"
 
 namespace mag

@@ -22,9 +22,11 @@ project "magnolia"
 
     includedirs 
     { 
-        "%{prj.name}/src"
+        "%{prj.name}/src",
+        "libs/sdl/include"
     }
 
+    -- @TODO: finish lib generation
     links
     {
         "SDL2"
