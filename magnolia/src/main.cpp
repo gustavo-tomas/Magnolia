@@ -1,16 +1,10 @@
 #include "core/application.hpp"
-#include "core/logger.hpp"
 
 int main(int, char**)
 {
-    auto application = mag::Application();
+    mag::Application application;
 
-    if (!application.initialize("Magnolia", 800, 600))
-    {
-        LOG_ERROR("Failed to initialize application");
-        return 1;
-    }
-
+    application.initialize("Magnolia");
     application.run();
     application.shutdown();
 
