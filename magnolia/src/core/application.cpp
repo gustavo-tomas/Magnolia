@@ -6,12 +6,7 @@ namespace mag
     b8 Application::initialize(const str& title, const u32 width, const u32 height)
     {
         // Create the window
-        window = std::make_unique<Window>();
-        if (!window->initialize(title, width, height))
-        {
-            LOG_ERROR("Failed to initialize window");
-            return false;
-        }
+        window.initialize(title, width, height);
         LOG_SUCCESS("Window initialized");
 
         return true;
@@ -19,16 +14,14 @@ namespace mag
 
     void Application::shutdown()
     {
-        // Free resources
-        window->shutdown();
+        window.shutdown();
         LOG_SUCCESS("Window destroyed");
     }
 
     void Application::run()
     {
-        while (!window->quit())
+        while (window.update())
         {
-            window->update();
         }
     }
 };  // namespace mag
