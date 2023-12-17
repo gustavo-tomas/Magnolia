@@ -3,11 +3,10 @@
 
 namespace mag
 {
-    void Window::initialize(const str& title, const u32 width, const u32 height)
+    void Window::initialize(const str& title, const uvec2& size)
     {
         this->title = title;
-        this->width = width;
-        this->height = height;
+        this->size = size;
 
         // Initialize SDL
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER))
@@ -16,8 +15,12 @@ namespace mag
         }
 
         // Create application window
-        if ((handle = SDL_CreateWindow(
-                 title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0)) == nullptr)
+        if ((handle = SDL_CreateWindow(title.c_str(),
+                                     SDL_WINDOWPOS_CENTERED, 
+                                     SDL_WINDOWPOS_CENTERED,
+                                     static_cast<i32>(size.x),
+                                     static_cast<i32>(size.y),
+                                     0)) == nullptr)
         {
             ASSERT(false, "Error creating window: " + str(SDL_GetError()));
         }
@@ -46,7 +49,7 @@ namespace mag
 
                 case SDL_WINDOWEVENT:
                     if (event.type == SDL_WINDOW_RESIZABLE)
-                        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&width), reinterpret_cast<i32*>(&height));
+                        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
                     break;
 
                 default:

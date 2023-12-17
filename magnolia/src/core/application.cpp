@@ -6,7 +6,7 @@ namespace mag
     b8 Application::initialize(const str& title, const u32 width, const u32 height)
     {
         // Create the window
-        window.initialize(title, width, height);
+        window.initialize(title, {width, height});
         LOG_SUCCESS("Window initialized");
 
         return true;
