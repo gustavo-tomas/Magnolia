@@ -3,60 +3,125 @@
 
 namespace mag
 {
-    void Window::initialize(const str& title, const uvec2& size)
+    void Window::initialize(const WindowOptions& options)
     {
-        this->title = title;
-        this->size = size;
+        ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
-        // Initialize SDL
-        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER))
-        {
-            ASSERT(false, "Error initializing SDL: " + str(SDL_GetError()));
-        }
+        const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
-        // Create application window
-        if ((handle = SDL_CreateWindow(title.c_str(),
-                                     SDL_WINDOWPOS_CENTERED, 
-                                     SDL_WINDOWPOS_CENTERED,
-                                     static_cast<i32>(size.x),
-                                     static_cast<i32>(size.y),
-                                     0)) == nullptr)
-        {
-            ASSERT(false, "Error creating window: " + str(SDL_GetError()));
-        }
+        handle = SDL_CreateWindow(
+            options.title.c_str(), options.position.x, options.position.y, options.size.x, options.size.y, flags);
 
-        // Window hints
-        SDL_SetWindowResizable(handle, SDL_TRUE);
+        ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
+
+        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
     }
 
     void Window::shutdown()
     {
-        // Deinit SDL
         SDL_DestroyWindow(handle);
         SDL_Quit();
     }
 
     b8 Window::update()
     {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        update_counter++;
+
+        SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
+
+        SDL_Event e;
+
+        while (SDL_PollEvent(&e) != 0)
         {
-            switch (event.type)
+            const SDL_Keycode key = e.key.keysym.sym;
+
+            if (e.type == SDL_QUIT) return false;
+
+            if (e.type == SDL_KEYDOWN)
             {
-                case SDL_QUIT:
-                    return false;
-                    break;
+                this->key_press(key);
 
-                case SDL_WINDOWEVENT:
-                    if (event.type == SDL_WINDOW_RESIZABLE)
-                        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
-                    break;
+                if (e.key.repeat == 1) continue;
+                key_state[key] = true;
+                key_update[key] = update_counter;
+            }
 
-                default:
-                    break;
+            if (e.type == SDL_KEYUP)
+            {
+                this->key_release(key);
+
+                key_state[key] = false;
+                key_update[key] = update_counter;
+            }
+
+            if (e.type == SDL_MOUSEMOTION)
+            {
+                // Ignore first mouse move after capturing cursor
+                if (!ignore_mouse_motion_events) mouse_move(ivec2(e.motion.xrel, e.motion.yrel));
+                ignore_mouse_motion_events = false;
+            }
+
+            if (e.type == SDL_WINDOWEVENT)
+            {
+                if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    this->resize(uvec2(e.window.data1, e.window.data2));
             }
         }
 
         return true;
+    }
+
+    void Window::on_resize(std::function<void(const uvec2&)> callback)
+    {
+        this->resize = std::move(callback);
+    }
+
+    void Window::on_key_press(std::function<void(const SDL_Keycode key)> callback)
+    {
+        this->key_press = std::move(callback);
+    }
+
+    void Window::on_key_release(std::function<void(const SDL_Keycode key)> callback)
+    {
+        this->key_release = std::move(callback);
+    }
+
+    void Window::on_mouse_move(std::function<void(const ivec2&)> callback)
+    {
+        this->mouse_move = std::move(callback);
+    }
+
+    b8 Window::is_key_pressed(const SDL_Keycode key)
+    {
+        return key_state[key] && (key_update[key] == update_counter);
+    }
+
+    b8 Window::is_key_down(const SDL_Keycode key)
+    {
+        return key_state[key];
+    }
+
+    b8 Window::is_mouse_captured() const
+    {
+        const SDL_bool captured = SDL_GetRelativeMouseMode();
+        if (captured == SDL_TRUE)
+            return true;
+        else
+            return false;
+    }
+
+    void Window::set_capture_cursor(b8 capture)
+    {
+        const SDL_bool enabled = capture ? SDL_TRUE : SDL_FALSE;
+
+        // Oh SDL...
+        if (SDL_SetRelativeMouseMode(enabled) != 0) LOG_ERROR("Failed to set mouse mode");
+        ignore_mouse_motion_events = true;
+    }
+
+    void Window::set_title(const str& title)
+    {
+        SDL_SetWindowTitle(handle, title.c_str());
     }
 };  // namespace mag

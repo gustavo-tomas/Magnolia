@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "core/types.hpp"
 
@@ -27,4 +28,10 @@ namespace mag
     const f32 Half_Pi = glm::half_pi<f32>();
     const f32 Pi = glm::pi<f32>();
     const f32 Two_Pi = glm::two_pi<f32>();
+    
+    template <typename T>
+    inline str to_str(const T& num) 
+    {
+        return glm::to_string(num);
+    }
 }; // namespace mag
