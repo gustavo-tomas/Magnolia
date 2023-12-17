@@ -111,7 +111,7 @@ namespace mag
             return false;
     }
 
-    void Window::set_capture_cursor(b8 capture)
+    void Window::set_capture_mouse(b8 capture)
     {
         const SDL_bool enabled = capture ? SDL_TRUE : SDL_FALSE;
 

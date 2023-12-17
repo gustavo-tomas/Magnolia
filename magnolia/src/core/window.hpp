@@ -27,7 +27,7 @@ namespace mag
             void on_key_release(std::function<void(const SDL_Keycode key)> callback);
             void on_mouse_move(std::function<void(const ivec2&)> callback);
 
-            void set_capture_cursor(b8 capture);
+            void set_capture_mouse(b8 capture);
             void set_title(const str& title);
 
             b8 is_key_pressed(const SDL_Keycode key);
