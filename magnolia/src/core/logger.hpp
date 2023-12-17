@@ -1,6 +1,6 @@
 #pragma once
 
-#include <format>
+// #include <format>
 #include <iostream>
 
 #include "core/types.hpp"
@@ -19,7 +19,7 @@ namespace mag
     {
         public:
             template <typename... Args>
-            static void log(const LogType log_type, const std::string_view format, const Args&... args)
+            static void log(const LogType log_type, const std::string_view, const Args&...)
             {
                 str color = "";
                 str reset = "\033[0m";
@@ -45,8 +45,8 @@ namespace mag
                         break;
                 }
 
-                str formatted_str = color + std::vformat(format, std::make_format_args(args...)) + reset;
-                std::cout << formatted_str << "\n";
+                // str formatted_str = color + std::vformat(format, std::make_format_args(args...)) + reset;
+                // std::cout << formatted_str << "\n";
             }
     };
 };  // namespace mag

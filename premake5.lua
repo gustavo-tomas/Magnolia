@@ -34,8 +34,7 @@ project "magnolia"
         pic "on"
 
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-fsanitize=address", "-fno-omit-frame-pointer" }
-        linkoptions { "-fsanitize=address" }
+        buildoptions { "-Wall", "-Wextra" }
         defines { "MAG_DEBUG" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'

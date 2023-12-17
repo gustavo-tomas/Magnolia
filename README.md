@@ -3,4 +3,6 @@
 ## Build
 To build and run the program, use
 
-```$ just release```
+```
+python3 build.py release
+```
