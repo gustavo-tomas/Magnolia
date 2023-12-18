@@ -21,7 +21,7 @@ namespace mag
         window.on_mouse_move([](const ivec2& mouse_pos) mutable { LOG_INFO("MOUSE MOVE: {0}", to_str(mouse_pos)); });
 
         // Create the rendeerer
-        renderer.initialize();
+        renderer.initialize(window);
         LOG_SUCCESS("Renderer initialized");
     }
 

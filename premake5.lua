@@ -31,7 +31,7 @@ project "magnolia"
     -- @TODO: finish lib generation
     links
     {
-        "SDL2", "bin/fmt"
+        "SDL2", "vulkan", "bin/fmt"
     }
 
     filter "system:linux"
