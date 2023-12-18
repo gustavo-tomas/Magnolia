@@ -1,10 +1,11 @@
 #pragma once
 
 #include <SDL.h>
+
 #include <functional>
 
-#include "core/types.hpp"
 #include "core/math.hpp"
+#include "core/types.hpp"
 
 namespace mag
 {

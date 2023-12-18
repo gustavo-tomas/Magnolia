@@ -10,15 +10,23 @@ def build(system, configuration):
 # ----- Run -----
 def run(system, configuration):
   # @TODO: resolve system
-  os.system(f"bin/linux/{configuration}/magnolia") == 0
+  assert os.system(f"bin/linux/{configuration}/magnolia") == 0
   return
 
 # ----- Clean -----
 def clean(configuration):
-  os.system(f"make clean config={configuration}") == 0
+  assert os.system(f"make clean config={configuration}") == 0
+  return
+
+# ----- Format -----
+def format():
+  os.system(f"find magnolia/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
   return
 
 def main():
+
+  format()
+
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
     build("@TODO", configuration)

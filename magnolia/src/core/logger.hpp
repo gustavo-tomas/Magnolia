@@ -1,7 +1,8 @@
 #pragma once
 
-#include <fmt/core.h>
 #include <fmt/color.h>
+#include <fmt/core.h>
+
 #include "core/types.hpp"
 
 namespace mag
@@ -49,13 +50,13 @@ namespace mag
 };  // namespace mag
 
 #if !defined(MAG_RELEASE)
-#define LOG_ERROR(message, ...) mag::Logger::log(mag::LogType::Error, message, ##__VA_ARGS__)
-#define LOG_WARNING(message, ...) mag::Logger::log(mag::LogType::Warning, message, ##__VA_ARGS__)
-#define LOG_INFO(message, ...) mag::Logger::log(mag::LogType::Info, message, ##__VA_ARGS__)
-#define LOG_SUCCESS(message, ...) mag::Logger::log(mag::LogType::Success, message, ##__VA_ARGS__)
+    #define LOG_ERROR(message, ...) mag::Logger::log(mag::LogType::Error, message, ##__VA_ARGS__)
+    #define LOG_WARNING(message, ...) mag::Logger::log(mag::LogType::Warning, message, ##__VA_ARGS__)
+    #define LOG_INFO(message, ...) mag::Logger::log(mag::LogType::Info, message, ##__VA_ARGS__)
+    #define LOG_SUCCESS(message, ...) mag::Logger::log(mag::LogType::Success, message, ##__VA_ARGS__)
 #else
-#define LOG_ERROR(message, ...)
-#define LOG_WARNING(message, ...)
-#define LOG_INFO(message, ...)
-#define LOG_SUCCESS(message, ...)
+    #define LOG_ERROR(message, ...)
+    #define LOG_WARNING(message, ...)
+    #define LOG_INFO(message, ...)
+    #define LOG_SUCCESS(message, ...)
 #endif

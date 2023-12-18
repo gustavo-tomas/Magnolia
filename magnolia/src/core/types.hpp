@@ -43,15 +43,15 @@ namespace mag
 
 // Assert
 #if !defined(MAG_RELEASE)
-#define ASSERT(assertion, ...)                                                          \
-{                                                                                       \
-    if (!(assertion))                                                                   \
-    {                                                                                   \
-        LOG_ERROR("Assertion failed: {0} at {1}:{2}", __VA_ARGS__, __FILE__, __LINE__); \
-        std::abort();                                                                   \
-    }                                                                                   \
-}
+    #define ASSERT(assertion, ...)                                                              \
+        {                                                                                       \
+            if (!(assertion))                                                                   \
+            {                                                                                   \
+                LOG_ERROR("Assertion failed: {0} at {1}:{2}", __VA_ARGS__, __FILE__, __LINE__); \
+                std::abort();                                                                   \
+            }                                                                                   \
+        }
 #else
-#define ASSERT(assertion, ...)
+    #define ASSERT(assertion, ...)
 #endif
 };  // namespace mag

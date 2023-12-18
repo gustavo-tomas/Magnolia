@@ -1,4 +1,5 @@
 #include "core/window.hpp"
+
 #include "core/logger.hpp"
 
 namespace mag
@@ -9,8 +10,8 @@ namespace mag
 
         const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
-        handle = SDL_CreateWindow(
-            options.title.c_str(), options.position.x, options.position.y, options.size.x, options.size.y, flags);
+        handle = SDL_CreateWindow(options.title.c_str(), options.position.x, options.position.y, options.size.x,
+                                  options.size.y, flags);
 
         ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
 
@@ -41,7 +42,7 @@ namespace mag
                 case SDL_QUIT:
                     return false;
                     break;
-                
+
                 case SDL_KEYDOWN:
                     this->key_press(key);
 
@@ -73,10 +74,7 @@ namespace mag
         return true;
     }
 
-    void Window::on_resize(std::function<void(const uvec2&)> callback)
-    {
-        this->resize = std::move(callback);
-    }
+    void Window::on_resize(std::function<void(const uvec2&)> callback) { this->resize = std::move(callback); }
 
     void Window::on_key_press(std::function<void(const SDL_Keycode key)> callback)
     {
@@ -88,20 +86,11 @@ namespace mag
         this->key_release = std::move(callback);
     }
 
-    void Window::on_mouse_move(std::function<void(const ivec2&)> callback)
-    {
-        this->mouse_move = std::move(callback);
-    }
+    void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
 
-    b8 Window::is_key_pressed(const SDL_Keycode key)
-    {
-        return key_state[key] && (key_update[key] == update_counter);
-    }
+    b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 
-    b8 Window::is_key_down(const SDL_Keycode key)
-    {
-        return key_state[key];
-    }
+    b8 Window::is_key_down(const SDL_Keycode key) { return key_state[key]; }
 
     b8 Window::is_mouse_captured() const
     {
@@ -121,8 +110,5 @@ namespace mag
         ignore_mouse_motion_events = true;
     }
 
-    void Window::set_title(const str& title)
-    {
-        SDL_SetWindowTitle(handle, title.c_str());
-    }
+    void Window::set_title(const str& title) { SDL_SetWindowTitle(handle, title.c_str()); }
 };  // namespace mag

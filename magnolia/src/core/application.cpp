@@ -1,4 +1,5 @@
 #include "core/application.hpp"
+
 #include "core/logger.hpp"
 
 namespace mag
@@ -30,8 +31,7 @@ namespace mag
     {
         while (window.update())
         {
-            if (window.is_key_pressed(SDLK_ESCAPE))
-                window.set_capture_mouse(!window.is_mouse_captured());
+            if (window.is_key_pressed(SDLK_ESCAPE)) window.set_capture_mouse(!window.is_mouse_captured());
         }
     }
 };  // namespace mag
