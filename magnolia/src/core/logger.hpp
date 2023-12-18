@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <fmt/core.h>
+#include <fmt/color.h>
 #include "core/types.hpp"
 
 namespace mag
@@ -18,34 +18,32 @@ namespace mag
     {
         public:
             template <typename... Args>
-            static void log(const LogType log_type, const std::string_view format, const Args&... args)
+            static void log(const LogType log_type, const str& format, const Args&... args)
             {
-                str color = "";
-                str reset = "\033[0m";
+                fmt::color color = fmt::color::white;
                 switch (log_type)
                 {
                     case LogType::Error:
-                        color = "\033[31;1m";
+                        color = fmt::color::orange_red;
                         break;
 
                     case LogType::Warning:
-                        color = "\033[33;1m";
+                        color = fmt::color::yellow;
                         break;
 
                     case LogType::Info:
-                        color = "\033[37;1m";
+                        color = fmt::color::white;
                         break;
 
                     case LogType::Success:
-                        color = "\033[32;1m";
+                        color = fmt::color::spring_green;
                         break;
 
                     default:
                         break;
                 }
 
-                str formatted_str = color + fmt::vformat(format, fmt::make_format_args(args...)) + reset;
-                std::cout << formatted_str << "\n";
+                fmt::print(fmt::emphasis::bold | fg(color), format + "\n", args...);
             }
     };
 };  // namespace mag
