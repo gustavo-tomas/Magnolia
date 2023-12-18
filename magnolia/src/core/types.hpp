@@ -52,6 +52,6 @@ namespace mag
     }                                                                                   \
 }
 #else
-#define ASSERT(x, ...)
+#define ASSERT(assertion, ...)
 #endif
 };  // namespace mag
