@@ -19,10 +19,17 @@ namespace mag
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move([](const ivec2& mouse_pos) mutable { LOG_INFO("MOUSE MOVE: {0}", to_str(mouse_pos)); });
+
+        // Create the rendeerer
+        renderer.initialize();
+        LOG_SUCCESS("Renderer initialized");
     }
 
     void Application::shutdown()
     {
+        renderer.shutdown();
+        LOG_SUCCESS("Renderer destroyed");
+
         window.shutdown();
         LOG_SUCCESS("Window destroyed");
     }
@@ -32,6 +39,7 @@ namespace mag
         while (window.update())
         {
             if (window.is_key_pressed(SDLK_ESCAPE)) window.set_capture_mouse(!window.is_mouse_captured());
+            renderer.update();
         }
     }
 };  // namespace mag
