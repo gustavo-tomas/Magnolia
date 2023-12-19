@@ -49,6 +49,8 @@ namespace mag
             void initialize(const ContextCreateOptions& options);
             void shutdown();
 
+            void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
+
             const vk::Instance& get_instance() const { return this->instance; };
             const vk::Device& get_device() const { return this->device; };
             const vk::PhysicalDevice& get_physical_device() const { return this->physical_device; };
@@ -63,9 +65,17 @@ namespace mag
             vk::PhysicalDevice physical_device;
             vk::Device device;
             vk::PresentModeKHR surface_present_mode;
+            vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
+            vk::Fence upload_fence;
+            vk::Semaphore present_semaphore, render_semaphore;
+            vk::CommandPool command_pool;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
+            vk::Extent2D surface_extent;
+
+            std::vector<vk::Image> swapchain_images;
+            std::vector<vk::ImageView> swapchain_image_views;
 
             u32 api_version = {};
             u32 queue_family_index = {};

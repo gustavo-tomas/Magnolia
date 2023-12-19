@@ -1,5 +1,7 @@
 #include "renderer/context.hpp"
 
+#include <vulkan/vulkan_structs.hpp>
+
 #include "core/logger.hpp"
 
 namespace mag
@@ -195,13 +197,99 @@ namespace mag
 
         this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info,
                                                                                   nullptr, this->dynamic_loader);
+
+        // Swapchain
+        const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
+        this->recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
+
+        // Sync structures
+        this->upload_fence = this->device.createFence({});
+        this->present_semaphore = this->device.createSemaphore({});
+        this->render_semaphore = this->device.createSemaphore({});
+
+        // Command pool
+        vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                                                    queue_family_index);
+        VK_CHECK(this->device.createCommandPool(&command_pool_info, nullptr, &this->command_pool));
+
+        // Allocator
+        // @TODO
+        // VmaAllocatorCreateInfo allocator_create_info = {};
+        // allocator_create_info.physicalDevice = this->physical_device;
+        // allocator_create_info.device = this->device;
+        // allocator_create_info.instance = this->instance;
+        // allocator_create_info.vulkanApiVersion = this->api_version;
+
+        // VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
+
+        // @TODO
+        // command_buffer.create(*this, command_pool, vk::CommandBufferLevel::ePrimary);
+        // frame_provider.create(*this, options.frame_count);
+
+        // // Descriptors
+        // descriptor_allocator.create(*this);
+        // descriptor_cache.create(*this);
     }
 
     void Context::shutdown()
     {
+        for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
+
+        this->device.destroyCommandPool(this->command_pool);
+        this->device.destroyFence(this->upload_fence);
+        this->device.destroySemaphore(this->present_semaphore);
+        this->device.destroySemaphore(this->render_semaphore);
+        this->device.destroySwapchainKHR(this->swapchain);
         this->device.destroy();
+
         this->instance.destroySurfaceKHR(this->surface);
         this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger, nullptr, this->dynamic_loader);
         this->instance.destroy();
+    }
+
+    void Context::recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode)
+    {
+        this->device.waitIdle();
+
+        auto surface_capabilities = this->physical_device.getSurfaceCapabilitiesKHR(this->surface);
+
+        this->surface_extent = vk::Extent2D(
+            std::clamp(size.x, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width),
+            std::clamp(size.y, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height));
+
+        vk::SwapchainCreateInfoKHR swapchain_create_info;
+        swapchain_create_info.setSurface(this->surface)
+            .setMinImageCount(this->present_image_count)
+            .setImageFormat(this->surface_format.format)
+            .setImageColorSpace(this->surface_format.colorSpace)
+            .setImageExtent(this->surface_extent)
+            .setImageArrayLayers(1)
+            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst)
+            .setImageSharingMode(vk::SharingMode::eExclusive)
+            .setPreTransform(surface_capabilities.currentTransform)
+            .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+            .setPresentMode(present_mode)
+            .setClipped(true)
+            .setOldSwapchain(this->swapchain);
+
+        this->swapchain = this->device.createSwapchainKHR(swapchain_create_info);
+
+        if (swapchain_create_info.oldSwapchain) this->device.destroySwapchainKHR(swapchain_create_info.oldSwapchain);
+
+        this->swapchain_images = this->device.getSwapchainImagesKHR(this->swapchain);
+        this->present_image_count = VECSIZE(this->swapchain_images);
+        this->surface_present_mode = present_mode;
+
+        this->swapchain_image_views.reserve(this->present_image_count);
+
+        for (auto image : this->swapchain_images)
+        {
+            const vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+
+            vk::ImageViewCreateInfo image_view_create_info({}, image, vk::ImageViewType::e2D,
+                                                           this->surface_format.format, {}, range);
+
+            this->swapchain_image_views.push_back(device.createImageView(image_view_create_info));
+        }
     }
 };  // namespace mag

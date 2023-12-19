@@ -54,4 +54,7 @@ namespace mag
 #else
     #define ASSERT(assertion, ...)
 #endif
+
+// Common macros
+#define VECSIZE(vec) static_cast<u32>(vec.size())
 };  // namespace mag
