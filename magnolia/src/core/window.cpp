@@ -15,8 +15,6 @@ namespace mag
 
         ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
 
-        SDL_Vulkan_GetDrawableSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
-
         u32 count = 0;
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, nullptr),
                "Failed to enumerate window extensions");
@@ -34,9 +32,6 @@ namespace mag
     b8 Window::update()
     {
         update_counter++;
-
-        SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
-        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
 
         SDL_Event e;
 
@@ -121,5 +116,19 @@ namespace mag
     void Window::set_resizable(const b8 resizable)
     {
         SDL_SetWindowResizable(this->handle, static_cast<SDL_bool>(resizable));
+    }
+
+    ivec2 Window::get_mouse_position() const
+    {
+        ivec2 mouse_pos;
+        SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+        return mouse_pos;
+    }
+
+    uvec2 Window::get_size() const
+    {
+        uvec2 size;
+        SDL_Vulkan_GetDrawableSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
+        return size;
     }
 };  // namespace mag

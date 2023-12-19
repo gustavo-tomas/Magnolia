@@ -40,8 +40,8 @@ namespace mag
             b8 is_key_pressed(const SDL_Keycode key);
             b8 is_key_down(const SDL_Keycode key);
             b8 is_mouse_captured() const;
-            const ivec2& get_mouse_position() const { return mouse_pos; }
-            const uvec2& get_size() const { return size; };
+            ivec2 get_mouse_position() const;
+            uvec2 get_size() const;
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
@@ -51,8 +51,6 @@ namespace mag
             std::function<void(const vec2&)> mouse_move = {};
 
             SDL_Window* handle = {};
-            ivec2 mouse_pos = {};
-            uvec2 size = {};
             u32 update_counter = {};
             b8 ignore_mouse_motion_events = {};
             std::vector<const char*> extensions;
