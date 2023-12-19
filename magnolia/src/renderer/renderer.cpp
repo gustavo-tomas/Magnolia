@@ -26,8 +26,6 @@ namespace mag
 
     void Renderer::update()
     {
-        // @TODO: handle resize
-        this->window->set_resizable(false);
         this->context.begin_frame();
         // Draw calls
         this->context.end_frame();
