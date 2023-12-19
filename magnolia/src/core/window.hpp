@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 #include "core/math.hpp"
 #include "core/types.hpp"

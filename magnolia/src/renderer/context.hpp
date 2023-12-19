@@ -12,7 +12,7 @@
 
 namespace mag
 {
-    static const std::map<vk::PhysicalDeviceType, str> physical_device_type_str = {
+    inline static const std::map<vk::PhysicalDeviceType, str> physical_device_type_str = {
         {vk::PhysicalDeviceType::eOther, "Other"},
         {vk::PhysicalDeviceType::eIntegratedGpu, "Integrated Gpu"},
         {vk::PhysicalDeviceType::eDiscreteGpu, "Gpu"},
@@ -20,7 +20,7 @@ namespace mag
         {vk::PhysicalDeviceType::eCpu, "Cpu"}};
 
     // This is not an exhaustive list
-    static const str vendor_id_str(const u32 vendor_id)
+    inline static const str vendor_id_str(const u32 vendor_id)
     {
         const std::map<u32, str> vendors = {{0x1002, "Amd"}, {0x1010, "ImgTec"},   {0x10DE, "Nvidia"},
                                             {0x13B5, "Arm"}, {0x5143, "Qualcomm"}, {0x8086, "Intel"}};
