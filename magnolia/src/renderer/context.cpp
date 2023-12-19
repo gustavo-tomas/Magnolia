@@ -1,7 +1,5 @@
 #include "renderer/context.hpp"
 
-#include <vulkan/vulkan_structs.hpp>
-
 #include "core/logger.hpp"
 
 namespace mag
