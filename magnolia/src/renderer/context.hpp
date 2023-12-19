@@ -7,8 +7,11 @@
 
 #include "core/types.hpp"
 #include "core/window.hpp"
+#include "renderer/command.hpp"
+#include "renderer/frame.hpp"
 
 #define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
+#define MAG_TIMEOUT 1'000'000'000 /* 1 second in nanoseconds */
 
 namespace mag
 {
@@ -50,6 +53,8 @@ namespace mag
             void shutdown();
 
             void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
+            void begin_frame();
+            void end_frame();
 
             const vk::Instance& get_instance() const { return this->instance; };
             const vk::Device& get_device() const { return this->device; };
@@ -57,6 +62,14 @@ namespace mag
             const vk::Queue& get_graphics_queue() const { return this->graphics_queue; };
             const vk::SurfaceKHR& get_surface() const { return this->surface; };
             const vk::SurfaceFormatKHR& get_surface_format() const { return this->surface_format; };
+            const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
+            const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
+            const vk::CommandPool& get_command_pool() const { return this->command_pool; };
+            const vk::Semaphore& get_present_semaphore() const { return this->present_semaphore; };
+            const vk::Semaphore& get_render_semaphore() const { return this->render_semaphore; };
+            const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
+            const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
+            const CommandBuffer& get_command_buffer() const { return this->command_buffer; };
 
         private:
             vk::Instance instance;
@@ -80,5 +93,10 @@ namespace mag
             u32 api_version = {};
             u32 queue_family_index = {};
             u32 present_image_count = {};
+
+            CommandBuffer command_buffer;
+            FrameProvider frame_provider;
     };
+
+    Context& get_context();
 };  // namespace mag

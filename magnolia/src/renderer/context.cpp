@@ -6,6 +6,14 @@
 
 namespace mag
 {
+    static Context* context = nullptr;
+
+    Context& get_context()
+    {
+        ASSERT(context != nullptr, "Context is null");
+        return *context;
+    }
+
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                          VkDebugUtilsMessageTypeFlagsEXT,
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -22,6 +30,8 @@ namespace mag
 
     void Context::initialize(const ContextCreateOptions& options)
     {
+        context = this;
+
         // Instance
         vk::ApplicationInfo app_info;
         app_info.setPApplicationName(options.application_name.c_str())
@@ -204,7 +214,7 @@ namespace mag
         // Command pool
         vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                                                     queue_family_index);
-        VK_CHECK(this->device.createCommandPool(&command_pool_info, nullptr, &this->command_pool));
+        this->command_pool = device.createCommandPool(command_pool_info);
 
         // Allocator
         // @TODO
@@ -216,10 +226,10 @@ namespace mag
 
         // VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
-        // @TODO
-        // command_buffer.create(*this, command_pool, vk::CommandBufferLevel::ePrimary);
-        // frame_provider.create(*this, options.frame_count);
+        this->command_buffer.initialize(command_pool, vk::CommandBufferLevel::ePrimary);
+        this->frame_provider.initialize(options.frame_count);
 
+        // @TODO
         // // Descriptors
         // descriptor_allocator.create(*this);
         // descriptor_cache.create(*this);
@@ -227,6 +237,10 @@ namespace mag
 
     void Context::shutdown()
     {
+        this->device.waitIdle();
+
+        this->frame_provider.shutdown();
+
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 
         this->device.destroyCommandPool(this->command_pool);
@@ -286,4 +300,8 @@ namespace mag
             this->swapchain_image_views.push_back(device.createImageView(image_view_create_info));
         }
     }
+
+    void Context::begin_frame() { this->frame_provider.begin_frame(); }
+
+    void Context::end_frame() { this->frame_provider.end_frame(); }
 };  // namespace mag

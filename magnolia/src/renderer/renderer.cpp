@@ -6,6 +6,8 @@ namespace mag
 {
     void Renderer::initialize(Window& window)
     {
+        this->window = std::addressof(window);
+
         // Create context
         ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
@@ -22,7 +24,14 @@ namespace mag
         LOG_SUCCESS("Instance destroyed");
     }
 
-    void Renderer::update() {}
+    void Renderer::update()
+    {
+        // @TODO: handle resize
+        this->window->set_resizable(false);
+        this->context.begin_frame();
+        // Draw calls
+        this->context.end_frame();
+    }
 
     void Renderer::resize(const uvec2& size) { context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate); }
 };  // namespace mag

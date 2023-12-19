@@ -15,7 +15,7 @@ namespace mag
 
         ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
 
-        SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
+        SDL_Vulkan_GetDrawableSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
 
         u32 count = 0;
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, nullptr),
@@ -107,23 +107,19 @@ namespace mag
 
     b8 Window::is_key_down(const SDL_Keycode key) { return key_state[key]; }
 
-    b8 Window::is_mouse_captured() const
-    {
-        const SDL_bool captured = SDL_GetRelativeMouseMode();
-        if (captured == SDL_TRUE)
-            return true;
-        else
-            return false;
-    }
+    b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
     void Window::set_capture_mouse(b8 capture)
     {
-        const SDL_bool enabled = capture ? SDL_TRUE : SDL_FALSE;
-
         // Oh SDL...
-        if (SDL_SetRelativeMouseMode(enabled) != 0) LOG_ERROR("Failed to set mouse mode");
+        if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0) LOG_ERROR("Failed to set mouse mode");
         ignore_mouse_motion_events = true;
     }
 
     void Window::set_title(const str& title) { SDL_SetWindowTitle(handle, title.c_str()); }
+
+    void Window::set_resizable(const b8 resizable)
+    {
+        SDL_SetWindowResizable(this->handle, static_cast<SDL_bool>(resizable));
+    }
 };  // namespace mag

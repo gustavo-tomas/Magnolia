@@ -16,6 +16,7 @@ namespace mag
             void resize(const uvec2& size);
 
         private:
+            Window* window;
             Context context;
     };
 };  // namespace mag

@@ -35,6 +35,7 @@ namespace mag
 
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
+            void set_resizable(const b8 resizable);
 
             b8 is_key_pressed(const SDL_Keycode key);
             b8 is_key_down(const SDL_Keycode key);
