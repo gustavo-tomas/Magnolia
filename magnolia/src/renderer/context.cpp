@@ -145,13 +145,7 @@ namespace mag
         auto surface_formats = this->physical_device.getSurfaceFormatsKHR(this->surface);
 
         this->present_image_count = surface_capabilities.maxImageCount;
-
         this->surface_present_mode = vk::PresentModeKHR::eImmediate;
-        if (std::find(surface_present_modes.begin(), surface_present_modes.end(), vk::PresentModeKHR::eMailbox) !=
-            surface_present_modes.end())
-        {
-            this->surface_present_mode = vk::PresentModeKHR::eMailbox;
-        }
 
         this->surface_format = surface_formats.front();
         for (const auto& format : surface_formats)
@@ -200,7 +194,7 @@ namespace mag
 
         // Swapchain
         const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
-        this->recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
+        this->recreate_swapchain(size, this->surface_present_mode);
 
         // Sync structures
         this->upload_fence = this->device.createFence({});

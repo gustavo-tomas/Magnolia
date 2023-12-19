@@ -13,6 +13,8 @@ namespace mag
 
             void update();
 
+            void resize(const uvec2& size);
+
         private:
             Context context;
     };

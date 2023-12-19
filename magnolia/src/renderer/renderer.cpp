@@ -23,4 +23,6 @@ namespace mag
     }
 
     void Renderer::update() {}
+
+    void Renderer::resize(const uvec2& size) { context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate); }
 };  // namespace mag
