@@ -16,6 +16,13 @@ namespace mag
         ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
 
         SDL_GetWindowSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
+
+        u32 count = 0;
+        ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, nullptr),
+               "Failed to enumerate window extensions");
+
+        extensions.resize(count);
+        ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, extensions.data()), "Failed to get extensions");
     }
 
     void Window::shutdown()
@@ -72,6 +79,14 @@ namespace mag
         }
 
         return true;
+    }
+
+    vk::SurfaceKHR Window::create_surface(const vk::Instance instance) const
+    {
+        VkSurfaceKHR surface = 0;
+        ASSERT(SDL_Vulkan_CreateSurface(handle, instance, &surface), "Failed to create surface");
+
+        return surface;
     }
 
     void Window::on_resize(std::function<void(const uvec2&)> callback) { this->resize = std::move(callback); }

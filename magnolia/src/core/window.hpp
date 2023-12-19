@@ -1,8 +1,10 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_vulkan.h>
 
 #include <functional>
+#include <vulkan/vulkan.hpp>
 
 #include "core/math.hpp"
 #include "core/types.hpp"
@@ -23,6 +25,8 @@ namespace mag
             void shutdown();
             b8 update();
 
+            vk::SurfaceKHR create_surface(const vk::Instance instance) const;
+
             void on_resize(std::function<void(const uvec2&)> callback);
             void on_key_press(std::function<void(const SDL_Keycode key)> callback);
             void on_key_release(std::function<void(const SDL_Keycode key)> callback);
@@ -36,6 +40,7 @@ namespace mag
             b8 is_mouse_captured() const;
             const ivec2& get_mouse_position() const { return mouse_pos; }
             const uvec2& get_size() const { return size; };
+            const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
             std::function<void(const vec2&)> resize = {};
@@ -48,6 +53,7 @@ namespace mag
             uvec2 size = {};
             u32 update_counter = {};
             b8 ignore_mouse_motion_events = {};
+            std::vector<const char*> extensions;
 
             std::unordered_map<SDL_Keycode, b8> key_state;
             std::unordered_map<SDL_Keycode, u32> key_update;

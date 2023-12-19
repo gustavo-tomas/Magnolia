@@ -7,18 +7,18 @@ namespace mag
     void Renderer::initialize(Window& window)
     {
         // Create context
-        ContextCreateOptions context_options = {};
+        ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
         context_options.engine_name = "Magnolia";
-        // context_options.extensions = window.get_instance_extensions();
-        context_options.layers = {"VK_LAYER_KHRONOS_validation"};
-        this->context.create_instance(context_options);
+        context_options.validation_layers = {"VK_LAYER_KHRONOS_validation"};
+
+        this->context.initialize(context_options);
         LOG_SUCCESS("Instance created");
     }
 
     void Renderer::shutdown()
     {
-        this->context.destroy();
+        this->context.shutdown();
         LOG_SUCCESS("Instance destroyed");
     }
 
