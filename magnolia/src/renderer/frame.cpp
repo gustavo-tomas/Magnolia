@@ -36,8 +36,17 @@ namespace mag
 
         context.get_command_buffer().get_handle().reset();
 
-        VK_CHECK(device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, context.get_present_semaphore(),
-                                            nullptr, &swapchain_image_index));
+        try
+        {
+            VK_CHECK(device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, context.get_present_semaphore(),
+                                                nullptr, &swapchain_image_index));
+        }
+
+        catch (const vk::OutOfDateKHRError& e)
+        {
+            LOG_WARNING("Swapchain is out of date");
+            return;
+        }
 
         curr_frame.command_buffer.begin();
     }
@@ -81,7 +90,16 @@ namespace mag
             .setWaitSemaphores(context.get_render_semaphore())
             .setImageIndices(this->swapchain_image_index);
 
-        VK_CHECK(context.get_graphics_queue().presentKHR(present_info));
+        try
+        {
+            VK_CHECK(context.get_graphics_queue().presentKHR(present_info));
+        }
+
+        catch (const vk::OutOfDateKHRError& e)
+        {
+            LOG_WARNING("Swapchain is out of date");
+            return;
+        }
 
         frame_number = (frame_number + 1) % frames.size();
     }

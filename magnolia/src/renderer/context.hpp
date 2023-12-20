@@ -75,6 +75,7 @@ namespace mag
             vk::Instance instance;
             vk::SurfaceKHR surface;
             vk::SurfaceFormatKHR surface_format;
+            vk::Extent2D surface_extent;
             vk::PhysicalDevice physical_device;
             vk::Device device;
             vk::PresentModeKHR surface_present_mode;
@@ -85,7 +86,6 @@ namespace mag
             vk::CommandPool command_pool;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
-            vk::Extent2D surface_extent;
 
             std::vector<vk::Image> swapchain_images;
             std::vector<vk::ImageView> swapchain_image_views;

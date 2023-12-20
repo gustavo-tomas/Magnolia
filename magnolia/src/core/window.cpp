@@ -36,7 +36,7 @@ namespace mag
         SDL_Event e;
 
         // @TODO: find better fix for resize
-        while (SDL_WaitEvent(&e) != 0)
+        while (SDL_PollEvent(&e) != 0)
         {
             const SDL_Keycode key = e.key.keysym.sym;
 
