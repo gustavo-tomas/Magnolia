@@ -4,6 +4,8 @@
 
 namespace mag
 {
+    struct Pass;
+
     class CommandBuffer
     {
         public:
@@ -11,6 +13,8 @@ namespace mag
 
             void begin();
             void end();
+            void begin_pass(const Pass& pass);
+            void end_pass(const Pass& pass);
 
             const vk::CommandBuffer& get_handle() const { return this->command_buffer; }
 

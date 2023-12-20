@@ -138,8 +138,8 @@ namespace mag
         // auto counts = properties.limits.framebufferColorSampleCounts &
         // properties.limits.framebufferDepthSampleCounts;
 
-        // @TODO: MSAA
-        // this->msaa_samples = vk::SampleCountFlagBits::e1;
+        // @TODO: hardcoded to 1 for now
+        this->msaa_samples = vk::SampleCountFlagBits::e1;
         // if (counts & vk::SampleCountFlagBits::e2) this->msaa_samples = vk::SampleCountFlagBits::e2;
         // if (counts & vk::SampleCountFlagBits::e4) this->msaa_samples = vk::SampleCountFlagBits::e4;
         // if (counts & vk::SampleCountFlagBits::e8) this->msaa_samples = vk::SampleCountFlagBits::e8;
@@ -153,7 +153,7 @@ namespace mag
         auto surface_formats = this->physical_device.getSurfaceFormatsKHR(this->surface);
 
         this->present_image_count = surface_capabilities.maxImageCount;
-        this->surface_present_mode = vk::PresentModeKHR::eImmediate;
+        this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
 
         this->surface_format = surface_formats.front();
         for (const auto& format : surface_formats)
@@ -263,37 +263,31 @@ namespace mag
             std::clamp(size.x, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width),
             std::clamp(size.y, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height));
 
-        vk::SwapchainCreateInfoKHR swapchain_create_info;
-        swapchain_create_info.setSurface(this->surface)
-            .setMinImageCount(this->present_image_count)
-            .setImageFormat(this->surface_format.format)
-            .setImageColorSpace(this->surface_format.colorSpace)
-            .setImageExtent(this->surface_extent)
-            .setImageArrayLayers(1)
-            .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst)
-            .setImageSharingMode(vk::SharingMode::eExclusive)
-            .setPreTransform(surface_capabilities.currentTransform)
-            .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
-            .setPresentMode(present_mode)
-            .setClipped(true)
-            .setOldSwapchain(this->swapchain);
+        vk::SwapchainCreateInfoKHR swapchain_create_info(
+            {}, this->surface, this->present_image_count, this->surface_format.format, this->surface_format.colorSpace,
+            this->surface_extent, 1, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst,
+            vk::SharingMode::eExclusive, {}, surface_capabilities.currentTransform,
+            vk::CompositeAlphaFlagBitsKHR::eOpaque, present_mode, true, this->swapchain);
 
         this->swapchain = this->device.createSwapchainKHR(swapchain_create_info);
 
-        if (swapchain_create_info.oldSwapchain) this->device.destroySwapchainKHR(swapchain_create_info.oldSwapchain);
+        // Destroy old swapchain
+        vk::SwapchainKHR old_swapchain = swapchain_create_info.oldSwapchain;
+        if (old_swapchain) this->device.destroySwapchainKHR(old_swapchain);
+        for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
+        this->swapchain_image_views.clear();
 
+        // Create new swapchain
         this->swapchain_images = this->device.getSwapchainImagesKHR(this->swapchain);
         this->present_image_count = VECSIZE(this->swapchain_images);
         this->surface_present_mode = present_mode;
 
         this->swapchain_image_views.reserve(this->present_image_count);
-
-        for (auto image : this->swapchain_images)
+        for (const auto& image : this->swapchain_images)
         {
             const vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-
-            vk::ImageViewCreateInfo image_view_create_info({}, image, vk::ImageViewType::e2D,
-                                                           this->surface_format.format, {}, range);
+            const vk::ImageViewCreateInfo image_view_create_info({}, image, vk::ImageViewType::e2D,
+                                                                 this->surface_format.format, {}, range);
 
             this->swapchain_image_views.push_back(device.createImageView(image_view_create_info));
         }

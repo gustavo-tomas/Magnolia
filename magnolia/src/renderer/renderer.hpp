@@ -2,6 +2,7 @@
 
 #include "core/window.hpp"
 #include "renderer/context.hpp"
+#include "renderer/render_pass.hpp"
 
 namespace mag
 {
@@ -18,5 +19,6 @@ namespace mag
         private:
             Window* window;
             Context context;
+            StandardRenderPass render_pass;
     };
 };  // namespace mag

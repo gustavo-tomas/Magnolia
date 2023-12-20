@@ -62,6 +62,7 @@ namespace mag
             const vk::Queue& get_graphics_queue() const { return this->graphics_queue; };
             const vk::SurfaceKHR& get_surface() const { return this->surface; };
             const vk::SurfaceFormatKHR& get_surface_format() const { return this->surface_format; };
+            const vk::Extent2D& get_surface_extent() const { return this->surface_extent; };
             const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
             const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
             const vk::CommandPool& get_command_pool() const { return this->command_pool; };
@@ -70,6 +71,10 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const CommandBuffer& get_command_buffer() const { return this->command_buffer; };
+            Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
+
+            vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
+            u32 get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); };
 
         private:
             vk::Instance instance;
@@ -86,6 +91,7 @@ namespace mag
             vk::CommandPool command_pool;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
+            vk::SampleCountFlagBits msaa_samples;
 
             std::vector<vk::Image> swapchain_images;
             std::vector<vk::ImageView> swapchain_image_views;

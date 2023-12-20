@@ -23,6 +23,7 @@ namespace mag
             void end_frame();
 
             Frame& get_current_frame() { return frames[frame_number]; }
+            u32 get_swapchain_image_index() const { return this->swapchain_image_index; };
 
         private:
             std::vector<Frame> frames;

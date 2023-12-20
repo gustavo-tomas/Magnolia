@@ -15,21 +15,45 @@ namespace mag
         context_options.validation_layers = {"VK_LAYER_KHRONOS_validation"};
 
         this->context.initialize(context_options);
-        LOG_SUCCESS("Instance created");
+        LOG_SUCCESS("Context initialized");
+
+        this->render_pass.initialize(window.get_size());
+        LOG_SUCCESS("RenderPass initialized");
     }
 
     void Renderer::shutdown()
     {
+        this->context.get_device().waitIdle();
+
+        this->render_pass.shutdown();
+        LOG_SUCCESS("RenderPass destroyed");
+
         this->context.shutdown();
-        LOG_SUCCESS("Instance destroyed");
+        LOG_SUCCESS("Context destroyed");
     }
 
     void Renderer::update()
     {
+        Frame& curr_frame = context.get_curr_frame();
+        Pass& pass = render_pass.get_pass();
+
         this->context.begin_frame();
+        curr_frame.command_buffer.begin_pass(pass);
+
         // Draw calls
+
+        curr_frame.command_buffer.end_pass(pass);
         this->context.end_frame();
     }
 
-    void Renderer::resize(const uvec2& size) { context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate); }
+    void Renderer::resize(const uvec2& size)
+    {
+        context.get_device().waitIdle();
+
+        // Use the surface extent after recreating the swapchain
+        context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
+        const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
+
+        render_pass.resize(surface_extent);
+    }
 };  // namespace mag
