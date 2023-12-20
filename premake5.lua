@@ -29,10 +29,9 @@ project "magnolia"
         "libs/glm"
     }
 
-    -- @TODO: finish lib generation
     links
     {
-        "SDL2", "vulkan", "fmt"
+        "sdl", "vulkan", "fmt"
     }
 
     filter "system:linux"
@@ -77,3 +76,11 @@ project "fmt"
 
     filter { "files:**.cc" }
         compileas "module"
+
+-- sdl -----------------------------------------------------------------------------------------------------------------
+project "sdl"
+    kind "staticlib"
+
+    -- @TODO: finish sdl configuration
+    os.execute("mkdir -p build/sdl")
+    os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j8 && cp libSDL2.a ../linux/debug/libsdl.a")
