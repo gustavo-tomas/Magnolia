@@ -4,18 +4,18 @@ import os
 # ----- Build -----
 def build(system, configuration):
   # @TODO: resolve system
-  assert os.system(f"libs/premake/premake5_linux gmake2 && make config={configuration} -j4") == 0
+  assert os.system(f"libs/premake/premake5_linux gmake2 && cd build && make config={configuration} -j4") == 0
   return
 
 # ----- Run -----
 def run(system, configuration):
   # @TODO: resolve system
-  assert os.system(f"bin/linux/{configuration}/magnolia") == 0
+  assert os.system(f"build/linux/{configuration}/magnolia") == 0
   return
 
 # ----- Clean -----
 def clean(configuration):
-  assert os.system(f"make clean config={configuration}") == 0
+  assert os.system(f"cd build && make clean config={configuration}") == 0
   return
 
 # ----- Format -----

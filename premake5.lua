@@ -5,14 +5,15 @@ workspace "magnolia"
     language "c++"
     cppdialect "c++20"
     configurations { "debug", "profile", "release" }
+    location "build"
+
+    -- Output directories
+    targetdir ("build/%{cfg.system}/%{cfg.buildcfg}")
+    objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
 
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
-    location "magnolia"
     kind "consoleapp"
-
-    targetdir ("bin/%{cfg.system}/%{cfg.buildcfg}")
-    objdir ("bin/%{cfg.system}/build/%{cfg.buildcfg}")
 
     files
     {
@@ -31,7 +32,7 @@ project "magnolia"
     -- @TODO: finish lib generation
     links
     {
-        "SDL2", "vulkan", "bin/fmt"
+        "SDL2", "vulkan", "fmt"
     }
 
     filter "system:linux"
@@ -55,3 +56,24 @@ project "magnolia"
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
+
+
+-- Libs ----------------------------------------------------------------------------------------------------------------
+
+-- fmt -----------------------------------------------------------------------------------------------------------------
+project "fmt"
+    kind "staticlib"
+
+    files
+    {
+        "libs/fmt/include/fmt/**.h",
+        "libs/fmt/src/**.cc"
+    }
+
+    includedirs 
+    { 
+        "libs/fmt/include"
+    }
+
+    filter { "files:**.cc" }
+        compileas "module"
