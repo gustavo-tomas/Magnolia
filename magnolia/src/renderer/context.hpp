@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
@@ -13,32 +12,6 @@
 
 namespace mag
 {
-    inline static const std::map<vk::PhysicalDeviceType, str> physical_device_type_str = {
-        {vk::PhysicalDeviceType::eOther, "Other"},
-        {vk::PhysicalDeviceType::eIntegratedGpu, "Integrated Gpu"},
-        {vk::PhysicalDeviceType::eDiscreteGpu, "Gpu"},
-        {vk::PhysicalDeviceType::eVirtualGpu, "Virtual Gpu"},
-        {vk::PhysicalDeviceType::eCpu, "Cpu"}};
-
-    inline static const std::map<vk::PresentModeKHR, str> present_mode_str = {
-
-        {vk::PresentModeKHR::eImmediate, "Immediate"},
-        {vk::PresentModeKHR::eMailbox, "Mailbox"},
-        {vk::PresentModeKHR::eFifo, "Fifo"},
-        {vk::PresentModeKHR::eFifoRelaxed, "Fifo Relaxed"},
-        {vk::PresentModeKHR::eSharedDemandRefresh, "Shared Demand Refresh"},
-        {vk::PresentModeKHR::eSharedContinuousRefresh, "Shared Continuous Refresh"}};
-
-    // This is not an exhaustive list
-    inline static const str vendor_id_str(const u32 vendor_id)
-    {
-        const std::map<u32, str> vendors = {{0x1002, "Amd"}, {0x1010, "ImgTec"},   {0x10DE, "Nvidia"},
-                                            {0x13B5, "Arm"}, {0x5143, "Qualcomm"}, {0x8086, "Intel"}};
-
-        if (vendors.count(vendor_id)) return vendors.at(vendor_id);
-        return "Unknown";
-    }
-
     struct ContextCreateOptions
     {
             Window& window;
