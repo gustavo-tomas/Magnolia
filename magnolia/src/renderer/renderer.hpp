@@ -14,7 +14,7 @@ namespace mag
 
             void update();
 
-            void resize(const uvec2& size);
+            void on_resize(const uvec2& size);
 
         private:
             Window* window;

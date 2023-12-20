@@ -46,7 +46,7 @@ namespace mag
         pass.clear_values.push_back(depth_clear_value);
 
         // Create framebuffers and set render area
-        this->resize(size);
+        this->on_resize(size);
     }
 
     void StandardRenderPass::shutdown()
@@ -58,7 +58,7 @@ namespace mag
         context.get_device().destroyRenderPass(pass.render_pass);
     }
 
-    void StandardRenderPass::resize(const uvec2& size)
+    void StandardRenderPass::on_resize(const uvec2& size)
     {
         auto& context = get_context();
 

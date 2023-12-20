@@ -23,7 +23,7 @@ namespace mag
             [&](const uvec2& size) mutable
             {
                 LOG_INFO("WINDOW RESIZE: {0}", to_str(size));
-                renderer.resize(size);
+                renderer.on_resize(size);
             });
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });

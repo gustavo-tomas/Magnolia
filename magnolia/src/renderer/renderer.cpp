@@ -46,7 +46,7 @@ namespace mag
         this->context.end_frame();
     }
 
-    void Renderer::resize(const uvec2& size)
+    void Renderer::on_resize(const uvec2& size)
     {
         context.get_device().waitIdle();
 
@@ -54,6 +54,6 @@ namespace mag
         context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
 
-        render_pass.resize(surface_extent);
+        render_pass.on_resize(surface_extent);
     }
 };  // namespace mag

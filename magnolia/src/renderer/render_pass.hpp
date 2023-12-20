@@ -36,7 +36,7 @@ namespace mag
 
             virtual Pass& get_pass() override;
 
-            void resize(const uvec2& size);
+            void on_resize(const uvec2& size);
 
         private:
             Pass pass = {};
