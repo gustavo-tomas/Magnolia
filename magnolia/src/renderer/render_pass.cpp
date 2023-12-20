@@ -1,7 +1,5 @@
 #include "renderer/render_pass.hpp"
 
-#include <vulkan/vulkan_handles.hpp>
-
 #include "renderer/context.hpp"
 
 namespace mag
