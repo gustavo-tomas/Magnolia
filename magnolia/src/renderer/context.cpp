@@ -132,6 +132,7 @@ namespace mag
         }
 
         ASSERT(this->physical_device, "Failed to find suitable physical device");
+        LOG_INFO("Selected physical device: {0}", str(physical_device.getProperties().deviceName));
 
         // Properties
         // const auto properties = this->physical_device.getProperties();
@@ -153,7 +154,15 @@ namespace mag
         auto surface_formats = this->physical_device.getSurfaceFormatsKHR(this->surface);
 
         this->present_image_count = surface_capabilities.maxImageCount;
+
+        LOG_INFO("Enumerating surface present modes");
         this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
+        for (const auto& present_mode : surface_present_modes)
+        {
+            LOG_INFO("Present mode: {0}", present_mode_str.at(present_mode));
+            if (present_mode == vk::PresentModeKHR::eMailbox) this->surface_present_mode = present_mode;
+        }
+        LOG_INFO("Selected present mode: {0}", present_mode_str.at(this->surface_present_mode));
 
         this->surface_format = surface_formats.front();
         for (const auto& format : surface_formats)

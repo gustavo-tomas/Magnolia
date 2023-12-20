@@ -2,8 +2,6 @@
 
 #include <map>
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 #include "core/types.hpp"
 #include "core/window.hpp"
@@ -21,6 +19,15 @@ namespace mag
         {vk::PhysicalDeviceType::eDiscreteGpu, "Gpu"},
         {vk::PhysicalDeviceType::eVirtualGpu, "Virtual Gpu"},
         {vk::PhysicalDeviceType::eCpu, "Cpu"}};
+
+    inline static const std::map<vk::PresentModeKHR, str> present_mode_str = {
+
+        {vk::PresentModeKHR::eImmediate, "Immediate"},
+        {vk::PresentModeKHR::eMailbox, "Mailbox"},
+        {vk::PresentModeKHR::eFifo, "Fifo"},
+        {vk::PresentModeKHR::eFifoRelaxed, "Fifo Relaxed"},
+        {vk::PresentModeKHR::eSharedDemandRefresh, "Shared Demand Refresh"},
+        {vk::PresentModeKHR::eSharedContinuousRefresh, "Shared Continuous Refresh"}};
 
     // This is not an exhaustive list
     inline static const str vendor_id_str(const u32 vendor_id)
