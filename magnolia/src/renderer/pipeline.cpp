@@ -21,14 +21,11 @@ namespace mag
             shader_stages.push_back(create_info);
         }
 
-        // const VertexInputDescription vertex_description = Vertex::get_vertex_description();
-
         const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, {});
 
         const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
             {}, vk::PrimitiveTopology::eTriangleList, false);
 
-        // @TODO: dynamic viewport
         const vk::Viewport viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f);
         const vk::Rect2D scissor({}, {static_cast<u32>(size.x), static_cast<u32>(size.y)});
 
@@ -51,10 +48,13 @@ namespace mag
 
         const vk::PipelineColorBlendStateCreateInfo color_blending({}, {}, vk::LogicOp::eCopy, color_blend_attachment);
 
+        const std::vector<vk::DynamicState> dynamic_states = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+        const vk::PipelineDynamicStateCreateInfo dynamic_state({}, dynamic_states);
+
         const vk::GraphicsPipelineCreateInfo pipeline_create_info(
             {}, shader_stages, &vertex_input_state_create_info, &input_assembly_create_info, {}, &viewport_state,
             &rasterization_state_create_info, &multisampling_state_create_info, &depth_stencil_create_info,
-            &color_blending, {}, pipeline_layout, render_pass);
+            &color_blending, &dynamic_state, pipeline_layout, render_pass);
 
         const auto result_value = context.get_device().createGraphicsPipeline({}, pipeline_create_info);
         VK_CHECK(result_value.result);

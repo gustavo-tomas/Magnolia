@@ -72,6 +72,14 @@ namespace mag
 
     void StandardRenderPass::render(const CommandBuffer& command_buffer)
     {
+        const auto offset = pass.render_area.offset;
+        const auto extent = pass.render_area.extent;
+
+        const vk::Viewport viewport(0, 0, extent.width, extent.height, 0.0f, 1.0f);
+        const vk::Rect2D scissor(offset, extent);
+
+        command_buffer.get_handle().setViewport(0, viewport);
+        command_buffer.get_handle().setScissor(0, scissor);
         command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
         command_buffer.get_handle().draw(3, 1, 0, 0);
     }

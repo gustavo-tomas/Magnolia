@@ -54,6 +54,8 @@ namespace mag
     {
         context.get_device().waitIdle();
 
+        // @TODO: recalculate camera matrices
+
         // Use the surface extent after recreating the swapchain
         context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
