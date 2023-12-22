@@ -34,6 +34,9 @@ namespace mag
 
     void Renderer::update()
     {
+        // Skip rendering if minimized
+        if (window->is_minimized()) return;
+
         Frame& curr_frame = context.get_curr_frame();
         Pass& pass = render_pass.get_pass();
 

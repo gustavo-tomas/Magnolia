@@ -104,6 +104,15 @@ namespace mag
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
+    b8 Window::is_minimized() const
+    {
+        const auto size = this->get_size();
+        const auto flags = SDL_GetWindowFlags(this->handle);
+        return (flags & SDL_WINDOW_MINIMIZED) || (size.x < 100 || size.y < 100);
+
+        // Might be worth checking these too: || !(flags & SDL_WINDOW_INPUT_FOCUS) || !(flags & SDL_WINDOW_MOUSE_FOCUS)
+    }
+
     void Window::set_capture_mouse(b8 capture)
     {
         // Oh SDL...

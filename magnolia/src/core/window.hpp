@@ -40,6 +40,7 @@ namespace mag
             b8 is_key_pressed(const SDL_Keycode key);
             b8 is_key_down(const SDL_Keycode key);
             b8 is_mouse_captured() const;
+            b8 is_minimized() const;
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
