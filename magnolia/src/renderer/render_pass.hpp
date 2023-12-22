@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/math.hpp"
+#include "renderer/pipeline.hpp"
 
 namespace mag
 {
@@ -24,6 +25,7 @@ namespace mag
 
             virtual void initialize(const uvec2& /* size */){};
             virtual void shutdown(){};
+            virtual void render(const CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
     };
@@ -33,6 +35,7 @@ namespace mag
         public:
             virtual void initialize(const uvec2& size) override;
             virtual void shutdown() override;
+            virtual void render(const CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override;
 
@@ -40,6 +43,8 @@ namespace mag
 
         private:
             Pass pass = {};
+            Pipeline triangle_pipeline;
+            Shader triangle_vs, triangle_fs;
             std::vector<vk::Framebuffer> frame_buffers;
     };
 };  // namespace mag

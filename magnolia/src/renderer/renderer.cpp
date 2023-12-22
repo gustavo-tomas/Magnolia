@@ -44,6 +44,7 @@ namespace mag
         curr_frame.command_buffer.begin_pass(pass);
 
         // Draw calls
+        render_pass.render(curr_frame.command_buffer);
 
         curr_frame.command_buffer.end_pass(pass);
         this->context.end_frame();

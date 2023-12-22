@@ -1,5 +1,6 @@
 #include "renderer/render_pass.hpp"
 
+#include "core/logger.hpp"
 #include "renderer/context.hpp"
 
 namespace mag
@@ -34,6 +35,13 @@ namespace mag
         vk::RenderPassCreateInfo render_pass_info({}, attachments, subpass, dependencies);
         vk::RenderPass render_pass = context.get_device().createRenderPass(render_pass_info);
 
+        // Shaders
+        triangle_vs.create("build/shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
+        triangle_fs.create("build/shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+
+        // Pipeline
+        triangle_pipeline.create(render_pass, {}, {triangle_vs, triangle_fs}, size);
+
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
         pass.pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
@@ -53,9 +61,19 @@ namespace mag
     {
         auto& context = get_context();
 
+        triangle_pipeline.destroy();
+        triangle_vs.destroy();
+        triangle_fs.destroy();
+
         for (const auto& frame_buffer : frame_buffers) context.get_device().destroyFramebuffer(frame_buffer);
 
         context.get_device().destroyRenderPass(pass.render_pass);
+    }
+
+    void StandardRenderPass::render(const CommandBuffer& command_buffer)
+    {
+        command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
+        command_buffer.get_handle().draw(3, 1, 0, 0);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)
