@@ -40,7 +40,6 @@ namespace mag
 
     inline str to_str(const u32 vendor_id)
     {
-        return str_mappings::vendor_mapping.at(vendor_id);
         if (str_mappings::vendor_mapping.count(vendor_id)) return str_mappings::vendor_mapping.at(vendor_id);
         return "Unknown";
     }
