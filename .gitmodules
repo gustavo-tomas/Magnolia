@@ -7,3 +7,6 @@
 [submodule "libs/glm"]
 	path = libs/glm
 	url = https://github.com/gustavo-tomas/glm.git
+[submodule "libs/vulkan"]
+	path = libs/vulkan
+	url = https://github.com/gustavo-tomas/Vulkan-Headers.git
