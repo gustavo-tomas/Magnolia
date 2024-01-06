@@ -13,7 +13,7 @@ namespace mag
         handle = SDL_CreateWindow(options.title.c_str(), options.position.x, options.position.y, options.size.x,
                                   options.size.y, flags);
 
-        ASSERT(handle != nullptr, "Failed to create SDL window" + str(SDL_GetError()));
+        ASSERT(handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
 
         u32 count = 0;
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, nullptr),
