@@ -26,6 +26,7 @@ project "magnolia"
         "%{prj.name}/src",
         "libs/sdl/include",
         "libs/fmt/include",
+        "libs/vulkan/include",
         "libs/glm"
     }
 
