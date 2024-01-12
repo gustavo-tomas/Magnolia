@@ -8,10 +8,10 @@ namespace mag
     class Pipeline
     {
         public:
-            void create(const vk::RenderPass& render_pass,
-                        const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
-                        const std::vector<Shader>& shaders, const vec2& size);
-            void destroy();
+            void initialize(const vk::RenderPass& render_pass,
+                            const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
+                            const std::vector<Shader>& shaders, const vec2& size);
+            void shutdown();
 
             const vk::Pipeline& get_handle() const { return pipeline; };
             const vk::PipelineLayout& get_layout() const { return pipeline_layout; };

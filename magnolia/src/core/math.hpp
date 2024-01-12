@@ -4,12 +4,17 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/transform.hpp>
 
 #include "core/types.hpp"
 
 namespace mag
 {
+    // @TODO: dont do this
+    using namespace glm;
+
     typedef glm::vec2 vec2;
     typedef glm::vec3 vec3;
     typedef glm::vec4 vec4;
@@ -21,6 +26,8 @@ namespace mag
     typedef glm::ivec2 ivec2;
     typedef glm::ivec3 ivec3;
     typedef glm::ivec4 ivec4;
+
+    typedef glm::quat quat;
 
     typedef glm::mat3 mat3;
     typedef glm::mat4 mat4;

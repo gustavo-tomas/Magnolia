@@ -7,7 +7,7 @@
 
 namespace mag
 {
-    void Shader::create(const str& file, const vk::ShaderStageFlagBits stage)
+    void Shader::initialize(const str& file, const vk::ShaderStageFlagBits stage)
     {
         auto& context = get_context();
         this->stage = stage;
@@ -25,7 +25,7 @@ namespace mag
         this->module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
     }
 
-    void Shader::destroy()
+    void Shader::shutdown()
     {
         auto& context = get_context();
         context.get_device().destroyShaderModule(module);

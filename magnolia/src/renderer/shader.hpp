@@ -9,8 +9,8 @@ namespace mag
     class Shader
     {
         public:
-            void create(const str& file, const vk::ShaderStageFlagBits stage);
-            void destroy();
+            void initialize(const str& file, const vk::ShaderStageFlagBits stage);
+            void shutdown();
 
             const str& get_file() const { return file; };
             const vk::ShaderModule& get_handle() const { return module; };

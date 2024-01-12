@@ -36,11 +36,11 @@ namespace mag
         vk::RenderPass render_pass = context.get_device().createRenderPass(render_pass_info);
 
         // Shaders
-        triangle_vs.create("build/shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
-        triangle_fs.create("build/shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+        triangle_vs.initialize("build/shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
+        triangle_fs.initialize("build/shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 
         // Pipeline
-        triangle_pipeline.create(render_pass, {}, {triangle_vs, triangle_fs}, size);
+        triangle_pipeline.initialize(render_pass, {}, {triangle_vs, triangle_fs}, size);
 
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
@@ -61,9 +61,9 @@ namespace mag
     {
         auto& context = get_context();
 
-        triangle_pipeline.destroy();
-        triangle_vs.destroy();
-        triangle_fs.destroy();
+        triangle_pipeline.shutdown();
+        triangle_vs.shutdown();
+        triangle_fs.shutdown();
 
         for (const auto& frame_buffer : frame_buffers) context.get_device().destroyFramebuffer(frame_buffer);
 
