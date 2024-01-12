@@ -1,5 +1,7 @@
 #include "renderer/context.hpp"
 
+#include <vulkan/vulkan_enums.hpp>
+
 #include "core/logger.hpp"
 #include "renderer/to_str.hpp"
 
@@ -112,9 +114,9 @@ namespace mag
             const auto queue_family_properties = available_physical_device.getQueueFamilyProperties();
             for (const auto& property : queue_family_properties)
             {
-                // @TODO: check for presentation support
                 if ((property.queueCount > 0) &&
                     (available_physical_device.getSurfaceSupportKHR(queue_family_index, surface)) &&
+                    (available_physical_device.getSurfacePresentModesKHR(surface).empty() == false) &&
                     (property.queueFlags & vk::QueueFlagBits::eGraphics) &&
                     (property.queueFlags & vk::QueueFlagBits::eCompute))
                 {
