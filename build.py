@@ -1,16 +1,15 @@
 import sys
 import os
+import platform
 
 # ----- Build -----
 def build(system, configuration):
-  # @TODO: resolve system
-  assert os.system(f"libs/premake/premake5_linux gmake2 && cd build && make config={configuration} -j4") == 0
+  assert os.system(f"libs/premake/premake5_{system} gmake2 && cd build && make config={configuration} -j4") == 0
   return
 
 # ----- Run -----
 def run(system, configuration):
-  # @TODO: resolve system
-  assert os.system(f"build/linux/{configuration}/magnolia") == 0
+  assert os.system(f"build/{system}/{configuration}/magnolia") == 0
   return
 
 # ----- Clean -----
@@ -44,13 +43,20 @@ def shaders():
 
 def main():
 
+  # Check for system support
+  supported_systems = ["windows", "linux"]
+  system = platform.system().lower()
+
+  print(f"System: {system}\n")
+  assert system in supported_systems, f"System '{system}' is not supported\n"
+
   format()
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
-    build("@TODO", configuration)
+    build(system, configuration)
     shaders()
-    run("@TODO", configuration)
+    run(system, configuration)
   
   elif len(sys.argv) < 3:
     print("Usage: <command> <configuration>")
@@ -60,10 +66,10 @@ def main():
     configuration = str(sys.argv[2])
 
     if command == "build":
-      build("@TODO", configuration)
+      build(system, configuration)
     
     elif command == "run":
-      run("@TODO", configuration)
+      run(system, configuration)
     
     elif command == "clean":
       clean(configuration)
