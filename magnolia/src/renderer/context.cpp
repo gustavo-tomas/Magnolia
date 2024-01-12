@@ -56,7 +56,7 @@ namespace mag
         for (const auto& extension_name : extensions)
         {
             LOG_INFO("Extension: {0}", extension_name);
-            bool available = false;
+            b8 available = false;
             for (const auto& extension_property : extensions_properties)
             {
                 if (std::strcmp(extension_property.extensionName.data(), extension_name) == 0)
@@ -75,7 +75,7 @@ namespace mag
         for (const auto& layer_name : options.validation_layers)
         {
             LOG_INFO("Layer: {0}", layer_name);
-            bool available = false;
+            b8 available = false;
             for (const auto& layer_property : layer_properties)
             {
                 if (std::strcmp(layer_property.layerName.data(), layer_name) == 0)
@@ -108,7 +108,7 @@ namespace mag
             if (properties.apiVersion < this->api_version) continue;
 
             u32 queue_family_index = 0;
-            bool found_queue_family_index = false;
+            b8 found_queue_family_index = false;
             const auto queue_family_properties = available_physical_device.getQueueFamilyProperties();
             for (const auto& property : queue_family_properties)
             {
