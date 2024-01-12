@@ -42,7 +42,7 @@ namespace mag
     static_assert(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
 // Assert
-#if !defined(MAG_RELEASE)
+#if defined(MAG_ASSERTIONS_ENABLED)
     #define ASSERT(assertion, ...)                                                              \
         {                                                                                       \
             if (!(assertion))                                                                   \

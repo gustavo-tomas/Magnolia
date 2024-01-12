@@ -40,7 +40,7 @@ project "magnolia"
 
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra" }
-        defines { "MAG_DEBUG" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
@@ -52,7 +52,7 @@ project "magnolia"
         runtime "release"
 
     filter "configurations:release"
-        defines { "MAG_RELEASE" }
+        defines { "MAG_RELEASE", "MAG_ASSERTIONS_ENABLED" } -- @TODO: fix this
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -84,4 +84,5 @@ project "sdl"
 
     -- @TODO: finish sdl configuration
     os.execute("mkdir -p build/sdl")
-    os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j8 && cp libSDL2.a ../linux/debug/libsdl.a")
+    os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j4 && cp libSDL2.a ../linux/debug/libsdl.a && cp libSDL2.a ../linux/profile/libsdl.a && cp libSDL2.a ../linux/release/libsdl.a")
+
