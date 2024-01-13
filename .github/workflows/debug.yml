@@ -1,10 +1,16 @@
 name: "Debug Build"
 on:
   workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: boolean
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-        - run: python3 build.py debug
-      # - uses: actions/checkout@v2
+      - run: python3 build.py debug
+        env:
+          TAGS: ${{ inputs.tags }}
