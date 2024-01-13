@@ -11,10 +11,10 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - name: Run the program
       - uses: actions/checkout@v2
-      - run: git submodule update --init --recursive
-      - run: python3 build.py debug
+      - run: |
+            git submodule update --init --recursive
+            python3 build.py debug
       
         env:
           TAGS: ${{ inputs.tags }}
