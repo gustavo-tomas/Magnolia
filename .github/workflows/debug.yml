@@ -1,5 +1,6 @@
 name: "Debug Build"
-on: []
+on:
+  workflow_dispatch:
 
 jobs:
   publish-tauri:
