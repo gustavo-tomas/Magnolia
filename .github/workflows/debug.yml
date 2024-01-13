@@ -1,0 +1,2 @@
+- name: Debug build
+  run: python3 build.py debug
