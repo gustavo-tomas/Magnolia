@@ -156,7 +156,9 @@ namespace mag
         auto surface_capabilities = this->physical_device.getSurfaceCapabilitiesKHR(this->surface);
         auto surface_formats = this->physical_device.getSurfaceFormatsKHR(this->surface);
 
-        this->present_image_count = surface_capabilities.maxImageCount;
+        this->present_image_count = max(surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
+        ASSERT(this->present_image_count > 0, "Present image count must be greater than zero");
+        LOG_INFO("Present image count: {0}", this->present_image_count);
 
         LOG_INFO("Enumerating surface present modes");
         this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
