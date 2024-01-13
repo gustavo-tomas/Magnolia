@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Update submodules
+      - run: git submodule update --init --recursive
+      
+      - name: Run the program
       - run: python3 build.py debug
         env:
           TAGS: ${{ inputs.tags }}
