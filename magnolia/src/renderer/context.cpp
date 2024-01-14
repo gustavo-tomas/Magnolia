@@ -105,7 +105,7 @@ namespace mag
             const auto properties = available_physical_device.getProperties();
             LOG_INFO("Device: {0}", str(properties.deviceName));
             LOG_INFO("Vendor: {0} (0x{1:X})", to_str(properties.vendorID), properties.vendorID);
-            LOG_INFO("Type: {0}", to_str(properties.deviceType));
+            LOG_INFO("Type: {0}", vk::to_string(properties.deviceType));
             LOG_INFO("API Version: {0}", properties.apiVersion);
             if (properties.apiVersion < this->api_version) continue;
 
@@ -164,10 +164,10 @@ namespace mag
         this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
         for (const auto& present_mode : surface_present_modes)
         {
-            LOG_INFO("Present mode: {0}", to_str(present_mode));
+            LOG_INFO("Present mode: {0}", vk::to_string(present_mode));
             if (present_mode == vk::PresentModeKHR::eMailbox) this->surface_present_mode = present_mode;
         }
-        LOG_INFO("Selected present mode: {0}", to_str(this->surface_present_mode));
+        LOG_INFO("Selected present mode: {0}", vk::to_string(this->surface_present_mode));
 
         this->surface_format = surface_formats.front();
         for (const auto& format : surface_formats)
