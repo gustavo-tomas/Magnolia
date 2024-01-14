@@ -38,14 +38,21 @@ namespace mag
 
         try
         {
-            VK_CHECK(device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, context.get_present_semaphore(),
-                                                nullptr, &swapchain_image_index));
+            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT,
+                                                     context.get_present_semaphore(), nullptr, &swapchain_image_index);
+
+            if (result != vk::Result::eSuccess) throw result;
         }
 
         catch (const vk::OutOfDateKHRError& e)
         {
             LOG_WARNING("Swapchain is out of date");
             return;
+        }
+
+        catch (...)
+        {
+            ASSERT(false, "Failed to acquire swapchain image");
         }
 
         curr_frame.command_buffer.begin();
@@ -92,13 +99,20 @@ namespace mag
 
         try
         {
-            VK_CHECK(context.get_graphics_queue().presentKHR(present_info));
+            auto result = context.get_graphics_queue().presentKHR(present_info);
+
+            if (result != vk::Result::eSuccess) throw result;
         }
 
         catch (const vk::OutOfDateKHRError& e)
         {
             LOG_WARNING("Swapchain is out of date");
             return;
+        }
+
+        catch (...)
+        {
+            ASSERT(false, "Failed to present swapchain image");
         }
 
         frame_number = (frame_number + 1) % frames.size();
