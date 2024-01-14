@@ -17,10 +17,11 @@ namespace mag
 
         u32 count = 0;
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, nullptr),
-               "Failed to enumerate window extensions");
+               "Failed to enumerate window extensions: " + str(SDL_GetError()));
 
         extensions.resize(count);
-        ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, extensions.data()), "Failed to get extensions");
+        ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, extensions.data()),
+               "Failed to get extensions: " + str(SDL_GetError()));
     }
 
     void Window::shutdown()
@@ -79,7 +80,8 @@ namespace mag
     vk::SurfaceKHR Window::create_surface(const vk::Instance instance) const
     {
         VkSurfaceKHR surface = 0;
-        ASSERT(SDL_Vulkan_CreateSurface(handle, instance, &surface), "Failed to create surface");
+        ASSERT(SDL_Vulkan_CreateSurface(handle, instance, &surface),
+               "Failed to create surface: " + str(SDL_GetError()));
 
         return surface;
     }
@@ -107,16 +109,22 @@ namespace mag
     b8 Window::is_minimized() const
     {
         const auto size = this->get_size();
-        const auto flags = SDL_GetWindowFlags(this->handle);
-        return (flags & SDL_WINDOW_MINIMIZED) || (size.x < 100 || size.y < 100);
+        return is_flag_set(SDL_WINDOW_MINIMIZED) || (size.x < 100 || size.y < 100);
 
         // Might be worth checking these too: || !(flags & SDL_WINDOW_INPUT_FOCUS) || !(flags & SDL_WINDOW_MOUSE_FOCUS)
+    }
+
+    b8 Window::is_flag_set(const u32 flag) const
+    {
+        const u32 flags = SDL_GetWindowFlags(this->handle);
+        return (flag & flags);
     }
 
     void Window::set_capture_mouse(b8 capture)
     {
         // Oh SDL...
-        if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0) LOG_ERROR("Failed to set mouse mode");
+        if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0)
+            LOG_ERROR("Failed to set mouse mode: {0}", SDL_GetError());
         ignore_mouse_motion_events = true;
     }
 
@@ -125,6 +133,12 @@ namespace mag
     void Window::set_resizable(const b8 resizable)
     {
         SDL_SetWindowResizable(this->handle, static_cast<SDL_bool>(resizable));
+    }
+
+    void Window::set_fullscreen(const u32 flags)
+    {
+        if (SDL_SetWindowFullscreen(this->handle, flags) != 0)
+            LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
     }
 
     ivec2 Window::get_mouse_position() const

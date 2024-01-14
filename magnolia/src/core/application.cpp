@@ -61,7 +61,19 @@ namespace mag
                 frame_counter = time_counter = 0;
             }
 
-            if (window.is_key_pressed(SDLK_ESCAPE)) window.set_capture_mouse(!window.is_mouse_captured());
+            if (window.is_key_pressed(SDLK_ESCAPE))
+            {
+                // Fullscreen
+                if (!window.is_flag_set(SDL_WINDOW_FULLSCREEN_DESKTOP))
+                    window.set_fullscreen(SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+                // Windowed
+                else
+                    window.set_fullscreen(0);
+            }
+
+            if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
+
             renderer.update();
         }
     }

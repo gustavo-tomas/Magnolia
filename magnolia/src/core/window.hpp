@@ -38,11 +38,14 @@ namespace mag
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
             void set_resizable(const b8 resizable);
+            void set_fullscreen(const u32 flags = 0);
 
             b8 is_key_pressed(const SDL_Keycode key);
             b8 is_key_down(const SDL_Keycode key);
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
+            b8 is_flag_set(const u32 flag) const;
+
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
