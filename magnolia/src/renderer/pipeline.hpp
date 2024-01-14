@@ -5,6 +5,8 @@
 
 namespace mag
 {
+    using namespace mag::math;
+
     class Pipeline
     {
         public:

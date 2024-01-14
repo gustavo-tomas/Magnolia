@@ -12,33 +12,12 @@
 
 namespace mag
 {
-    // @TODO: dont do this
-    using namespace glm;
-
-    typedef glm::vec2 vec2;
-    typedef glm::vec3 vec3;
-    typedef glm::vec4 vec4;
-
-    typedef glm::uvec2 uvec2;
-    typedef glm::uvec3 uvec3;
-    typedef glm::uvec4 uvec4;
-
-    typedef glm::ivec2 ivec2;
-    typedef glm::ivec3 ivec3;
-    typedef glm::ivec4 ivec4;
-
-    typedef glm::quat quat;
-
-    typedef glm::mat3 mat3;
-    typedef glm::mat4 mat4;
-
-    const f32 Half_Pi = glm::half_pi<f32>();
-    const f32 Pi = glm::pi<f32>();
-    const f32 Two_Pi = glm::two_pi<f32>();
-
-    template <typename T>
-    inline str to_str(const T& num)
+    namespace math
     {
-        return glm::to_string(num);
-    }
-};  // namespace mag
+        using namespace glm;
+
+        const f32 Half_Pi = glm::half_pi<f32>();
+        const f32 Pi = glm::pi<f32>();
+        const f32 Two_Pi = glm::two_pi<f32>();
+    };  // namespace math
+};      // namespace mag

@@ -7,6 +7,8 @@
 
 namespace mag
 {
+    using namespace mag::math;
+
     class CommandBuffer;
 
     struct Pass

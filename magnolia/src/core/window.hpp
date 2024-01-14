@@ -12,6 +12,8 @@
 
 namespace mag
 {
+    using namespace mag::math;
+
     struct WindowOptions
     {
             uvec2 size = {1024, 600};
