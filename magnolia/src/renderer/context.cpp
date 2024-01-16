@@ -228,14 +228,13 @@ namespace mag
         this->command_pool = device.createCommandPool(command_pool_info);
 
         // Allocator
-        // @TODO
-        // VmaAllocatorCreateInfo allocator_create_info = {};
-        // allocator_create_info.physicalDevice = this->physical_device;
-        // allocator_create_info.device = this->device;
-        // allocator_create_info.instance = this->instance;
-        // allocator_create_info.vulkanApiVersion = this->api_version;
+        VmaAllocatorCreateInfo allocator_create_info = {};
+        allocator_create_info.physicalDevice = this->physical_device;
+        allocator_create_info.device = this->device;
+        allocator_create_info.instance = this->instance;
+        allocator_create_info.vulkanApiVersion = this->api_version;
 
-        // VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
+        VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
         this->command_buffer.initialize(command_pool, vk::CommandBufferLevel::ePrimary);
         this->frame_provider.initialize(options.frame_count);
@@ -251,6 +250,8 @@ namespace mag
         this->device.waitIdle();
 
         this->frame_provider.shutdown();
+
+        vmaDestroyAllocator(allocator);
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 

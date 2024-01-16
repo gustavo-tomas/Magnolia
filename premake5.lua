@@ -27,6 +27,7 @@ project "magnolia"
         "libs/sdl/include",
         "libs/fmt/include",
         "libs/vulkan/include",
+        "libs/vma/include",
         "libs/glm"
     }
 
@@ -85,4 +86,3 @@ project "sdl"
     -- @TODO: finish sdl configuration
     os.execute("mkdir -p build/sdl")
     os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j4 && cp libSDL2.a ../linux/debug/libsdl.a && cp libSDL2.a ../linux/profile/libsdl.a && cp libSDL2.a ../linux/release/libsdl.a")
-

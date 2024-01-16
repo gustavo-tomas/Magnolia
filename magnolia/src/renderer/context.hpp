@@ -6,9 +6,11 @@
 #include "core/window.hpp"
 #include "renderer/command.hpp"
 #include "renderer/frame.hpp"
+#include "vk_mem_alloc.h"
 
 #define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
-#define MAG_TIMEOUT 1'000'000'000 /* 1 second in nanoseconds */
+#define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
+#define MAG_TIMEOUT 1'000'000'000                             /* 1 second in nanoseconds */
 
 namespace mag
 {
@@ -51,6 +53,7 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const CommandBuffer& get_command_buffer() const { return this->command_buffer; };
+            const VmaAllocator& get_allocator() const { return this->allocator; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
@@ -82,6 +85,7 @@ namespace mag
 
             CommandBuffer command_buffer;
             FrameProvider frame_provider;
+            VmaAllocator allocator = {};
     };
 
     Context& get_context();

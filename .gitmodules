@@ -10,3 +10,6 @@
 [submodule "libs/vulkan"]
 	path = libs/vulkan
 	url = https://github.com/gustavo-tomas/Vulkan-Headers.git
+[submodule "libs/vma"]
+	path = libs/vma
+	url = https://github.com/gustavo-tomas/VulkanMemoryAllocator.git
