@@ -11,7 +11,6 @@ namespace mag
             void initialize(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
                             const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
                             const vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1);
-            void initialize(const vk::Image&& image, const vk::ImageView&& image_view);
             void shutdown();
 
             const vk::Image& get_image() const { return image; };
