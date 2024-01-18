@@ -66,21 +66,6 @@ namespace mag
         // End command recording, submit info and present the image
         Frame& curr_frame = this->get_current_frame();
 
-        // Transition the image layout to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
-        vk::ImageMemoryBarrier imageBarrier;
-        imageBarrier.setOldLayout(vk::ImageLayout::eUndefined)
-            .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-            .setImage(context.get_swapchain_images()[swapchain_image_index])
-            .setSrcAccessMask({})
-            .setDstAccessMask({})
-            .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
-            .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
-            .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
-
-        curr_frame.command_buffer.get_handle().pipelineBarrier(vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                                                               vk::PipelineStageFlagBits::eBottomOfPipe, {}, nullptr,
-                                                               nullptr, imageBarrier);
-
         curr_frame.command_buffer.end();
 
         std::vector<vk::PipelineStageFlags> wait_stage = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
