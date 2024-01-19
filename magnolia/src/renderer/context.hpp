@@ -35,8 +35,8 @@ namespace mag
             void shutdown();
 
             void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
-            void begin_frame();
-            void end_frame();
+            b8 begin_frame();
+            b8 end_frame();
 
             const vk::Instance& get_instance() const { return this->instance; };
             const vk::Device& get_device() const { return this->device; };

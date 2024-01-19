@@ -307,7 +307,7 @@ namespace mag
         }
     }
 
-    void Context::begin_frame() { this->frame_provider.begin_frame(); }
+    b8 Context::begin_frame() { return this->frame_provider.begin_frame(); }
 
-    void Context::end_frame() { this->frame_provider.end_frame(); }
+    b8 Context::end_frame() { return this->frame_provider.end_frame(); }
 };  // namespace mag

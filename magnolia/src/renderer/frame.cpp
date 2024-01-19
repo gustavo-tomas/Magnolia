@@ -23,7 +23,7 @@ namespace mag
         for (const auto& frame : frames) get_context().get_device().destroyFence(frame.render_fence);
     }
 
-    void FrameProvider::begin_frame()
+    b8 FrameProvider::begin_frame()
     {
         auto& context = get_context();
 
@@ -48,7 +48,7 @@ namespace mag
         catch (const vk::OutOfDateKHRError& e)
         {
             LOG_WARNING("Swapchain is out of date");
-            return;
+            return false;
         }
 
         catch (...)
@@ -57,9 +57,10 @@ namespace mag
         }
 
         curr_frame.command_buffer.begin();
+        return true;
     }
 
-    void FrameProvider::end_frame()
+    b8 FrameProvider::end_frame()
     {
         auto& context = get_context();
 
@@ -93,7 +94,7 @@ namespace mag
         catch (const vk::OutOfDateKHRError& e)
         {
             LOG_WARNING("Swapchain is out of date");
-            return;
+            return false;
         }
 
         catch (...)
@@ -102,5 +103,6 @@ namespace mag
         }
 
         frame_number = (frame_number + 1) % frames.size();
+        return true;
     }
 };  // namespace mag

@@ -53,7 +53,13 @@ namespace mag
         Frame& curr_frame = context.get_curr_frame();
         Pass& pass = render_pass.get_pass();
 
-        this->context.begin_frame();
+        // @TODO: improve resize handling
+
+        draw_extent.width = min(context.get_surface_extent().width, draw_image.get_extent().width) * render_scale;
+        draw_extent.height = min(context.get_surface_extent().height, draw_image.get_extent().height) * render_scale;
+        draw_extent.depth = 1;
+
+        if (!this->context.begin_frame()) return;
 
         curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
                                                   vk::ImageLayout::eColorAttachmentOptimal);
@@ -72,8 +78,7 @@ namespace mag
 
         // Copy from the draw image to the swapchain
         curr_frame.command_buffer.copy_image_to_image(
-            draw_image.get_image(), draw_image.get_extent(),
-            context.get_swapchain_images()[context.get_swapchain_image_index()],
+            draw_image.get_image(), draw_extent, context.get_swapchain_images()[context.get_swapchain_image_index()],
             vk::Extent3D(context.get_surface_extent(), 1));
 
         // Set swapchain image layout to Present so we can show it on the screen
@@ -81,7 +86,7 @@ namespace mag
                                                   vk::ImageLayout::eTransferDstOptimal,
                                                   vk::ImageLayout::ePresentSrcKHR);
 
-        this->context.end_frame();
+        if (!this->context.end_frame()) return;
     }
 
     void Renderer::on_resize(const uvec2& size)
@@ -94,18 +99,10 @@ namespace mag
         context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
 
-        // @TODO: handle scaling
-        // draw_size = clamp(draw_size, surface_extent, surface_extent);
+        draw_extent.width = min(surface_extent.x, draw_image.get_extent().width) * render_scale;
+        draw_extent.height = min(surface_extent.y, draw_image.get_extent().height) * render_scale;
+        draw_extent.depth = 1;
 
-        render_pass.on_resize(draw_image_resolution);
-
-        draw_image.shutdown();
-        vk::ImageUsageFlags draw_image_usage = {};
-        draw_image_usage |= vk::ImageUsageFlagBits::eTransferSrc;
-        draw_image_usage |= vk::ImageUsageFlagBits::eTransferDst;
-        draw_image_usage |= vk::ImageUsageFlagBits::eStorage;
-        draw_image_usage |= vk::ImageUsageFlagBits::eColorAttachment;
-        draw_image.initialize({draw_image_resolution.x, draw_image_resolution.y, 1}, vk::Format::eR16G16B16A16Sfloat,
-                              draw_image_usage, vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+        render_pass.on_resize(uvec2(draw_extent.width, draw_extent.height));
     }
 };  // namespace mag

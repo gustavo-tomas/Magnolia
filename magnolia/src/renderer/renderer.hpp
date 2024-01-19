@@ -23,5 +23,7 @@ namespace mag
             StandardRenderPass render_pass;
             Image draw_image;
             uvec2 draw_image_resolution = {800 / 2, 600 / 2};
+            vk::Extent3D draw_extent;
+            f32 render_scale = 1.0;
     };
 };  // namespace mag
