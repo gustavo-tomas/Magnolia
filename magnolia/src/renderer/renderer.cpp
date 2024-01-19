@@ -12,7 +12,11 @@ namespace mag
         ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
         context_options.engine_name = "Magnolia";
+
+        // Validation only on debug
+#if !defined(MAG_RELEASE)
         context_options.validation_layers = {"VK_LAYER_KHRONOS_validation"};
+#endif
 
         this->context.initialize(context_options);
         LOG_SUCCESS("Context initialized");
