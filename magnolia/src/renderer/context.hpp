@@ -4,7 +4,6 @@
 
 #include "core/types.hpp"
 #include "core/window.hpp"
-#include "renderer/command.hpp"
 #include "renderer/frame.hpp"
 #include "vk_mem_alloc.h"
 
@@ -52,7 +51,6 @@ namespace mag
             const vk::Semaphore& get_render_semaphore() const { return this->render_semaphore; };
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
-            const CommandBuffer& get_command_buffer() const { return this->command_buffer; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
@@ -83,7 +81,6 @@ namespace mag
             u32 queue_family_index = {};
             u32 present_image_count = {};
 
-            CommandBuffer command_buffer;
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
     };

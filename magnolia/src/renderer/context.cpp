@@ -1,7 +1,5 @@
 #include "renderer/context.hpp"
 
-#include <vulkan/vulkan_enums.hpp>
-
 #include "core/logger.hpp"
 
 namespace mag
@@ -236,7 +234,6 @@ namespace mag
 
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
-        this->command_buffer.initialize(command_pool, vk::CommandBufferLevel::ePrimary);
         this->frame_provider.initialize(options.frame_count);
 
         // @TODO

@@ -34,8 +34,7 @@ namespace mag
         VK_CHECK(device.waitForFences(curr_frame.render_fence, true, MAG_TIMEOUT));
         device.resetFences(curr_frame.render_fence);
 
-        // @TODO: double check this
-        context.get_command_buffer().get_handle().reset();
+        curr_frame.command_buffer.get_handle().reset();
 
         try
         {
