@@ -14,9 +14,10 @@
 To build and run the program use
 
 ```
-python3 build.py release
+python3 build.py debug
 ```
 
 ## References
 - [VulkanAbstractionLayer](https://github.com/asc-community/VulkanAbstractionLayer)
 - [Godot](https://github.com/godotengine/godot)
+- [VulkanTutorial](https://github.com/Overv/VulkanTutorial)

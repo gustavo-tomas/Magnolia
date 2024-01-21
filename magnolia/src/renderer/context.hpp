@@ -47,8 +47,6 @@ namespace mag
             const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
             const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
             const vk::CommandPool& get_command_pool() const { return this->command_pool; };
-            const vk::Semaphore& get_present_semaphore() const { return this->present_semaphore; };
-            const vk::Semaphore& get_render_semaphore() const { return this->render_semaphore; };
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
@@ -67,8 +65,6 @@ namespace mag
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
-            vk::Fence upload_fence;
-            vk::Semaphore present_semaphore, render_semaphore;
             vk::CommandPool command_pool;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
