@@ -36,7 +36,7 @@ namespace mag
             .setApplicationVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
             .setPEngineName(options.engine_name.c_str())
             .setEngineVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
-            .setApiVersion(VK_API_VERSION_1_3);
+            .setApiVersion(options.api_version);
 
         std::vector<const char*> extensions = options.instance_extensions;
         std::vector<const char*> window_extensions = options.window.get_instance_extensions();
