@@ -47,6 +47,8 @@ namespace mag
             virtual void after_pass(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
+            f32 get_render_scale() const { return render_scale; };
+            void set_render_scale(const f32 scale);
 
             void on_resize(const uvec2& size);
 

@@ -19,7 +19,6 @@ namespace mag
                               vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
 
         this->draw_size = {size, 1};
-        this->render_scale = 0.15;
 
         // Create attachments
         // -------------------------------------------------------------------------------------------------------------
@@ -126,6 +125,7 @@ namespace mag
     void StandardRenderPass::on_resize(const uvec2& size)
     {
         auto& context = get_context();
+        context.get_device().waitIdle();
 
         draw_size.x = min(size.x, draw_image.get_extent().width) * render_scale;
         draw_size.y = min(size.y, draw_image.get_extent().height) * render_scale;
@@ -144,5 +144,12 @@ namespace mag
         // Set new render area
         pass.render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
         pass.frame_buffer = frame_buffer;
+    }
+
+    void StandardRenderPass::set_render_scale(const f32 scale)
+    {
+        this->render_scale = clamp(scale, 0.01f, 1.0f);
+        this->on_resize({draw_image.get_extent().width, draw_image.get_extent().height});
+        LOG_INFO("Render scale: {0:.2f}", render_scale);
     }
 };  // namespace mag

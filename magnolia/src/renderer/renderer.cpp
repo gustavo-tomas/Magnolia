@@ -42,6 +42,14 @@ namespace mag
 
         if (!this->context.begin_frame()) return;
 
+        // @TODO: testing
+        if (window->is_key_down(SDLK_SPACE))
+            render_pass.set_render_scale(render_pass.get_render_scale() + 0.01f);
+
+        else if (window->is_key_down(SDLK_LCTRL))
+            render_pass.set_render_scale(render_pass.get_render_scale() - 0.01f);
+        // @TODO: testing
+
         // Draw calls
         render_pass.before_pass(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_pass(pass);
