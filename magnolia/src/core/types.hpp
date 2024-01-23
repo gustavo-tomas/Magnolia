@@ -1,5 +1,7 @@
 #pragma once
 
+// @TODO: add remaining types here
+
 #include <cstdint>
 #include <string>
 
