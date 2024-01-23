@@ -2,7 +2,6 @@
 
 #include "core/window.hpp"
 #include "renderer/context.hpp"
-#include "renderer/image.hpp"
 #include "renderer/render_pass.hpp"
 
 namespace mag
@@ -21,9 +20,5 @@ namespace mag
             Window* window;
             Context context;
             StandardRenderPass render_pass;
-            Image draw_image;
-            uvec2 draw_image_resolution = {800 / 2, 600 / 2};
-            vk::Extent3D draw_extent;
-            f32 render_scale = 1.0;
     };
 };  // namespace mag
