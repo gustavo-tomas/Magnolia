@@ -56,6 +56,7 @@ namespace mag
             Shader triangle_vs, triangle_fs;
             Image draw_image;
             uvec3 draw_size;
+            f32 render_scale = 1.0;
             vk::Framebuffer frame_buffer;
     };
 };  // namespace mag

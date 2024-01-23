@@ -19,6 +19,7 @@ namespace mag
                               vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
 
         this->draw_size = {size, 1};
+        this->render_scale = 0.15;
 
         // Create attachments
         // -------------------------------------------------------------------------------------------------------------
@@ -126,8 +127,8 @@ namespace mag
     {
         auto& context = get_context();
 
-        draw_size.x = min(size.x, draw_image.get_extent().width);
-        draw_size.y = min(size.y, draw_image.get_extent().height);
+        draw_size.x = min(size.x, draw_image.get_extent().width) * render_scale;
+        draw_size.y = min(size.y, draw_image.get_extent().height) * render_scale;
         draw_size.z = 1;
 
         // Destroy old framebuffer
