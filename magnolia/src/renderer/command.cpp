@@ -48,7 +48,6 @@ namespace mag
         dst_offsets[1].y = dst_extent.height;
         dst_offsets[1].z = dst_extent.depth;
 
-
         const vk::ImageBlit blit_region(src_subresource, src_offsets, dst_subresource, dst_offsets);
 
         this->command_buffer.blitImage(src, vk::ImageLayout::eTransferSrcOptimal, dst,
