@@ -106,7 +106,7 @@ namespace mag
             LOG_INFO("Vendor: 0x{0:X}", properties.vendorID);
             LOG_INFO("Type: {0}", vk::to_string(properties.deviceType));
             LOG_INFO("API Version: {0}", properties.apiVersion);
-            if (properties.apiVersion < this->api_version) continue;
+            // if (properties.apiVersion < this->api_version) continue;
 
             u32 queue_family_index = 0;
             b8 found_queue_family_index = false;
@@ -250,8 +250,6 @@ namespace mag
         this->device.waitIdle();
 
         this->frame_provider.shutdown();
-
-        vmaDestroyAllocator(allocator);
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 

@@ -61,17 +61,32 @@ namespace mag
 
         if (!this->context.begin_frame()) return;
 
+        // curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
+        //                                           vk::ImageLayout::eColorAttachmentOptimal);
+
+        // // Draw calls
+        // curr_frame.command_buffer.begin_pass(pass);
+        // render_pass.render(curr_frame.command_buffer);
+        // curr_frame.command_buffer.end_pass(pass);
         curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
-                                                  vk::ImageLayout::eColorAttachmentOptimal);
+                                                  vk::ImageLayout::eGeneral);
 
         // Draw calls
-        curr_frame.command_buffer.begin_pass(pass);
-        render_pass.render(curr_frame.command_buffer);
-        curr_frame.command_buffer.end_pass(pass);
+        vk::ImageSubresourceRange clearRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+        curr_frame.command_buffer.get_handle().clearColorImage(draw_image.get_image(), vk::ImageLayout::eGeneral,
+                                                               {1.0f, 0.0f, 1.0f, 1.0f}, clearRange);
+
+        // curr_frame.command_buffer.begin_pass(pass);
+        // render_pass.render(curr_frame.command_buffer);
+        // curr_frame.command_buffer.end_pass(pass);
 
         // Transition the draw image and the swapchain image into their correct transfer layouts
-        curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
+        curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eGeneral,
                                                   vk::ImageLayout::eTransferSrcOptimal);
+
+        // // Transition the draw image and the swapchain image into their correct transfer layouts
+        // curr_frame.command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
+        //                                           vk::ImageLayout::eTransferSrcOptimal);
 
         curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
                                                   vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);

@@ -3,6 +3,7 @@
 #include <fmt/color.h>
 #include <fmt/core.h>
 
+#include <format>
 #include <source_location>
 
 #include "core/types.hpp"
