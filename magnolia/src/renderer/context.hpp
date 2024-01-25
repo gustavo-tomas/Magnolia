@@ -1,16 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "core/types.hpp"
 #include "core/window.hpp"
-#include "renderer/command.hpp"
 #include "renderer/frame.hpp"
-#include "vk_mem_alloc.h"
-
-#define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
-#define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
-#define MAG_TIMEOUT 1'000'000'000                             /* 1 second in nanoseconds */
 
 namespace mag
 {
@@ -25,6 +17,7 @@ namespace mag
             std::vector<const char*> validation_layers;
 
             vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
+            u32 api_version = VK_API_VERSION_1_1;
             u32 frame_count = 3;  // 3 for triple buffering
     };
 
@@ -48,11 +41,8 @@ namespace mag
             const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
             const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
             const vk::CommandPool& get_command_pool() const { return this->command_pool; };
-            const vk::Semaphore& get_present_semaphore() const { return this->present_semaphore; };
-            const vk::Semaphore& get_render_semaphore() const { return this->render_semaphore; };
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
-            const CommandBuffer& get_command_buffer() const { return this->command_buffer; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
@@ -69,8 +59,6 @@ namespace mag
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
-            vk::Fence upload_fence;
-            vk::Semaphore present_semaphore, render_semaphore;
             vk::CommandPool command_pool;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
@@ -83,7 +71,6 @@ namespace mag
             u32 queue_family_index = {};
             u32 present_image_count = {};
 
-            CommandBuffer command_buffer;
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
     };

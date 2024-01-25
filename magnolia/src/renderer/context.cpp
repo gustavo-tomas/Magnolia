@@ -1,7 +1,5 @@
 #include "renderer/context.hpp"
 
-#include <vulkan/vulkan_enums.hpp>
-
 #include "core/logger.hpp"
 
 namespace mag
@@ -38,7 +36,7 @@ namespace mag
             .setApplicationVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
             .setPEngineName(options.engine_name.c_str())
             .setEngineVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
-            .setApiVersion(VK_API_VERSION_1_3);
+            .setApiVersion(options.api_version);
 
         std::vector<const char*> extensions = options.instance_extensions;
         std::vector<const char*> window_extensions = options.window.get_instance_extensions();
@@ -217,11 +215,6 @@ namespace mag
         const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
         this->recreate_swapchain(size, this->surface_present_mode);
 
-        // Sync structures
-        this->upload_fence = this->device.createFence({});
-        this->present_semaphore = this->device.createSemaphore({});
-        this->render_semaphore = this->device.createSemaphore({});
-
         // Command pool
         vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                                                     queue_family_index);
@@ -236,7 +229,6 @@ namespace mag
 
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
-        this->command_buffer.initialize(command_pool, vk::CommandBufferLevel::ePrimary);
         this->frame_provider.initialize(options.frame_count);
 
         // @TODO
@@ -254,9 +246,6 @@ namespace mag
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 
         this->device.destroyCommandPool(this->command_pool);
-        this->device.destroyFence(this->upload_fence);
-        this->device.destroySemaphore(this->present_semaphore);
-        this->device.destroySemaphore(this->render_semaphore);
         this->device.destroySwapchainKHR(this->swapchain);
         this->device.destroy();
 

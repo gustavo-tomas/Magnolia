@@ -10,6 +10,8 @@ namespace mag
     struct Frame
     {
             vk::Fence render_fence;
+            vk::Semaphore render_semaphore;
+            vk::Semaphore present_semaphore;
             CommandBuffer command_buffer;
     };
 

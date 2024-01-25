@@ -48,16 +48,11 @@ namespace mag
         dst_offsets[1].y = dst_extent.height;
         dst_offsets[1].z = dst_extent.depth;
 
-        // const vk::ImageBlit blit_region(src_subresource, src_offsets, dst_subresource, dst_offsets);
 
-        // const vk::BlitImageInfoKHR blit_info(src, vk::ImageLayout::eTransferSrcOptimal, dst,
-        //                                       vk::ImageLayout::eTransferDstOptimal, blit_region,
-        //                                       vk::Filter::eLinear);
         const vk::ImageBlit blit_region(src_subresource, src_offsets, dst_subresource, dst_offsets);
+
         this->command_buffer.blitImage(src, vk::ImageLayout::eTransferSrcOptimal, dst,
                                        vk::ImageLayout::eTransferDstOptimal, blit_region, vk::Filter::eLinear);
-
-        // this->command_buffer.blitImage(blit_info);
     }
 
     void CommandBuffer::transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,

@@ -14,13 +14,21 @@ namespace mag
         {
             vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
             frames[i].render_fence = context.get_device().createFence(fence_create_info);
+            frames[i].render_semaphore = context.get_device().createSemaphore({});
+            frames[i].present_semaphore = context.get_device().createSemaphore({});
             frames[i].command_buffer.initialize(context.get_command_pool(), vk::CommandBufferLevel::ePrimary);
         }
     }
 
     void FrameProvider::shutdown()
     {
-        for (const auto& frame : frames) get_context().get_device().destroyFence(frame.render_fence);
+        auto& context = get_context();
+        for (const auto& frame : frames)
+        {
+            context.get_device().destroyFence(frame.render_fence);
+            context.get_device().destroySemaphore(frame.render_semaphore);
+            context.get_device().destroySemaphore(frame.present_semaphore);
+        }
     }
 
     b8 FrameProvider::begin_frame()
@@ -34,13 +42,10 @@ namespace mag
         VK_CHECK(device.waitForFences(curr_frame.render_fence, true, MAG_TIMEOUT));
         device.resetFences(curr_frame.render_fence);
 
-        // @TODO: double check this
-        context.get_command_buffer().get_handle().reset();
-
         try
         {
-            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT,
-                                                     context.get_present_semaphore(), nullptr, &swapchain_image_index);
+            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, curr_frame.present_semaphore,
+                                                     nullptr, &swapchain_image_index);
 
             if (result != vk::Result::eSuccess) throw result;
         }
@@ -56,7 +61,9 @@ namespace mag
             ASSERT(false, "Failed to acquire swapchain image");
         }
 
+        curr_frame.command_buffer.get_handle().reset();
         curr_frame.command_buffer.begin();
+
         return true;
     }
 
@@ -73,15 +80,15 @@ namespace mag
 
         vk::SubmitInfo submit;
         submit.setWaitDstStageMask(wait_stage)
-            .setWaitSemaphores(context.get_present_semaphore())
-            .setSignalSemaphores(context.get_render_semaphore())
+            .setWaitSemaphores(curr_frame.present_semaphore)
+            .setSignalSemaphores(curr_frame.render_semaphore)
             .setCommandBuffers(curr_frame.command_buffer.get_handle());
 
         context.get_graphics_queue().submit(submit, curr_frame.render_fence);
 
         vk::PresentInfoKHR present_info;
         present_info.setSwapchains(context.get_swapchain())
-            .setWaitSemaphores(context.get_render_semaphore())
+            .setWaitSemaphores(curr_frame.render_semaphore)
             .setImageIndices(this->swapchain_image_index);
 
         try
@@ -103,6 +110,7 @@ namespace mag
         }
 
         frame_number = (frame_number + 1) % frames.size();
+
         return true;
     }
 };  // namespace mag
