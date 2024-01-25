@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/math.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag

@@ -2,12 +2,6 @@
 
 #include "core/logger.hpp"
 
-#define VMA_IMPLEMENTATION
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#include "vk_mem_alloc.h"
-#pragma clang diagnostic pop
-
 namespace mag
 {
     void Image::initialize(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,

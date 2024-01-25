@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include "core/math.hpp"
 #include "renderer/image.hpp"
 #include "renderer/pipeline.hpp"
 

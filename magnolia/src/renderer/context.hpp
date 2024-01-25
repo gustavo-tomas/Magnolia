@@ -1,15 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "core/types.hpp"
 #include "core/window.hpp"
 #include "renderer/frame.hpp"
-#include "vk_mem_alloc.h"
-
-#define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
-#define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
-#define MAG_TIMEOUT 1'000'000'000                             /* 1 second in nanoseconds */
 
 namespace mag
 {
