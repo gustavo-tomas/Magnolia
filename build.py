@@ -4,12 +4,21 @@ import platform
 
 # ----- Build -----
 def build(system, configuration):
-  assert os.system(f"libs/premake/premake5_{system} gmake2 && cd build && make config={configuration} -j4") == 0
+  # @TODO: temporary
+  executable = f"premake5_{system}"
+  bar = "/"
+  if system == "windows":
+    executable += ".exe"
+    bar = "\\"
+  assert os.system(f"libs{bar}premake{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
   return
 
 # ----- Run -----
 def run(system, configuration):
-  assert os.system(f"build/{system}/{configuration}/magnolia") == 0
+  bar = "/"
+  if system == "windows":
+    bar = "\\"
+  assert os.system(f"build{bar}{system}{bar}magnolia_{configuration}") == 0
   return
 
 # ----- Clean -----

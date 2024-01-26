@@ -1,7 +1,11 @@
 #include "core/types.hpp"
 
 #define VMA_IMPLEMENTATION
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 #include "vk_mem_alloc.h"
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
