@@ -101,6 +101,21 @@ function exists(filePath)
     end
 end
 
+-- Execute a shell command
+function execute_command(command)
+    local file = io.popen(command)
+    local output = file:read("*a")
+    file:close()
+    return output
+end
+
+-- Get number of cores (linux only)
+function number_of_cores()
+    result = tonumber(execute_command("nproc"))
+    print("Number of cores:", result)
+    return result
+end
+
 -- vulkan --------------------------------------------------------------------------------------------------------------
 project "vulkan"
     kind "none"
@@ -143,7 +158,7 @@ project "fmt"
             os.execute("echo Skipping fmt compilation...")
         else
             os.execute("mkdir -p build/linux/fmt")
-            os.execute("cd build/linux/fmt && cmake -S ../../../libs/fmt -B . && make -j4")
+            os.execute("cd build/linux/fmt && cmake -S ../../../libs/fmt -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/fmt/libfmt.a build/linux/lib/libfmt.a")
         end
     end
@@ -170,7 +185,7 @@ project "sdl"
             os.execute("echo Skipping SDL2 compilation...")
         else
             os.execute("mkdir -p build/linux/sdl")
-            os.execute("cd build/linux/sdl && cmake -S ../../../libs/sdl -B . && make -j4")
+            os.execute("cd build/linux/sdl && cmake -S ../../../libs/sdl -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/sdl/libSDL2.a build/linux/lib/libsdl.a")
             os.execute("cp build/linux/sdl/libSDL2main.a build/linux/lib/libSDL2main.a")
         end
