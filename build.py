@@ -32,7 +32,7 @@ def format():
   return
 
 # ----- Shaders -----
-def shaders():
+def shaders(system):
   shader_dir = "assets/shaders"
   output_dir = "build/shaders"
 
@@ -47,7 +47,15 @@ def shaders():
       input_path = os.path.join(shader_dir, shader_file)
       output_path = os.path.join(output_dir, f"{shader_file}.spv")
       print(f"Compiling {input_path}")
-      os.system(f"glslc {input_path} -o {output_path}")
+
+      if system == "linux":
+        assert os.system(f"ext/linux/glslc {input_path} -o {output_path}") == 0
+      
+      # @TODO: add windows glslc
+      elif system == "windows":
+        print("MISSING WINDOWS GLSL.EXE")
+        assert false
+        assert os.system(f"ext\\windows\\glslc.exe {input_path} -o {output_path}") == 0
   return
 
 def main():
@@ -64,7 +72,7 @@ def main():
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
     build(system, configuration)
-    shaders()
+    shaders(system)
     run(system, configuration)
   
   elif len(sys.argv) < 3:

@@ -101,6 +101,28 @@ function exists(filePath)
     end
 end
 
+-- vulkan --------------------------------------------------------------------------------------------------------------
+project "vulkan"
+    kind "none"
+
+    if os.host() == "windows" then
+        -- @TODO
+        os.execute("MISSING WINDOWS VULKAN DLL")
+
+    elseif os.host() == "linux" then
+        if exists("build/linux/lib/libvulkan.so") and
+           exists("build/linux/lib/libvulkan.so.1") and
+           exists("build/linux/lib/libvulkan.so.1.3.268") then
+            
+            os.execute("echo Skipping vulkan copy commands...")
+        else
+            os.execute("mkdir -p build/linux/vulkan")
+            os.execute("cp ext/linux/libvulkan.so build/linux/lib/libvulkan.so")
+            os.execute("cp ext/linux/libvulkan.so.1 build/linux/lib/libvulkan.so.1")
+            os.execute("cp ext/linux/libvulkan.so.1.3.268 build/linux/lib/libvulkan.so.1.3.268")
+        end
+    end
+
 -- fmt -----------------------------------------------------------------------------------------------------------------
 project "fmt"
     kind "none"
