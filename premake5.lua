@@ -3,6 +3,7 @@ workspace "magnolia"
     architecture "x86_64"
     language "c++"
     cppdialect "c++20"
+    toolset "gcc"
     configurations { "debug", "profile", "release" }
     location "build"
     staticruntime "On"
@@ -10,17 +11,14 @@ workspace "magnolia"
     -- Output directories
     targetdir ("build/%{cfg.system}")
     objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
-    
-    filter "system:linux"
-        toolset "clang"
-        
-    filter "system:windows"
-        toolset "gcc"
-        
-        -- Engine --------------------------------------------------------------------------------------------------------------
+
+-- @TODO: consistent build folders/output
+
+-- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "consoleapp"
+    
     files
     {
         "%{prj.name}/src/**.hpp",
@@ -39,7 +37,12 @@ project "magnolia"
 
     links
     {
-        "fmt"--, "sdl"
+        "fmt"
+    }
+
+    libdirs
+    { 
+        "build/%{cfg.system}/lib"
     }
 
     filter "system:linux"
@@ -51,11 +54,6 @@ project "magnolia"
 
     filter "system:windows"
         systemversion "latest"
-
-        libdirs
-        { 
-            "build/%{cfg.system}/lib",
-        }
 
         defines
         {
@@ -92,41 +90,24 @@ project "magnolia"
 
 -- Libs ----------------------------------------------------------------------------------------------------------------
 
+-- Skip compilation if already compiled
+function exists(filePath)
+    local file = io.open(filePath, "r")
+    if file then
+        file:close()
+        return true
+    else
+        return false
+    end
+end
+
 -- fmt -----------------------------------------------------------------------------------------------------------------
 project "fmt"
-    filter "system:linux"
-        kind "staticlib"
-        files
-        {
-            "libs/fmt/include/fmt/**.h",
-            "libs/fmt/src/**.cc"
-        }
-        includedirs 
-        { 
-            "libs/fmt/include"
-        }
-        filter { "files:**.cc" }
-        compileas "module"
-        -- buildoptions
-        -- {
-        --     "-fmodules-ts"
-        -- }
-        
-    filter "system:windows"
-        kind "None"
-        targetextension ".a"
-        targetprefix "lib"
-        
-        function exists(filePath)
-            local file = io.open(filePath, "r")
-            if file then
-                file:close()
-                return true
-            else
-                return false
-            end
-        end
+    kind "none"
+    targetextension ".a"
+    targetprefix "lib"
 
+    if os.host() == "windows" then
         if exists("build/windows/lib/libfmt.a") then
             os.execute("echo Skipping fmt compilation...")
         else
@@ -134,31 +115,23 @@ project "fmt"
             os.execute("mkdir build\\windows\\lib 2>NUL")
             os.execute("copy libs\\fmt\\libfmt.a build\\windows\\lib\\libfmt.a")
         end
-        
-        -- sdl -----------------------------------------------------------------------------------------------------------------
-project "sdl"
--- @TODO: finish sdl configuration
-    filter "system:linux"
-        kind "staticlib"
-        os.execute("mkdir -p build/sdl")
-        os.execute("cd build/sdl && cmake -G \"MinGW Makefiles\" -S ../../libs/sdl -B . && make && cp libSDL2.a ../windows/debug/libSDL2.a")
-        os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j4 && cp libSDL2.a ../linux/debug/libsdl.a && cp libSDL2.a ../linux/profile/libsdl.a && cp libSDL2.a ../linux/release/libsdl.a")
-        -- os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j8 && cp libSDL2.a ../linux/debug/libsdl.a")
-        
-    filter "system:windows"
-        kind "None"
-        
-        function exists(filePath)
-            local file = io.open(filePath, "r")
-            if file then
-                file:close()
-                return true
-            else
-                return false
-            end
+
+    elseif os.host() == "linux" then
+        if exists("build/linux/lib/libfmt.a") then
+            os.execute("echo Skipping fmt compilation...")
+        else
+            os.execute("cd libs/fmt && cmake -S . -B . && make -j" .. "4") -- @TODO: get number of processors os.getenv("NUMBER_OF_PROCESSORS")
+            os.execute("mkdir -p build/linux/lib")
+            os.execute("cp libs/fmt/libfmt.a build/linux/lib/libfmt.a")
         end
+    end
         
-        if exists("build/windows/lib/libSDL2.a") and exists("build//windows/lib/libSDL2main.a") and exists("build/windows/lib/libSDL2.dll.a") and exists("build/windows/SDL2.dll") then
+-- sdl -----------------------------------------------------------------------------------------------------------------
+project "sdl"
+    kind "none"
+    
+    if os.host() == "windows" then
+        if exists("build/windows/lib/libSDL2.a") and exists("build/windows/lib/libSDL2main.a") and exists("build/windows/lib/libSDL2.dll.a") and exists("build/windows/SDL2.dll") then
             os.execute("echo Skipping SDL2 compilation...")
         else
             os.execute("mkdir build\\windows\\sdl")
@@ -169,4 +142,15 @@ project "sdl"
             os.execute("copy build\\windows\\sdl\\libSDL2.dll.a build\\windows\\lib\\libSDL2.dll.a")
             os.execute("copy build\\windows\\sdl\\SDL2.dll build\\windows\\SDL2.dll")
         end
+
+    elseif os.host() == "linux" then
+        if exists("build/linux/lib/libsdl.a") and exists("build/linux/lib/libSDL2main.a") then
+            os.execute("echo Skipping SDL2 compilation...")
+        else
+            os.execute("mkdir -p build/sdl")
+            os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j4")
+            os.execute("cp build/sdl/libSDL2.a build/linux/lib/libsdl.a")
+            os.execute("cp build/sdl/libSDL2main.a build/linux/lib/libSDL2main.a")
+        end
+    end
     
