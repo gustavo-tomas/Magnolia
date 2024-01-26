@@ -12,9 +12,9 @@ namespace mag
             str application_name = "Magnolia";
             str engine_name = "Magnolia";
 
-            std::vector<const char*> instance_extensions;
-            std::vector<const char*> device_extensions;
-            std::vector<const char*> validation_layers;
+            std::vector<const char*> instance_extensions = {};
+            std::vector<const char*> device_extensions = {};
+            std::vector<const char*> validation_layers = {};
 
             vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
             u32 api_version = VK_API_VERSION_1_1;

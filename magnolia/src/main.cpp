@@ -6,6 +6,10 @@ int WinMain(int argc, char* argv[])
 int main(int argc, char* argv[])
 #endif
 {
+    // Ignore unused parameter warning
+    (void)argc;
+    (void)argv;
+
     mag::Application application;
     application.initialize("Magnolia");
     application.run();
