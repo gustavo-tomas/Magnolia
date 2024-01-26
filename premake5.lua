@@ -120,9 +120,9 @@ project "fmt"
         if exists("build/linux/lib/libfmt.a") then
             os.execute("echo Skipping fmt compilation...")
         else
-            os.execute("cd libs/fmt && cmake -S . -B . && make -j" .. "4") -- @TODO: get number of processors os.getenv("NUMBER_OF_PROCESSORS")
-            os.execute("mkdir -p build/linux/lib")
-            os.execute("cp libs/fmt/libfmt.a build/linux/lib/libfmt.a")
+            os.execute("mkdir -p build/linux/fmt")
+            os.execute("cd build/linux/fmt && cmake -S ../../../libs/fmt -B . && make -j4")
+            os.execute("cp build/linux/fmt/libfmt.a build/linux/lib/libfmt.a")
         end
     end
         
@@ -147,10 +147,10 @@ project "sdl"
         if exists("build/linux/lib/libsdl.a") and exists("build/linux/lib/libSDL2main.a") then
             os.execute("echo Skipping SDL2 compilation...")
         else
-            os.execute("mkdir -p build/sdl")
-            os.execute("cd build/sdl && cmake -S ../../libs/sdl -B . && make -j4")
-            os.execute("cp build/sdl/libSDL2.a build/linux/lib/libsdl.a")
-            os.execute("cp build/sdl/libSDL2main.a build/linux/lib/libSDL2main.a")
+            os.execute("mkdir -p build/linux/sdl")
+            os.execute("cd build/linux/sdl && cmake -S ../../../libs/sdl -B . && make -j4")
+            os.execute("cp build/linux/sdl/libSDL2.a build/linux/lib/libsdl.a")
+            os.execute("cp build/linux/sdl/libSDL2main.a build/linux/lib/libSDL2main.a")
         end
     end
     

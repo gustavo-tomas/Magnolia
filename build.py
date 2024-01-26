@@ -4,7 +4,7 @@ import platform
 
 # ----- Build -----
 def build(system, configuration):
-  # @TODO: temporary
+  # @TODO: lord have mercy
   executable = f"premake5"
   bar = "/"
   if system == "windows":
