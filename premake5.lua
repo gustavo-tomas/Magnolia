@@ -116,7 +116,7 @@ project "vulkan"
             
             os.execute("echo Skipping vulkan copy commands...")
         else
-            os.execute("mkdir -p build/linux/vulkan")
+            os.execute("mkdir -p build/linux/lib")
             os.execute("cp ext/linux/libvulkan.so build/linux/lib/libvulkan.so")
             os.execute("cp ext/linux/libvulkan.so.1 build/linux/lib/libvulkan.so.1")
             os.execute("cp ext/linux/libvulkan.so.1.3.268 build/linux/lib/libvulkan.so.1.3.268")
