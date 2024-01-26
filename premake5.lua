@@ -9,7 +9,7 @@ workspace "magnolia"
     staticruntime "on"
     
     -- Output directories
-    targetdir ("build/%{cfg.system}")
+    targetdir ("build/%{cfg.system}/magnolia")
     objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
 
 -- @TODO: consistent build folders/output
