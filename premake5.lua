@@ -6,7 +6,7 @@ workspace "magnolia"
     toolset "gcc"
     configurations { "debug", "profile", "release" }
     location "build"
-    staticruntime "On"
+    staticruntime "on"
     
     -- Output directories
     targetdir ("build/%{cfg.system}")

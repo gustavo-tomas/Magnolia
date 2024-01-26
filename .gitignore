@@ -38,6 +38,9 @@
 bin/
 build/
 
+# Clang files
 compile_commands.json
 .cache
-!premake5_windows.exe
+
+# Exceptions
+!ext/**

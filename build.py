@@ -5,12 +5,12 @@ import platform
 # ----- Build -----
 def build(system, configuration):
   # @TODO: temporary
-  executable = f"premake5_{system}"
+  executable = f"premake5"
   bar = "/"
   if system == "windows":
     executable += ".exe"
     bar = "\\"
-  assert os.system(f"libs{bar}premake{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
+  assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
   return
 
 # ----- Run -----
