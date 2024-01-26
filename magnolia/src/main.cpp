@@ -1,7 +1,7 @@
 #include "core/application.hpp"
 
 #ifdef _WIN32
-int WinMain(int argc, char* argv[])
+int WinMain(int argc, char* argv[])  // @TODO: moises fix pls tyty
 #else
 int main(int argc, char* argv[])
 #endif
