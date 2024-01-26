@@ -1,5 +1,7 @@
 #include "renderer/render_pass.hpp"
 
+#include <filesystem>
+
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 
@@ -47,8 +49,21 @@ namespace mag
         vk::RenderPass render_pass = context.get_device().createRenderPass(render_pass_info);
 
         // Shaders
-        triangle_vs.initialize("build/shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
-        triangle_fs.initialize("build/shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+        std::filesystem::path cwd = std::filesystem::current_path();
+        str last_folder;
+        for (const auto& component : cwd) last_folder = component.string();
+
+        str shader_folder = "shaders/";
+        str system = "linux";
+
+// @TODO: clean this up (maybe use a filesystem class)
+#if defined(_WIN32)
+        system = "windows";
+#endif
+        if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
+
+        triangle_vs.initialize(shader_folder + "triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
+        triangle_fs.initialize(shader_folder + "triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 
         // Pipeline
         triangle_pipeline.initialize(render_pass, {}, {triangle_vs, triangle_fs}, size);

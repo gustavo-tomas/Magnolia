@@ -34,7 +34,7 @@ def format():
 # ----- Shaders -----
 def shaders(system):
   shader_dir = "assets/shaders"
-  output_dir = "build/shaders"
+  output_dir = f"build/{system}/shaders"
 
   print("----- Compiling shaders -----")
   os.system(f"mkdir -p {output_dir}")
