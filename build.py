@@ -14,13 +14,10 @@ def build(system, configuration):
   assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
   
   # Copy shared libs and executables to the same folder
-  src_dir = f"build{bar}{system}{bar}lib"
-  dst_dir = f"build{bar}{system}{bar}magnolia"
   shaders_src_dir = f"build{bar}{system}{bar}shaders"
   shaders_dst_dir = f"build{bar}{system}{bar}magnolia{bar}shaders"
   
   try:
-    shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
     shutil.copytree(shaders_src_dir, shaders_dst_dir, dirs_exist_ok=True)
   except Exception as e:
     print(f"Error copying folders: {e}")
