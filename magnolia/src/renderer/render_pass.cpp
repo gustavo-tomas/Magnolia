@@ -1,5 +1,7 @@
 #include "renderer/render_pass.hpp"
 
+#include <filesystem>
+
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 
@@ -9,13 +11,24 @@ namespace mag
     {
         auto& context = get_context();
 
+        // The frame is rendered into this image and then copied to the swapchain
+        vk::ImageUsageFlags draw_image_usage = {};
+        draw_image_usage |= vk::ImageUsageFlagBits::eTransferSrc;
+        draw_image_usage |= vk::ImageUsageFlagBits::eTransferDst;
+        draw_image_usage |= vk::ImageUsageFlagBits::eStorage;
+        draw_image_usage |= vk::ImageUsageFlagBits::eColorAttachment;
+        draw_image.initialize(vk::Extent3D(size.x, size.y, 1), vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
+                              vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+
+        this->draw_size = {size, 1};
+
         // Create attachments
         // -------------------------------------------------------------------------------------------------------------
         std::vector<vk::AttachmentDescription> attachments = {};
         std::vector<vk::SubpassDependency> dependencies = {};
 
         // Color
-        vk::AttachmentDescription description({}, context.get_swapchain_image_format(), context.get_msaa_samples(),
+        vk::AttachmentDescription description({}, draw_image.get_format(), context.get_msaa_samples(),
                                               vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
                                               vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
                                               vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
@@ -36,8 +49,21 @@ namespace mag
         vk::RenderPass render_pass = context.get_device().createRenderPass(render_pass_info);
 
         // Shaders
-        triangle_vs.initialize("build/shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
-        triangle_fs.initialize("build/shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+        std::filesystem::path cwd = std::filesystem::current_path();
+        str last_folder;
+        for (const auto& component : cwd) last_folder = component.string();
+
+        str shader_folder = "shaders/";
+        str system = "linux";
+
+// @TODO: clean this up (maybe use a filesystem class)
+#if defined(_WIN32)
+        system = "windows";
+#endif
+        if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
+
+        triangle_vs.initialize(shader_folder + "triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
+        triangle_fs.initialize(shader_folder + "triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 
         // Pipeline
         triangle_pipeline.initialize(render_pass, {}, {triangle_vs, triangle_fs}, size);
@@ -61,13 +87,19 @@ namespace mag
     {
         auto& context = get_context();
 
+        draw_image.shutdown();
         triangle_pipeline.shutdown();
         triangle_vs.shutdown();
         triangle_fs.shutdown();
 
-        for (const auto& frame_buffer : frame_buffers) context.get_device().destroyFramebuffer(frame_buffer);
-
+        context.get_device().destroyFramebuffer(frame_buffer);
         context.get_device().destroyRenderPass(pass.render_pass);
+    }
+
+    void StandardRenderPass::before_pass(CommandBuffer& command_buffer)
+    {
+        command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
+                                       vk::ImageLayout::eColorAttachmentOptimal);
     }
 
     void StandardRenderPass::render(const CommandBuffer& command_buffer)
@@ -84,36 +116,55 @@ namespace mag
         command_buffer.get_handle().draw(3, 1, 0, 0);
     }
 
+    void StandardRenderPass::after_pass(CommandBuffer& command_buffer)
+    {
+        auto& context = get_context();
+
+        // Transition the draw image and the swapchain image into their correct transfer layouts
+        command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
+                                       vk::ImageLayout::eTransferSrcOptimal);
+
+        command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+                                       vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+
+        // Copy from the draw image to the swapchain
+        command_buffer.copy_image_to_image(draw_image.get_image(), {draw_size.x, draw_size.y, draw_size.z},
+                                           context.get_swapchain_images()[context.get_swapchain_image_index()],
+                                           vk::Extent3D(context.get_surface_extent(), 1));
+
+        // Set swapchain image layout to Present so we can show it on the screen
+        command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+                                       vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR);
+    }
+
     void StandardRenderPass::on_resize(const uvec2& size)
     {
         auto& context = get_context();
+        context.get_device().waitIdle();
 
-        // Destroy old framebuffers
-        for (const auto& frame_buffer : frame_buffers) context.get_device().destroyFramebuffer(frame_buffer);
-        frame_buffers.clear();
+        draw_size.x = min(size.x, draw_image.get_extent().width) * render_scale;
+        draw_size.y = min(size.y, draw_image.get_extent().height) * render_scale;
+        draw_size.z = 1;
 
-        // Create framebuffers
-        const u64 image_count = context.get_swapchain_images().size();
-        this->frame_buffers.reserve(image_count);
-        for (u32 i = 0; i < image_count; i++)
-        {
-            std::vector<vk::ImageView> attachments = {};
-            attachments.push_back(context.get_swapchain_image_views()[i]);
+        // Destroy old framebuffer
+        context.get_device().destroyFramebuffer(frame_buffer);
 
-            vk::FramebufferCreateInfo fb_info({}, pass.render_pass, attachments, size.x, size.y, 1);
-            this->frame_buffers.push_back(context.get_device().createFramebuffer(fb_info));
-        }
+        // Create new framebuffer
+        std::vector<vk::ImageView> attachments = {};
+        attachments.push_back(draw_image.get_image_view());
+
+        vk::FramebufferCreateInfo fb_info({}, pass.render_pass, attachments, draw_size.x, draw_size.y, 1);
+        frame_buffer = context.get_device().createFramebuffer(fb_info);
 
         // Set new render area
-        pass.render_area = vk::Rect2D({}, {size.x, size.y});
+        pass.render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
+        pass.frame_buffer = frame_buffer;
     }
 
-    Pass& StandardRenderPass::get_pass()
+    void StandardRenderPass::set_render_scale(const f32 scale)
     {
-        auto& context = get_context();
-
-        // @TODO: figure a better way to resolve the framebuffer
-        this->pass.frame_buffer = this->frame_buffers[context.get_swapchain_image_index()];
-        return pass;
+        this->render_scale = clamp(scale, 0.01f, 1.0f);
+        this->on_resize({draw_image.get_extent().width, draw_image.get_extent().height});
+        LOG_INFO("Render scale: {0:.2f}", render_scale);
     }
 };  // namespace mag

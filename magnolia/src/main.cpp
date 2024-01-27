@@ -1,9 +1,16 @@
 #include "core/application.hpp"
 
-int main(int, char**)
+#ifdef _WIN32
+int WinMain(int argc, char* argv[])  // @TODO: moises fix pls tyty
+#else
+int main(int argc, char* argv[])
+#endif
 {
-    mag::Application application;
+    // Ignore unused parameter warning
+    (void)argc;
+    (void)argv;
 
+    mag::Application application;
     application.initialize("Magnolia");
     application.run();
     application.shutdown();

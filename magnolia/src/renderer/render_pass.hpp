@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include "core/math.hpp"
+#include "renderer/image.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
@@ -27,7 +25,10 @@ namespace mag
 
             virtual void initialize(const uvec2& /* size */){};
             virtual void shutdown(){};
+
+            virtual void before_pass(CommandBuffer& /* command_buffer */){};
             virtual void render(const CommandBuffer& /* command_buffer */){};
+            virtual void after_pass(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
     };
@@ -37,9 +38,14 @@ namespace mag
         public:
             virtual void initialize(const uvec2& size) override;
             virtual void shutdown() override;
-            virtual void render(const CommandBuffer& command_buffer) override;
 
-            virtual Pass& get_pass() override;
+            virtual void before_pass(CommandBuffer& command_buffer) override;
+            virtual void render(const CommandBuffer& command_buffer) override;
+            virtual void after_pass(CommandBuffer& command_buffer) override;
+
+            virtual Pass& get_pass() override { return pass; };
+            f32 get_render_scale() const { return render_scale; };
+            void set_render_scale(const f32 scale);
 
             void on_resize(const uvec2& size);
 
@@ -47,6 +53,9 @@ namespace mag
             Pass pass = {};
             Pipeline triangle_pipeline;
             Shader triangle_vs, triangle_fs;
-            std::vector<vk::Framebuffer> frame_buffers;
+            Image draw_image;
+            uvec3 draw_size;
+            f32 render_scale = 1.0;
+            vk::Framebuffer frame_buffer;
     };
 };  // namespace mag

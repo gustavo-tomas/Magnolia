@@ -21,7 +21,7 @@ namespace mag
         this->context.initialize(context_options);
         LOG_SUCCESS("Context initialized");
 
-        this->render_pass.initialize(window.get_size());
+        this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
         LOG_SUCCESS("RenderPass initialized");
     }
 
@@ -44,14 +44,24 @@ namespace mag
         Frame& curr_frame = context.get_curr_frame();
         Pass& pass = render_pass.get_pass();
 
-        this->context.begin_frame();
-        curr_frame.command_buffer.begin_pass(pass);
+        if (!this->context.begin_frame()) return;
+
+        // @TODO: testing
+        if (window->is_key_down(SDLK_SPACE))
+            render_pass.set_render_scale(render_pass.get_render_scale() + 0.01f);
+
+        else if (window->is_key_down(SDLK_LCTRL))
+            render_pass.set_render_scale(render_pass.get_render_scale() - 0.01f);
+        // @TODO: testing
 
         // Draw calls
+        render_pass.before_pass(curr_frame.command_buffer);
+        curr_frame.command_buffer.begin_pass(pass);
         render_pass.render(curr_frame.command_buffer);
-
         curr_frame.command_buffer.end_pass(pass);
-        this->context.end_frame();
+        render_pass.after_pass(curr_frame.command_buffer);
+
+        if (!this->context.end_frame()) return;
     }
 
     void Renderer::on_resize(const uvec2& size)

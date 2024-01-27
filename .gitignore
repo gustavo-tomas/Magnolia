@@ -38,5 +38,9 @@
 bin/
 build/
 
+# Clang files
 compile_commands.json
 .cache
+
+# Exceptions
+!ext/**

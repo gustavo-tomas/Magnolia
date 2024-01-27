@@ -31,4 +31,44 @@ namespace mag
     {
         if (pass.render_pass) this->command_buffer.endRenderPass();
     }
+
+    void CommandBuffer::copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
+                                            const vk::Extent3D& dst_extent)
+    {
+        const vk::ImageSubresourceLayers src_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
+        const vk::ImageSubresourceLayers dst_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
+
+        std::array<vk::Offset3D, 2> src_offsets = {};
+        src_offsets[1].x = src_extent.width;
+        src_offsets[1].y = src_extent.height;
+        src_offsets[1].z = src_extent.depth;
+
+        std::array<vk::Offset3D, 2> dst_offsets = {};
+        dst_offsets[1].x = dst_extent.width;
+        dst_offsets[1].y = dst_extent.height;
+        dst_offsets[1].z = dst_extent.depth;
+
+        const vk::ImageBlit blit_region(src_subresource, src_offsets, dst_subresource, dst_offsets);
+
+        this->command_buffer.blitImage(src, vk::ImageLayout::eTransferSrcOptimal, dst,
+                                       vk::ImageLayout::eTransferDstOptimal, blit_region, vk::Filter::eLinear);
+    }
+
+    void CommandBuffer::transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,
+                                        const vk::ImageLayout new_layout)
+    {
+        vk::ImageMemoryBarrier image_barrier;
+        image_barrier.setOldLayout(curr_layout)
+            .setNewLayout(new_layout)
+            .setImage(image)
+            .setSrcAccessMask(vk::AccessFlagBits::eMemoryWrite)
+            .setDstAccessMask(vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead)
+            .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
+            .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
+            .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});
+
+        this->get_handle().pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
+                                           vk::PipelineStageFlagBits::eAllCommands, {}, nullptr, nullptr,
+                                           image_barrier);
+    }
 };  // namespace mag

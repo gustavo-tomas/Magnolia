@@ -1,15 +1,34 @@
 import sys
 import os
 import platform
+import shutil
 
 # ----- Build -----
 def build(system, configuration):
-  assert os.system(f"libs/premake/premake5_{system} gmake2 && cd build && make config={configuration} -j4") == 0
+  # @TODO: lord have mercy
+  executable = f"premake5"
+  bar = "/"
+  if system == "windows":
+    executable += ".exe"
+    bar = "\\"
+  assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
+  
+  # Copy shared libs and executables to the same folder
+  shaders_src_dir = f"build{bar}{system}{bar}shaders"
+  shaders_dst_dir = f"build{bar}{system}{bar}magnolia{bar}shaders"
+  
+  try:
+    shutil.copytree(shaders_src_dir, shaders_dst_dir, dirs_exist_ok=True)
+  except Exception as e:
+    print(f"Error copying folders: {e}")
   return
 
 # ----- Run -----
 def run(system, configuration):
-  assert os.system(f"build/{system}/{configuration}/magnolia") == 0
+  bar = "/"
+  if system == "windows":
+    bar = "\\"
+  assert os.system(f"build{bar}{system}{bar}magnolia{bar}magnolia_{configuration}") == 0
   return
 
 # ----- Clean -----
@@ -23,9 +42,12 @@ def format():
   return
 
 # ----- Shaders -----
-def shaders():
-  shader_dir = "assets/shaders"
-  output_dir = "build/shaders"
+def shaders(system):
+  bar = "/"
+  if system == "windows":
+    bar = "\\"
+  shader_dir = f"assets{bar}shaders"
+  output_dir = f"build{bar}{system}{bar}shaders"
 
   print("----- Compiling shaders -----")
   os.system(f"mkdir -p {output_dir}")
@@ -35,10 +57,15 @@ def shaders():
 
   # Compile shaders
   for shader_file in shader_files:
-      input_path = os.path.join(shader_dir, shader_file)
-      output_path = os.path.join(output_dir, f"{shader_file}.spv")
-      print(f"Compiling {input_path}")
-      os.system(f"glslc {input_path} -o {output_path}")
+    input_path = os.path.join(shader_dir, shader_file)
+    output_path = os.path.join(output_dir, f"{shader_file}.spv")
+    print(f"Compiling {input_path}")
+
+    if system == "linux":
+      assert os.system(f"ext/linux/glslc {input_path} -o {output_path}") == 0
+    
+    elif system == "windows":
+      assert os.system(f"ext\\windows\\glslc.exe {input_path} -o {output_path}") == 0
   return
 
 def main():
@@ -54,8 +81,8 @@ def main():
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
+    shaders(system)
     build(system, configuration)
-    shaders()
     run(system, configuration)
   
   elif len(sys.argv) < 3:
