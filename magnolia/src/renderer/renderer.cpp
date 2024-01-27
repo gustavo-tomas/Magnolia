@@ -14,7 +14,7 @@ namespace mag
         context_options.engine_name = "Magnolia";
 
         // Validation only on debug
-#if !defined(MAG_RELEASE)
+#if defined(MAG_DEBUG)
         context_options.validation_layers = {"VK_LAYER_KHRONOS_validation"};
 #endif
 
