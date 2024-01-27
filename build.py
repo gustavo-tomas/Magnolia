@@ -43,8 +43,11 @@ def format():
 
 # ----- Shaders -----
 def shaders(system):
-  shader_dir = "assets/shaders"
-  output_dir = f"build/{system}/shaders"
+  bar = "/"
+  if system == "windows":
+    bar = "\\"
+  shader_dir = f"assets{bar}shaders"
+  output_dir = f"build{bar}{system}{bar}shaders"
 
   print("----- Compiling shaders -----")
   os.system(f"mkdir -p {output_dir}")
@@ -54,18 +57,15 @@ def shaders(system):
 
   # Compile shaders
   for shader_file in shader_files:
-      input_path = os.path.join(shader_dir, shader_file)
-      output_path = os.path.join(output_dir, f"{shader_file}.spv")
-      print(f"Compiling {input_path}")
+    input_path = os.path.join(shader_dir, shader_file)
+    output_path = os.path.join(output_dir, f"{shader_file}.spv")
+    print(f"Compiling {input_path}")
 
-      if system == "linux":
-        assert os.system(f"ext/linux/glslc {input_path} -o {output_path}") == 0
-      
-      # @TODO: add windows glslc
-      elif system == "windows":
-        print("MISSING WINDOWS GLSL.EXE")
-        assert false
-        assert os.system(f"ext\\windows\\glslc.exe {input_path} -o {output_path}") == 0
+    if system == "linux":
+      assert os.system(f"ext/linux/glslc {input_path} -o {output_path}") == 0
+    
+    elif system == "windows":
+      assert os.system(f"ext\\windows\\glslc.exe {input_path} -o {output_path}") == 0
   return
 
 def main():
@@ -81,8 +81,8 @@ def main():
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
-    build(system, configuration)
     shaders(system)
+    build(system, configuration)
     run(system, configuration)
   
   elif len(sys.argv) < 3:

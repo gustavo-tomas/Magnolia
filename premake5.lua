@@ -4,7 +4,7 @@ workspace "magnolia"
     language "c++"
     cppdialect "c++20"
     toolset "gcc"
-    configurations { "debug", "profile", "release" }
+    configurations {"debug", "profile", "release"}
     location "build"
     staticruntime "on"
     
@@ -121,8 +121,12 @@ project "vulkan"
     kind "none"
 
     if os.host() == "windows" then
-        -- @TODO
-        os.execute("MISSING WINDOWS VULKAN DLL")
+        if exists("build/windows/magnolia/vulkan-1.dll") then
+            os.execute("echo Skipping vulkan copy commands...")
+        else
+            os.execute("mkdir build\\windows\\magnolia 2>NUL")
+            os.execute("cp ext/windows/vulkan-1.dll build/windows/magnolia/vulkan-1.dll")
+        end
 
     elseif os.host() == "linux" then
         if exists("build/linux/magnolia/libvulkan.so") and
@@ -149,9 +153,10 @@ project "fmt"
         if exists("build/windows/lib/libfmt.a") then
             os.execute("echo Skipping fmt compilation...")
         else
-            os.execute("cd libs\\fmt && cmake -G \"MinGW Makefiles\" -S . -B . && make -j" .. os.getenv("NUMBER_OF_PROCESSORS"))
+            os.execute("mkdir build\\windows\\fmt 2>NUL")
+            os.execute("cd build\\windows\\fmt && cmake -G \"MinGW Makefiles\" ../../../libs/fmt -B . && make -j" .. os.getenv("NUMBER_OF_PROCESSORS"))
             os.execute("mkdir build\\windows\\lib 2>NUL")
-            os.execute("copy libs\\fmt\\libfmt.a build\\windows\\lib\\libfmt.a")
+            os.execute("copy build\\windows\\fmt\\libfmt.a build\\windows\\lib\\libfmt.a")
         end
 
     elseif os.host() == "linux" then
@@ -169,16 +174,17 @@ project "sdl"
     kind "none"
     
     if os.host() == "windows" then
-        if exists("build/windows/lib/libSDL2.a") and exists("build/windows/lib/libSDL2main.a") and exists("build/windows/lib/libSDL2.dll.a") and exists("build/windows/SDL2.dll") then
+        if exists("build/windows/lib/libSDL2.a") and exists("build/windows/lib/libSDL2main.a") and exists("build/windows/lib/libSDL2.dll.a") and exists("build/windows/magnolia/SDL2.dll") then
             os.execute("echo Skipping SDL2 compilation...")
         else
-            os.execute("mkdir build\\windows\\sdl")
+            os.execute("mkdir build\\windows\\magnolia 2>NUL")
+            os.execute("mkdir build\\windows\\sdl 2>NUL")
             os.execute("cd build\\windows\\sdl && cmake -G \"MinGW Makefiles\" -S ../../../libs/sdl -B . && make -j" .. os.getenv("NUMBER_OF_PROCESSORS"))
             os.execute("mkdir build\\windows\\lib 2>NUL")
             os.execute("copy build\\windows\\sdl\\libSDL2.a build\\windows\\lib\\libSDL2.a")
             os.execute("copy build\\windows\\sdl\\libSDL2main.a build\\windows\\lib\\libSDL2main.a")
             os.execute("copy build\\windows\\sdl\\libSDL2.dll.a build\\windows\\lib\\libSDL2.dll.a")
-            os.execute("copy build\\windows\\sdl\\SDL2.dll build\\windows\\SDL2.dll")
+            os.execute("copy build\\windows\\sdl\\SDL2.dll build\\windows\\magnolia\\SDL2.dll")
         end
 
     elseif os.host() == "linux" then
