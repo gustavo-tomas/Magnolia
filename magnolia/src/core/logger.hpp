@@ -47,10 +47,16 @@ namespace mag
                         break;
                 }
 
+                fmt::print(fmt::emphasis::bold | fg(fmt::color::violet), "[{0}]", timestamp());
+
                 fmt::print(fmt::emphasis::bold | fg(fmt::color::royal_blue), "[{0}:{1}]: ", location.file_name(),
                            location.line());
+
                 fmt::print(fmt::emphasis::bold | fg(color), format + "\n", args...);
             }
+
+        private:
+            static str const timestamp();
     };
 };  // namespace mag
 
