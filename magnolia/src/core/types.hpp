@@ -1,23 +1,12 @@
 #pragma once
 
-#include <SDL.h>
-#include <SDL_vulkan.h>
-#include <fmt/color.h>
-#include <fmt/core.h>
-
 #include <cstdint>
-#include <fstream>
-#include <functional>
 #include <glm/glm.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
-#include <source_location>
 #include <string>
-#include <vulkan/vulkan.hpp>
-
-#include "vk_mem_alloc.h"
 
 namespace mag
 {
@@ -76,10 +65,6 @@ namespace mag
 // Common macros
 #define VECSIZE(vec) static_cast<u32>(vec.size())
 #define MAG_TIMEOUT 1'000'000'000 /* 1 second in nanoseconds */
-
-// Graphics macros
-#define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
-#define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
 
     // Math definitions
     namespace math

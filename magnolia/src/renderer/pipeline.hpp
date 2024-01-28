@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+
 #include "renderer/shader.hpp"
 
 namespace mag

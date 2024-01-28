@@ -1,5 +1,7 @@
 #include "renderer/shader.hpp"
 
+#include <fstream>
+
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 
