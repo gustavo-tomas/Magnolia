@@ -252,6 +252,8 @@ namespace mag
     {
         this->device.waitIdle();
 
+        vmaDestroyAllocator(this->allocator);
+
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
