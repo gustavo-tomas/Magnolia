@@ -226,6 +226,9 @@ namespace mag
         const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
         this->recreate_swapchain(size, this->surface_present_mode);
 
+        // Fence
+        this->upload_fence = device.createFence({});
+
         // Command pool
         vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                                                     queue_family_index);
@@ -252,10 +255,13 @@ namespace mag
     {
         this->device.waitIdle();
 
+        vmaDestroyAllocator(this->allocator);
+
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 
+        this->device.destroyFence(this->upload_fence);
         this->device.destroyCommandPool(this->command_pool);
         this->device.destroySwapchainKHR(this->swapchain);
         this->device.destroy();
@@ -308,4 +314,22 @@ namespace mag
     b8 Context::begin_frame() { return this->frame_provider.begin_frame(); }
 
     b8 Context::end_frame() { return this->frame_provider.end_frame(); }
+
+    void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
+    {
+        // @TODO: prolly should use another command buffer instead of the frame command buffer
+        auto& cmd = this->get_curr_frame().command_buffer;
+
+        cmd.begin();
+        function(cmd);  // execute the function
+        cmd.end();
+
+        vk::SubmitInfo submit;
+        submit.setCommandBuffers(cmd.get_handle());
+
+        this->graphics_queue.submit(submit, this->upload_fence);
+        VK_CHECK(this->device.waitForFences(this->upload_fence, true, MAG_TIMEOUT));
+        this->device.resetFences(this->upload_fence);
+        this->device.resetCommandPool(command_pool);
+    }
 };  // namespace mag

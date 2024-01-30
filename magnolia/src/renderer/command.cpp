@@ -32,6 +32,24 @@ namespace mag
         if (pass.render_pass) this->command_buffer.endRenderPass();
     }
 
+    void CommandBuffer::draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
+                             const u32 first_instance)
+    {
+        this->command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
+    }
+
+    void CommandBuffer::bind_vertex_buffer(const Buffer& buffer, const u64 offset)
+    {
+        this->command_buffer.bindVertexBuffers(0, buffer.get_buffer(), offset);
+    }
+
+    void CommandBuffer::copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
+                                    const u64 dst_offset)
+    {
+        vk::BufferCopy copy(src_offset, dst_offset, size_bytes);
+        this->command_buffer.copyBuffer(src.get_buffer(), dst.get_buffer(), copy);
+    }
+
     void CommandBuffer::copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
                                             const vk::Extent3D& dst_extent)
     {
