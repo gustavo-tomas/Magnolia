@@ -13,16 +13,16 @@ namespace mag
     class Buffer
     {
         public:
-            void create(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
-                        const VmaAllocationCreateFlags memory_flags, const VmaAllocator allocator);
-            void destroy();
+            void initialize(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
+                            const VmaAllocationCreateFlags memory_flags, const VmaAllocator allocator);
+            void shutdown();
 
             void* map_memory();
             void unmap_memory();
             void copy(const void* data, const u64 size_bytes);
 
-            const vk::Buffer& get_buffer() const;
-            const VmaAllocation& get_allocation() const;
+            const vk::Buffer& get_buffer() const { return buffer; };
+            const VmaAllocation& get_allocation() const { return allocation; };
 
         private:
             vk::Buffer buffer = {};
@@ -35,28 +35,12 @@ namespace mag
     class VertexBuffer
     {
         public:
-            void create(const void* vertices, const u64 size_bytes, const VmaAllocator allocator);
-            void destroy();
+            void initialize(const void* vertices, const u64 size_bytes, const VmaAllocator allocator);
+            void shutdown();
 
-            // !TODO: lol
-            const Buffer& get_buffer() const;
-            const Buffer& get_staging_buffer() const;
+            const Buffer& get_buffer() const { return gpu_buffer; };
 
         private:
-            Buffer buffer, staging_buffer;
-    };
-
-    class IndexBuffer
-    {
-        public:
-            void create(const void* indices, const u64 size_bytes, const VmaAllocator allocator);
-            void destroy();
-
-            // !TODO: lol
-            const Buffer& get_buffer() const;
-            const Buffer& get_staging_buffer() const;
-
-        private:
-            Buffer buffer, staging_buffer;
+            Buffer gpu_buffer;
     };
 };  // namespace mag

@@ -12,13 +12,16 @@ namespace mag
         auto& context = get_context();
 
         // The frame is rendered into this image and then copied to the swapchain
-        vk::ImageUsageFlags draw_image_usage = {};
-        draw_image_usage |= vk::ImageUsageFlagBits::eTransferSrc;
-        draw_image_usage |= vk::ImageUsageFlagBits::eTransferDst;
-        draw_image_usage |= vk::ImageUsageFlagBits::eStorage;
-        draw_image_usage |= vk::ImageUsageFlagBits::eColorAttachment;
-        draw_image.initialize(vk::Extent3D(size.x, size.y, 1), vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
+        vk::ImageUsageFlags draw_image_usage = vk::ImageUsageFlagBits::eTransferSrc |
+                                               vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eStorage |
+                                               vk::ImageUsageFlagBits::eColorAttachment;
+
+        draw_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
                               vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+
+        depth_image.initialize({size.x, size.y, 1}, vk::Format::eD32Sfloat, /* !TODO: hardcoded depth format */
+                               vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
+                               context.get_msaa_samples());
 
         this->draw_size = {size, 1};
 
@@ -28,22 +31,40 @@ namespace mag
         std::vector<vk::SubpassDependency> dependencies = {};
 
         // Color
-        vk::AttachmentDescription description({}, draw_image.get_format(), context.get_msaa_samples(),
-                                              vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                                              vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
-                                              vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
+        vk::AttachmentDescription color_description(
+            {}, draw_image.get_format(), context.get_msaa_samples(), vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare,
+            vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
 
-        vk::SubpassDependency subpass_dependency(
+        vk::SubpassDependency color_subpass_dependency(
             vk::SubpassExternal, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite);
 
-        vk::AttachmentReference reference(0, vk::ImageLayout::eColorAttachmentOptimal);
+        vk::AttachmentReference color_reference(0, vk::ImageLayout::eColorAttachmentOptimal);
 
-        attachments.push_back(description);
-        dependencies.push_back(subpass_dependency);
+        attachments.push_back(color_description);
+        dependencies.push_back(color_subpass_dependency);
+
+        // Depth
+        vk::AttachmentDescription depth_description = vk::AttachmentDescription(
+            {}, depth_image.get_format(), context.get_msaa_samples(), vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eStore, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare,
+            vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+        vk::SubpassDependency depth_subpass_dependency = vk::SubpassDependency(
+            vk::SubpassExternal, 0,
+            vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests,
+            vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests, {},
+            vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+
+        vk::AttachmentReference depth_reference =
+            vk::AttachmentReference(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+        attachments.push_back(depth_description);
+        dependencies.push_back(depth_subpass_dependency);
 
         // Render pass
-        vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics, {}, reference);
+        vk::SubpassDescription subpass({}, vk::PipelineBindPoint::eGraphics, {}, color_reference, {}, &depth_reference);
 
         vk::RenderPassCreateInfo render_pass_info({}, attachments, subpass, dependencies);
         vk::RenderPass render_pass = context.get_device().createRenderPass(render_pass_info);
@@ -68,6 +89,19 @@ namespace mag
         // Pipeline
         triangle_pipeline.initialize(render_pass, {}, {triangle_vs, triangle_fs}, size);
 
+        // Create a triangle mesh
+        triangle.vertices.resize(3);
+        triangle.vertices[0].position = {0.5f, 0.5f, 0.0f};
+        triangle.vertices[1].position = {-0.5f, 0.5f, 0.0f};
+        triangle.vertices[2].position = {0.0f, -0.5f, 0.0f};
+
+        triangle.vertices[0].normal = {1.0f, 0.0f, 0.0f};
+        triangle.vertices[1].normal = {0.0f, 1.0f, 0.0f};
+        triangle.vertices[2].normal = {0.0f, 0.0f, 1.0f};
+
+        triangle.vbo.initialize(triangle.vertices.data(), VECSIZE(triangle.vertices) * sizeof(Vertex),
+                                context.get_allocator());
+
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
         pass.pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
@@ -88,6 +122,8 @@ namespace mag
         auto& context = get_context();
 
         draw_image.shutdown();
+        depth_image.shutdown();
+        triangle.vbo.shutdown();
         triangle_pipeline.shutdown();
         triangle_vs.shutdown();
         triangle_fs.shutdown();
@@ -102,7 +138,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(const CommandBuffer& command_buffer)
+    void StandardRenderPass::render(CommandBuffer& command_buffer)
     {
         const auto offset = pass.render_area.offset;
         const auto extent = pass.render_area.extent;
@@ -113,7 +149,9 @@ namespace mag
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
         command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
-        command_buffer.get_handle().draw(3, 1, 0, 0);
+
+        command_buffer.bind_vertex_buffer(triangle.vbo.get_buffer(), 0);
+        command_buffer.draw(VECSIZE(triangle.vertices), 1, 0, 0);
     }
 
     void StandardRenderPass::after_pass(CommandBuffer& command_buffer)
@@ -152,6 +190,7 @@ namespace mag
         // Create new framebuffer
         std::vector<vk::ImageView> attachments = {};
         attachments.push_back(draw_image.get_image_view());
+        attachments.push_back(depth_image.get_image_view());
 
         vk::FramebufferCreateInfo fb_info({}, pass.render_pass, attachments, draw_size.x, draw_size.y, 1);
         frame_buffer = context.get_device().createFramebuffer(fb_info);

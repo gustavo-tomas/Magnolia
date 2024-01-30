@@ -1,6 +1,7 @@
 #pragma once
 
 #include "renderer/image.hpp"
+#include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
@@ -27,7 +28,7 @@ namespace mag
             virtual void shutdown(){};
 
             virtual void before_pass(CommandBuffer& /* command_buffer */){};
-            virtual void render(const CommandBuffer& /* command_buffer */){};
+            virtual void render(CommandBuffer& /* command_buffer */){};
             virtual void after_pass(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
@@ -40,7 +41,7 @@ namespace mag
             virtual void shutdown() override;
 
             virtual void before_pass(CommandBuffer& command_buffer) override;
-            virtual void render(const CommandBuffer& command_buffer) override;
+            virtual void render(CommandBuffer& command_buffer) override;
             virtual void after_pass(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
@@ -53,9 +54,12 @@ namespace mag
             Pass pass = {};
             Pipeline triangle_pipeline;
             Shader triangle_vs, triangle_fs;
-            Image draw_image;
+            Image draw_image, depth_image;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vk::Framebuffer frame_buffer;
+
+            // @TODO: temporary
+            Mesh triangle;
     };
 };  // namespace mag

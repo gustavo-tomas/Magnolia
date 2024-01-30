@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -21,7 +22,10 @@ namespace mag
             shader_stages.push_back(create_info);
         }
 
-        const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, {});
+        const VertexInputDescription vertex_description = Vertex::get_vertex_description();
+
+        const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, vertex_description.bindings,
+                                                                                    vertex_description.attributes);
 
         const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
             {}, vk::PrimitiveTopology::eTriangleList, false);

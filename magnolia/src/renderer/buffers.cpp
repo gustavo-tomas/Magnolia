@@ -7,8 +7,8 @@ namespace mag
 {
     // Buffer
     // -----------------------------------------------------------------------------------------------------------------
-    void Buffer::create(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
-                        const VmaAllocationCreateFlags memory_flags, const VmaAllocator allocator)
+    void Buffer::initialize(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
+                            const VmaAllocationCreateFlags memory_flags, const VmaAllocator allocator)
     {
         this->allocator = allocator;
 
@@ -27,7 +27,7 @@ namespace mag
         this->buffer = vk::Buffer(vk_buffer);
     }
 
-    void Buffer::destroy() { vmaDestroyBuffer(allocator, buffer, allocation); }
+    void Buffer::shutdown() { vmaDestroyBuffer(allocator, buffer, allocation); }
 
     void* Buffer::map_memory()
     {
@@ -44,53 +44,28 @@ namespace mag
         this->unmap_memory();
     }
 
-    const vk::Buffer& Buffer::get_buffer() const { return buffer; }
-
-    const VmaAllocation& Buffer::get_allocation() const { return allocation; }
-
     // VertexBuffer
     // -----------------------------------------------------------------------------------------------------------------
-    void VertexBuffer::create(const void* vertices, const u64 size_bytes, const VmaAllocator allocator)
+    void VertexBuffer::initialize(const void* vertices, const u64 size_bytes, const VmaAllocator allocator)
     {
-        buffer.create(size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                      VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0, allocator);
+        auto& context = get_context();
 
-        staging_buffer.create(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-                              VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, allocator);
+        // Create staging buffer to send data to the gpu
+        Buffer staging_buffer;
+        staging_buffer.initialize(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                                  VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, allocator);
 
         staging_buffer.copy(vertices, size_bytes);
+
+        gpu_buffer.initialize(size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                              VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0, allocator);
+
+        // Copy data from the staging buffer to the gpu buffer
+        context.submit_commands_immediate([=, this](CommandBuffer cmd)
+                                          { cmd.copy_buffer(staging_buffer, gpu_buffer, size_bytes, 0, 0); });
+
+        staging_buffer.shutdown();
     }
 
-    void VertexBuffer::destroy()
-    {
-        buffer.destroy();
-        staging_buffer.destroy();
-    }
-
-    const Buffer& VertexBuffer::get_buffer() const { return buffer; }
-
-    const Buffer& VertexBuffer::get_staging_buffer() const { return staging_buffer; }
-
-    // IndexBuffer
-    // -----------------------------------------------------------------------------------------------------------------
-    void IndexBuffer::create(const void* indices, const u64 size_bytes, const VmaAllocator allocator)
-    {
-        buffer.create(size_bytes, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                      VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0, allocator);
-
-        staging_buffer.create(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-                              VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, allocator);
-
-        staging_buffer.copy(indices, size_bytes);
-    }
-
-    void IndexBuffer::destroy()
-    {
-        buffer.destroy();
-        staging_buffer.destroy();
-    }
-
-    const Buffer& IndexBuffer::get_buffer() const { return buffer; }
-
-    const Buffer& IndexBuffer::get_staging_buffer() const { return staging_buffer; }
+    void VertexBuffer::shutdown() { gpu_buffer.shutdown(); }
 };  // namespace mag

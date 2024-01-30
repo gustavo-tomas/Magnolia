@@ -37,6 +37,7 @@ namespace mag
             void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
             b8 begin_frame();
             b8 end_frame();
+            void submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function);
 
             const vk::Instance& get_instance() const { return this->instance; };
             const vk::Device& get_device() const { return this->device; };
@@ -48,6 +49,7 @@ namespace mag
             const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
             const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
             const vk::CommandPool& get_command_pool() const { return this->command_pool; };
+            const vk::Fence& get_upload_fence() const { return this->upload_fence; };
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
@@ -67,6 +69,7 @@ namespace mag
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
             vk::CommandPool command_pool;
+            vk::Fence upload_fence;
             vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::SampleCountFlagBits msaa_samples;
