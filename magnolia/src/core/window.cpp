@@ -124,7 +124,10 @@ namespace mag
     {
         // Oh SDL...
         if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0)
+        {
             LOG_ERROR("Failed to set mouse mode: {0}", SDL_GetError());
+        }
+
         ignore_mouse_motion_events = true;
     }
 
@@ -138,7 +141,9 @@ namespace mag
     void Window::set_fullscreen(const u32 flags)
     {
         if (SDL_SetWindowFullscreen(this->handle, flags) != 0)
+        {
             LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
+        }
     }
 
     ivec2 Window::get_mouse_position() const
