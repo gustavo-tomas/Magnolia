@@ -13,3 +13,6 @@
 [submodule "libs/vma"]
 	path = libs/vma
 	url = https://github.com/gustavo-tomas/VulkanMemoryAllocator.git
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/gustavo-tomas/imgui.git

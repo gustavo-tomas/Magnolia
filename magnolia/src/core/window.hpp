@@ -46,6 +46,7 @@ namespace mag
 
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
+            SDL_Window* get_handle() const { return handle; };
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
