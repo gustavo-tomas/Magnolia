@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/window.hpp"
+#include "editor/editor.hpp"
 #include "renderer/renderer.hpp"
 
 namespace mag
@@ -16,5 +17,6 @@ namespace mag
         private:
             Window window;
             Renderer renderer;
+            Editor editor;
     };
 };  // namespace mag

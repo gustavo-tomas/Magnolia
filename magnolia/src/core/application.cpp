@@ -14,9 +14,13 @@ namespace mag
         window.initialize(window_options);
         LOG_SUCCESS("Window initialized");
 
-        // Create the rendeerer
+        // Create the renderer
         renderer.initialize(window);
         LOG_SUCCESS("Renderer initialized");
+
+        // Create the editor
+        editor.initialize(window);
+        LOG_SUCCESS("Editor initialized");
 
         // Set window callbacks
         window.on_resize(
@@ -34,6 +38,9 @@ namespace mag
 
     void Application::shutdown()
     {
+        editor.shutdown();
+        LOG_SUCCESS("Editor destroyed");
+
         renderer.shutdown();
         LOG_SUCCESS("Renderer destroyed");
 
@@ -75,6 +82,7 @@ namespace mag
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
             renderer.update();
+            editor.update();
         }
     }
 };  // namespace mag
