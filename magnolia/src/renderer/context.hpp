@@ -56,6 +56,7 @@ namespace mag
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
+            u32 get_queue_family_index() const { return this->queue_family_index; };
             u32 get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); };
 
         private:
