@@ -6,6 +6,7 @@
 namespace mag
 {
     class Context;
+    class Image;
 
     struct Frame
     {
@@ -21,8 +22,8 @@ namespace mag
             void initialize(const u32 frame_count);
             void shutdown();
 
-            b8 begin_frame();
-            b8 end_frame();
+            void begin_frame();
+            b8 end_frame(const Image& draw_image, const vk::Extent3D& extent);
 
             Frame& get_current_frame() { return frames[frame_number]; }
             u32 get_swapchain_image_index() const { return this->swapchain_image_index; };

@@ -34,9 +34,9 @@ namespace mag
             void initialize(const ContextCreateOptions& options);
             void shutdown();
 
-            void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
-            b8 begin_frame();
-            b8 end_frame();
+            void recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode);
+            void begin_frame();
+            b8 end_frame(const Image& image, const vk::Extent3D& extent);
             void submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function);
 
             const vk::Instance& get_instance() const { return this->instance; };

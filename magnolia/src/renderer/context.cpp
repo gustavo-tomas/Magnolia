@@ -318,9 +318,12 @@ namespace mag
         }
     }
 
-    b8 Context::begin_frame() { return this->frame_provider.begin_frame(); }
+    void Context::begin_frame() { this->frame_provider.begin_frame(); }
 
-    b8 Context::end_frame() { return this->frame_provider.end_frame(); }
+    b8 Context::end_frame(const Image& image, const vk::Extent3D& extent)
+    {
+        return this->frame_provider.end_frame(image, extent);
+    }
 
     void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
     {

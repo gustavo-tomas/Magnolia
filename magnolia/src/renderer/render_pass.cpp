@@ -156,23 +156,9 @@ namespace mag
 
     void StandardRenderPass::after_pass(CommandBuffer& command_buffer)
     {
-        auto& context = get_context();
-
         // Transition the draw image and the swapchain image into their correct transfer layouts
         command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
                                        vk::ImageLayout::eTransferSrcOptimal);
-
-        command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
-                                       vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-
-        // Copy from the draw image to the swapchain
-        command_buffer.copy_image_to_image(draw_image.get_image(), {draw_size.x, draw_size.y, draw_size.z},
-                                           context.get_swapchain_images()[context.get_swapchain_image_index()],
-                                           vk::Extent3D(context.get_surface_extent(), 1));
-
-        // Set swapchain image layout to Present so we can show it on the screen
-        command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
-                                       vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)

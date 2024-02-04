@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -31,17 +32,30 @@ namespace mag
         }
     }
 
-    b8 FrameProvider::begin_frame()
+    // Start recording commands
+    void FrameProvider::begin_frame()
     {
         auto& context = get_context();
 
-        // Reset fences, acquire image and start recording commands
         Frame& curr_frame = this->get_current_frame();
         const vk::Device& device = context.get_device();
 
         VK_CHECK(device.waitForFences(curr_frame.render_fence, true, MAG_TIMEOUT));
         device.resetFences(curr_frame.render_fence);
 
+        curr_frame.command_buffer.get_handle().reset();
+        curr_frame.command_buffer.begin();
+    }
+
+    // End command recording, submit info and acquire/present the image
+    b8 FrameProvider::end_frame(const Image& draw_image, const vk::Extent3D& extent)
+    {
+        auto& context = get_context();
+
+        Frame& curr_frame = this->get_current_frame();
+        const vk::Device& device = context.get_device();
+
+        // Acquire
         try
         {
             auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, curr_frame.present_semaphore,
@@ -61,19 +75,21 @@ namespace mag
             ASSERT(false, "Failed to acquire swapchain image");
         }
 
-        curr_frame.command_buffer.get_handle().reset();
-        curr_frame.command_buffer.begin();
+        // Set swapchain image layout to transfer
+        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+                                                  vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 
-        return true;
-    }
+        // Copy from the draw image to the swapchain
+        curr_frame.command_buffer.copy_image_to_image(
+            draw_image.get_image(), extent, context.get_swapchain_images()[context.get_swapchain_image_index()],
+            vk::Extent3D(context.get_surface_extent(), 1));
 
-    b8 FrameProvider::end_frame()
-    {
-        auto& context = get_context();
+        // Set swapchain image layout to present
+        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+                                                  vk::ImageLayout::eTransferDstOptimal,
+                                                  vk::ImageLayout::ePresentSrcKHR);
 
-        // End command recording, submit info and present the image
-        Frame& curr_frame = this->get_current_frame();
-
+        // End command recording
         curr_frame.command_buffer.end();
 
         std::vector<vk::PipelineStageFlags> wait_stage = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -91,6 +107,7 @@ namespace mag
             .setWaitSemaphores(curr_frame.render_semaphore)
             .setImageIndices(this->swapchain_image_index);
 
+        // Present
         try
         {
             auto result = context.get_graphics_queue().presentKHR(present_info);
