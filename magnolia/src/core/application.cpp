@@ -28,12 +28,14 @@ namespace mag
             {
                 LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
                 renderer.on_resize(size);
+                editor.on_resize(size);
             });
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move([](const ivec2& mouse_pos) mutable
                              { LOG_INFO("MOUSE MOVE: {0}", math::to_string(mouse_pos)); });
+        window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
     }
 
     void Application::shutdown()
@@ -81,7 +83,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update();
+            renderer.update(editor);
         }
     }
 };  // namespace mag

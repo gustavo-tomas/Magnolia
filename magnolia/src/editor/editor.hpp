@@ -1,6 +1,8 @@
 #pragma once
 
 #include "core/window.hpp"
+#include "editor/editor_pass.hpp"
+#include "imgui.h"
 
 namespace mag
 {
@@ -9,9 +11,17 @@ namespace mag
         public:
             void initialize(Window& window);
             void shutdown();
-            void update();
+            void update(CommandBuffer& cmd);
+            void process_events(SDL_Event& e);
+
+            void on_resize(const uvec2& size);
+            const Image& get_image() const { return render_pass.get_draw_image(); };
+            uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
             Window* window;
+            EditorRenderPass render_pass;
+            ImDrawData* draw_data;
+            vk::DescriptorPool descriptor_pool;
     };
 };  // namespace mag

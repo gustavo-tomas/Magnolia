@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/window.hpp"
+#include "editor/editor.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_pass.hpp"
 
@@ -12,7 +13,7 @@ namespace mag
             void initialize(Window& window);
             void shutdown();
 
-            void update();
+            void update(Editor& editor);
 
             void on_resize(const uvec2& size);
 

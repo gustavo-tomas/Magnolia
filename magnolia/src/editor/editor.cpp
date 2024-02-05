@@ -2,7 +2,7 @@
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
-#include "imgui.h"
+#include "core/logger.hpp"
 
 namespace mag
 {
@@ -10,14 +10,92 @@ namespace mag
     {
         this->window = std::addressof(window);
 
-        // Context creation
+        auto &context = get_context();
+        auto &device = context.get_device();
+
+        // Create support structures for command submition
+        this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
+
+        std::vector<vk::DescriptorPoolSize> pool_sizes = {{vk::DescriptorType::eSampler, 1000},
+                                                          {vk::DescriptorType::eCombinedImageSampler, 1000},
+                                                          {vk::DescriptorType::eSampledImage, 1000},
+                                                          {vk::DescriptorType::eStorageImage, 1000},
+                                                          {vk::DescriptorType::eUniformTexelBuffer, 1000},
+                                                          {vk::DescriptorType::eStorageTexelBuffer, 1000},
+                                                          {vk::DescriptorType::eUniformBuffer, 1000},
+                                                          {vk::DescriptorType::eStorageBuffer, 1000},
+                                                          {vk::DescriptorType::eUniformBufferDynamic, 1000},
+                                                          {vk::DescriptorType::eStorageBufferDynamic, 1000},
+                                                          {vk::DescriptorType::eInputAttachment, 1000}};
+
+        const vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000,
+                                                       pool_sizes);
+
+        descriptor_pool = context.get_device().createDescriptorPool(create_info);
+
+        // Initialize imgui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+
+        ImGui_ImplSDL2_InitForVulkan(window.get_handle());
+
+        ImGui_ImplVulkan_InitInfo init_info = {};
+        init_info.Instance = context.get_instance();
+        init_info.PhysicalDevice = context.get_physical_device();
+        init_info.Device = device;
+        init_info.Queue = context.get_graphics_queue();
+        init_info.DescriptorPool = static_cast<VkDescriptorPool>(descriptor_pool);
+        init_info.MinImageCount = 3;
+        init_info.ImageCount = 3;
+        init_info.UseDynamicRendering = false;
+        init_info.ColorAttachmentFormat = static_cast<VkFormat>(context.get_swapchain_image_format());
+        init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+        ImGui_ImplVulkan_Init(&init_info, this->render_pass.get_pass().render_pass);
+        ImGui_ImplVulkan_CreateFontsTexture();
+
         auto &io = ImGui::GetIO();
         (void)io;
     }
 
-    void Editor::shutdown() { ImGui::DestroyContext(); }
+    void Editor::shutdown()
+    {
+        auto &context = get_context();
 
-    void Editor::update() {}
+        this->render_pass.shutdown();
+
+        ImGui_ImplVulkan_DestroyFontsTexture();
+        ImGui_ImplVulkan_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+
+        context.get_device().destroyDescriptorPool(descriptor_pool);
+    }
+
+    void Editor::update(CommandBuffer &cmd)
+    {
+        // @TODO: put this inside the render pass
+        render_pass.before_pass(cmd);
+        cmd.begin_pass(this->render_pass.get_pass());
+
+        // Begin
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window->get_handle());
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::Render();
+        draw_data = ImGui::GetDrawData();
+
+        // End
+        ImGui_ImplVulkan_RenderDrawData(draw_data, cmd.get_handle());
+
+        cmd.end_pass(this->render_pass.get_pass());
+        render_pass.after_pass(cmd);
+    }
+
+    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
+
+    void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
 };  // namespace mag

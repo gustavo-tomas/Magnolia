@@ -73,7 +73,7 @@ namespace mag
                     break;
             }
 
-            // this->editor_events(e); // @TODO
+            this->editor_events(e);
         }
 
         return true;
