@@ -9,15 +9,9 @@ namespace mag
     {
         auto& context = get_context();
 
-        // The frame is rendered into this image and then copied to the swapchain
-        vk::ImageUsageFlags draw_image_usage = vk::ImageUsageFlagBits::eTransferSrc |
-                                               vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eStorage |
-                                               vk::ImageUsageFlagBits::eColorAttachment;
-
-        draw_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
-                              vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
-
         this->draw_size = {size, 1};
+
+        this->initialize_draw_image();
 
         // Create attachments
         // -------------------------------------------------------------------------------------------------------------
@@ -73,6 +67,14 @@ namespace mag
 
     void EditorRenderPass::before_pass(CommandBuffer& command_buffer)
     {
+        auto& context = get_context();
+
+        // Safety check
+        if (draw_size.x != context.get_surface_extent().width || draw_size.y != context.get_surface_extent().height)
+        {
+            this->on_resize({context.get_surface_extent().width, context.get_surface_extent().height});
+        }
+
         command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
@@ -91,9 +93,14 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        draw_size.x = min(size.x, draw_image.get_extent().width);
-        draw_size.y = min(size.y, draw_image.get_extent().height);
+        draw_image.shutdown();
+
+        draw_size.x = min(size.x, context.get_surface_extent().width);
+        draw_size.y = min(size.y, context.get_surface_extent().height);
         draw_size.z = 1;
+
+        // This is not ideal but gets the job done
+        this->initialize_draw_image();
 
         // Destroy old framebuffer
         context.get_device().destroyFramebuffer(frame_buffer);
@@ -108,5 +115,16 @@ namespace mag
         // Set new render area
         pass.render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
         pass.frame_buffer = frame_buffer;
+    }
+
+    void EditorRenderPass::initialize_draw_image()
+    {
+        // The frame is rendered into this image and then copied to the swapchain
+        vk::ImageUsageFlags draw_image_usage = vk::ImageUsageFlagBits::eTransferSrc |
+                                               vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eStorage |
+                                               vk::ImageUsageFlagBits::eColorAttachment;
+
+        draw_image.initialize({draw_size.x, draw_size.y, draw_size.z}, vk::Format::eR16G16B16A16Sfloat,
+                              draw_image_usage, vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
     }
 };  // namespace mag

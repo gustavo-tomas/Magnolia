@@ -37,7 +37,7 @@ namespace mag
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
-        ImGui_ImplSDL2_InitForVulkan(window.get_handle());
+        ASSERT(ImGui_ImplSDL2_InitForVulkan(window.get_handle()), "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();
@@ -51,8 +51,10 @@ namespace mag
         init_info.ColorAttachmentFormat = static_cast<VkFormat>(context.get_swapchain_image_format());
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-        ImGui_ImplVulkan_Init(&init_info, this->render_pass.get_pass().render_pass);
-        ImGui_ImplVulkan_CreateFontsTexture();
+        ASSERT(ImGui_ImplVulkan_Init(&init_info, this->render_pass.get_pass().render_pass),
+               "Failed to initialize editor renderer backend");
+
+        ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
         auto &io = ImGui::GetIO();
         (void)io;
@@ -74,7 +76,7 @@ namespace mag
 
     void Editor::update(CommandBuffer &cmd)
     {
-        // @TODO: put this inside the render pass
+        // @TODO: put this inside the render pass?
         render_pass.before_pass(cmd);
         cmd.begin_pass(this->render_pass.get_pass());
 
@@ -83,13 +85,12 @@ namespace mag
         ImGui_ImplSDL2_NewFrame(window->get_handle());
         ImGui::NewFrame();
 
+        // ImGui windows goes here
         ImGui::ShowDemoWindow();
 
-        ImGui::Render();
-        draw_data = ImGui::GetDrawData();
-
         // End
-        ImGui_ImplVulkan_RenderDrawData(draw_data, cmd.get_handle());
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
 
         cmd.end_pass(this->render_pass.get_pass());
         render_pass.after_pass(cmd);
