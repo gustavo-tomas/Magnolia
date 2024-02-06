@@ -75,8 +75,20 @@ namespace mag
         context.get_device().destroyDescriptorPool(descriptor_pool);
     }
 
-    void Editor::update(CommandBuffer &cmd)
+    void Editor::update(CommandBuffer &cmd, const Image &viewport_image)
     {
+        // @TODO: this is not very pretty
+        if (image_descriptor == nullptr)
+        {
+            image_descriptor =
+                ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
+                                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+
+        // Transition the draw image into their correct transfer layouts
+        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eTransferSrcOptimal,
+                            vk::ImageLayout::eShaderReadOnlyOptimal);
+
         // @TODO: put this inside the render pass?
         render_pass.before_pass(cmd);
         cmd.begin_pass(this->render_pass.get_pass());
@@ -96,12 +108,23 @@ namespace mag
         ImGui::Text("Press W to alternate between editor and scene views");
         ImGui::End();
 
+        // @TODO: set scale to keep size constant during resize
+        ImGui::Begin("Viewport");
+        const auto &image_extent = viewport_image.get_extent();
+        // const ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
+        ImGui::Image(image_descriptor, ImVec2(image_extent.width, image_extent.height));
+        ImGui::End();
+
         // End
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
 
         cmd.end_pass(this->render_pass.get_pass());
         render_pass.after_pass(cmd);
+
+        // Return the draw image to their original layout
+        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
+                            vk::ImageLayout::eTransferSrcOptimal);
     }
 
     void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }

@@ -11,7 +11,7 @@ namespace mag
         public:
             void initialize(Window& window);
             void shutdown();
-            void update(CommandBuffer& cmd);
+            void update(CommandBuffer& cmd, const Image& viewport_image);
             void process_events(SDL_Event& e);
 
             void on_resize(const uvec2& size);
@@ -23,5 +23,6 @@ namespace mag
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
+            vk::DescriptorSet image_descriptor = {};
     };
 };  // namespace mag
