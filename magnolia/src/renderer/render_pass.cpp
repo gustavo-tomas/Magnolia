@@ -14,7 +14,8 @@ namespace mag
         // The frame is rendered into this image and then copied to the swapchain
         vk::ImageUsageFlags draw_image_usage = vk::ImageUsageFlagBits::eTransferSrc |
                                                vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eStorage |
-                                               vk::ImageUsageFlagBits::eColorAttachment;
+                                               vk::ImageUsageFlagBits::eColorAttachment |
+                                               vk::ImageUsageFlagBits::eSampled;
 
         draw_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
                               vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
