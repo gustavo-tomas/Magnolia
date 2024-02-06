@@ -90,7 +90,10 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         // ImGui::ShowDemoWindow();
         ImGui::Begin("Panel");
-        ImGui::Text("Hello %s!", "world");
+        ImGui::Text("Press ESC to enter fullscreen mode");
+        ImGui::Text("Press TAB to capture the cursor");
+        ImGui::Text("Press CTRL/SPACE to scale image resolution");
+        ImGui::Text("Press W to alternate between editor and scene views");
         ImGui::End();
 
         // End
