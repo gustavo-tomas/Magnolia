@@ -50,7 +50,10 @@ def shaders(system):
   output_dir = f"build{bar}{system}{bar}shaders"
 
   print("----- Compiling shaders -----")
-  os.system(f"mkdir -p {output_dir}")
+  if system == "linux":
+    os.system(f"mkdir -p {output_dir}")
+  else:
+    os.system(f"mkdir {output_dir} 2>NUL")
 
   # Find all shader files
   shader_files = [f for f in os.listdir(shader_dir) if f.endswith(".vert") or f.endswith(".frag")]
