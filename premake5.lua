@@ -208,7 +208,11 @@ project "imgui"
 	targetdir ("build/%{cfg.system}/lib")
     objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
 
-	includedirs { ".", "libs/imgui", "libs/sdl/include" }
+	includedirs { ".", "libs/imgui", "libs/sdl/include", "libs/vulkan/include"}
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\imgui 2>NUL")
+    end
 
 	files
 	{
