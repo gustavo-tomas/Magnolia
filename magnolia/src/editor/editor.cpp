@@ -37,6 +37,10 @@ namespace mag
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
+        auto &io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
         ASSERT(ImGui_ImplSDL2_InitForVulkan(window.get_handle()), "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
@@ -55,9 +59,6 @@ namespace mag
                "Failed to initialize editor renderer backend");
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
-
-        auto &io = ImGui::GetIO();
-        (void)io;
     }
 
     void Editor::shutdown()
@@ -86,7 +87,11 @@ namespace mag
         ImGui::NewFrame();
 
         // ImGui windows goes here
-        ImGui::ShowDemoWindow();
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        // ImGui::ShowDemoWindow();
+        ImGui::Begin("Panel");
+        ImGui::Text("Hello %s!", "world");
+        ImGui::End();
 
         // End
         ImGui::Render();
