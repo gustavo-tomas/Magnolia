@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace mag
 {
@@ -25,6 +26,17 @@ namespace mag
 
             void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                              const u64 dst_offset);
+
+            void copy_image_to_buffer(const vk::Image& src_image, const vk::ImageLayout& src_image_layout,
+                                      const vk::Extent3D& src_image_extent, const vk::Buffer& dst_buffer)
+            {
+                const vk::ImageSubresourceLayers src_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
+
+                vk::BufferImageCopy copy_region({}, src_image_extent.width, src_image_extent.height, src_subresource,
+                                                {}, src_image_extent);
+
+                this->command_buffer.copyImageToBuffer(src_image, src_image_layout, dst_buffer, copy_region);
+            }
 
             void copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
                                      const vk::Extent3D& dst_extent);

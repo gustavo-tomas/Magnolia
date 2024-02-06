@@ -67,7 +67,7 @@ namespace mag
         // Present
 
         // @TODO: testing
-        static bool swap = true;
+        static bool swap = false;
         if (window->is_key_pressed(SDLK_w)) swap = !swap;
 
         if (swap)
