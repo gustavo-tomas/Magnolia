@@ -17,6 +17,7 @@ namespace mag
             const vk::ImageView& get_image_view() const { return image_view; };
             const vk::Format& get_format() const { return format; };
             const vk::Extent3D& get_extent() const { return extent; };
+            const Sampler& get_sampler() const { return sampler; };
             u32 get_mip_levels() const { return mip_levels; };
 
         private:
