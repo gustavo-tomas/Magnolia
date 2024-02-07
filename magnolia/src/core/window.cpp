@@ -72,6 +72,8 @@ namespace mag
                         this->resize(uvec2(e.window.data1, e.window.data2));
                     break;
             }
+
+            this->editor_events(e);
         }
 
         return true;
@@ -100,6 +102,8 @@ namespace mag
 
     void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
 
+    void Window::on_event(std::function<void(SDL_Event e)> callback) { this->editor_events = std::move(callback); }
+
     b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 
     b8 Window::is_key_down(const SDL_Keycode key) { return key_state[key]; }
@@ -124,7 +128,10 @@ namespace mag
     {
         // Oh SDL...
         if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0)
+        {
             LOG_ERROR("Failed to set mouse mode: {0}", SDL_GetError());
+        }
+
         ignore_mouse_motion_events = true;
     }
 
@@ -138,7 +145,9 @@ namespace mag
     void Window::set_fullscreen(const u32 flags)
     {
         if (SDL_SetWindowFullscreen(this->handle, flags) != 0)
+        {
             LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
+        }
     }
 
     ivec2 Window::get_mouse_position() const

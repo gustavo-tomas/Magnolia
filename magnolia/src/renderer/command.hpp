@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace mag
 {

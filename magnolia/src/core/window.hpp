@@ -32,6 +32,7 @@ namespace mag
             void on_key_press(std::function<void(const SDL_Keycode key)> callback);
             void on_key_release(std::function<void(const SDL_Keycode key)> callback);
             void on_mouse_move(std::function<void(const ivec2&)> callback);
+            void on_event(std::function<void(SDL_Event e)> callback);
 
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
@@ -46,6 +47,7 @@ namespace mag
 
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
+            SDL_Window* get_handle() const { return handle; };
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
@@ -53,6 +55,7 @@ namespace mag
             std::function<void(const SDL_Keycode key)> key_press = {};
             std::function<void(const SDL_Keycode key)> key_release = {};
             std::function<void(const vec2&)> mouse_move = {};
+            std::function<void(SDL_Event e)> editor_events = {};
 
             SDL_Window* handle = {};
             u32 update_counter = {};

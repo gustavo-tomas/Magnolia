@@ -34,9 +34,9 @@ namespace mag
             void initialize(const ContextCreateOptions& options);
             void shutdown();
 
-            void recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode);
-            b8 begin_frame();
-            b8 end_frame();
+            void recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode);
+            void begin_frame();
+            b8 end_frame(const Image& image, const vk::Extent3D& extent);
             void submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function);
 
             const vk::Instance& get_instance() const { return this->instance; };
@@ -56,6 +56,7 @@ namespace mag
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
+            u32 get_queue_family_index() const { return this->queue_family_index; };
             u32 get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); };
 
         private:

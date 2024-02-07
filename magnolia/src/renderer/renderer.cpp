@@ -36,7 +36,7 @@ namespace mag
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update()
+    void Renderer::update(Editor& editor)
     {
         // Skip rendering if minimized
         if (window->is_minimized()) return;
@@ -44,7 +44,7 @@ namespace mag
         Frame& curr_frame = context.get_curr_frame();
         Pass& pass = render_pass.get_pass();
 
-        if (!this->context.begin_frame()) return;
+        this->context.begin_frame();
 
         // @TODO: testing
         if (window->is_key_down(SDLK_SPACE))
@@ -61,7 +61,27 @@ namespace mag
         curr_frame.command_buffer.end_pass(pass);
         render_pass.after_pass(curr_frame.command_buffer);
 
-        if (!this->context.end_frame()) return;
+        // @TODO: maybe dont do this here
+        editor.update(curr_frame.command_buffer, render_pass.get_draw_image());
+
+        // Present
+
+        // @TODO: testing
+        static bool swap = false;
+        if (window->is_key_pressed(SDLK_w)) swap = !swap;
+
+        if (swap)
+        {
+            const auto extent = render_pass.get_draw_size();
+            this->context.end_frame(render_pass.get_draw_image(), {extent.x, extent.y, extent.z});
+        }
+
+        else
+        {
+            const auto extent = editor.get_draw_size();
+            this->context.end_frame(editor.get_image(), {extent.x, extent.y, 1});
+        }
+        // @TODO: testing
     }
 
     void Renderer::on_resize(const uvec2& size)

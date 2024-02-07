@@ -32,12 +32,13 @@ project "magnolia"
         "libs/fmt/include",
         "libs/vulkan/include",
         "libs/vma/include",
+        "libs/imgui",
         "libs/glm"
     }
 
     links
     {
-        "fmt"
+        "fmt", "imgui"
     }
 
     libdirs
@@ -197,4 +198,43 @@ project "sdl"
             os.execute("cp build/linux/sdl/libSDL2main.a build/linux/lib/libSDL2main.a")
         end
     end
-    
+
+-- imgui ---------------------------------------------------------------------------------------------------------------
+project "imgui"
+	kind "staticlib"
+	language "c++"
+	cppdialect "c++20"
+
+	targetdir ("build/%{cfg.system}/lib")
+    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
+
+	includedirs { ".", "libs/imgui", "libs/sdl/include", "libs/vulkan/include"}
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\imgui 2>NUL")
+    end
+
+	files
+	{
+		"libs/imgui/imgui.h",
+		"libs/imgui/imconfig.h",
+		"libs/imgui/imgui_internal.h",
+		"libs/imgui/imstb_rectpack.h",
+		"libs/imgui/imstb_textedit.h",
+		"libs/imgui/imstb_truetype.h",
+		"libs/imgui/imgui.cpp",
+		"libs/imgui/imgui_draw.cpp",
+		"libs/imgui/imgui_tables.cpp",
+		"libs/imgui/imgui_widgets.cpp",
+		"libs/imgui/imgui_demo.cpp",
+
+		"libs/imgui/backends/imgui_impl_sdl2.h",
+		"libs/imgui/backends/imgui_impl_vulkan.h",
+		"libs/imgui/backends/imgui_impl_sdl2.cpp",
+		"libs/imgui/backends/imgui_impl_vulkan.cpp"
+	}
+
+	filter "system:linux"
+		pic "on"
+		systemversion "latest"
+		staticruntime "on"

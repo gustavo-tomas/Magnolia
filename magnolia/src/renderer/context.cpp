@@ -24,15 +24,22 @@ namespace mag
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                         VkDebugUtilsMessageTypeFlagsEXT,
+                                                         VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                         void*)
+                                                         void* userData)
     {
+        (void)messageType;
+        (void)userData;
+
         if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        {
             LOG_WARNING("{0}\n", pCallbackData->pMessage);
+        }
 
         else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+        {
             LOG_ERROR("{0}\n", pCallbackData->pMessage);
+        }
 
         return VK_FALSE;
     }
@@ -311,9 +318,12 @@ namespace mag
         }
     }
 
-    b8 Context::begin_frame() { return this->frame_provider.begin_frame(); }
+    void Context::begin_frame() { this->frame_provider.begin_frame(); }
 
-    b8 Context::end_frame() { return this->frame_provider.end_frame(); }
+    b8 Context::end_frame(const Image& image, const vk::Extent3D& extent)
+    {
+        return this->frame_provider.end_frame(image, extent);
+    }
 
     void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
     {
