@@ -24,5 +24,7 @@ namespace mag
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
             vk::DescriptorSet image_descriptor = {};
+
+            b8 fit_inside_viewport = false;
     };
 };  // namespace mag
