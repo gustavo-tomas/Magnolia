@@ -108,11 +108,14 @@ namespace mag
         ImGui::Text("Press W to alternate between editor and scene views");
         ImGui::End();
 
-        // @TODO: set scale to keep size constant during resize
         ImGui::Begin("Viewport");
-        const auto &image_extent = viewport_image.get_extent();
-        // const ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
-        ImGui::Image(image_descriptor, ImVec2(image_extent.width, image_extent.height));
+        const ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
+        const ImVec2 window_size = ImGui::GetWindowSize();
+        const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, (window_size.y - image_size.y) * 0.5f);
+
+        // Center the image inside the window
+        ImGui::SetCursorPos(image_position);
+        ImGui::Image(image_descriptor, image_size);
         ImGui::End();
 
         // End
