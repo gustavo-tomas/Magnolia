@@ -112,18 +112,26 @@ namespace mag
         ImGui::Begin("Viewport");
         ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
 
+        const ImVec2 window_size = ImGui::GetWindowSize();
+        const f32 top_offset = 20.0f;
+
         if (fit_inside_viewport)
         {
-            const ImVec2 window_size = ImGui::GetWindowSize();
-            const ImVec2 viewport_size = ImGui::GetContentRegionAvail();
-
             // Keep the entire image inside the viewport
-            const f32 diff = viewport_size.y / image_size.y;
+            const f32 diff = window_size.y / image_size.y;
             image_size.x *= diff;
             image_size.y *= diff;
 
             // Center the image inside the window
-            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, (window_size.y - image_size.y) * 0.5f);
+            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f,
+                                        (window_size.y - image_size.y) * 0.5f + top_offset);
+            ImGui::SetCursorPos(image_position);
+        }
+
+        else
+        {
+            // Keep the image static
+            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, top_offset);
             ImGui::SetCursorPos(image_position);
         }
 
