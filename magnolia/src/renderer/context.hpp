@@ -54,13 +54,14 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
-            const DescriptorAllocator& get_descriptor_allocator() const { return this->descriptor_allocator; };
-            const DescriptorLayoutCache& get_descriptor_cache() const { return this->descriptor_cache; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
+            DescriptorAllocator& get_descriptor_allocator() { return this->descriptor_allocator; };
+            DescriptorLayoutCache& get_descriptor_cache() { return this->descriptor_cache; };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
             u32 get_queue_family_index() const { return this->queue_family_index; };
             u32 get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); };
+            u32 get_frame_count() const { return frame_count; };
 
         private:
             vk::Instance instance;
@@ -84,6 +85,7 @@ namespace mag
             u32 api_version = {};
             u32 queue_family_index = {};
             u32 present_image_count = {};
+            u32 frame_count = {};
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};

@@ -23,11 +23,25 @@ namespace mag
 
         this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
         LOG_SUCCESS("RenderPass initialized");
+
+        camera.initialize(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f), 60.0f, window.get_size(), 0.1f, 1000.0f);
+        LOG_SUCCESS("Camera initialized");
+
+        controller.initialize(&camera, &window);
+        LOG_SUCCESS("Controller initialized");
+
+        render_pass.set_camera(&camera);
     }
 
     void Renderer::shutdown()
     {
         this->context.get_device().waitIdle();
+
+        this->controller.shutdown();
+        LOG_SUCCESS("Controller destroyed");
+
+        this->camera.shutdown();
+        LOG_SUCCESS("Camera destroyed");
 
         this->render_pass.shutdown();
         LOG_SUCCESS("RenderPass destroyed");
@@ -38,6 +52,8 @@ namespace mag
 
     void Renderer::update(Editor& editor)
     {
+        controller.update(0.016667f);
+
         // Skip rendering if minimized
         if (window->is_minimized()) return;
 
@@ -47,10 +63,10 @@ namespace mag
         this->context.begin_frame();
 
         // @TODO: testing
-        if (window->is_key_down(SDLK_SPACE))
+        if (window->is_key_down(SDLK_UP))
             render_pass.set_render_scale(render_pass.get_render_scale() + 0.01f);
 
-        else if (window->is_key_down(SDLK_LCTRL))
+        else if (window->is_key_down(SDLK_DOWN))
             render_pass.set_render_scale(render_pass.get_render_scale() - 0.01f);
         // @TODO: testing
 
@@ -68,7 +84,7 @@ namespace mag
 
         // @TODO: testing
         static bool swap = false;
-        if (window->is_key_pressed(SDLK_w)) swap = !swap;
+        if (window->is_key_pressed(SDLK_LSHIFT)) swap = !swap;
 
         if (swap)
         {
@@ -88,12 +104,13 @@ namespace mag
     {
         context.get_device().waitIdle();
 
-        // @TODO: recalculate camera matrices
-
         // Use the surface extent after recreating the swapchain
         context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
 
-        render_pass.on_resize(surface_extent);
+        this->render_pass.on_resize(surface_extent);
+        this->camera.set_aspect_ratio(surface_extent);
     }
+
+    void Renderer::on_mouse_move(const ivec2& mouse_dir) { this->controller.on_mouse_move(mouse_dir); }
 };  // namespace mag

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "camera/camera.hpp"
+#include "camera/controller.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/context.hpp"
@@ -16,10 +18,13 @@ namespace mag
             void update(Editor& editor);
 
             void on_resize(const uvec2& size);
+            void on_mouse_move(const ivec2& mouse_dir);
 
         private:
             Window* window;
             Context context;
             StandardRenderPass render_pass;
+            Camera camera;
+            Controller controller;
     };
 };  // namespace mag

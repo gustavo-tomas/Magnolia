@@ -108,6 +108,7 @@ namespace mag
         VK_CHECK(vk::createInstance(&instance_create_info, nullptr, &instance));
 
         this->api_version = app_info.apiVersion;
+        this->frame_count = options.frame_count;
 
         // Surface
         this->surface = options.window.create_surface(this->instance);

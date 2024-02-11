@@ -5,8 +5,14 @@ layout (location = 1) in vec3 in_normal;
 
 layout (location = 0) out vec3 out_normal;
 
+layout (set = 0, binding = 0) uniform CameraBuffer
+{
+	mat4 view;
+	mat4 projection;
+} u_camera;
+
 void main()
 {
-	gl_Position = vec4(in_position, 1.0);
+	gl_Position = u_camera.projection * u_camera.view * vec4(in_position, 1.0);
 	out_normal = in_normal;
 }

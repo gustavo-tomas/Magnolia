@@ -87,9 +87,6 @@ namespace mag
         triangle_vs.initialize(shader_folder + "triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
         triangle_fs.initialize(shader_folder + "triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 
-        // Pipeline
-        triangle_pipeline.initialize(render_pass, {}, {triangle_vs, triangle_fs}, size);
-
         // Create a triangle mesh
         triangle.vertices.resize(3);
         triangle.vertices[0].position = {0.5f, 0.5f, 0.0f};
@@ -102,6 +99,29 @@ namespace mag
 
         triangle.vbo.initialize(triangle.vertices.data(), VECSIZE(triangle.vertices) * sizeof(Vertex),
                                 context.get_allocator());
+
+        {
+            // @TODO: Create one camera buffer and descriptor set per frame
+            camera_buffer.initialize(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                     VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                                     VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
+
+            auto& descriptor_cache = context.get_descriptor_cache();
+            auto& descriptor_allocator = context.get_descriptor_allocator();
+
+            // Descriptor set allocate info
+            vk::DescriptorBufferInfo descriptor_buffer_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
+
+            // Create descriptor sets
+            ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
+                       .bind(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex,
+                             &descriptor_buffer_info)
+                       .build(descriptor_set, set_layout),
+                   "Failed to build descriptor set");
+        }
+
+        // Pipeline
+        triangle_pipeline.initialize(render_pass, {set_layout}, {triangle_vs, triangle_fs}, size);
 
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
@@ -122,6 +142,7 @@ namespace mag
     {
         auto& context = get_context();
 
+        camera_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         triangle.vbo.shutdown();
@@ -147,9 +168,14 @@ namespace mag
         const vk::Viewport viewport(0, 0, extent.width, extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(offset, extent);
 
+        const CameraData camera_data = {.view = camera->get_view(), .projection = camera->get_projection()};
+        camera_buffer.copy(&camera_data, sizeof(CameraData));
+
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
         command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
+        command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, triangle_pipeline.get_layout(), 0,
+                                                       descriptor_set, {});
 
         command_buffer.bind_vertex_buffer(triangle.vbo.get_buffer(), 0);
         command_buffer.draw(VECSIZE(triangle.vertices), 1, 0, 0);
@@ -193,4 +219,6 @@ namespace mag
         this->on_resize({draw_image.get_extent().width, draw_image.get_extent().height});
         LOG_INFO("Render scale: {0:.2f}", render_scale);
     }
+
+    void StandardRenderPass::set_camera(Camera* camera) { this->camera = camera; }
 };  // namespace mag

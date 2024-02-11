@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "camera/camera.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
@@ -52,6 +55,9 @@ namespace mag
 
             void on_resize(const uvec2& size);
 
+            // @TODO: temporary
+            void set_camera(Camera* camera);
+
         private:
             Pass pass = {};
             Pipeline triangle_pipeline;
@@ -62,6 +68,17 @@ namespace mag
             vk::Framebuffer frame_buffer;
 
             // @TODO: temporary
+            struct CameraData
+            {
+                    mat4 view;        // 64 bytes (16 x 4)
+                    mat4 projection;  // 64 bytes (16 x 4)
+            };
+
             Mesh triangle;
+            Buffer camera_buffer;
+            vk::DescriptorSet descriptor_set;
+            vk::DescriptorSetLayout set_layout;
+            Camera* camera;
+            // @TODO: temporary
     };
 };  // namespace mag
