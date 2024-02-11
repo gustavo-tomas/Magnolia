@@ -4,7 +4,6 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
-#include "spirv_reflect.h"
 
 #define SPIRV_CHECK(result) ASSERT((result) == SPV_REFLECT_RESULT_SUCCESS, "Spirv check failed")
 
@@ -30,12 +29,11 @@ namespace mag
         // @TODO: testing
         // Generate reflection data for a shader
         {
-            SpvReflectShaderModule spv_module;
             SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
             SPIRV_CHECK(result);
 
             // Enumerate and extract shader's input variables
-            uint32_t var_count = 0;
+            u32 var_count = 0;
             result = spvReflectEnumerateInputVariables(&spv_module, &var_count, NULL);
             SPIRV_CHECK(result);
 
@@ -43,10 +41,6 @@ namespace mag
                 static_cast<SpvReflectInterfaceVariable**>(malloc(var_count * sizeof(SpvReflectInterfaceVariable*)));
             result = spvReflectEnumerateInputVariables(&spv_module, &var_count, input_vars);
             SPIRV_CHECK(result);
-
-            /* ... */
-
-            spvReflectDestroyShaderModule(&spv_module);
         }
     }
 
@@ -54,5 +48,6 @@ namespace mag
     {
         auto& context = get_context();
         context.get_device().destroyShaderModule(module);
+        spvReflectDestroyShaderModule(&spv_module);
     }
 };  // namespace mag

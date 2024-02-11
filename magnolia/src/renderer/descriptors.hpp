@@ -1,0 +1,101 @@
+#pragma once
+
+// !TODO: use caching for render passes and pipelines!
+
+#include <unordered_map>
+#include <vector>
+#include <vulkan/vulkan.hpp>
+
+#include "core/types.hpp"
+
+namespace mag
+{
+    class Context;
+
+    // DescriptorAllocator
+    // -----------------------------------------------------------------------------------------------------------------
+    class DescriptorAllocator
+    {
+        public:
+            std::vector<std::pair<vk::DescriptorType, f32>> sizes = {{vk::DescriptorType::eSampler, 0.5f},
+                                                                     {vk::DescriptorType::eCombinedImageSampler, 4.0f},
+                                                                     {vk::DescriptorType::eSampledImage, 4.0f},
+                                                                     {vk::DescriptorType::eStorageImage, 1.0f},
+                                                                     {vk::DescriptorType::eUniformTexelBuffer, 1.0f},
+                                                                     {vk::DescriptorType::eStorageTexelBuffer, 1.0f},
+                                                                     {vk::DescriptorType::eUniformBuffer, 2.0f},
+                                                                     {vk::DescriptorType::eStorageBuffer, 2.0f},
+                                                                     {vk::DescriptorType::eUniformBufferDynamic, 1.0f},
+                                                                     {vk::DescriptorType::eStorageBufferDynamic, 1.0f},
+                                                                     {vk::DescriptorType::eInputAttachment, 0.5f}};
+
+            using PoolSizes = std::vector<std::pair<vk::DescriptorType, f32>>;
+
+            void initialize();
+            void shutdown();
+
+            b8 allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout);
+            void reset_pools();
+
+        private:
+            vk::DescriptorPool grab_pool();
+
+            vk::DescriptorPool currentPool = {};
+            PoolSizes descriptorSizes;
+            std::vector<vk::DescriptorPool> usedPools;
+            std::vector<vk::DescriptorPool> freePools;
+    };
+
+    // DescriptorLayoutCache
+    // -----------------------------------------------------------------------------------------------------------------
+    class DescriptorLayoutCache
+    {
+        public:
+            void initialize();
+            void shutdown();
+
+            vk::DescriptorSetLayout create_descriptor_layout(const vk::DescriptorSetLayoutCreateInfo* info);
+            struct DescriptorLayoutInfo
+            {
+                    // good idea to turn this into a inlined array
+                    std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
+                    b8 operator==(const DescriptorLayoutInfo& other) const;
+
+                    size_t hash() const;
+            };
+
+        private:
+            struct DescriptorLayoutHash
+            {
+                    std::size_t operator()(const DescriptorLayoutInfo& k) const;
+            };
+
+            std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layoutCache;
+    };
+
+    // DescriptorBuilder
+    // -----------------------------------------------------------------------------------------------------------------
+    class DescriptorBuilder
+    {
+        public:
+            static DescriptorBuilder begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
+
+            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
+                                    const vk::ShaderStageFlags stage_flags,
+                                    const vk::DescriptorBufferInfo* buffer_info);
+
+            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
+                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo* buffer_info);
+
+            b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
+            b8 build(vk::DescriptorSet& set);
+
+        private:
+            std::vector<vk::WriteDescriptorSet> writes;
+            std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
+            DescriptorLayoutCache* cache = {};
+            DescriptorAllocator* alloc = {};
+    };
+};  // namespace mag

@@ -252,10 +252,9 @@ namespace mag
 
         this->frame_provider.initialize(options.frame_count);
 
-        // @TODO
-        // // Descriptors
-        // descriptor_allocator.create(*this);
-        // descriptor_cache.create(*this);
+        // Descriptors
+        descriptor_allocator.initialize();
+        descriptor_cache.initialize();
     }
 
     void Context::shutdown()
@@ -264,6 +263,8 @@ namespace mag
 
         vmaDestroyAllocator(this->allocator);
 
+        this->descriptor_allocator.shutdown();
+        this->descriptor_cache.shutdown();
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);

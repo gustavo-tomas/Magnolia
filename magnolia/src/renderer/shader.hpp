@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "spirv_reflect.h"
 
 namespace mag
 {
@@ -19,6 +20,7 @@ namespace mag
         private:
             vk::ShaderModule module = {};
             vk::ShaderStageFlagBits stage = {};
+            SpvReflectShaderModule spv_module = {};
             str file = {};
     };
 };  // namespace mag

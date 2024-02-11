@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "core/window.hpp"
+#include "renderer/descriptors.hpp"
 #include "renderer/frame.hpp"
 #include "vk_mem_alloc.h"
 
@@ -53,6 +54,8 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
+            const DescriptorAllocator& get_descriptor_allocator() const { return this->descriptor_allocator; };
+            const DescriptorLayoutCache& get_descriptor_cache() const { return this->descriptor_cache; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
@@ -84,6 +87,8 @@ namespace mag
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
+            DescriptorAllocator descriptor_allocator;
+            DescriptorLayoutCache descriptor_cache;
     };
 
     Context& get_context();
