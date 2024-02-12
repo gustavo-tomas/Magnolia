@@ -84,8 +84,8 @@ namespace mag
 #endif
         if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
 
-        triangle_vs.initialize(shader_folder + "triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
-        triangle_fs.initialize(shader_folder + "triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+        triangle_vs.initialize(shader_folder + "triangle.vert.spv");
+        triangle_fs.initialize(shader_folder + "triangle.frag.spv");
 
         // Create a triangle mesh
         triangle.vertices.resize(3);
@@ -114,8 +114,7 @@ namespace mag
 
             // Create descriptor sets
             ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
-                       .bind(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex,
-                             &descriptor_buffer_info)
+                       .bind(triangle_vs.get_reflection(), &descriptor_buffer_info)
                        .build(descriptor_set, set_layout),
                    "Failed to build descriptor set");
         }

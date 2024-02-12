@@ -18,7 +18,8 @@ namespace mag
         std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
         for (const auto& shader : shaders)
         {
-            vk::PipelineShaderStageCreateInfo create_info({}, shader.get_stage(), shader.get_handle(), "main");
+            const vk::PipelineShaderStageCreateInfo create_info({}, shader.get_reflection().shader_stage,
+                                                                shader.get_handle(), "main");
             shader_stages.push_back(create_info);
         }
 

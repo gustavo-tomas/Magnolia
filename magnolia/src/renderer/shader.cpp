@@ -5,14 +5,11 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 
-#define SPIRV_CHECK(result) ASSERT((result) == SPV_REFLECT_RESULT_SUCCESS, "Spirv check failed")
-
 namespace mag
 {
-    void Shader::initialize(const str& file, const vk::ShaderStageFlagBits stage)
+    void Shader::initialize(const str& file)
     {
         auto& context = get_context();
-        this->stage = stage;
         this->file = file;
 
         std::ifstream file_stream(file, std::ios::ate | std::ios::binary);
@@ -26,21 +23,26 @@ namespace mag
 
         this->module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
 
-        // @TODO: testing
         // Generate reflection data for a shader
+        SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
+        VK_CHECK(VK_CAST(result));
+
+        // Enumerate and extract shader's input variables
+        u32 var_count = 0;
+        result = spvReflectEnumerateInputVariables(&spv_module, &var_count, NULL);
+        VK_CHECK(VK_CAST(result));
+
+        SpvReflectInterfaceVariable** input_vars =
+            static_cast<SpvReflectInterfaceVariable**>(malloc(var_count * sizeof(SpvReflectInterfaceVariable*)));
+        result = spvReflectEnumerateInputVariables(&spv_module, &var_count, input_vars);
+        VK_CHECK(VK_CAST(result));
+
+        spv_reflection.shader_stage = static_cast<vk::ShaderStageFlagBits>(spv_module.shader_stage);
+        if (spv_module.descriptor_binding_count > 0)
         {
-            SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
-            SPIRV_CHECK(result);
-
-            // Enumerate and extract shader's input variables
-            u32 var_count = 0;
-            result = spvReflectEnumerateInputVariables(&spv_module, &var_count, NULL);
-            SPIRV_CHECK(result);
-
-            SpvReflectInterfaceVariable** input_vars =
-                static_cast<SpvReflectInterfaceVariable**>(malloc(var_count * sizeof(SpvReflectInterfaceVariable*)));
-            result = spvReflectEnumerateInputVariables(&spv_module, &var_count, input_vars);
-            SPIRV_CHECK(result);
+            spv_reflection.binding = spv_module.descriptor_bindings[0].binding;
+            spv_reflection.descriptor_type =
+                static_cast<vk::DescriptorType>(spv_module.descriptor_bindings[0].descriptor_type);
         }
     }
 

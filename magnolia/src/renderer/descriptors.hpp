@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "renderer/shader.hpp"
 
 namespace mag
 {
@@ -81,12 +82,11 @@ namespace mag
         public:
             static DescriptorBuilder begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
 
-            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags,
+            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
                                     const vk::DescriptorBufferInfo* buffer_info);
 
-            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo* buffer_info);
+            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
+                                    const vk::DescriptorImageInfo* image_info);
 
             b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
             b8 build(vk::DescriptorSet& set);
