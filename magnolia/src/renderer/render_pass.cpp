@@ -110,7 +110,7 @@ namespace mag
             auto& descriptor_allocator = context.get_descriptor_allocator();
 
             // Descriptor set allocate info
-            vk::DescriptorBufferInfo descriptor_buffer_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
+            const vk::DescriptorBufferInfo descriptor_buffer_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
 
             // Create descriptor sets
             ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
