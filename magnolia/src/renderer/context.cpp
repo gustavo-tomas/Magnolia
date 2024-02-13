@@ -108,6 +108,7 @@ namespace mag
         VK_CHECK(vk::createInstance(&instance_create_info, nullptr, &instance));
 
         this->api_version = app_info.apiVersion;
+        this->frame_count = options.frame_count;
 
         // Surface
         this->surface = options.window.create_surface(this->instance);
@@ -176,7 +177,7 @@ namespace mag
         LOG_INFO("Present image count: {0}", this->present_image_count);
 
         LOG_INFO("Enumerating surface present modes");
-        this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
+        this->surface_present_mode = vk::PresentModeKHR::eImmediate;
         for (const auto& present_mode : surface_present_modes)
         {
             LOG_INFO("Present mode: {0}", vk::to_string(present_mode));
@@ -252,10 +253,9 @@ namespace mag
 
         this->frame_provider.initialize(options.frame_count);
 
-        // @TODO
-        // // Descriptors
-        // descriptor_allocator.create(*this);
-        // descriptor_cache.create(*this);
+        // Descriptors
+        descriptor_allocator.initialize();
+        descriptor_cache.initialize();
     }
 
     void Context::shutdown()
@@ -264,6 +264,8 @@ namespace mag
 
         vmaDestroyAllocator(this->allocator);
 
+        this->descriptor_allocator.shutdown();
+        this->descriptor_cache.shutdown();
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);

@@ -22,7 +22,9 @@ project "magnolia"
     files
     {
         "%{prj.name}/src/**.hpp",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "libs/spirv_reflect/spirv_reflect.h",
+        "libs/spirv_reflect/spirv_reflect.cpp"
     }
 
     includedirs 
@@ -33,7 +35,8 @@ project "magnolia"
         "libs/vulkan/include",
         "libs/vma/include",
         "libs/imgui",
-        "libs/glm"
+        "libs/glm",
+        "libs/spirv_reflect"
     }
 
     links

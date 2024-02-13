@@ -16,3 +16,6 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/gustavo-tomas/imgui.git
+[submodule "libs/spirv_reflect"]
+	path = libs/spirv_reflect
+	url = https://github.com/gustavo-tomas/SPIRV-Reflect.git

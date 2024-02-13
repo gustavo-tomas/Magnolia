@@ -102,10 +102,11 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         // ImGui::ShowDemoWindow();
         ImGui::Begin("Panel");
+        ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
         ImGui::Text("Press ESC to enter fullscreen mode");
         ImGui::Text("Press TAB to capture the cursor");
-        ImGui::Text("Press CTRL/SPACE to scale image resolution");
-        ImGui::Text("Press W to alternate between editor and scene views");
+        ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
+        ImGui::Text("Press SHIFT to alternate between editor and scene views");
         ImGui::Checkbox("Fit image to viewport dimensions", &fit_inside_viewport);
         ImGui::End();
 
