@@ -28,8 +28,8 @@ namespace mag
     {
         auto& context = get_context();
 
-        for (const auto& p : freePools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
-        for (const auto& p : usedPools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
     }
 
     b8 DescriptorAllocator::allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout)
@@ -37,17 +37,17 @@ namespace mag
         auto& context = get_context();
 
         // initialize the currentPool handle if it's null
-        if (currentPool == VK_NULL_HANDLE)
+        if (current_pool == VK_NULL_HANDLE)
         {
-            currentPool = grab_pool();
-            usedPools.push_back(currentPool);
+            current_pool = grab_pool();
+            used_pools.push_back(current_pool);
         }
 
-        vk::DescriptorSetAllocateInfo alloc_info(currentPool, 1, &layout);
+        vk::DescriptorSetAllocateInfo alloc_info(current_pool, 1, &layout);
 
         // try to allocate the descriptor set
         vk::Result alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
-        b8 needReallocate = false;
+        b8 need_reallocate = false;
 
         switch (alloc_result)
         {
@@ -57,7 +57,7 @@ namespace mag
             // reallocate pool
             case vk::Result::eErrorFragmentedPool:
             case vk::Result::eErrorOutOfPoolMemory:
-                needReallocate = true;
+                need_reallocate = true;
                 break;
 
             // unrecoverable error
@@ -65,11 +65,11 @@ namespace mag
                 return false;
         }
 
-        if (needReallocate)
+        if (need_reallocate)
         {
             // allocate a new pool and retry
-            currentPool = grab_pool();
-            usedPools.push_back(currentPool);
+            current_pool = grab_pool();
+            used_pools.push_back(current_pool);
 
             alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
 
@@ -85,17 +85,17 @@ namespace mag
         auto& context = get_context();
 
         // reset all used pools and add them to the free pools
-        for (const auto& p : usedPools)
+        for (const auto& p : used_pools)
         {
             VK_CHECK(VK_CAST(vkResetDescriptorPool(context.get_device(), p, 0)));
-            freePools.push_back(p);
+            free_pools.push_back(p);
         }
 
         // clear the used pools, since we've put them all in the free pools
-        usedPools.clear();
+        used_pools.clear();
 
         // reset the current pool handle back to null
-        currentPool = VK_NULL_HANDLE;
+        current_pool = VK_NULL_HANDLE;
     }
 
     vk::DescriptorPool DescriptorAllocator::grab_pool()
@@ -103,16 +103,16 @@ namespace mag
         auto& context = get_context();
 
         // there are reusable pools availible
-        if (freePools.size() > 0)
+        if (free_pools.size() > 0)
         {
             // grab pool from the back of the vector and remove it from there.
-            vk::DescriptorPool pool = freePools.back();
-            freePools.pop_back();
+            vk::DescriptorPool pool = free_pools.back();
+            free_pools.pop_back();
             return pool;
         }
 
         // no pools availible, so create a new one
-        return createPool(context.get_device(), descriptorSizes, 1000, {});
+        return createPool(context.get_device(), descriptor_sizes, 1000, {});
     }
 
     // DescriptorLayoutCache
@@ -124,7 +124,7 @@ namespace mag
         auto& context = get_context();
 
         // delete every descriptor layout held
-        for (const auto& [info, layout] : layoutCache) context.get_device().destroyDescriptorSetLayout(layout);
+        for (const auto& [info, layout] : layout_cache) context.get_device().destroyDescriptorSetLayout(layout);
     }
 
     vk::DescriptorSetLayout DescriptorLayoutCache::create_descriptor_layout(
@@ -134,8 +134,8 @@ namespace mag
 
         DescriptorLayoutInfo layoutinfo = {};
         layoutinfo.bindings.reserve(info->bindingCount);
-        b8 isSorted = true;
-        i32 lastBinding = -1;
+        b8 is_sorted = true;
+        i32 last_binding = -1;
 
         // copy from the direct info struct into our own one
         for (u32 i = 0; i < info->bindingCount; i++)
@@ -143,15 +143,15 @@ namespace mag
             layoutinfo.bindings.push_back(info->pBindings[i]);
 
             // check that the bindings are in strict increasing order
-            if (static_cast<i32>(info->pBindings[i].binding) > lastBinding)
-                lastBinding = info->pBindings[i].binding;
+            if (static_cast<i32>(info->pBindings[i].binding) > last_binding)
+                last_binding = info->pBindings[i].binding;
 
             else
-                isSorted = false;
+                is_sorted = false;
         }
 
         // sort the bindings if they aren't in order
-        if (!isSorted)
+        if (!is_sorted)
         {
             std::sort(layoutinfo.bindings.begin(), layoutinfo.bindings.end(),
                       [](vk::DescriptorSetLayoutBinding& a, vk::DescriptorSetLayoutBinding& b)
@@ -159,8 +159,8 @@ namespace mag
         }
 
         // try to grab from cache
-        auto it = layoutCache.find(layoutinfo);
-        if (it != layoutCache.end())
+        auto it = layout_cache.find(layoutinfo);
+        if (it != layout_cache.end())
             return it->second;
 
         else
@@ -170,7 +170,7 @@ namespace mag
             VK_CHECK(context.get_device().createDescriptorSetLayout(info, nullptr, &layout));
 
             // add to cache
-            layoutCache[layoutinfo] = layout;
+            layout_cache[layoutinfo] = layout;
             return layout;
         }
     }
@@ -221,10 +221,10 @@ namespace mag
 
     // DescriptorBuilder
     // -----------------------------------------------------------------------------------------------------------------
-    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator)
+    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator)
     {
         DescriptorBuilder builder;
-        builder.cache = layoutCache;
+        builder.cache = layout_cache;
         builder.alloc = allocator;
 
         return builder;

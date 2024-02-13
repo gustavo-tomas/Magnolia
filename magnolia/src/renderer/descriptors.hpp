@@ -41,10 +41,10 @@ namespace mag
         private:
             vk::DescriptorPool grab_pool();
 
-            vk::DescriptorPool currentPool = {};
-            PoolSizes descriptorSizes;
-            std::vector<vk::DescriptorPool> usedPools;
-            std::vector<vk::DescriptorPool> freePools;
+            vk::DescriptorPool current_pool = {};
+            PoolSizes descriptor_sizes;
+            std::vector<vk::DescriptorPool> used_pools;
+            std::vector<vk::DescriptorPool> free_pools;
     };
 
     // DescriptorLayoutCache
@@ -72,7 +72,7 @@ namespace mag
                     std::size_t operator()(const DescriptorLayoutInfo& k) const;
             };
 
-            std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layoutCache;
+            std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layout_cache;
     };
 
     // DescriptorBuilder
@@ -80,7 +80,7 @@ namespace mag
     class DescriptorBuilder
     {
         public:
-            static DescriptorBuilder begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator);
+            static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
 
             DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
                                     const vk::DescriptorBufferInfo* buffer_info);
