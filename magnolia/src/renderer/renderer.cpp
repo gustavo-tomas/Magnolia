@@ -31,11 +31,26 @@ namespace mag
         LOG_SUCCESS("Controller initialized");
 
         render_pass.set_camera(&camera);
+
+        // Create a triangle mesh
+        triangle.vertices.resize(3);
+        triangle.vertices[0].position = {0.5f, 0.5f, 0.0f};
+        triangle.vertices[1].position = {-0.5f, 0.5f, 0.0f};
+        triangle.vertices[2].position = {0.0f, -0.5f, 0.0f};
+
+        triangle.vertices[0].normal = {1.0f, 0.0f, 0.0f};
+        triangle.vertices[1].normal = {0.0f, 1.0f, 0.0f};
+        triangle.vertices[2].normal = {0.0f, 0.0f, 1.0f};
+
+        triangle.vbo.initialize(triangle.vertices.data(), VECSIZE(triangle.vertices) * sizeof(Vertex),
+                                context.get_allocator());
     }
 
     void Renderer::shutdown()
     {
         this->context.get_device().waitIdle();
+
+        triangle.vbo.shutdown();
 
         this->controller.shutdown();
         LOG_SUCCESS("Controller destroyed");
@@ -74,7 +89,7 @@ namespace mag
         // Draw calls
         render_pass.before_pass(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_pass(pass);
-        render_pass.render(curr_frame.command_buffer);
+        render_pass.render(curr_frame.command_buffer, triangle);
         curr_frame.command_buffer.end_pass(pass);
         render_pass.after_pass(curr_frame.command_buffer);
 

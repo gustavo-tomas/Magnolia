@@ -31,7 +31,7 @@ namespace mag
             virtual void shutdown(){};
 
             virtual void before_pass(CommandBuffer& /* command_buffer */){};
-            virtual void render(CommandBuffer& /* command_buffer */){};
+            virtual void render(CommandBuffer& /* command_buffer */, const Mesh& /* mesh */){};
             virtual void after_pass(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
@@ -44,7 +44,7 @@ namespace mag
             virtual void shutdown() override;
 
             virtual void before_pass(CommandBuffer& command_buffer) override;
-            virtual void render(CommandBuffer& command_buffer) override;
+            virtual void render(CommandBuffer& command_buffer, const Mesh& mesh) override;
             virtual void after_pass(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
@@ -74,7 +74,6 @@ namespace mag
                     mat4 projection;  // 64 bytes (16 x 4)
             };
 
-            Mesh triangle;
             Buffer camera_buffer;
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout set_layout;

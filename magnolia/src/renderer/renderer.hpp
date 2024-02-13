@@ -26,5 +26,8 @@ namespace mag
             StandardRenderPass render_pass;
             Camera camera;
             Controller controller;
+
+            // @TODO: temporary
+            Mesh triangle;
     };
 };  // namespace mag

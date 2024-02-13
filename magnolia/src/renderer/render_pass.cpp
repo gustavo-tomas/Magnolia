@@ -87,19 +87,6 @@ namespace mag
         triangle_vs.initialize(shader_folder + "triangle.vert.spv");
         triangle_fs.initialize(shader_folder + "triangle.frag.spv");
 
-        // Create a triangle mesh
-        triangle.vertices.resize(3);
-        triangle.vertices[0].position = {0.5f, 0.5f, 0.0f};
-        triangle.vertices[1].position = {-0.5f, 0.5f, 0.0f};
-        triangle.vertices[2].position = {0.0f, -0.5f, 0.0f};
-
-        triangle.vertices[0].normal = {1.0f, 0.0f, 0.0f};
-        triangle.vertices[1].normal = {0.0f, 1.0f, 0.0f};
-        triangle.vertices[2].normal = {0.0f, 0.0f, 1.0f};
-
-        triangle.vbo.initialize(triangle.vertices.data(), VECSIZE(triangle.vertices) * sizeof(Vertex),
-                                context.get_allocator());
-
         {
             // @TODO: Create one camera buffer and descriptor set per frame
             camera_buffer.initialize(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -144,7 +131,6 @@ namespace mag
         camera_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
-        triangle.vbo.shutdown();
         triangle_pipeline.shutdown();
         triangle_vs.shutdown();
         triangle_fs.shutdown();
@@ -159,7 +145,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer)
+    void StandardRenderPass::render(CommandBuffer& command_buffer, const Mesh& mesh)
     {
         const auto offset = pass.render_area.offset;
         const auto extent = pass.render_area.extent;
@@ -176,8 +162,8 @@ namespace mag
         command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, triangle_pipeline.get_layout(), 0,
                                                        descriptor_set, {});
 
-        command_buffer.bind_vertex_buffer(triangle.vbo.get_buffer(), 0);
-        command_buffer.draw(VECSIZE(triangle.vertices), 1, 0, 0);
+        command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
+        command_buffer.draw(VECSIZE(mesh.vertices), 1, 0, 0);
     }
 
     void StandardRenderPass::after_pass(CommandBuffer& command_buffer)
