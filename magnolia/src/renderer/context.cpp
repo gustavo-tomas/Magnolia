@@ -177,7 +177,7 @@ namespace mag
         LOG_INFO("Present image count: {0}", this->present_image_count);
 
         LOG_INFO("Enumerating surface present modes");
-        this->surface_present_mode = vk::PresentModeKHR::eFifoRelaxed;
+        this->surface_present_mode = vk::PresentModeKHR::eImmediate;
         for (const auto& present_mode : surface_present_modes)
         {
             LOG_INFO("Present mode: {0}", vk::to_string(present_mode));

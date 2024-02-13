@@ -105,7 +105,7 @@ namespace mag
         context.get_device().waitIdle();
 
         // Use the surface extent after recreating the swapchain
-        context.recreate_swapchain(size, vk::PresentModeKHR::eFifoRelaxed);
+        context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
 
         this->render_pass.on_resize(surface_extent);
