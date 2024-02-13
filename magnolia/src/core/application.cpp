@@ -82,7 +82,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor);
+            renderer.update(editor, dt);
         }
     }
 };  // namespace mag

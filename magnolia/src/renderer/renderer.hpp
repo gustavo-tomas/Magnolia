@@ -15,7 +15,7 @@ namespace mag
             void initialize(Window& window);
             void shutdown();
 
-            void update(Editor& editor);
+            void update(Editor& editor, const f32 dt);
 
             void on_resize(const uvec2& size);
             void on_mouse_move(const ivec2& mouse_dir);

@@ -50,9 +50,10 @@ namespace mag
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor)
+    void Renderer::update(Editor& editor, const f32 dt)
     {
-        controller.update(0.016667f);
+        // @TODO: maybe this shouldnt be here
+        controller.update(dt);
 
         // Skip rendering if minimized
         if (window->is_minimized()) return;
