@@ -19,6 +19,8 @@ python3 build.py debug
 ```
 
 ## References
-- [VulkanAbstractionLayer](https://github.com/asc-community/VulkanAbstractionLayer)
-- [Godot](https://github.com/godotengine/godot)
-- [VulkanTutorial](https://github.com/Overv/VulkanTutorial)
+- [[VulkanAbstractionLayer](https://github.com/asc-community/VulkanAbstractionLayer)] Renderer architecture and core structures
+- [[Godot](https://github.com/godotengine/godot)] Lib management
+- [[VulkanTutorial](https://github.com/Overv/VulkanTutorial)] Vulkan foundations
+- [[VkGuide](https://github.com/vblanco20-1/vulkan-guide)] Render to texture and other vulkan optimizations
+- [[ASliceOfRendering](https://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/)] Generating an infinite grid using shaders
