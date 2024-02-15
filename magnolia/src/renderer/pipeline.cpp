@@ -2,13 +2,13 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
-#include "renderer/model.hpp"
 
 namespace mag
 {
     void Pipeline::initialize(const vk::RenderPass& render_pass,
                               const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
-                              const std::vector<Shader>& shaders, const vec2& size)
+                              const std::vector<Shader>& shaders, const VertexInputDescription& vertex_description,
+                              const vec2& size, const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
     {
         auto& context = get_context();
 
@@ -22,8 +22,6 @@ namespace mag
                                                                 shader.get_handle(), "main");
             shader_stages.push_back(create_info);
         }
-
-        const VertexInputDescription vertex_description = Vertex::get_vertex_description();
 
         const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, vertex_description.bindings,
                                                                                     vertex_description.attributes);
@@ -40,11 +38,6 @@ namespace mag
 
         const vk::PipelineMultisampleStateCreateInfo multisampling_state_create_info({}, context.get_msaa_samples(),
                                                                                      false, 1.0f);
-
-        const vk::PipelineColorBlendAttachmentState color_blend_attachment(
-            {}, {}, {}, {}, {}, {}, {},
-            vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
-                vk::ColorComponentFlagBits::eA);
 
         const vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info(
             {}, true, true, vk::CompareOp::eLessOrEqual, {}, {}, {}, {}, 0.0f, 1.0f);

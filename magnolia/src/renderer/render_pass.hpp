@@ -60,8 +60,8 @@ namespace mag
 
         private:
             Pass pass = {};
-            Pipeline triangle_pipeline;
-            Shader triangle_vs, triangle_fs;
+            Pipeline triangle_pipeline, grid_pipeline;
+            Shader triangle_vs, triangle_fs, grid_vs, grid_fs;
             Image draw_image, depth_image;
             uvec3 draw_size;
             f32 render_scale = 1.0;
@@ -72,6 +72,7 @@ namespace mag
             {
                     mat4 view;        // 64 bytes (16 x 4)
                     mat4 projection;  // 64 bytes (16 x 4)
+                    vec2 near_far;    // 8  bytes (2  x 4)
             };
 
             Buffer camera_buffer;

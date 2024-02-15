@@ -87,6 +87,9 @@ namespace mag
         triangle_vs.initialize(shader_folder + "triangle.vert.spv");
         triangle_fs.initialize(shader_folder + "triangle.frag.spv");
 
+        grid_vs.initialize(shader_folder + "grid.vert.spv");
+        grid_fs.initialize(shader_folder + "grid.frag.spv");
+
         {
             // @TODO: Create one camera buffer and descriptor set per frame
             camera_buffer.initialize(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -106,8 +109,20 @@ namespace mag
                    "Failed to build descriptor set");
         }
 
-        // Pipeline
-        triangle_pipeline.initialize(render_pass, {set_layout}, {triangle_vs, triangle_fs}, size);
+        // Pipelines
+        triangle_pipeline.initialize(render_pass, {set_layout}, {triangle_vs, triangle_fs},
+                                     Vertex::get_vertex_description(), size);
+
+        vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
+        color_blend_attachment.setBlendEnable(true)
+            .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+            .setColorBlendOp(vk::BlendOp::eAdd)
+            .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+            .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+            .setAlphaBlendOp(vk::BlendOp::eAdd);
+
+        grid_pipeline.initialize(render_pass, {set_layout}, {grid_vs, grid_fs}, {}, size, color_blend_attachment);
 
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
@@ -132,8 +147,11 @@ namespace mag
         draw_image.shutdown();
         depth_image.shutdown();
         triangle_pipeline.shutdown();
+        grid_pipeline.shutdown();
         triangle_vs.shutdown();
         triangle_fs.shutdown();
+        grid_vs.shutdown();
+        grid_fs.shutdown();
 
         context.get_device().destroyFramebuffer(frame_buffer);
         context.get_device().destroyRenderPass(pass.render_pass);
@@ -153,17 +171,25 @@ namespace mag
         const vk::Viewport viewport(0, 0, extent.width, extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(offset, extent);
 
-        const CameraData camera_data = {.view = camera->get_view(), .projection = camera->get_projection()};
+        const CameraData camera_data = {
+            .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
         camera_buffer.copy(&camera_data, sizeof(CameraData));
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
-        command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
+
+        // The pipeline layout should be the same for both pipelines
         command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, triangle_pipeline.get_layout(), 0,
                                                        descriptor_set, {});
 
+        // Draw the mesh
+        command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
         command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
         command_buffer.draw(VECSIZE(mesh.vertices), 1, 0, 0);
+
+        // Draw the grid
+        command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, grid_pipeline.get_handle());
+        command_buffer.draw(6, 1, 0, 0);
     }
 
     void StandardRenderPass::after_pass(CommandBuffer& command_buffer)
