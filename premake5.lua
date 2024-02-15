@@ -73,19 +73,21 @@ project "magnolia"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra" }
+        buildoptions { "-Wall", "-Wextra", "-Werror" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-Werror" }
         defines { "MAG_PROFILE" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-Werror" }
         defines { "MAG_RELEASE", "MAG_ASSERTIONS_ENABLED" } -- @TODO: fix this
         symbols "off"
         optimize "full" -- '-O3'
