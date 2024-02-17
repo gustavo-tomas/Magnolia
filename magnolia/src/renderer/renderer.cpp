@@ -79,7 +79,7 @@ namespace mag
         render_pass.after_pass(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.update(curr_frame.command_buffer, render_pass.get_draw_image());
+        editor.update(model, curr_frame.command_buffer, render_pass.get_draw_image());
 
         // Present
 

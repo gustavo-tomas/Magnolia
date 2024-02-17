@@ -75,7 +75,21 @@ namespace mag
         context.get_device().destroyDescriptorPool(descriptor_pool);
     }
 
-    void Editor::update(CommandBuffer &cmd, const Image &viewport_image)
+    void traverse_children(Node *node)
+    {
+        if (node == nullptr) return;
+
+        ImGuiTreeNodeFlags flags = 0;
+        if (node->get_children().empty()) flags = ImGuiTreeNodeFlags_Leaf;
+
+        if (ImGui::TreeNodeEx(node->get_name().c_str(), flags))
+        {
+            for (const auto &child : node->get_children()) traverse_children(child);
+            ImGui::TreePop();
+        }
+    }
+
+    void Editor::update(Node *tree, CommandBuffer &cmd, const Image &viewport_image)
     {
         // @TODO: this is not very pretty
         if (image_descriptor == nullptr)
@@ -101,44 +115,64 @@ namespace mag
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         // ImGui::ShowDemoWindow();
-        ImGui::Begin("Panel");
-        ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
-        ImGui::Text("Press MOUSE WHEEL to rotate the camera");
-        ImGui::Text("Press ESC to enter fullscreen mode");
-        ImGui::Text("Press TAB to capture the cursor");
-        ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::Text("Press SHIFT to alternate between editor and scene views");
-        ImGui::Checkbox("Fit image to viewport dimensions", &fit_inside_viewport);
-        ImGui::End();
 
-        ImGui::Begin("Viewport");
-        ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
-
-        const ImVec2 window_size = ImGui::GetWindowSize();
-        const f32 top_offset = 20.0f;
-
-        if (fit_inside_viewport)
+        // Info panel
         {
-            // Keep the entire image inside the viewport
-            const f32 diff = window_size.y / image_size.y;
-            image_size.x *= diff;
-            image_size.y *= diff;
-
-            // Center the image inside the window
-            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f,
-                                        (window_size.y - image_size.y) * 0.5f + top_offset);
-            ImGui::SetCursorPos(image_position);
+            ImGui::Begin("Panel");
+            ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
+            ImGui::Text("Press MOUSE WHEEL to rotate the camera");
+            ImGui::Text("Press ESC to enter fullscreen mode");
+            ImGui::Text("Press TAB to capture the cursor");
+            ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
+            ImGui::Text("Press SHIFT to alternate between editor and scene views");
+            ImGui::Checkbox("Fit image to viewport dimensions", &fit_inside_viewport);
+            ImGui::End();
         }
 
-        else
+        // Viewport
         {
-            // Keep the image static
-            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, top_offset);
-            ImGui::SetCursorPos(image_position);
+            ImGui::Begin("Viewport");
+            ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
+
+            const ImVec2 window_size = ImGui::GetWindowSize();
+            const f32 top_offset = 20.0f;
+
+            if (fit_inside_viewport)
+            {
+                // Keep the entire image inside the viewport
+                const f32 diff = window_size.y / image_size.y;
+                image_size.x *= diff;
+                image_size.y *= diff;
+
+                // Center the image inside the window
+                const ImVec2 image_position((window_size.x - image_size.x) * 0.5f,
+                                            (window_size.y - image_size.y) * 0.5f + top_offset);
+                ImGui::SetCursorPos(image_position);
+            }
+
+            else
+            {
+                // Keep the image static
+                const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, top_offset);
+                ImGui::SetCursorPos(image_position);
+            }
+
+            ImGui::Image(image_descriptor, image_size);
+            ImGui::End();
         }
 
-        ImGui::Image(image_descriptor, image_size);
-        ImGui::End();
+        // Tree viewer
+        {
+            ImGui::Begin("Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize);
+
+            if (ImGui::TreeNode("Tree Nodes"))
+            {
+                traverse_children(tree);
+                ImGui::TreePop();
+            }
+
+            ImGui::End();
+        }
 
         // End
         ImGui::Render();

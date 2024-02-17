@@ -1,6 +1,7 @@
 #include "core/application.hpp"
 
 #include "core/logger.hpp"
+#include "node/model.hpp"
 
 namespace mag
 {
@@ -39,6 +40,18 @@ namespace mag
 
         // Create a base scene
         model = new Model();
+
+        auto model2 = new Model();
+        model2->set_name("Model2");
+        model->add_child(model2);
+
+        auto model3 = new Model();
+        model3->set_name("Model3");
+        model2->add_child(model3);
+
+        auto model4 = new Model();
+        model4->set_name("Model4");
+        model2->add_child(model4);
     }
 
     void Application::shutdown()

@@ -6,6 +6,8 @@ namespace mag
 {
     Model::Model()
     {
+        set_name("Model");
+
         auto& context = get_context();
 
         // Create a cube mesh
