@@ -103,6 +103,7 @@ namespace mag
         // ImGui::ShowDemoWindow();
         ImGui::Begin("Panel");
         ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
+        ImGui::Text("Press MOUSE WHEEL to rotate the camera");
         ImGui::Text("Press ESC to enter fullscreen mode");
         ImGui::Text("Press TAB to capture the cursor");
         ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");

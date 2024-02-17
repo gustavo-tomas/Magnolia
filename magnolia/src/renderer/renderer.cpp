@@ -24,8 +24,7 @@ namespace mag
         this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
         LOG_SUCCESS("RenderPass initialized");
 
-        camera.initialize(vec3(10.35f, 5.13f, 10.35f), vec3(-20.0f, -45.0f, 0.0f), 60.0f, window.get_size(), 0.1f,
-                          1000.0f);
+        camera.initialize({10.35f, 5.13f, 10.35f}, {-20.0f, -45.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 1000.0f);
         LOG_SUCCESS("Camera initialized");
 
         controller.initialize(&camera, &window);

@@ -38,7 +38,10 @@ namespace mag
 
     void Controller::on_mouse_move(const ivec2& mouse_dir)
     {
-        const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
-        this->camera->set_rotation(new_rot);
+        if (window->is_button_down(SDL_BUTTON_MIDDLE))
+        {
+            const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
+            this->camera->set_rotation(new_rot);
+        }
     }
 };  // namespace mag
