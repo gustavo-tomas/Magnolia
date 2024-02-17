@@ -24,7 +24,9 @@ namespace mag
     struct Mesh
     {
             VertexBuffer vbo;
+            IndexBuffer ibo;
             std::vector<Vertex> vertices;
+            std::vector<u32> indices;
     };
 
     class Model : public Node
