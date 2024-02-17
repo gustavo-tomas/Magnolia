@@ -2,6 +2,7 @@
 
 #include "core/window.hpp"
 #include "editor/editor.hpp"
+#include "node/model.hpp"
 #include "renderer/renderer.hpp"
 
 namespace mag
@@ -18,5 +19,8 @@ namespace mag
             Window window;
             Renderer renderer;
             Editor editor;
+
+            // @TODO: temporary initial scene
+            Model* model;
     };
 };  // namespace mag

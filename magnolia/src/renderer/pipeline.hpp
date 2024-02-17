@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "renderer/model.hpp"
+#include "node/model.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag

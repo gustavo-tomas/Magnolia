@@ -1,6 +1,9 @@
 #pragma once
 
+#include "node/node.hpp"
 #include "renderer/buffers.hpp"
+
+// @TODO: encapsulate this pls tyty
 
 namespace mag
 {
@@ -22,6 +25,18 @@ namespace mag
     {
             VertexBuffer vbo;
             std::vector<Vertex> vertices;
+    };
+
+    class Model : public Node
+    {
+        public:
+            Model();
+            ~Model();
+
+            const Mesh& get_mesh() const { return mesh; };
+
+        private:
+            Mesh mesh;
     };
 
     inline VertexInputDescription Vertex::get_vertex_description()

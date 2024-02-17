@@ -4,7 +4,6 @@
 
 #include "camera/camera.hpp"
 #include "renderer/image.hpp"
-#include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
