@@ -22,7 +22,13 @@ namespace mag
 
             void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                       const u32 first_instance);
+
+            void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                              const i32 vertex_offset, const u32 first_instance);
+
             void bind_vertex_buffer(const Buffer& buffer, const u64 offset);
+
+            void bind_index_buffer(const Buffer& buffer, const u64 offset);
 
             void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                              const u64 dst_offset);

@@ -38,9 +38,20 @@ namespace mag
         this->command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
     }
 
+    void CommandBuffer::draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                                     const i32 vertex_offset, const u32 first_instance)
+    {
+        this->command_buffer.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+    }
+
     void CommandBuffer::bind_vertex_buffer(const Buffer& buffer, const u64 offset)
     {
         this->command_buffer.bindVertexBuffers(0, buffer.get_buffer(), offset);
+    }
+
+    void CommandBuffer::bind_index_buffer(const Buffer& buffer, const u64 offset)
+    {
+        this->command_buffer.bindIndexBuffer(buffer.get_buffer(), offset, vk::IndexType::eUint32);
     }
 
     void CommandBuffer::copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
