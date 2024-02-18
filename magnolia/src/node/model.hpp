@@ -7,6 +7,8 @@
 
 namespace mag
 {
+    using namespace math;
+
     struct VertexInputDescription
     {
             std::vector<vk::VertexInputBindingDescription> bindings;
@@ -17,8 +19,8 @@ namespace mag
     {
             static VertexInputDescription get_vertex_description();
 
-            glm::vec3 position;
-            glm::vec3 normal;
+            vec3 position;
+            vec3 normal;
     };
 
     struct Mesh
