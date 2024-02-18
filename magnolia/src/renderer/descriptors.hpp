@@ -82,10 +82,10 @@ namespace mag
         public:
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
 
-            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
+            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection, const u32 set,
                                     const vk::DescriptorBufferInfo* buffer_info);
 
-            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
+            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection, const u32 set,
                                     const vk::DescriptorImageInfo* image_info);
 
             b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);

@@ -230,33 +230,35 @@ namespace mag
         return builder;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection,
+    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection, const u32 set,
                                                const vk::DescriptorBufferInfo* buffer_info)
     {
+        auto& binding = shader_reflection.descriptor_sets[set].bindings[0].binding;
+        auto& type = shader_reflection.descriptor_sets[set].bindings[0].descriptor_type;
+
         // create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
-                                                   shader_reflection.shader_stage);
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, shader_reflection.shader_stage);
         bindings.push_back(new_binding);
 
         // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, shader_reflection.binding, {}, 1, shader_reflection.descriptor_type, {},
-                                         buffer_info);
+        vk::WriteDescriptorSet new_write({}, binding, {}, 1, type, {}, buffer_info);
         writes.push_back(new_write);
 
         return *this;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection,
+    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection, const u32 set,
                                                const vk::DescriptorImageInfo* image_info)
     {
+        auto& binding = shader_reflection.descriptor_sets[set].bindings[0].binding;
+        auto& type = shader_reflection.descriptor_sets[set].bindings[0].descriptor_type;
+
         // create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
-                                                   shader_reflection.shader_stage);
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, shader_reflection.shader_stage);
         bindings.push_back(new_binding);
 
         // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, shader_reflection.binding, {}, 1, shader_reflection.descriptor_type,
-                                         image_info);
+        vk::WriteDescriptorSet new_write({}, binding, {}, 1, type, image_info);
         writes.push_back(new_write);
 
         return *this;

@@ -1,8 +1,18 @@
 // Camera buffer
-layout(set = 0, binding = 0) uniform CameraBuffer
+layout (set = 0, binding = 0) uniform CameraBuffer
 {
     mat4 view;
     mat4 projection;
     vec2 near_far;
-}
-u_camera;
+} u_camera;
+
+struct ModelData
+{
+	mat4 model;
+};
+
+// Model buffer
+layout (std140, set = 1, binding = 0) readonly buffer ModelBuffer
+{
+	ModelData models[];
+} b_model;

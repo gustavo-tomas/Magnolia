@@ -37,13 +37,27 @@ namespace mag
         result = spvReflectEnumerateInputVariables(&spv_module, &var_count, input_vars);
         VK_CHECK(VK_CAST(result));
 
-        spv_reflection.shader_stage = static_cast<vk::ShaderStageFlagBits>(spv_module.shader_stage);
-        if (spv_module.descriptor_binding_count > 0)
+        // Get reflection data
+        for (u32 s = 0; s < spv_module.descriptor_set_count; s++)
         {
-            spv_reflection.binding = spv_module.descriptor_bindings[0].binding;
-            spv_reflection.descriptor_type =
-                static_cast<vk::DescriptorType>(spv_module.descriptor_bindings[0].descriptor_type);
+            DescriptorSet descriptor_set = {};
+            descriptor_set.set = s;
+
+            for (u32 b = 0; b < spv_module.descriptor_sets[s].binding_count; b++)
+            {
+                auto& current_binding = spv_module.descriptor_sets[s].bindings[b];
+
+                Binding binding = {};
+                binding.binding = current_binding->binding;
+                binding.descriptor_type = static_cast<vk::DescriptorType>(current_binding->descriptor_type);
+
+                descriptor_set.bindings.push_back(binding);
+            }
+
+            spv_reflection.descriptor_sets.push_back(descriptor_set);
         }
+
+        spv_reflection.shader_stage = static_cast<vk::ShaderStageFlagBits>(spv_module.shader_stage);
     }
 
     void Shader::shutdown()

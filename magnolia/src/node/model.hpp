@@ -37,10 +37,14 @@ namespace mag
             Model();
             ~Model();
 
+            void set_position(const vec3& position);
+
             const Mesh& get_mesh() const { return mesh; };
+            const mat4& get_model_matrix() const { return model_matrix; };
 
         private:
             Mesh mesh;
+            mat4 model_matrix = mat4(1.0f);
     };
 
     inline VertexInputDescription Vertex::get_vertex_description()

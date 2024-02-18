@@ -91,26 +91,40 @@ namespace mag
         grid_fs.initialize(shader_folder + "grid.frag.spv");
 
         {
+            // @TODO: Get buffer usage from shader reflection?
             // @TODO: Create one camera buffer and descriptor set per frame
             camera_buffer.initialize(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                      VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                                      VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
 
+            // Create a huge buffer for all models
+            model_buffer.initialize(sizeof(ModelData) * MAX_MODELS, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                    VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                                    VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
+
             auto& descriptor_cache = context.get_descriptor_cache();
             auto& descriptor_allocator = context.get_descriptor_allocator();
 
-            // Descriptor set allocate info
-            const vk::DescriptorBufferInfo descriptor_buffer_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
+            // Create camera descriptors
+            const vk::DescriptorBufferInfo camera_descriptor_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
 
-            // Create descriptor sets
             ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
-                       .bind(triangle_vs.get_reflection(), &descriptor_buffer_info)
-                       .build(descriptor_set, set_layout),
+                       .bind(triangle_vs.get_reflection(), 0, &camera_descriptor_info)
+                       .build(camera_descriptor_set, camera_set_layout),
+                   "Failed to build descriptor set");
+
+            // Create model descriptors
+            const vk::DescriptorBufferInfo model_descriptor_info(model_buffer.get_buffer(), 0,
+                                                                 sizeof(ModelData) * MAX_MODELS);
+
+            ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
+                       .bind(triangle_vs.get_reflection(), 1, &model_descriptor_info)
+                       .build(model_descriptor_set, model_set_layout),
                    "Failed to build descriptor set");
         }
 
         // Pipelines
-        triangle_pipeline.initialize(render_pass, {set_layout}, {triangle_vs, triangle_fs},
+        triangle_pipeline.initialize(render_pass, {camera_set_layout, model_set_layout}, {triangle_vs, triangle_fs},
                                      Vertex::get_vertex_description(), size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
@@ -122,7 +136,8 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(render_pass, {set_layout}, {grid_vs, grid_fs}, {}, size, color_blend_attachment);
+        grid_pipeline.initialize(render_pass, {camera_set_layout}, {grid_vs, grid_fs}, {}, size,
+                                 color_blend_attachment);
 
         // Finish pass setup
         // -------------------------------------------------------------------------------------------------------------
@@ -144,6 +159,7 @@ namespace mag
         auto& context = get_context();
 
         camera_buffer.shutdown();
+        model_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         triangle_pipeline.shutdown();
@@ -163,7 +179,16 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Mesh& mesh)
+    void StandardRenderPass::traverse_tree(Node* model, std::vector<Node*>& models_array)
+    {
+        if (model == nullptr) return;
+
+        models_array.push_back(model);
+
+        for (const auto& child : model->get_children()) this->traverse_tree(child, models_array);
+    }
+
+    void StandardRenderPass::render(CommandBuffer& command_buffer, Model* models)
     {
         const auto offset = pass.render_area.offset;
         const auto extent = pass.render_area.extent;
@@ -171,24 +196,42 @@ namespace mag
         const vk::Viewport viewport(0, 0, extent.width, extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(offset, extent);
 
+        // Map camera data
         const CameraData camera_data = {
             .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
         camera_buffer.copy(&camera_data, sizeof(CameraData));
 
+        // Map model data
+        // @TODO: this is not very efficient :(
+        std::vector<Node*> models_array;
+        traverse_tree(models, models_array);
+
+        ModelData* model_data = reinterpret_cast<ModelData*>(model_buffer.map_memory());
+        for (u64 i = 0; i < models_array.size(); i++)
+            model_data[i].model = reinterpret_cast<Model*>(models_array[i])->get_model_matrix();
+
+        model_buffer.unmap_memory();
+
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
-        // The pipeline layout should be the same for both pipelines
-        command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, triangle_pipeline.get_layout(), 0,
-                                                       descriptor_set, {});
-
         // Draw the mesh
+        command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, triangle_pipeline.get_layout(), 0,
+                                                       {camera_descriptor_set, model_descriptor_set}, {});
         command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, triangle_pipeline.get_handle());
-        command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
-        command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
-        command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
+
+        for (u64 i = 0; i < models_array.size(); i++)
+        {
+            auto& mesh = reinterpret_cast<Model*>(models_array[i])->get_mesh();
+
+            command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
+            command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
+            command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, i);
+        }
 
         // Draw the grid
+        command_buffer.get_handle().bindDescriptorSets(pass.pipeline_bind_point, grid_pipeline.get_layout(), 0,
+                                                       {camera_descriptor_set}, {});
         command_buffer.get_handle().bindPipeline(pass.pipeline_bind_point, grid_pipeline.get_handle());
         command_buffer.draw(6, 1, 0, 0);
     }

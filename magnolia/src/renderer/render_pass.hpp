@@ -30,7 +30,7 @@ namespace mag
             virtual void shutdown(){};
 
             virtual void before_pass(CommandBuffer& /* command_buffer */){};
-            virtual void render(CommandBuffer& /* command_buffer */, const Mesh& /* mesh */){};
+            virtual void render(CommandBuffer& /* command_buffer */, Model* /* models */){};
             virtual void after_pass(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
@@ -43,7 +43,7 @@ namespace mag
             virtual void shutdown() override;
 
             virtual void before_pass(CommandBuffer& command_buffer) override;
-            virtual void render(CommandBuffer& command_buffer, const Mesh& mesh) override;
+            virtual void render(CommandBuffer& command_buffer, Model* models) override;
             virtual void after_pass(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
@@ -74,9 +74,18 @@ namespace mag
                     vec2 near_far;    // 8  bytes (2  x 4)
             };
 
-            Buffer camera_buffer;
-            vk::DescriptorSet descriptor_set;
-            vk::DescriptorSetLayout set_layout;
+            struct ModelData
+            {
+                    mat4 model;  // 64 bytes (16 x 4)
+            };
+
+            void traverse_tree(Node* model, std::vector<Node*>& models_array);
+
+            const u32 MAX_MODELS = 1000;
+
+            Buffer camera_buffer, model_buffer;
+            vk::DescriptorSet camera_descriptor_set, model_descriptor_set;
+            vk::DescriptorSetLayout camera_set_layout, model_set_layout;
             Camera* camera;
             // @TODO: temporary
     };

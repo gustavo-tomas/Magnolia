@@ -10,10 +10,21 @@ namespace mag
     class Shader
     {
         public:
-            struct SpvReflection
+            struct Binding
             {
                     u32 binding = {};
                     vk::DescriptorType descriptor_type = {};
+            };
+
+            struct DescriptorSet
+            {
+                    u32 set = {};
+                    std::vector<Binding> bindings = {};
+            };
+
+            struct SpvReflection
+            {
+                    std::vector<DescriptorSet> descriptor_sets = {};
                     vk::ShaderStageFlagBits shader_stage = {};
             };
 

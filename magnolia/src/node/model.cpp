@@ -57,4 +57,7 @@ namespace mag
         mesh.vbo.shutdown();
         mesh.ibo.shutdown();
     }
+
+    void Model::set_position(const vec3& position) { model_matrix = translate(position); }
+
 };  // namespace mag

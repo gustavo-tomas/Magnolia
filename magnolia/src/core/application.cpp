@@ -1,5 +1,7 @@
 #include "core/application.hpp"
 
+#include <string>
+
 #include "core/logger.hpp"
 #include "node/model.hpp"
 
@@ -40,18 +42,19 @@ namespace mag
 
         // Create a base scene
         model = new Model();
+        model->set_position(vec3(0, 0, 0));
 
-        auto model2 = new Model();
-        model2->set_name("Model2");
-        model->add_child(model2);
-
-        auto model3 = new Model();
-        model3->set_name("Model3");
-        model2->add_child(model3);
-
-        auto model4 = new Model();
-        model4->set_name("Model4");
-        model2->add_child(model4);
+        u32 size = 20;
+        for (u32 i = 0; i < size; i++)
+        {
+            for (u32 j = 0; j < size; j++)
+            {
+                auto model_ij = new Model();
+                model_ij->set_name("Model_" + std::to_string(i) + std::to_string(j));
+                model_ij->set_position(vec3(5 + i * 5, 0, 5 + j * 5));
+                model->add_child(model_ij);
+            }
+        }
     }
 
     void Application::shutdown()

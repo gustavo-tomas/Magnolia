@@ -74,7 +74,7 @@ namespace mag
         // Draw calls
         render_pass.before_pass(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_pass(pass);
-        render_pass.render(curr_frame.command_buffer, model->get_mesh());
+        render_pass.render(curr_frame.command_buffer, model);
         curr_frame.command_buffer.end_pass(pass);
         render_pass.after_pass(curr_frame.command_buffer);
 
