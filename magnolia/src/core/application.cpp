@@ -44,14 +44,14 @@ namespace mag
         model = new Model();
         model->set_position(vec3(0, 0, 0));
 
-        u32 size = 20;
-        for (u32 i = 0; i < size; i++)
+        i32 size = 20;
+        for (i32 i = 0; i < size; i++)
         {
-            for (u32 j = 0; j < size; j++)
+            for (i32 j = 0; j < size; j++)
             {
                 auto model_ij = new Model();
                 model_ij->set_name("Model_" + std::to_string(i) + std::to_string(j));
-                model_ij->set_position(vec3(5 + i * 5, 0, 5 + j * 5));
+                model_ij->set_position(vec3(-5 - i * 5, 0, -5 - j * 5));
                 model->add_child(model_ij);
             }
         }
