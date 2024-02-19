@@ -60,7 +60,6 @@ namespace mag
         std::vector<const char*> window_extensions = options.window.get_instance_extensions();
 
         extensions.insert(extensions.begin(), window_extensions.begin(), window_extensions.end());
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
         vk::InstanceCreateInfo instance_create_info;
         instance_create_info.setPApplicationInfo(&app_info)
@@ -219,6 +218,7 @@ namespace mag
         this->dynamic_loader.init(this->instance, this->device);
 
         // Debug callback
+#if defined(MAG_DEBUG)
         vk::DebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info;
         debug_utils_messenger_create_info
             .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
@@ -229,6 +229,7 @@ namespace mag
 
         this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info,
                                                                                   nullptr, this->dynamic_loader);
+#endif
 
         // Swapchain
         const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
@@ -276,7 +277,9 @@ namespace mag
         this->device.destroy();
 
         this->instance.destroySurfaceKHR(this->surface);
+#if defined(MAG_DEBUG)
         this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger, nullptr, this->dynamic_loader);
+#endif
         this->instance.destroy();
     }
 

@@ -15,6 +15,7 @@ namespace mag
 
         // Validation only on debug
 #if defined(MAG_DEBUG)
+        context_options.instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         context_options.validation_layers = {"VK_LAYER_KHRONOS_validation"};
 #endif
 
