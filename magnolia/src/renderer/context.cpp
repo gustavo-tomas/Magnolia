@@ -193,8 +193,7 @@ namespace mag
         vk::PhysicalDeviceFeatures features;
         features.setSamplerAnisotropy(true);
 
-        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features;
-        shader_draw_parameters_features.setShaderDrawParameters(true);
+        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true);
 
         vk::DeviceQueueCreateInfo device_queue_create_info;
         std::array queue_priorities = {1.0f};
@@ -202,6 +201,12 @@ namespace mag
 
         auto device_extensions = options.device_extensions;
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+        LOG_INFO("Enumerating device extensions");
+        for (const auto& device_extension : device_extensions)
+        {
+            LOG_INFO("Extension: {0}", device_extension);
+        }
 
         // Logical device
         vk::DeviceCreateInfo device_create_info;
