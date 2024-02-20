@@ -12,6 +12,9 @@ namespace mag
         ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
         context_options.engine_name = "Magnolia";
+        context_options.device_extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        context_options.device_extensions.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+        context_options.device_extensions.push_back(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
 
         // Validation only on debug
 #if defined(MAG_DEBUG)
