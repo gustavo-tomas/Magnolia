@@ -52,28 +52,40 @@ namespace mag
 
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
+        std::vector<const char*> instance_extensions;
+        std::vector<const char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const char*> validation_layers;
+
+        const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
+        const u32 api_version = VK_API_VERSION_1_3;
+        const u32 frame_count = 3;  // 3 for triple buffering
+
+        const std::vector<const char*> window_extensions = options.window.get_instance_extensions();
+        instance_extensions.insert(instance_extensions.begin(), window_extensions.begin(), window_extensions.end());
+
+        // Validation only on debug
+#if defined(MAG_DEBUG)
+        instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        validation_layers.push_back("VK_LAYER_KHRONOS_validation");
+#endif
+
         // Instance
         vk::ApplicationInfo app_info;
         app_info.setPApplicationName(options.application_name.c_str())
             .setApplicationVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
             .setPEngineName(options.engine_name.c_str())
             .setEngineVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
-            .setApiVersion(options.api_version);
-
-        std::vector<const char*> extensions = options.instance_extensions;
-        std::vector<const char*> window_extensions = options.window.get_instance_extensions();
-
-        extensions.insert(extensions.begin(), window_extensions.begin(), window_extensions.end());
+            .setApiVersion(api_version);
 
         vk::InstanceCreateInfo instance_create_info;
         instance_create_info.setPApplicationInfo(&app_info)
-            .setPEnabledExtensionNames(extensions)
-            .setPEnabledLayerNames(options.validation_layers);
+            .setPEnabledExtensionNames(instance_extensions)
+            .setPEnabledLayerNames(validation_layers);
 
         // Extensions
         LOG_INFO("Enumerating instance extensions");
         const auto extensions_properties = vk::enumerateInstanceExtensionProperties();
-        for (const auto& extension_name : extensions)
+        for (const auto& extension_name : instance_extensions)
         {
             LOG_INFO("Extension: {0}", extension_name);
             b8 available = false;
@@ -92,7 +104,7 @@ namespace mag
         // Validation layers
         LOG_INFO("Enumerating instance layer properties");
         const auto layer_properties = vk::enumerateInstanceLayerProperties();
-        for (const auto& layer_name : options.validation_layers)
+        for (const auto& layer_name : validation_layers)
         {
             LOG_INFO("Layer: {0}", layer_name);
             b8 available = false;
@@ -113,7 +125,7 @@ namespace mag
         VULKAN_HPP_DEFAULT_DISPATCHER.init(this->instance);
 
         this->api_version = app_info.apiVersion;
-        this->frame_count = options.frame_count;
+        this->frame_count = frame_count;
 
         // Surface
         this->surface = options.window.create_surface(this->instance);
@@ -152,7 +164,7 @@ namespace mag
             this->physical_device = available_physical_device;
             this->queue_family_index = queue_family_index;
 
-            if (properties.deviceType == options.preferred_device_type) break;
+            if (properties.deviceType == preferred_device_type) break;
         }
 
         ASSERT(this->physical_device, "Failed to find suitable physical device");
@@ -207,12 +219,9 @@ namespace mag
         std::array queue_priorities = {1.0f};
         device_queue_create_info.setQueuePriorities(queue_priorities).setQueueFamilyIndex(this->queue_family_index);
 
-        auto device_extensions = options.device_extensions;
-        device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
         LOG_INFO("Enumerating device extension properties");
         const auto device_properties = this->physical_device.enumerateDeviceExtensionProperties();
-        for (const auto& device_extension : options.device_extensions)
+        for (const auto& device_extension : device_extensions)
         {
             LOG_INFO("Extension: {0}", device_extension);
             b8 available = false;
@@ -225,7 +234,7 @@ namespace mag
                 }
             }
 
-            ASSERT(available, "Layer not available: " + str(device_extension));
+            ASSERT(available, "Extension not available: " + str(device_extension));
         }
 
         // Logical device
@@ -276,7 +285,7 @@ namespace mag
 
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
-        this->frame_provider.initialize(options.frame_count);
+        this->frame_provider.initialize(frame_count);
 
         // Descriptors
         descriptor_allocator.initialize();
