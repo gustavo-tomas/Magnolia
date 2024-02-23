@@ -13,6 +13,8 @@
 #include "vk_mem_alloc.h"
 #pragma GCC diagnostic pop
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 namespace mag
 {
     static Context* context = nullptr;
@@ -47,6 +49,8 @@ namespace mag
     void Context::initialize(const ContextCreateOptions& options)
     {
         context = this;
+
+        VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
         // Instance
         vk::ApplicationInfo app_info;
@@ -105,6 +109,8 @@ namespace mag
         }
 
         VK_CHECK(vk::createInstance(&instance_create_info, nullptr, &instance));
+
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(this->instance);
 
         this->api_version = app_info.apiVersion;
         this->frame_count = options.frame_count;
@@ -193,7 +199,9 @@ namespace mag
         vk::PhysicalDeviceFeatures features;
         features.setSamplerAnisotropy(true);
 
-        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true);
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true);
+        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
+                                                                                      &dynamic_rendering_features);
 
         vk::DeviceQueueCreateInfo device_queue_create_info;
         std::array queue_priorities = {1.0f};
@@ -202,10 +210,22 @@ namespace mag
         auto device_extensions = options.device_extensions;
         device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-        LOG_INFO("Enumerating device extensions");
-        for (const auto& device_extension : device_extensions)
+        LOG_INFO("Enumerating device extension properties");
+        const auto device_properties = this->physical_device.enumerateDeviceExtensionProperties();
+        for (const auto& device_extension : options.device_extensions)
         {
             LOG_INFO("Extension: {0}", device_extension);
+            b8 available = false;
+            for (const auto& device_property : device_properties)
+            {
+                if (std::strcmp(device_property.extensionName.data(), device_extension) == 0)
+                {
+                    available = true;
+                    break;
+                }
+            }
+
+            ASSERT(available, "Layer not available: " + str(device_extension));
         }
 
         // Logical device
@@ -216,11 +236,11 @@ namespace mag
             .setPNext(&shader_draw_parameters_features);
 
         this->device = this->physical_device.createDevice(device_create_info);
-        this->graphics_queue = this->device.getQueue(this->queue_family_index, 0);
-
         ASSERT(this->device, "Failed to create device");
 
-        this->dynamic_loader.init(this->instance, this->device);
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(this->device);
+
+        this->graphics_queue = this->device.getQueue(this->queue_family_index, 0);
 
         // Debug callback
 #if defined(MAG_DEBUG)
@@ -232,8 +252,7 @@ namespace mag
                             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
             .setPfnUserCallback(debug_callback);
 
-        this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info,
-                                                                                  nullptr, this->dynamic_loader);
+        this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info);
 #endif
 
         // Swapchain
@@ -283,7 +302,7 @@ namespace mag
 
         this->instance.destroySurfaceKHR(this->surface);
 #if defined(MAG_DEBUG)
-        this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger, nullptr, this->dynamic_loader);
+        this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger);
 #endif
         this->instance.destroy();
     }

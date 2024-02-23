@@ -11,8 +11,8 @@ namespace mag
             virtual void initialize(const uvec2& size) override;
             virtual void shutdown() override;
 
-            virtual void before_pass(CommandBuffer& command_buffer) override;
-            virtual void after_pass(CommandBuffer& command_buffer) override;
+            virtual void before_render(CommandBuffer& command_buffer) override;
+            virtual void after_render(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
             const Image& get_draw_image() const { return draw_image; };
@@ -26,6 +26,5 @@ namespace mag
             Pass pass = {};
             Image draw_image;
             uvec3 draw_size;
-            vk::Framebuffer frame_buffer;
     };
 };  // namespace mag

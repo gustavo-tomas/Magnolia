@@ -51,12 +51,11 @@ namespace mag
         init_info.DescriptorPool = static_cast<VkDescriptorPool>(descriptor_pool);
         init_info.MinImageCount = 3;
         init_info.ImageCount = 3;
-        init_info.UseDynamicRendering = false;
-        init_info.ColorAttachmentFormat = static_cast<VkFormat>(context.get_swapchain_image_format());
+        init_info.UseDynamicRendering = true;
+        init_info.ColorAttachmentFormat = static_cast<VkFormat>(render_pass.get_draw_image().get_format());
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-        ASSERT(ImGui_ImplVulkan_Init(&init_info, this->render_pass.get_pass().render_pass),
-               "Failed to initialize editor renderer backend");
+        ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
     }
@@ -90,8 +89,8 @@ namespace mag
                             vk::ImageLayout::eShaderReadOnlyOptimal);
 
         // @TODO: put this inside the render pass?
-        render_pass.before_pass(cmd);
-        cmd.begin_pass(this->render_pass.get_pass());
+        render_pass.before_render(cmd);
+        cmd.begin_rendering(this->render_pass.get_pass());
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
@@ -143,8 +142,8 @@ namespace mag
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
 
-        cmd.end_pass(this->render_pass.get_pass());
-        render_pass.after_pass(cmd);
+        cmd.end_rendering();
+        render_pass.after_render(cmd);
 
         // Return the draw image to their original layout
         cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,

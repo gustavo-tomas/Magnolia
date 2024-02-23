@@ -39,6 +39,11 @@ project "magnolia"
         "libs/spirv_reflect"
     }
 
+    defines
+    {
+        "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC"
+    }
+
     links
     {
         "fmt", "imgui"

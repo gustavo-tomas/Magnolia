@@ -25,7 +25,7 @@ namespace mag
             std::vector<const char*> validation_layers = {};
 
             vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
-            u32 api_version = VK_API_VERSION_1_1;
+            u32 api_version = VK_API_VERSION_1_3;
             u32 frame_count = 3;  // 3 for triple buffering
     };
 
@@ -75,7 +75,6 @@ namespace mag
             vk::Queue graphics_queue;
             vk::CommandPool command_pool;
             vk::Fence upload_fence;
-            vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::SampleCountFlagBits msaa_samples;
 

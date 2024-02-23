@@ -12,9 +12,6 @@ namespace mag
         ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
         context_options.engine_name = "Magnolia";
-        context_options.device_extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-        context_options.device_extensions.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
-        context_options.device_extensions.push_back(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
 
         // Validation only on debug
 #if defined(MAG_DEBUG)
@@ -91,11 +88,11 @@ namespace mag
         // @TODO: testing
 
         // Draw calls
-        render_pass.before_pass(curr_frame.command_buffer);
-        curr_frame.command_buffer.begin_pass(pass);
+        render_pass.before_render(curr_frame.command_buffer);
+        curr_frame.command_buffer.begin_rendering(pass);
         render_pass.render(curr_frame.command_buffer, triangle);
-        curr_frame.command_buffer.end_pass(pass);
-        render_pass.after_pass(curr_frame.command_buffer);
+        curr_frame.command_buffer.end_rendering();
+        render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
         editor.update(curr_frame.command_buffer, render_pass.get_draw_image());

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "camera/camera.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
@@ -15,11 +13,16 @@ namespace mag
 
     struct Pass
     {
-            vk::RenderPass render_pass;
-            vk::Framebuffer frame_buffer;
-            vk::PipelineBindPoint pipeline_bind_point;
-            vk::Rect2D render_area = {};
-            std::vector<vk::ClearValue> clear_values;
+            ~Pass()
+            {
+                delete rendering_info;
+                delete color_attachment;
+                delete depth_attachment;
+            }
+
+            vk::RenderingInfo* rendering_info;
+            vk::RenderingAttachmentInfo* color_attachment;
+            vk::RenderingAttachmentInfo* depth_attachment;
     };
 
     class RenderPass
@@ -30,9 +33,9 @@ namespace mag
             virtual void initialize(const uvec2& /* size */){};
             virtual void shutdown(){};
 
-            virtual void before_pass(CommandBuffer& /* command_buffer */){};
+            virtual void before_render(CommandBuffer& /* command_buffer */){};
             virtual void render(CommandBuffer& /* command_buffer */, const Mesh& /* mesh */){};
-            virtual void after_pass(CommandBuffer& /* command_buffer */){};
+            virtual void after_render(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
     };
@@ -43,9 +46,9 @@ namespace mag
             virtual void initialize(const uvec2& size) override;
             virtual void shutdown() override;
 
-            virtual void before_pass(CommandBuffer& command_buffer) override;
+            virtual void before_render(CommandBuffer& command_buffer) override;
             virtual void render(CommandBuffer& command_buffer, const Mesh& mesh) override;
-            virtual void after_pass(CommandBuffer& command_buffer) override;
+            virtual void after_render(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
             const Image& get_draw_image() const { return draw_image; };
@@ -65,7 +68,8 @@ namespace mag
             Image draw_image, depth_image;
             uvec3 draw_size;
             f32 render_scale = 1.0;
-            vk::Framebuffer frame_buffer;
+            vk::PipelineBindPoint pipeline_bind_point;
+            vk::Rect2D render_area;
 
             // @TODO: temporary
             struct CameraData

@@ -19,18 +19,9 @@ namespace mag
 
     void CommandBuffer::end() { this->command_buffer.end(); }
 
-    void CommandBuffer::begin_pass(const Pass& pass)
-    {
-        if (!pass.render_pass) return;
+    void CommandBuffer::begin_rendering(const Pass& pass) { this->command_buffer.beginRendering(pass.rendering_info); }
 
-        vk::RenderPassBeginInfo begin_info(pass.render_pass, pass.frame_buffer, pass.render_area, pass.clear_values);
-        this->command_buffer.beginRenderPass(begin_info, vk::SubpassContents::eInline);
-    }
-
-    void CommandBuffer::end_pass(const Pass& pass)
-    {
-        if (pass.render_pass) this->command_buffer.endRenderPass();
-    }
+    void CommandBuffer::end_rendering() { this->command_buffer.endRendering(); }
 
     void CommandBuffer::draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                              const u32 first_instance)
