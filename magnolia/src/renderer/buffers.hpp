@@ -32,10 +32,23 @@ namespace mag
             void* mapped_region = {};
     };
 
+    // @TODO: DRY
     class VertexBuffer
     {
         public:
             void initialize(const void* vertices, const u64 size_bytes, const VmaAllocator allocator);
+            void shutdown();
+
+            const Buffer& get_buffer() const { return gpu_buffer; };
+
+        private:
+            Buffer gpu_buffer;
+    };
+
+    class IndexBuffer
+    {
+        public:
+            void initialize(const void* indices, const u64 size_bytes, const VmaAllocator allocator);
             void shutdown();
 
             const Buffer& get_buffer() const { return gpu_buffer; };
