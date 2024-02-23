@@ -1,17 +1,12 @@
 #version 460
 
+#include "types.hglsl"
+
 layout (location = 0) out vec2 out_near_far;
 layout (location = 1) out vec3 out_near_point;
 layout (location = 2) out vec3 out_far_point;
 layout (location = 3) out mat4 out_view;
 layout (location = 7) out mat4 out_projection;
-
-layout (set = 0, binding = 0) uniform CameraBuffer
-{
-    mat4 view;
-    mat4 projection;
-    vec2 near_far;
-} u_camera;
 
 // Grid position are in xy clipped space
 vec3 grid_plane[6] = vec3[]
