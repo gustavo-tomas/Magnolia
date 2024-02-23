@@ -131,7 +131,8 @@ namespace mag
         // Draw the mesh
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
         command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
-        command_buffer.draw(VECSIZE(mesh.vertices), 1, 0, 0);
+        command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
+        command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
 
         // Draw the grid
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, grid_pipeline.get_handle());
