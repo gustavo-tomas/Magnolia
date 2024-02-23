@@ -14,8 +14,8 @@ namespace mag
     {
             static VertexInputDescription get_vertex_description();
 
-            glm::vec3 position;
-            glm::vec3 normal;
+            math::vec3 position;
+            math::vec3 normal;
     };
 
     struct Mesh
