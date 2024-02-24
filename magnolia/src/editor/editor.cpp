@@ -41,6 +41,10 @@ namespace mag
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+        io.Fonts->AddFontFromFileTTF("assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf", 15);
+
+        this->set_style();
+
         ASSERT(ImGui_ImplSDL2_InitForVulkan(window.get_handle()), "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
@@ -154,4 +158,61 @@ namespace mag
     void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
 
     void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
+
+    void Editor::set_style()
+    {
+        ImGuiStyle &style = ImGui::GetStyle();
+
+        style.Alpha = 1.0f;
+        style.WindowRounding = 3.0f;
+        style.WindowBorderSize = 0.0f;
+        style.FrameRounding = 3.0f;
+        style.FrameBorderSize = 0.0f;
+        style.TabRounding = 1.0f;
+        style.TabBorderSize = 0.0f;
+        style.TabBarBorderSize = 0.0f;
+
+        const ImVec4 black_opaque = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+        const ImVec4 white_opaque = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+
+        style.Colors[ImGuiCol_Text] = white_opaque;
+        // style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+        // style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+        style.Colors[ImGuiCol_WindowBg] = black_opaque;
+        // style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
+        style.Colors[ImGuiCol_Border] = black_opaque;
+        // style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, .00f, 1.00f, 1.0f);
+        style.Colors[ImGuiCol_FrameBg] = white_opaque;
+        // style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+        // style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+        style.Colors[ImGuiCol_TitleBg] = black_opaque;
+        // style.Colors[ImGuiCol_TitleBgCollapsed] = white_opaque;
+        style.Colors[ImGuiCol_TitleBgActive] = black_opaque;
+        // style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.00f, 0.00f, 1.00f);
+        style.Colors[ImGuiCol_Tab] = black_opaque;
+        // style.Colors[ImGuiCol_TabHovered] = black_opaque;
+        // style.Colors[ImGuiCol_TabActive] = black_opaque;
+        // style.Colors[ImGuiCol_TabUnfocused] = black_opaque;
+        // style.Colors[ImGuiCol_TabUnfocusedActive] = black_opaque;
+        style.Colors[ImGuiCol_ScrollbarBg] = black_opaque;
+        // style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
+        // style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
+        // style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.49f, 0.49f, 0.49f, 1.00f);
+        // style.Colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        // style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+        // style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        // style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+        // style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        // style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
+        // style.Colors[ImGuiCol_Header] = ImVec4(0.926f, 0.f, 0.f, 1.00f);
+        // style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+        // style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.926f, 0.059f, 0.098f, 1.00f);
+        // style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
+        // style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+        // style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+        // style.Colors[ImGuiCol_PlotLines] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+        // style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        // style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+        // style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+    }
 };  // namespace mag

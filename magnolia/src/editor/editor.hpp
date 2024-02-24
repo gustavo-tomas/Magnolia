@@ -19,6 +19,8 @@ namespace mag
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
+            void set_style();
+
             Window* window;
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
