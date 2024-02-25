@@ -102,10 +102,14 @@ namespace mag
         ImGui_ImplSDL2_NewFrame(window->get_handle());
         ImGui::NewFrame();
 
+        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+
         // ImGui windows goes here
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-        // ImGui::ShowDemoWindow();
-        ImGui::Begin("Panel");
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
+        ImGui::ShowDemoWindow();
+
+        ImGui::Begin("Panel", NULL, window_flags);
         ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
         ImGui::Text("Press ESC to enter fullscreen mode");
         ImGui::Text("Press TAB to capture the cursor");
@@ -114,7 +118,7 @@ namespace mag
         ImGui::Checkbox("Fit image to viewport dimensions", &fit_inside_viewport);
         ImGui::End();
 
-        ImGui::Begin("Viewport");
+        ImGui::Begin("Viewport", NULL, window_flags);
         ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
 
         const ImVec2 window_size = ImGui::GetWindowSize();
@@ -168,13 +172,16 @@ namespace mag
         style.WindowBorderSize = 0.0f;
         style.FrameRounding = 3.0f;
         style.FrameBorderSize = 0.0f;
+        style.FramePadding = ImVec2(6.0f, 4.0f);
         style.TabRounding = 1.0f;
         style.TabBorderSize = 0.0f;
         style.TabBarBorderSize = 0.0f;
+        style.DockingSeparatorSize = 1.0f;
 
         const ImVec4 black_opaque = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
         const ImVec4 white_opaque = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-        const ImVec4 gray_opaque = ImVec4(0.03f, 0.03f, 0.03f, 1.00f);
+        // const ImVec4 gray_opaque = ImVec4(0.03f, 0.03f, 0.03f, 1.00f);
+        const ImVec4 blue_opaque = ImVec4(0.03f, 0.124f, 0.315f, 1.00f);
 
         style.Colors[ImGuiCol_Text] = white_opaque;
         // style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -188,11 +195,11 @@ namespace mag
         // style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
         style.Colors[ImGuiCol_TitleBg] = black_opaque;
         // style.Colors[ImGuiCol_TitleBgCollapsed] = white_opaque;
-        style.Colors[ImGuiCol_TitleBgActive] = gray_opaque;
-        // style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.86f, 0.00f, 0.00f, 1.00f);
+        style.Colors[ImGuiCol_TitleBgActive] = blue_opaque;
+        style.Colors[ImGuiCol_MenuBarBg] = black_opaque;
         style.Colors[ImGuiCol_Tab] = black_opaque;
-        style.Colors[ImGuiCol_TabHovered] = gray_opaque;
-        style.Colors[ImGuiCol_TabActive] = gray_opaque;
+        style.Colors[ImGuiCol_TabHovered] = blue_opaque;
+        style.Colors[ImGuiCol_TabActive] = blue_opaque;
         style.Colors[ImGuiCol_TabUnfocused] = black_opaque;
         style.Colors[ImGuiCol_TabUnfocusedActive] = black_opaque;
         style.Colors[ImGuiCol_ScrollbarBg] = black_opaque;
@@ -205,7 +212,7 @@ namespace mag
         // style.Colors[ImGuiCol_Button] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
         // style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
         // style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.06f, 0.53f, 0.98f, 1.00f);
-        // style.Colors[ImGuiCol_Header] = ImVec4(0.926f, 0.f, 0.f, 1.00f);
+        style.Colors[ImGuiCol_Header] = blue_opaque;
         // style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
         // style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.926f, 0.059f, 0.098f, 1.00f);
         // style.Colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.50f);
