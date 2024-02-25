@@ -107,7 +107,7 @@ namespace mag
 
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
 
         ImGui::Begin("Panel", NULL, window_flags);
         ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
