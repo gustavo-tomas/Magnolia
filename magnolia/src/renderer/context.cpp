@@ -170,19 +170,20 @@ namespace mag
         ASSERT(this->physical_device, "Failed to find suitable physical device");
         LOG_INFO("Selected physical device: {0}", str(physical_device.getProperties().deviceName));
 
+        // @TODO: harcoded to max samples
+        // @TODO: stencil buffer might bite
         // Properties
-        // const auto properties = this->physical_device.getProperties();
-        // auto counts = properties.limits.framebufferColorSampleCounts &
-        // properties.limits.framebufferDepthSampleCounts;
+        const auto properties = this->physical_device.getProperties();
+        const auto counts =
+            properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 
-        // @TODO: hardcoded to 1 for now
-        this->msaa_samples = vk::SampleCountFlagBits::e1;
-        // if (counts & vk::SampleCountFlagBits::e2) this->msaa_samples = vk::SampleCountFlagBits::e2;
-        // if (counts & vk::SampleCountFlagBits::e4) this->msaa_samples = vk::SampleCountFlagBits::e4;
-        // if (counts & vk::SampleCountFlagBits::e8) this->msaa_samples = vk::SampleCountFlagBits::e8;
-        // if (counts & vk::SampleCountFlagBits::e16) this->msaa_samples = vk::SampleCountFlagBits::e16;
-        // if (counts & vk::SampleCountFlagBits::e32) this->msaa_samples = vk::SampleCountFlagBits::e32;
-        // if (counts & vk::SampleCountFlagBits::e64) this->msaa_samples = vk::SampleCountFlagBits::e64;
+        this->msaa_samples = (counts & vk::SampleCountFlagBits::e64)   ? vk::SampleCountFlagBits::e64
+                             : (counts & vk::SampleCountFlagBits::e32) ? vk::SampleCountFlagBits::e32
+                             : (counts & vk::SampleCountFlagBits::e16) ? vk::SampleCountFlagBits::e16
+                             : (counts & vk::SampleCountFlagBits::e8)  ? vk::SampleCountFlagBits::e8
+                             : (counts & vk::SampleCountFlagBits::e4)  ? vk::SampleCountFlagBits::e4
+                             : (counts & vk::SampleCountFlagBits::e2)  ? vk::SampleCountFlagBits::e2
+                                                                       : vk::SampleCountFlagBits::e1;
 
         // Capabilities
         auto surface_present_modes = this->physical_device.getSurfacePresentModesKHR(this->surface);

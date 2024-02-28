@@ -116,7 +116,7 @@ namespace mag
         render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.update(curr_frame.command_buffer, render_pass.get_draw_image());
+        editor.update(curr_frame.command_buffer, render_pass.get_target_image());
 
         // Present
 
@@ -127,7 +127,7 @@ namespace mag
         if (swap)
         {
             const auto extent = render_pass.get_draw_size();
-            this->context.end_frame(render_pass.get_draw_image(), {extent.x, extent.y, extent.z});
+            this->context.end_frame(render_pass.get_target_image(), {extent.x, extent.y, extent.z});
         }
 
         else

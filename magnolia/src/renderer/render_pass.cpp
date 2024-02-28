@@ -12,17 +12,22 @@ namespace mag
         auto& context = get_context();
 
         // The frame is rendered into this image and then copied to the swapchain
-        vk::ImageUsageFlags draw_image_usage = vk::ImageUsageFlagBits::eTransferSrc |
-                                               vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eStorage |
-                                               vk::ImageUsageFlagBits::eColorAttachment |
-                                               vk::ImageUsageFlagBits::eSampled;
+        const vk::ImageUsageFlags draw_image_usage =
+            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
+
+        const vk::ImageUsageFlags resolve_image_usage =
+            vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
 
         draw_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
-                              vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+                              vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
 
         depth_image.initialize({size.x, size.y, 1}, vk::Format::eD32Sfloat, /* !TODO: hardcoded depth format */
                                vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
                                context.get_msaa_samples());
+
+        resolve_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, resolve_image_usage,
+                                 vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
 
         this->draw_size = {size, 1};
         this->pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
@@ -98,6 +103,7 @@ namespace mag
         camera_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
+        resolve_image.shutdown();
         triangle_pipeline.shutdown();
         grid_pipeline.shutdown();
         triangle_vs.shutdown();
@@ -108,7 +114,7 @@ namespace mag
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
-        command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
+        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
@@ -142,7 +148,7 @@ namespace mag
     void StandardRenderPass::after_render(CommandBuffer& command_buffer)
     {
         // Transition the draw image and the swapchain image into their correct transfer layouts
-        command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
+        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
                                        vk::ImageLayout::eTransferSrcOptimal);
     }
 
@@ -167,8 +173,9 @@ namespace mag
 
         // @TODO: check attachments load/store ops
         pass.color_attachment = new vk::RenderingAttachmentInfo(
-            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
-            {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear_value);
+            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eAverage,
+            resolve_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eStore, color_clear_value);
 
         pass.depth_attachment = new vk::RenderingAttachmentInfo(
             depth_image.get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,

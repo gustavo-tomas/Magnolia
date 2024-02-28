@@ -51,7 +51,7 @@ namespace mag
             virtual void after_render(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
-            const Image& get_draw_image() const { return draw_image; };
+            const Image& get_target_image() const { return resolve_image; };
             f32 get_render_scale() const { return render_scale; };
             uvec3 get_draw_size() const { return draw_size; };
             void set_render_scale(const f32 scale);
@@ -65,7 +65,7 @@ namespace mag
             Pass pass = {};
             Pipeline triangle_pipeline, grid_pipeline;
             Shader triangle_vs, triangle_fs, grid_vs, grid_fs;
-            Image draw_image, depth_image;
+            Image draw_image, depth_image, resolve_image;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vk::PipelineBindPoint pipeline_bind_point;
