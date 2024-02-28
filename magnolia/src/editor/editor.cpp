@@ -114,36 +114,37 @@ namespace mag
         ImGui::Text("Press TAB to capture the cursor");
         ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
         ImGui::Text("Press SHIFT to alternate between editor and scene views");
-        ImGui::Checkbox("Fit image to viewport dimensions", &fit_inside_viewport);
         ImGui::End();
 
         ImGui::Begin("Viewport", NULL, window_flags);
-        ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
 
-        const ImVec2 window_size = ImGui::GetWindowSize();
-        const f32 top_offset = 20.0f;
+        const ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
+        const ImVec2 viewport_size = ImGui::GetContentRegionAvail();
 
-        if (fit_inside_viewport)
+        // See this: https://www.reddit.com/r/opengl/comments/114lxvr/comment/j91nuyz/
+
+        // Calculate the aspect ratio of the image and the content region
+        const f32 image_aspect_ratio = image_size.x / image_size.y;
+        const f32 viewport_aspect_ratio = viewport_size.x / viewport_size.y;
+
+        // Scale the image horizontally if the content region is wider than the image
+        if (viewport_aspect_ratio > image_aspect_ratio)
         {
-            // Keep the entire image inside the viewport
-            const f32 diff = window_size.y / image_size.y;
-            image_size.x *= diff;
-            image_size.y *= diff;
-
-            // Center the image inside the window
-            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f,
-                                        (window_size.y - image_size.y) * 0.5f + top_offset);
-            ImGui::SetCursorPos(image_position);
+            const f32 image_width = viewport_size.y * image_aspect_ratio;
+            const f32 offset = (viewport_size.x - image_width) / 2;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+            ImGui::Image(image_descriptor, ImVec2(image_width, viewport_size.y));
         }
 
+        // Scale the image vertically if the content region is taller than the image
         else
         {
-            // Keep the image static
-            const ImVec2 image_position((window_size.x - image_size.x) * 0.5f, top_offset);
-            ImGui::SetCursorPos(image_position);
+            const f32 image_height = viewport_size.x / image_aspect_ratio;
+            const f32 offset = (viewport_size.y - image_height) / 2;
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
+            ImGui::Image(image_descriptor, ImVec2(viewport_size.x, image_height));
         }
 
-        ImGui::Image(image_descriptor, image_size);
         ImGui::End();
 
         // End
