@@ -113,7 +113,7 @@ namespace mag
     b8 Window::is_minimized() const
     {
         const auto size = this->get_size();
-        return is_flag_set(SDL_WINDOW_MINIMIZED) || (size.x < 100 || size.y < 100);
+        return is_flag_set(SDL_WINDOW_MINIMIZED) || (size.x < 1 || size.y < 1);
 
         // Might be worth checking these too: || !(flags & SDL_WINDOW_INPUT_FOCUS) || !(flags & SDL_WINDOW_MOUSE_FOCUS)
     }
