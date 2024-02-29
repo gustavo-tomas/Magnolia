@@ -59,7 +59,7 @@ void main()
     vec3 frag_pos_3D = in_near_point + t * (in_far_point - in_near_point);
     gl_FragDepth = compute_depth(frag_pos_3D);
     
-    float linear_depth = compute_linear_depth(frag_pos_3D);
+    float linear_depth = compute_linear_depth(frag_pos_3D) * 6;
     float fading = max(0, (0.5 - linear_depth));
 
     out_color = grid(frag_pos_3D, 0.05) + grid(frag_pos_3D, 0.5); // adding multiple resolution for the grid
