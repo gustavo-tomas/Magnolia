@@ -63,8 +63,8 @@ namespace mag
                         // Bottom face
                         0, 1, 5, 5, 4, 0};
 
-        mesh.vbo.initialize(mesh.vertices.data(), VECSIZE(mesh.vertices) * sizeof(Vertex), context.get_allocator());
-        mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32), context.get_allocator());
+        mesh.vbo.initialize(mesh.vertices.data(), VECSIZE(mesh.vertices) * sizeof(Vertex));
+        mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
     }
 
     void Renderer::shutdown()
