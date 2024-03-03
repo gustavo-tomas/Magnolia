@@ -47,7 +47,6 @@ namespace mag
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
-            DescriptorAllocator& get_descriptor_allocator() { return this->descriptor_allocator; };
             DescriptorLayoutCache& get_descriptor_cache() { return this->descriptor_cache; };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
@@ -80,7 +79,6 @@ namespace mag
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
-            DescriptorAllocator descriptor_allocator;
             DescriptorLayoutCache descriptor_cache;
     };
 

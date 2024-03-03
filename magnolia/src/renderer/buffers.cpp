@@ -25,6 +25,7 @@ namespace mag
                                          &allocation, nullptr)));
 
         this->buffer = vk::Buffer(vk_buffer);
+        this->size = size_bytes;
     }
 
     void Buffer::shutdown() { vmaDestroyBuffer(allocator, buffer, allocation); }
@@ -43,6 +44,8 @@ namespace mag
         memcpy(mapped_region, data, size_bytes);
         this->unmap_memory();
     }
+
+    u64 Buffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
 
     // VertexBuffer
     // -----------------------------------------------------------------------------------------------------------------

@@ -7,114 +7,6 @@
 
 namespace mag
 {
-    vk::DescriptorPool createPool(const vk::Device device, const DescriptorAllocator::PoolSizes& pool_sizes,
-                                  const u32 count, const vk::DescriptorPoolCreateFlags flags)
-    {
-        std::vector<vk::DescriptorPoolSize> sizes;
-        sizes.reserve(pool_sizes.size());
-        for (const auto& [type, size] : pool_sizes) sizes.push_back({type, static_cast<u32>(size * count)});
-
-        const vk::DescriptorPoolCreateInfo pool_info(flags, count, sizes);
-        const vk::DescriptorPool descriptor_pool = device.createDescriptorPool(pool_info);
-
-        return descriptor_pool;
-    }
-
-    // DescriptorAllocator
-    // -----------------------------------------------------------------------------------------------------------------
-    void DescriptorAllocator::initialize() {}
-
-    void DescriptorAllocator::shutdown()
-    {
-        auto& context = get_context();
-
-        for (const auto& p : free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
-        for (const auto& p : used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
-    }
-
-    b8 DescriptorAllocator::allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout)
-    {
-        auto& context = get_context();
-
-        // initialize the currentPool handle if it's null
-        if (current_pool == VK_NULL_HANDLE)
-        {
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
-        }
-
-        vk::DescriptorSetAllocateInfo alloc_info(current_pool, 1, &layout);
-
-        // try to allocate the descriptor set
-        vk::Result alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
-        b8 need_reallocate = false;
-
-        switch (alloc_result)
-        {
-            case vk::Result::eSuccess:
-                return true;
-
-            // reallocate pool
-            case vk::Result::eErrorFragmentedPool:
-            case vk::Result::eErrorOutOfPoolMemory:
-                need_reallocate = true;
-                break;
-
-            // unrecoverable error
-            default:
-                return false;
-        }
-
-        if (need_reallocate)
-        {
-            // allocate a new pool and retry
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
-
-            alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
-
-            if (alloc_result == vk::Result::eSuccess) return true;
-        }
-
-        // if it still fails then we have big issues
-        return false;
-    }
-
-    void DescriptorAllocator::reset_pools()
-    {
-        auto& context = get_context();
-
-        // reset all used pools and add them to the free pools
-        for (const auto& p : used_pools)
-        {
-            VK_CHECK(VK_CAST(vkResetDescriptorPool(context.get_device(), p, 0)));
-            free_pools.push_back(p);
-        }
-
-        // clear the used pools, since we've put them all in the free pools
-        used_pools.clear();
-
-        // reset the current pool handle back to null
-        current_pool = VK_NULL_HANDLE;
-    }
-
-    vk::DescriptorPool DescriptorAllocator::grab_pool()
-    {
-        auto& context = get_context();
-
-        // there are reusable pools availible
-        if (free_pools.size() > 0)
-        {
-            // grab pool from the back of the vector and remove it from there.
-            vk::DescriptorPool pool = free_pools.back();
-            free_pools.pop_back();
-            return pool;
-        }
-
-        // no pools availible, so create a new one
-        return createPool(context.get_device(), descriptor_sizes, 1000, {});
-    }
-
     // DescriptorLayoutCache
     // -----------------------------------------------------------------------------------------------------------------
     void DescriptorLayoutCache::initialize() {}
@@ -221,70 +113,66 @@ namespace mag
 
     // DescriptorBuilder
     // -----------------------------------------------------------------------------------------------------------------
-    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator)
+    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layout_cache)
     {
-        DescriptorBuilder builder;
-        builder.cache = layout_cache;
-        builder.alloc = allocator;
+        DescriptorBuilder descriptor_builder;
+        descriptor_builder.cache = layout_cache;
 
-        return builder;
+        return descriptor_builder;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection,
-                                               const vk::DescriptorBufferInfo* buffer_info)
+    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection)
     {
         // create the descriptor binding for the layout
         vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
                                                    shader_reflection.shader_stage);
-        bindings.push_back(new_binding);
 
-        // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, shader_reflection.binding, {}, 1, shader_reflection.descriptor_type, {},
-                                         buffer_info);
-        writes.push_back(new_write);
+        bindings.push_back(new_binding);
 
         return *this;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection,
-                                               const vk::DescriptorImageInfo* image_info)
-    {
-        // create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
-                                                   shader_reflection.shader_stage);
-        bindings.push_back(new_binding);
-
-        // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, shader_reflection.binding, {}, 1, shader_reflection.descriptor_type,
-                                         image_info);
-        writes.push_back(new_write);
-
-        return *this;
-    }
-
-    b8 DescriptorBuilder::build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
-    {
-        // build layout first
-        vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings);
-        layout = cache->create_descriptor_layout(&layout_info);
-
-        // allocate descriptor
-        b8 success = alloc->allocate(&set, layout);
-        if (!success) return false;
-
-        // write descriptor
-        return this->build(set);
-    }
-
-    b8 DescriptorBuilder::build(vk::DescriptorSet& set)
+    void DescriptorBuilder::build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer)
     {
         auto& context = get_context();
+        auto& physical_device = context.get_physical_device();
+        auto& device = context.get_device();
 
-        // write descriptor
-        for (vk::WriteDescriptorSet& w : writes) w.setDstSet(set);
+        // Build layout first
+        const vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT,
+                                                            bindings);
+        layout = cache->create_descriptor_layout(&layout_info);
 
-        context.get_device().updateDescriptorSets(writes, {});
+        // @TODO: only need to be done once
+        // 1. Get properties
+        vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
+        vk::PhysicalDeviceProperties2 device_properties;
+        device_properties.pNext = &descriptor_buffer_properties;
 
-        return true;
+        physical_device.getProperties2(&device_properties);
+
+        // 2. Get size
+        // Get set layout descriptor sizes.
+        u64 size = device.getDescriptorSetLayoutSizeEXT(layout);
+        u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
+
+        // Adjust set layout sizes to satisfy alignment requirements.
+        size = (size + alignment - 1) & ~(alignment - 1);
+
+        LOG_WARNING("SIZE: {0}", size);
+
+        // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+        // u64 offset = device.getDescriptorSetLayoutBindingOffsetEXT(layout, bindings[0].binding);
+
+        // 4. Put the descriptors into buffers
+
+        // Global matrices uniform buffer
+        const vk::DescriptorAddressInfoEXT address_info(data_buffer.get_device_address(), data_buffer.get_size(),
+                                                        vk::Format::eUndefined);
+
+        const vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
+
+        device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
+                                descriptor_buffer->get_data());
     }
 };  // namespace mag

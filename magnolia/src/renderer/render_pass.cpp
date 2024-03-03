@@ -58,21 +58,23 @@ namespace mag
 
         {
             // @TODO: Create one camera buffer and descriptor set per frame
-            camera_buffer.initialize(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                     VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-                                     VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
+            camera_buffer.initialize(
+                sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
+
+            // @TODO: hardcoded size
+            uniform_descriptor_buffer.initialize(
+                256, VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT, context.get_allocator());
+
+            uniform_descriptor_buffer.map_memory();
 
             auto& descriptor_cache = context.get_descriptor_cache();
-            auto& descriptor_allocator = context.get_descriptor_allocator();
-
-            // Descriptor set allocate info
-            const vk::DescriptorBufferInfo descriptor_buffer_info(camera_buffer.get_buffer(), 0, sizeof(CameraData));
 
             // Create descriptor sets
-            ASSERT(DescriptorBuilder::begin(&descriptor_cache, &descriptor_allocator)
-                       .bind(triangle_vs.get_reflection(), &descriptor_buffer_info)
-                       .build(descriptor_set, set_layout),
-                   "Failed to build descriptor set");
+            DescriptorBuilder::begin(&descriptor_cache)
+                .bind(triangle_vs.get_reflection())
+                .build(set_layout, &uniform_descriptor_buffer, camera_buffer);
         }
 
         // Pipelines
@@ -99,6 +101,9 @@ namespace mag
     {
         auto& context = get_context();
         context.get_device().waitIdle();
+
+        uniform_descriptor_buffer.unmap_memory();
+        uniform_descriptor_buffer.shutdown();
 
         camera_buffer.shutdown();
         draw_image.shutdown();
@@ -131,8 +136,20 @@ namespace mag
         command_buffer.get_handle().setScissor(0, scissor);
 
         // The pipeline layout should be the same for both pipelines
-        command_buffer.get_handle().bindDescriptorSets(pipeline_bind_point, triangle_pipeline.get_layout(), 0,
-                                                       descriptor_set, {});
+        std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
+
+        descriptor_buffer_binding_infos.push_back(
+            {uniform_descriptor_buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+
+        // Bind descriptor buffers and set offsets
+        command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
+
+        std::vector<u32> buffer_indices = {0};
+        std::vector<u64> buffer_offsets = {0};
+
+        // Global Matrices (set 0)
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
+            vk::PipelineBindPoint::eGraphics, triangle_pipeline.get_layout(), 0, buffer_indices, buffer_offsets);
 
         // Draw the mesh
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());

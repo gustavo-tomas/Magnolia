@@ -79,7 +79,7 @@ namespace mag
                     vec2 near_far;    // 8  bytes (2  x 4)
             };
 
-            Buffer camera_buffer;
+            Buffer camera_buffer, uniform_descriptor_buffer;
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout set_layout;
             Camera* camera;

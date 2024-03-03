@@ -53,7 +53,10 @@ namespace mag
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
         std::vector<const char*> instance_extensions;
-        std::vector<const char*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const char*> device_extensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
         std::vector<const char*> validation_layers;
 
         const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
@@ -212,7 +215,17 @@ namespace mag
         vk::PhysicalDeviceFeatures features;
         features.setSamplerAnisotropy(true);
 
-        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true);
+        vk::PhysicalDeviceSynchronization2FeaturesKHR synchronization_2_features(true);
+
+        vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
+        descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
+        descriptor_indexing_features.setPNext(&synchronization_2_features);
+
+        vk::PhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features(true, {}, {},
+                                                                                        &descriptor_indexing_features);
+        vk::PhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features(true, {}, {}, {},
+                                                                                 &buffer_device_address_features);
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &descriptor_buffer_features);
         vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
                                                                                       &dynamic_rendering_features);
 
@@ -283,13 +296,13 @@ namespace mag
         allocator_create_info.device = this->device;
         allocator_create_info.instance = this->instance;
         allocator_create_info.vulkanApiVersion = this->api_version;
+        allocator_create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
         this->frame_provider.initialize(frame_count);
 
         // Descriptors
-        descriptor_allocator.initialize();
         descriptor_cache.initialize();
     }
 
@@ -299,7 +312,6 @@ namespace mag
 
         vmaDestroyAllocator(this->allocator);
 
-        this->descriptor_allocator.shutdown();
         this->descriptor_cache.shutdown();
         this->frame_provider.shutdown();
 

@@ -7,45 +7,13 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "renderer/buffers.hpp"
+#include "renderer/pipeline.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag
 {
     class Context;
-
-    // DescriptorAllocator
-    // -----------------------------------------------------------------------------------------------------------------
-    class DescriptorAllocator
-    {
-        public:
-            std::vector<std::pair<vk::DescriptorType, f32>> sizes = {{vk::DescriptorType::eSampler, 0.5f},
-                                                                     {vk::DescriptorType::eCombinedImageSampler, 4.0f},
-                                                                     {vk::DescriptorType::eSampledImage, 4.0f},
-                                                                     {vk::DescriptorType::eStorageImage, 1.0f},
-                                                                     {vk::DescriptorType::eUniformTexelBuffer, 1.0f},
-                                                                     {vk::DescriptorType::eStorageTexelBuffer, 1.0f},
-                                                                     {vk::DescriptorType::eUniformBuffer, 2.0f},
-                                                                     {vk::DescriptorType::eStorageBuffer, 2.0f},
-                                                                     {vk::DescriptorType::eUniformBufferDynamic, 1.0f},
-                                                                     {vk::DescriptorType::eStorageBufferDynamic, 1.0f},
-                                                                     {vk::DescriptorType::eInputAttachment, 0.5f}};
-
-            using PoolSizes = std::vector<std::pair<vk::DescriptorType, f32>>;
-
-            void initialize();
-            void shutdown();
-
-            b8 allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout);
-            void reset_pools();
-
-        private:
-            vk::DescriptorPool grab_pool();
-
-            vk::DescriptorPool current_pool = {};
-            PoolSizes descriptor_sizes;
-            std::vector<vk::DescriptorPool> used_pools;
-            std::vector<vk::DescriptorPool> free_pools;
-    };
 
     // DescriptorLayoutCache
     // -----------------------------------------------------------------------------------------------------------------
@@ -80,22 +48,15 @@ namespace mag
     class DescriptorBuilder
     {
         public:
-            static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
+            static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache);
 
-            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
-                                    const vk::DescriptorBufferInfo* buffer_info);
+            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection);
 
-            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection,
-                                    const vk::DescriptorImageInfo* image_info);
-
-            b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
-            b8 build(vk::DescriptorSet& set);
+            void build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer);
 
         private:
-            std::vector<vk::WriteDescriptorSet> writes;
             std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
             DescriptorLayoutCache* cache = {};
-            DescriptorAllocator* alloc = {};
     };
 };  // namespace mag

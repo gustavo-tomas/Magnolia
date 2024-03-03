@@ -23,6 +23,9 @@ namespace mag
 
             const vk::Buffer& get_buffer() const { return buffer; };
             const VmaAllocation& get_allocation() const { return allocation; };
+            void* get_data() const { return mapped_region; };
+            u64 get_size() const { return size; };
+            u64 get_device_address() const;
 
         private:
             vk::Buffer buffer = {};
@@ -30,6 +33,7 @@ namespace mag
             VmaAllocation allocation = {};
             VmaAllocator allocator = {};
             void* mapped_region = {};
+            u64 size = {};
     };
 
     // @TODO: DRY
