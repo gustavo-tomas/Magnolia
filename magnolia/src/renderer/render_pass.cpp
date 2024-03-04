@@ -62,19 +62,20 @@ namespace mag
                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                                      VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-            // @TODO: hardcoded size
+            u64 buffer_size = 0;
+
+            // Create descriptor sets
+            DescriptorBuilder descriptor_builder = DescriptorBuilder::begin(&context.get_descriptor_cache());
+            descriptor_builder.bind(triangle_vs.get_reflection()).build_layout(set_layout, buffer_size);
+
             uniform_descriptor_buffer.initialize(
-                256, VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                buffer_size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                 VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
             uniform_descriptor_buffer.map_memory();
 
-            auto& descriptor_cache = context.get_descriptor_cache();
-
-            // Create descriptor sets
-            DescriptorBuilder::begin(&descriptor_cache)
-                .bind(triangle_vs.get_reflection())
-                .build(set_layout, &uniform_descriptor_buffer, camera_buffer);
+            descriptor_builder.build(set_layout, &uniform_descriptor_buffer, camera_buffer);
         }
 
         // Pipelines

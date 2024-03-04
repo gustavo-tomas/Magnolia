@@ -52,11 +52,13 @@ namespace mag
 
             DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection);
 
+            void build_layout(vk::DescriptorSetLayout& layout, u64& layout_size);
             void build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer);
 
         private:
-            std::vector<vk::DescriptorSetLayoutBinding> bindings;
-
             DescriptorLayoutCache* cache = {};
+            std::vector<vk::DescriptorSetLayoutBinding> bindings;
+            vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
+            vk::PhysicalDeviceProperties2 device_properties;
     };
 };  // namespace mag

@@ -24,15 +24,15 @@ namespace mag
     {
         auto& context = get_context();
 
-        DescriptorLayoutInfo layoutinfo = {};
-        layoutinfo.bindings.reserve(info->bindingCount);
+        DescriptorLayoutInfo layout_info = {};
+        layout_info.bindings.reserve(info->bindingCount);
         b8 is_sorted = true;
         i32 last_binding = -1;
 
         // copy from the direct info struct into our own one
         for (u32 i = 0; i < info->bindingCount; i++)
         {
-            layoutinfo.bindings.push_back(info->pBindings[i]);
+            layout_info.bindings.push_back(info->pBindings[i]);
 
             // check that the bindings are in strict increasing order
             if (static_cast<i32>(info->pBindings[i].binding) > last_binding)
@@ -45,13 +45,13 @@ namespace mag
         // sort the bindings if they aren't in order
         if (!is_sorted)
         {
-            std::sort(layoutinfo.bindings.begin(), layoutinfo.bindings.end(),
+            std::sort(layout_info.bindings.begin(), layout_info.bindings.end(),
                       [](vk::DescriptorSetLayoutBinding& a, vk::DescriptorSetLayoutBinding& b)
                       { return a.binding < b.binding; });
         }
 
         // try to grab from cache
-        auto it = layout_cache.find(layoutinfo);
+        auto it = layout_cache.find(layout_info);
         if (it != layout_cache.end())
             return it->second;
 
@@ -62,7 +62,7 @@ namespace mag
             VK_CHECK(context.get_device().createDescriptorSetLayout(info, nullptr, &layout));
 
             // add to cache
-            layout_cache[layoutinfo] = layout;
+            layout_cache[layout_info] = layout;
             return layout;
         }
     }
@@ -123,7 +123,7 @@ namespace mag
 
     DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection)
     {
-        // create the descriptor binding for the layout
+        // Create the descriptor binding for the layout
         vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
                                                    shader_reflection.shader_stage);
 
@@ -132,7 +132,7 @@ namespace mag
         return *this;
     }
 
-    void DescriptorBuilder::build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer)
+    void DescriptorBuilder::build_layout(vk::DescriptorSetLayout& layout, u64& layout_size)
     {
         auto& context = get_context();
         auto& physical_device = context.get_physical_device();
@@ -145,21 +145,22 @@ namespace mag
 
         // @TODO: only need to be done once
         // 1. Get properties
-        vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
-        vk::PhysicalDeviceProperties2 device_properties;
         device_properties.pNext = &descriptor_buffer_properties;
-
         physical_device.getProperties2(&device_properties);
 
         // 2. Get size
-        // Get set layout descriptor sizes.
-        u64 size = device.getDescriptorSetLayoutSizeEXT(layout);
-        u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
+        // Get set layout descriptor sizes and adjust them to satisfy alignment requirements.
+        const u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
+        layout_size = device.getDescriptorSetLayoutSizeEXT(layout);
+        layout_size = (layout_size + alignment - 1) & ~(alignment - 1);
+    }
 
-        // Adjust set layout sizes to satisfy alignment requirements.
-        size = (size + alignment - 1) & ~(alignment - 1);
+    void DescriptorBuilder::build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer)
+    {
+        auto& context = get_context();
+        auto& device = context.get_device();
 
-        LOG_WARNING("SIZE: {0}", size);
+        (void)layout;  // warnings
 
         // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
         // u64 offset = device.getDescriptorSetLayoutBindingOffsetEXT(layout, bindings[0].binding);
