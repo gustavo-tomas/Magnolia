@@ -8,7 +8,6 @@
 
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
-#include "renderer/pipeline.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag
@@ -50,7 +49,7 @@ namespace mag
         public:
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache);
 
-            DescriptorBuilder& bind(const Shader::SpvReflection& shader_reflection);
+            DescriptorBuilder& bind(const SpvReflectShaderModule& shader_reflection);
 
             void build_layout(vk::DescriptorSetLayout& layout, u64& layout_size);
             void build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer);

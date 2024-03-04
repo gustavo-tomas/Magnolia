@@ -121,13 +121,23 @@ namespace mag
         return descriptor_builder;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const Shader::SpvReflection& shader_reflection)
+    DescriptorBuilder& DescriptorBuilder::bind(const SpvReflectShaderModule& shader_reflection)
     {
-        // Create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(shader_reflection.binding, shader_reflection.descriptor_type, 1,
-                                                   shader_reflection.shader_stage);
+        const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
 
-        bindings.push_back(new_binding);
+        // Create the descriptor binding for the layout
+        for (const auto& descriptor_set : shader_reflection.descriptor_sets)
+        {
+            for (u32 b = 0; b < descriptor_set.binding_count; b++)
+            {
+                const u32 binding = descriptor_set.bindings[b]->binding;
+                const vk::DescriptorType type =
+                    static_cast<vk::DescriptorType>(descriptor_set.bindings[b]->descriptor_type);
+
+                vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage);
+                bindings.push_back(new_binding);
+            }
+        }
 
         return *this;
     }
