@@ -49,14 +49,13 @@ namespace mag
         public:
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache);
 
-            DescriptorBuilder& bind(const SpvReflectShaderModule& shader_reflection);
+            void build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set,
+                              vk::DescriptorSetLayout& layout, u64& layout_size);
 
-            void build_layout(vk::DescriptorSetLayout& layout, u64& layout_size);
             void build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer);
 
         private:
             DescriptorLayoutCache* cache = {};
-            std::vector<vk::DescriptorSetLayoutBinding> bindings;
             vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
             vk::PhysicalDeviceProperties2 device_properties;
     };

@@ -121,39 +121,38 @@ namespace mag
         return descriptor_builder;
     }
 
-    DescriptorBuilder& DescriptorBuilder::bind(const SpvReflectShaderModule& shader_reflection)
+    void DescriptorBuilder::build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set,
+                                         vk::DescriptorSetLayout& layout, u64& layout_size)
     {
-        const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
+        ASSERT(shader_reflection.descriptor_set_count > set, "Invalid descriptor set");
 
-        // Create the descriptor binding for the layout
-        for (const auto& descriptor_set : shader_reflection.descriptor_sets)
-        {
-            for (u32 b = 0; b < descriptor_set.binding_count; b++)
-            {
-                const u32 binding = descriptor_set.bindings[b]->binding;
-                const vk::DescriptorType type =
-                    static_cast<vk::DescriptorType>(descriptor_set.bindings[b]->descriptor_type);
-
-                vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage);
-                bindings.push_back(new_binding);
-            }
-        }
-
-        return *this;
-    }
-
-    void DescriptorBuilder::build_layout(vk::DescriptorSetLayout& layout, u64& layout_size)
-    {
         auto& context = get_context();
         auto& physical_device = context.get_physical_device();
         auto& device = context.get_device();
 
-        // Build layout first
+        const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
+
+        // Create the descriptor binding for the layout
+        const SpvReflectDescriptorSet& descriptor_set = shader_reflection.descriptor_sets[set];
+
+        // Create all bindings for the specified set
+        std::vector<vk::DescriptorSetLayoutBinding> bindings;
+        for (u32 b = 0; b < descriptor_set.binding_count; b++)
+        {
+            const u32 binding = descriptor_set.bindings[b]->binding;
+            const vk::DescriptorType type =
+                static_cast<vk::DescriptorType>(descriptor_set.bindings[b]->descriptor_type);
+
+            vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage);
+            bindings.push_back(new_binding);
+        }
+
+        // Build layout
         const vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT,
                                                             bindings);
         layout = cache->create_descriptor_layout(&layout_info);
 
-        // @TODO: only need to be done once
+        // @TODO: only needs to be done once
         // 1. Get properties
         device_properties.pNext = &descriptor_buffer_properties;
         physical_device.getProperties2(&device_properties);

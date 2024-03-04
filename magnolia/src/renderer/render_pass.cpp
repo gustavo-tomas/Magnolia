@@ -66,7 +66,7 @@ namespace mag
 
             // Create descriptor sets
             DescriptorBuilder descriptor_builder = DescriptorBuilder::begin(&context.get_descriptor_cache());
-            descriptor_builder.bind(triangle_vs.get_reflection()).build_layout(set_layout, buffer_size);
+            descriptor_builder.build_layout(triangle_vs.get_reflection(), 0, set_layout, buffer_size);
 
             uniform_descriptor_buffer.initialize(
                 buffer_size,
