@@ -58,13 +58,15 @@ namespace mag
 
         {
             // @TODO: Create one camera buffer and descriptor set per frame
-            camera_buffer.initialize(sizeof(CameraData),
-                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                     VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+            std::vector<u64> sizes = {sizeof(CameraData), sizeof(ModelData)};
+            for (const auto& size : sizes)
+            {
+                Buffer buffer;
+                buffer.initialize(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-            model_buffer.initialize(sizeof(ModelData),
-                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                    VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+                data_buffers.push_back(buffer);
+            }
 
             // @TODO: temp, find a better place
             const u64 MAX_MODEL_COUNT = 50'000;
@@ -81,7 +83,7 @@ namespace mag
 
             uniform_descriptor.buffer.map_memory();
 
-            descriptor_builder.build(uniform_descriptor, camera_buffer, model_buffer);
+            descriptor_builder.build(uniform_descriptor, data_buffers);
         }
 
         // Pipelines
@@ -109,11 +111,11 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
+        for (auto& buffer : data_buffers) buffer.shutdown();
+
         uniform_descriptor.buffer.unmap_memory();
         uniform_descriptor.buffer.shutdown();
 
-        camera_buffer.shutdown();
-        model_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         resolve_image.shutdown();
@@ -138,13 +140,13 @@ namespace mag
 
         const CameraData camera_data = {
             .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
-        camera_buffer.copy(&camera_data, sizeof(CameraData));
+        data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
 
         mat4 model_matrix = mat4(1.0f);
         model_matrix = translate(model_matrix, vec3(1, 2, 3));
 
         const ModelData model_data = {.model = model_matrix};
-        model_buffer.copy(&model_data, sizeof(ModelData));
+        data_buffers[1].copy(&model_data, data_buffers[1].get_size());
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);

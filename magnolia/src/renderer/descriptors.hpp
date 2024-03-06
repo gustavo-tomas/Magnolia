@@ -57,7 +57,7 @@ namespace mag
         public:
             Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
 
-            void build(const Descriptor& descriptor, const Buffer& global_buffer, const Buffer& model_buffer);
+            void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
 
         private:
             vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;

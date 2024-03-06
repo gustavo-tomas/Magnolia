@@ -163,7 +163,7 @@ namespace mag
         return descriptor;
     }
 
-    void DescriptorBuilder::build(const Descriptor& descriptor, const Buffer& global_buffer, const Buffer& model_buffer)
+    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers)
     {
         auto& context = get_context();
         auto& device = context.get_device();
@@ -171,21 +171,17 @@ namespace mag
         // 4. Put the descriptors into buffers
         char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
 
-        // Global matrices uniform buffer
-        const vk::DescriptorAddressInfoEXT address_info(global_buffer.get_device_address(), global_buffer.get_size(),
-                                                        vk::Format::eUndefined);
+        for (u64 i = 0; i < data_buffers.size(); i++)
+        {
+            const vk::DescriptorAddressInfoEXT address_info(data_buffers[i].get_device_address(),
+                                                            data_buffers[i].get_size(), vk::Format::eUndefined);
 
-        vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
+            const vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
 
-        device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
-                                descriptor_buffer_data);
+            const u64 offset = i ? i * descriptor.size + descriptor.offset : 0;
 
-        const vk::DescriptorAddressInfoEXT model_address_info(model_buffer.get_device_address(),
-                                                              model_buffer.get_size(), vk::Format::eUndefined);
-
-        buffer_descriptor_info.setData({&model_address_info});
-
-        device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
-                                descriptor_buffer_data + descriptor.size + descriptor.offset);
+            device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
+                                    descriptor_buffer_data + offset);
+        }
     }
 };  // namespace mag

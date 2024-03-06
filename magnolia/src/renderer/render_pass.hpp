@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "camera/camera.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/image.hpp"
@@ -85,7 +87,7 @@ namespace mag
                     mat4 model;  // 64 bytes (16 x 4)
             };
 
-            Buffer camera_buffer, model_buffer;
+            std::vector<Buffer> data_buffers;
             Descriptor uniform_descriptor;
             Camera* camera;
             // @TODO: temporary
