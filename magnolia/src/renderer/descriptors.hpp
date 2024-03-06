@@ -42,20 +42,24 @@ namespace mag
             std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layout_cache;
     };
 
+    struct Descriptor
+    {
+            vk::DescriptorSetLayout layout = {};
+            Buffer buffer;
+            u64 size;
+            u64 offset;
+    };
+
     // DescriptorBuilder
     // -----------------------------------------------------------------------------------------------------------------
     class DescriptorBuilder
     {
         public:
-            static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache);
+            Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
 
-            void build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set,
-                              vk::DescriptorSetLayout& layout, u64& layout_size);
-
-            void build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer);
+            void build(const Descriptor& descriptor, const Buffer& global_buffer, const Buffer& model_buffer);
 
         private:
-            DescriptorLayoutCache* cache = {};
             vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
             vk::PhysicalDeviceProperties2 device_properties;
     };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera/camera.hpp"
+#include "renderer/descriptors.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
@@ -79,9 +80,13 @@ namespace mag
                     vec2 near_far;    // 8  bytes (2  x 4)
             };
 
-            Buffer camera_buffer, uniform_descriptor_buffer;
-            vk::DescriptorSet descriptor_set;
-            vk::DescriptorSetLayout set_layout;
+            struct ModelData
+            {
+                    mat4 model;  // 64 bytes (16 x 4)
+            };
+
+            Buffer camera_buffer, model_buffer;
+            Descriptor uniform_descriptor;
             Camera* camera;
             // @TODO: temporary
     };

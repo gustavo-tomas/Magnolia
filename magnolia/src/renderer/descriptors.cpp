@@ -113,22 +113,16 @@ namespace mag
 
     // DescriptorBuilder
     // -----------------------------------------------------------------------------------------------------------------
-    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layout_cache)
-    {
-        DescriptorBuilder descriptor_builder;
-        descriptor_builder.cache = layout_cache;
-
-        return descriptor_builder;
-    }
-
-    void DescriptorBuilder::build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set,
-                                         vk::DescriptorSetLayout& layout, u64& layout_size)
+    Descriptor DescriptorBuilder::build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set)
     {
         ASSERT(shader_reflection.descriptor_set_count > set, "Invalid descriptor set");
 
         auto& context = get_context();
         auto& physical_device = context.get_physical_device();
         auto& device = context.get_device();
+        auto& cache = context.get_descriptor_cache();
+
+        Descriptor descriptor;
 
         const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
 
@@ -150,7 +144,7 @@ namespace mag
         // Build layout
         const vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT,
                                                             bindings);
-        layout = cache->create_descriptor_layout(&layout_info);
+        descriptor.layout = cache.create_descriptor_layout(&layout_info);
 
         // @TODO: only needs to be done once
         // 1. Get properties
@@ -160,29 +154,38 @@ namespace mag
         // 2. Get size
         // Get set layout descriptor sizes and adjust them to satisfy alignment requirements.
         const u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
-        layout_size = device.getDescriptorSetLayoutSizeEXT(layout);
-        layout_size = (layout_size + alignment - 1) & ~(alignment - 1);
+        descriptor.size = device.getDescriptorSetLayoutSizeEXT(descriptor.layout);
+        descriptor.size = (descriptor.size + alignment - 1) & ~(alignment - 1);
+
+        // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+        descriptor.offset = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, 0);
+
+        return descriptor;
     }
 
-    void DescriptorBuilder::build(vk::DescriptorSetLayout& layout, Buffer* descriptor_buffer, const Buffer& data_buffer)
+    void DescriptorBuilder::build(const Descriptor& descriptor, const Buffer& global_buffer, const Buffer& model_buffer)
     {
         auto& context = get_context();
         auto& device = context.get_device();
 
-        (void)layout;  // warnings
-
-        // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
-        // u64 offset = device.getDescriptorSetLayoutBindingOffsetEXT(layout, bindings[0].binding);
-
         // 4. Put the descriptors into buffers
+        char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
 
         // Global matrices uniform buffer
-        const vk::DescriptorAddressInfoEXT address_info(data_buffer.get_device_address(), data_buffer.get_size(),
+        const vk::DescriptorAddressInfoEXT address_info(global_buffer.get_device_address(), global_buffer.get_size(),
                                                         vk::Format::eUndefined);
 
-        const vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
+        vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
 
         device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
-                                descriptor_buffer->get_data());
+                                descriptor_buffer_data);
+
+        const vk::DescriptorAddressInfoEXT model_address_info(model_buffer.get_device_address(),
+                                                              model_buffer.get_size(), vk::Format::eUndefined);
+
+        buffer_descriptor_info.setData({&model_address_info});
+
+        device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
+                                descriptor_buffer_data + descriptor.size + descriptor.offset);
     }
 };  // namespace mag

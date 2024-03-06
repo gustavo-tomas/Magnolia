@@ -62,28 +62,34 @@ namespace mag
                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                                      VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-            u64 buffer_size = 0;
+            model_buffer.initialize(sizeof(ModelData),
+                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                    VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+            // @TODO: temp, find a better place
+            const u64 MAX_MODEL_COUNT = 50'000;
 
             // Create descriptor sets
-            DescriptorBuilder descriptor_builder = DescriptorBuilder::begin(&context.get_descriptor_cache());
-            descriptor_builder.build_layout(triangle_vs.get_reflection(), 0, set_layout, buffer_size);
+            DescriptorBuilder descriptor_builder;
+            uniform_descriptor = descriptor_builder.build_layout(triangle_vs.get_reflection(), 0);
 
-            uniform_descriptor_buffer.initialize(
-                buffer_size,
+            // Create descriptor buffer that holds global data and model transform
+            uniform_descriptor.buffer.initialize(
+                (MAX_MODEL_COUNT + 1) * uniform_descriptor.size,
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                 VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-            uniform_descriptor_buffer.map_memory();
+            uniform_descriptor.buffer.map_memory();
 
-            descriptor_builder.build(set_layout, &uniform_descriptor_buffer, camera_buffer);
+            descriptor_builder.build(uniform_descriptor, camera_buffer, model_buffer);
         }
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_image.get_format(),
                                                                    depth_image.get_format());
 
-        triangle_pipeline.initialize(pipeline_create_info, {set_layout}, {triangle_vs, triangle_fs},
-                                     Vertex::get_vertex_description(), size);
+        triangle_pipeline.initialize(pipeline_create_info, {uniform_descriptor.layout, uniform_descriptor.layout},
+                                     {triangle_vs, triangle_fs}, Vertex::get_vertex_description(), size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -94,8 +100,8 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, {set_layout}, {grid_vs, grid_fs}, {}, size,
-                                 color_blend_attachment);
+        grid_pipeline.initialize(pipeline_create_info, {uniform_descriptor.layout, uniform_descriptor.layout},
+                                 {grid_vs, grid_fs}, {}, size, color_blend_attachment);
     }
 
     void StandardRenderPass::shutdown()
@@ -103,10 +109,11 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        uniform_descriptor_buffer.unmap_memory();
-        uniform_descriptor_buffer.shutdown();
+        uniform_descriptor.buffer.unmap_memory();
+        uniform_descriptor.buffer.shutdown();
 
         camera_buffer.shutdown();
+        model_buffer.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         resolve_image.shutdown();
@@ -133,6 +140,12 @@ namespace mag
             .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
         camera_buffer.copy(&camera_data, sizeof(CameraData));
 
+        mat4 model_matrix = mat4(1.0f);
+        model_matrix = translate(model_matrix, vec3(1, 2, 3));
+
+        const ModelData model_data = {.model = model_matrix};
+        model_buffer.copy(&model_data, sizeof(ModelData));
+
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
@@ -140,7 +153,7 @@ namespace mag
         std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
 
         descriptor_buffer_binding_infos.push_back(
-            {uniform_descriptor_buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+            {uniform_descriptor.buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
 
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
@@ -148,9 +161,14 @@ namespace mag
         std::vector<u32> buffer_indices = {0};
         std::vector<u64> buffer_offsets = {0};
 
-        // Global Matrices (set 0)
+        // Global matrices (set 0)
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
             vk::PipelineBindPoint::eGraphics, triangle_pipeline.get_layout(), 0, buffer_indices, buffer_offsets);
+
+        // Model matrices (set 1)
+        buffer_offsets[0] = uniform_descriptor.size;
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
+            vk::PipelineBindPoint::eGraphics, triangle_pipeline.get_layout(), 1, buffer_indices, buffer_offsets);
 
         // Draw the mesh
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
