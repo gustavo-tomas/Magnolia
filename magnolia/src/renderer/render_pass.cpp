@@ -164,13 +164,13 @@ namespace mag
         std::vector<u64> buffer_offsets = {0};
 
         // Global matrices (set 0)
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-            vk::PipelineBindPoint::eGraphics, triangle_pipeline.get_layout(), 0, buffer_indices, buffer_offsets);
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+                                                                  0, buffer_indices, buffer_offsets);
 
         // Model matrices (set 1)
         buffer_offsets[0] = uniform_descriptor.size;
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-            vk::PipelineBindPoint::eGraphics, triangle_pipeline.get_layout(), 1, buffer_indices, buffer_offsets);
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+                                                                  1, buffer_indices, buffer_offsets);
 
         // Draw the mesh
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
