@@ -9,7 +9,7 @@
 - Gcc 11.4.0
 - Python 3.10.12
 - Cmake 3.22.1
-- Vulkan SDK 1.1.198
+- Vulkan SDK 1.3.268
 
 ## Build
 To build and run the program use
