@@ -36,6 +36,7 @@ project "magnolia"
         "libs/vma/include",
         "libs/imgui",
         "libs/glm",
+        "libs/stb",
         "libs/spirv_reflect"
     }
 

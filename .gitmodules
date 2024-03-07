@@ -19,3 +19,6 @@
 [submodule "libs/spirv_reflect"]
 	path = libs/spirv_reflect
 	url = https://github.com/gustavo-tomas/SPIRV-Reflect.git
+[submodule "libs/stb"]
+	path = libs/stb
+	url = https://github.com/gustavo-tomas/stb.git
