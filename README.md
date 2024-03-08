@@ -24,4 +24,3 @@ python3 build.py debug
 - [[VulkanTutorial](https://github.com/Overv/VulkanTutorial)] Vulkan foundations
 - [[VkGuide](https://github.com/vblanco20-1/vulkan-guide)] Render to texture and other vulkan optimizations
 - [[ASliceOfRendering](https://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/)] Generating an infinite grid using shaders
-- [[Textures](https://www.textures.com/download/PBR0682/139217)] Cube textures

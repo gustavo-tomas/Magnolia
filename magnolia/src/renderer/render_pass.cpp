@@ -70,7 +70,7 @@ namespace mag
             }
 
             // Create diffuse texture
-            diffuse_texture = *load_image("assets/images/TCom_Pavement_PaintedConcrete3_1K_albedo.png");
+            diffuse_texture = *load_image("assets/images/DefaultAlbedoSeamless.png");
 
             // @TODO: temp, find a better place
             const u64 MAX_MODEL_COUNT = 50'000;
