@@ -88,7 +88,8 @@ namespace mag
             };
 
             std::vector<Buffer> data_buffers;
-            Descriptor uniform_descriptor;
+            Image diffuse_texture;
+            Descriptor uniform_descriptor, image_descriptor;
             Camera* camera;
             // @TODO: temporary
     };

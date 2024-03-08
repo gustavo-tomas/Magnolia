@@ -4,6 +4,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -68,12 +69,16 @@ namespace mag
                 data_buffers.push_back(buffer);
             }
 
+            // Create diffuse texture
+            diffuse_texture = *load_image("assets/images/TCom_Pavement_PaintedConcrete3_1K_albedo.png");
+
             // @TODO: temp, find a better place
             const u64 MAX_MODEL_COUNT = 50'000;
 
             // Create descriptor sets
             DescriptorBuilder descriptor_builder;
             uniform_descriptor = descriptor_builder.build_layout(triangle_vs.get_reflection(), 0);
+            image_descriptor = descriptor_builder.build_layout(triangle_fs.get_reflection(), 2);
 
             // Create descriptor buffer that holds global data and model transform
             uniform_descriptor.buffer.initialize(
@@ -81,17 +86,30 @@ namespace mag
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                 VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
+            // Create descriptor buffer that holds texture data
+            image_descriptor.buffer.initialize(
+                (MAX_MODEL_COUNT + 1) * image_descriptor.size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
+                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
             uniform_descriptor.buffer.map_memory();
+            image_descriptor.buffer.map_memory();
 
             descriptor_builder.build(uniform_descriptor, data_buffers);
+            descriptor_builder.build(image_descriptor, {diffuse_texture});
         }
+
+        // Descriptor layouts
+        const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
+            uniform_descriptor.layout, uniform_descriptor.layout, image_descriptor.layout};
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_image.get_format(),
                                                                    depth_image.get_format());
 
-        triangle_pipeline.initialize(pipeline_create_info, {uniform_descriptor.layout, uniform_descriptor.layout},
-                                     {triangle_vs, triangle_fs}, Vertex::get_vertex_description(), size);
+        triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {triangle_vs, triangle_fs},
+                                     Vertex::get_vertex_description(), size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -102,8 +120,8 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, {uniform_descriptor.layout, uniform_descriptor.layout},
-                                 {grid_vs, grid_fs}, {}, size, color_blend_attachment);
+        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {grid_vs, grid_fs}, {}, size,
+                                 color_blend_attachment);
     }
 
     void StandardRenderPass::shutdown()
@@ -116,6 +134,10 @@ namespace mag
         uniform_descriptor.buffer.unmap_memory();
         uniform_descriptor.buffer.shutdown();
 
+        image_descriptor.buffer.unmap_memory();
+        image_descriptor.buffer.shutdown();
+
+        diffuse_texture.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         resolve_image.shutdown();
@@ -142,10 +164,7 @@ namespace mag
             .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
         data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
 
-        mat4 model_matrix = mat4(1.0f);
-        model_matrix = translate(model_matrix, vec3(1, 2, 3));
-
-        const ModelData model_data = {.model = model_matrix};
+        const ModelData model_data = {.model = mat4(1.0f)};
         data_buffers[1].copy(&model_data, data_buffers[1].get_size());
 
         command_buffer.get_handle().setViewport(0, viewport);
@@ -157,10 +176,15 @@ namespace mag
         descriptor_buffer_binding_infos.push_back(
             {uniform_descriptor.buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
 
+        descriptor_buffer_binding_infos.push_back(
+            {image_descriptor.buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
+                                                               vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
+
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
         std::vector<u32> buffer_indices = {0};
+        std::vector<u32> image_indices = {1};
         std::vector<u64> buffer_offsets = {0};
 
         // Global matrices (set 0)
@@ -171,6 +195,11 @@ namespace mag
         buffer_offsets[0] = uniform_descriptor.size;
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   1, buffer_indices, buffer_offsets);
+
+        // Images (set 2)
+        buffer_offsets[0] = 0;
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+                                                                  2, image_indices, buffer_offsets);
 
         // Draw the mesh
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());

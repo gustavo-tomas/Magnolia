@@ -4,6 +4,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -165,8 +166,7 @@ namespace mag
 
     void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers)
     {
-        auto& context = get_context();
-        auto& device = context.get_device();
+        auto& device = get_context().get_device();
 
         // 4. Put the descriptors into buffers
         char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
@@ -176,11 +176,31 @@ namespace mag
             const vk::DescriptorAddressInfoEXT address_info(data_buffers[i].get_device_address(),
                                                             data_buffers[i].get_size(), vk::Format::eUndefined);
 
-            const vk::DescriptorGetInfoEXT buffer_descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
+            const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
 
             const u64 offset = i ? i * descriptor.size + descriptor.offset : 0;
 
-            device.getDescriptorEXT(buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
+            device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
+                                    descriptor_buffer_data + offset);
+        }
+    }
+
+    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Image>& images)
+    {
+        auto& device = get_context().get_device();
+
+        // 4. Put the descriptors into buffers
+        char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
+
+        for (u64 i = 0; i < images.size(); i++)
+        {
+            const vk::DescriptorImageInfo image_info(images[i].get_sampler().get_handle(), images[i].get_image_view());
+
+            const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler, {&image_info});
+
+            const u64 offset = i * descriptor.size + descriptor.offset;
+
+            device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize,
                                     descriptor_buffer_data + offset);
         }
     }

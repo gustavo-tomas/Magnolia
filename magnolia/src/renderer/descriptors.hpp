@@ -13,6 +13,7 @@
 namespace mag
 {
     class Context;
+    class Image;
 
     // DescriptorLayoutCache
     // -----------------------------------------------------------------------------------------------------------------
@@ -58,6 +59,7 @@ namespace mag
             Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
 
             void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
+            void build(const Descriptor& descriptor, const std::vector<Image>& images);
 
         private:
             vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;

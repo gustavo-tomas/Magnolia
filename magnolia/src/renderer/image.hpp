@@ -5,6 +5,8 @@
 
 namespace mag
 {
+    Image* load_image(const str& file);
+
     class Image
     {
         public:

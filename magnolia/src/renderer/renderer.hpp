@@ -28,6 +28,6 @@ namespace mag
             Controller controller;
 
             // @TODO: temporary
-            Mesh mesh;
+            Cube cube;
     };
 };  // namespace mag
