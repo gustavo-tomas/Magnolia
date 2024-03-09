@@ -91,8 +91,8 @@ namespace mag
                                                      vk::PipelineStageFlagBits::eFragmentShader,
                                                      vk::DependencyFlagBits::eByRegion, {}, {}, barrier);
 
-                    mip_width = std::clamp(mip_width / 2, 1, mip_width);
-                    mip_height = std::clamp(mip_height / 2, 1, mip_height);
+                    if (mip_width > 1) mip_width /= 2;
+                    if (mip_height > 1) mip_height /= 2;
                 }
 
                 barrier.subresourceRange.baseMipLevel = mip_levels - 1;
