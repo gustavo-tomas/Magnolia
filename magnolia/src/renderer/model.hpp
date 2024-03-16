@@ -1,5 +1,9 @@
 #pragma once
 
+#include <assimp/Importer.hpp>
+#include <map>
+#include <memory>
+
 #include "renderer/buffers.hpp"
 
 namespace mag
@@ -27,6 +31,12 @@ namespace mag
             std::vector<u32> indices;
     };
 
+    struct Model
+    {
+            std::vector<Mesh> meshes;
+            str name;
+    };
+
     inline VertexInputDescription Vertex::get_vertex_description()
     {
         VertexInputDescription description = {};
@@ -50,6 +60,19 @@ namespace mag
 
         return description;
     }
+
+    class ModelLoader
+    {
+        public:
+            void initialize();
+            void shutdown();
+
+            std::shared_ptr<Model> load(const str& file);
+
+        private:
+            std::unique_ptr<Assimp::Importer> importer;
+            std::map<str, std::shared_ptr<Model>> models;
+    };
 
     // @TODO: testing
     class Cube

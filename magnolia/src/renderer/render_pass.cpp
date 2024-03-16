@@ -155,7 +155,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Mesh& mesh)
+    void StandardRenderPass::render(CommandBuffer& command_buffer, const Model& model)
     {
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(render_area.offset, render_area.extent);
@@ -201,11 +201,14 @@ namespace mag
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   2, image_indices, buffer_offsets);
 
-        // Draw the mesh
-        command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
-        command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
-        command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
-        command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
+        for (auto& mesh : model.meshes)
+        {
+            // Draw the mesh
+            command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
+            command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
+            command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
+            command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
+        }
 
         // Draw the grid
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, grid_pipeline.get_handle());

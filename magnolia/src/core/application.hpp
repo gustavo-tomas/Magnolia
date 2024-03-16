@@ -2,6 +2,7 @@
 
 #include "core/window.hpp"
 #include "editor/editor.hpp"
+#include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
 
 namespace mag
@@ -14,9 +15,17 @@ namespace mag
 
             void run();
 
+            static ModelLoader& get_model_loader() { return model_loader; };
+
         private:
             Window window;
             Renderer renderer;
             Editor editor;
+
+            static ModelLoader model_loader;
+
+            // @TODO: temp
+            std::shared_ptr<Model> model;
+            Cube cube;
     };
 };  // namespace mag

@@ -4,6 +4,8 @@
 
 namespace mag
 {
+    ModelLoader Application::model_loader;
+
     void Application::initialize(const str& title, const u32 width, const u32 height)
     {
         WindowOptions window_options;
@@ -22,6 +24,10 @@ namespace mag
         editor.initialize(window);
         LOG_SUCCESS("Editor initialized");
 
+        // Create the model loader
+        model_loader.initialize();
+        LOG_SUCCESS("ModelLoader initialized");
+
         // Set window callbacks
         window.on_resize(
             [&](const uvec2& size) mutable
@@ -35,10 +41,19 @@ namespace mag
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->renderer.on_mouse_move(mouse_dir); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
+
+        // @TODO: temp load assets
+        model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
+        cube.initialize();
     }
 
     void Application::shutdown()
     {
+        cube.shutdown();
+
+        model_loader.shutdown();
+        LOG_SUCCESS("ModelLoader destroyed");
+
         editor.shutdown();
         LOG_SUCCESS("Editor destroyed");
 
@@ -82,7 +97,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor, dt);
+            renderer.update(editor, *model, dt);
         }
     }
 };  // namespace mag

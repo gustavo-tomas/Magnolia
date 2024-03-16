@@ -37,7 +37,7 @@ namespace mag
             virtual void shutdown(){};
 
             virtual void before_render(CommandBuffer& /* command_buffer */){};
-            virtual void render(CommandBuffer& /* command_buffer */, const Mesh& /* mesh */){};
+            virtual void render(CommandBuffer& /* command_buffer */, const Model& /* model */){};
             virtual void after_render(CommandBuffer& /* command_buffer */){};
 
             virtual Pass& get_pass() = 0;
@@ -50,7 +50,7 @@ namespace mag
             virtual void shutdown() override;
 
             virtual void before_render(CommandBuffer& command_buffer) override;
-            virtual void render(CommandBuffer& command_buffer, const Mesh& mesh) override;
+            virtual void render(CommandBuffer& command_buffer, const Model& model) override;
             virtual void after_render(CommandBuffer& command_buffer) override;
 
             virtual Pass& get_pass() override { return pass; };
