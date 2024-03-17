@@ -45,6 +45,7 @@ namespace mag
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->renderer.on_mouse_move(mouse_dir); });
+        window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
 
         // @TODO: temp load assets

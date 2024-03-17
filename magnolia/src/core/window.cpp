@@ -39,6 +39,7 @@ namespace mag
         while (SDL_PollEvent(&e) != 0)
         {
             const SDL_Keycode key = e.key.keysym.sym;
+            const u8 button = e.button.button;
 
             switch (e.type)
             {
@@ -65,6 +66,18 @@ namespace mag
                     // Ignore first mouse move after capturing cursor
                     if (!ignore_mouse_motion_events) mouse_move(ivec2(e.motion.xrel, e.motion.yrel));
                     ignore_mouse_motion_events = false;
+                    break;
+
+                case SDL_MOUSEBUTTONDOWN:
+                    this->button_press(button);
+
+                    button_state[button] = true;
+                    button_update[button] = update_counter;
+                    break;
+
+                case SDL_MOUSEBUTTONUP:
+                    button_state[button] = false;
+                    button_update[button] = update_counter;
                     break;
 
                 case SDL_WINDOWEVENT:
@@ -102,11 +115,15 @@ namespace mag
 
     void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
 
+    void Window::on_button_press(std::function<void(const u8)> callback) { this->button_press = std::move(callback); }
+
     void Window::on_event(std::function<void(SDL_Event e)> callback) { this->editor_events = std::move(callback); }
 
     b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 
     b8 Window::is_key_down(const SDL_Keycode key) { return key_state[key]; }
+
+    b8 Window::is_button_down(const u8 button) { return button_state[button]; }
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
