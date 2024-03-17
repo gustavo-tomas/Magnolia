@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
@@ -70,7 +71,7 @@ namespace mag
             }
 
             // Create diffuse texture
-            diffuse_texture = *load_image("assets/images/DefaultAlbedoSeamless.png");
+            diffuse_texture = Application::get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
 
             // @TODO: temp, find a better place
             const u64 MAX_MODEL_COUNT = 50'000;
@@ -97,7 +98,7 @@ namespace mag
             image_descriptor.buffer.map_memory();
 
             descriptor_builder.build(uniform_descriptor, data_buffers);
-            descriptor_builder.build(image_descriptor, {diffuse_texture});
+            descriptor_builder.build(image_descriptor, {*diffuse_texture});
         }
 
         // Descriptor layouts
@@ -137,7 +138,6 @@ namespace mag
         image_descriptor.buffer.unmap_memory();
         image_descriptor.buffer.shutdown();
 
-        diffuse_texture.shutdown();
         draw_image.shutdown();
         depth_image.shutdown();
         resolve_image.shutdown();
@@ -183,8 +183,8 @@ namespace mag
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
-        std::vector<u32> buffer_indices = {0};
-        std::vector<u32> image_indices = {1};
+        const std::vector<u32> buffer_indices = {0};
+        const std::vector<u32> image_indices = {1};
         std::vector<u64> buffer_offsets = {0};
 
         // Global matrices (set 0)
