@@ -3,6 +3,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
@@ -74,20 +75,20 @@ namespace mag
                 }
             }
 
-            // Material @TODO
-            // const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            // Material
+            const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-            // const str directory = file.substr(0, file.find_last_of('/'));
-            // for (u32 i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
-            // {
-            //     aiString ai_mat_name;
-            //     material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);  // !TODO assert this
-            //     const str material_name = ai_mat_name.C_Str();
+            const str directory = file.substr(0, file.find_last_of('/'));
+            for (u32 i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
+            {
+                aiString ai_mat_name;
+                material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);  // !TODO assert this
+                const str material_name = ai_mat_name.C_Str();
 
-            //     // Textures
-            //     auto texture = image_loader->load_image(directory + "/" + material_name, context, resources);
-            //     textures.push_back(texture);
-            // }
+                // Textures
+                auto texture = Application::get_texture_loader().load(directory + "/" + material_name);
+                textures.push_back(texture);
+            }
 
             // Buffers
             VertexBuffer vbo;
@@ -96,7 +97,7 @@ namespace mag
             vbo.initialize(vertices.data(), vertices.size() * sizeof(Vertex));
             ibo.initialize(indices.data(), indices.size() * sizeof(u32));
 
-            Mesh new_mesh = {vbo, ibo, vertices, indices};
+            Mesh new_mesh = {vbo, ibo, vertices, indices, textures};
             model->meshes.push_back(new_mesh);
         }
 

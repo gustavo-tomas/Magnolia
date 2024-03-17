@@ -7,9 +7,21 @@
 
 namespace mag
 {
-    // @TODO: temporary
-    Image* load_image(const str& file)
+    void TextureLoader::initialize() {}
+
+    void TextureLoader::shutdown()
     {
+        for (auto& [name, texture] : textures)
+        {
+            texture->shutdown();
+        }
+    }
+
+    std::shared_ptr<Image> TextureLoader::load(const str& file)
+    {
+        auto it = textures.find(file);
+        if (it != textures.end()) return it->second;
+
         auto& context = get_context();
 
         i32 tex_width, tex_height, tex_channels;
@@ -108,7 +120,8 @@ namespace mag
 
         staging_buffer.shutdown();
 
-        return image;
+        textures[file] = std::shared_ptr<Image>(image);
+        return textures[file];
     }
 
     void Image::initialize(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,

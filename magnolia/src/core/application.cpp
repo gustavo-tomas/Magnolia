@@ -5,6 +5,7 @@
 namespace mag
 {
     ModelLoader Application::model_loader;
+    TextureLoader Application::texture_loader;
 
     void Application::initialize(const str& title, const u32 width, const u32 height)
     {
@@ -28,6 +29,10 @@ namespace mag
         model_loader.initialize();
         LOG_SUCCESS("ModelLoader initialized");
 
+        // Create the texture loader
+        texture_loader.initialize();
+        LOG_SUCCESS("TextureLoader initialized");
+
         // Set window callbacks
         window.on_resize(
             [&](const uvec2& size) mutable
@@ -50,6 +55,9 @@ namespace mag
     void Application::shutdown()
     {
         cube.shutdown();
+
+        texture_loader.shutdown();
+        LOG_SUCCESS("TextureLoader destroyed");
 
         model_loader.shutdown();
         LOG_SUCCESS("ModelLoader destroyed");

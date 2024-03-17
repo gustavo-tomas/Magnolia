@@ -3,8 +3,10 @@
 #include <assimp/Importer.hpp>
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "renderer/buffers.hpp"
+#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -29,6 +31,7 @@ namespace mag
             IndexBuffer ibo;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
+            std::vector<std::shared_ptr<Image>> textures;
     };
 
     struct Model

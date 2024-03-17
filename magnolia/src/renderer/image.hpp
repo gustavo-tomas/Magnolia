@@ -1,12 +1,13 @@
 #pragma once
 
+#include <map>
+#include <memory>
+
 #include "renderer/context.hpp"
 #include "renderer/sampler.hpp"
 
 namespace mag
 {
-    Image* load_image(const str& file);
-
     class Image
     {
         public:
@@ -31,5 +32,17 @@ namespace mag
             VmaAllocation allocation;
 
             u32 mip_levels;
+    };
+
+    class TextureLoader
+    {
+        public:
+            void initialize();
+            void shutdown();
+
+            std::shared_ptr<Image> load(const str& file);
+
+        private:
+            std::map<str, std::shared_ptr<Image>> textures;
     };
 };  // namespace mag
