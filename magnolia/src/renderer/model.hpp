@@ -64,11 +64,11 @@ namespace mag
         return description;
     }
 
-    class ModelLoader
+    class ModelLoader : public Singleton
     {
         public:
-            void initialize();
-            void shutdown();
+            virtual void initialize() override;
+            virtual void shutdown() override;
 
             std::shared_ptr<Model> load(const str& file);
 
