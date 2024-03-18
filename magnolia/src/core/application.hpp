@@ -28,6 +28,7 @@ namespace mag
             static TextureLoader texture_loader;
 
             // @TODO: temp
+            StandardRenderPass render_pass;
             std::shared_ptr<Model> model;
             Cube cube;
     };

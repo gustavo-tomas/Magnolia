@@ -16,7 +16,7 @@ namespace mag
             void initialize(Window& window);
             void shutdown();
 
-            void update(Editor& editor, const Model& model, const f32 dt);
+            void update(Editor& editor, StandardRenderPass& render_pass, const Model& model, const f32 dt);
 
             void on_resize(const uvec2& size);
             void on_mouse_move(const ivec2& mouse_dir);
@@ -24,7 +24,6 @@ namespace mag
         private:
             Window* window;
             Context context;
-            StandardRenderPass render_pass;
             Camera camera;
             Controller controller;
     };

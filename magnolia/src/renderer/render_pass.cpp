@@ -9,7 +9,7 @@
 
 namespace mag
 {
-    void StandardRenderPass::initialize(const uvec2& size)
+    void StandardRenderPass::initialize(const uvec2& size, const Model& model)
     {
         auto& context = get_context();
 
@@ -97,8 +97,14 @@ namespace mag
             uniform_descriptor.buffer.map_memory();
             image_descriptor.buffer.map_memory();
 
+            // Put all model textures in a single array
+            std::vector<Image> textures;
+            for (auto& mesh : model.meshes)
+                for (auto& texture : mesh.textures) textures.push_back(*texture);
+
             descriptor_builder.build(uniform_descriptor, data_buffers);
-            descriptor_builder.build(image_descriptor, {*diffuse_texture});
+            descriptor_builder.build(image_descriptor, textures);
+            // descriptor_builder.build(image_descriptor, {*diffuse_texture});
         }
 
         // Descriptor layouts
@@ -110,7 +116,7 @@ namespace mag
                                                                    depth_image.get_format());
 
         triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {triangle_vs, triangle_fs},
-                                     Vertex::get_vertex_description(), size);
+                                     Vertex::get_vertex_description(), draw_size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -121,7 +127,7 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {grid_vs, grid_fs}, {}, size,
+        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {grid_vs, grid_fs}, {}, draw_size,
                                  color_blend_attachment);
     }
 
@@ -155,13 +161,13 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Model& model)
+    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, const Model& model)
     {
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(render_area.offset, render_area.extent);
 
         const CameraData camera_data = {
-            .view = camera->get_view(), .projection = camera->get_projection(), .near_far = camera->get_near_far()};
+            .view = camera.get_view(), .projection = camera.get_projection(), .near_far = camera.get_near_far()};
         data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
 
         const ModelData model_data = {.model = mat4(1.0f)};
@@ -196,13 +202,21 @@ namespace mag
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   1, buffer_indices, buffer_offsets);
 
-        // Images (set 2)
-        buffer_offsets[0] = 0;
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
-                                                                  2, image_indices, buffer_offsets);
-
-        for (auto& mesh : model.meshes)
+        u64 tex_idx = 0;
+        for (u64 i = 0; i < model.meshes.size(); i++)
         {
+            const auto& mesh = model.meshes[i];
+
+            // Images (set 2)
+            for (u64 j = 0; j < mesh.textures.size(); j++)
+            {
+                buffer_offsets[0] = tex_idx * image_descriptor.size;
+                command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
+                    pipeline_bind_point, triangle_pipeline.get_layout(), 2, image_indices, buffer_offsets);
+
+                tex_idx++;
+            }
+
             // Draw the mesh
             command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
             command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
@@ -262,6 +276,4 @@ namespace mag
         this->on_resize({draw_image.get_extent().width, draw_image.get_extent().height});
         LOG_INFO("Render scale: {0:.2f}", render_scale);
     }
-
-    void StandardRenderPass::set_camera(Camera* camera) { this->camera = camera; }
 };  // namespace mag

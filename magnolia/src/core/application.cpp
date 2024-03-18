@@ -40,6 +40,7 @@ namespace mag
                 LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
                 renderer.on_resize(size);
                 editor.on_resize(size);
+                render_pass.on_resize(size);
             });
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
@@ -51,11 +52,18 @@ namespace mag
         // @TODO: temp load assets
         model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
         cube.initialize();
+        LOG_SUCCESS("Models imported");
+
+        this->render_pass.initialize({width, height}, *model);
+        LOG_SUCCESS("RenderPass initialized");
     }
 
     void Application::shutdown()
     {
         cube.shutdown();
+
+        this->render_pass.shutdown();
+        LOG_SUCCESS("RenderPass destroyed");
 
         texture_loader.shutdown();
         LOG_SUCCESS("TextureLoader destroyed");
@@ -106,7 +114,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor, *model, dt);
+            renderer.update(editor, render_pass, *model, dt);
         }
     }
 };  // namespace mag
