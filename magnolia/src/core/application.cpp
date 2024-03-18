@@ -54,7 +54,7 @@ namespace mag
         cube.initialize();
         LOG_SUCCESS("Models imported");
 
-        this->render_pass.initialize({width, height}, *model);
+        this->render_pass.initialize({width, height}, {cube.get_model(), *model});
         LOG_SUCCESS("RenderPass initialized");
     }
 
@@ -114,7 +114,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor, render_pass, *model, dt);
+            renderer.update(editor, render_pass, {cube.get_model(), *model}, dt);
         }
     }
 };  // namespace mag

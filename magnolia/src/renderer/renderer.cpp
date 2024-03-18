@@ -17,7 +17,7 @@ namespace mag
         this->context.initialize(context_options);
         LOG_SUCCESS("Context initialized");
 
-        camera.initialize({10.35f, 5.13f, 10.35f}, {-20.0f, -45.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
+        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
         LOG_SUCCESS("Camera initialized");
 
         controller.initialize(&camera, &window);
@@ -38,7 +38,8 @@ namespace mag
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, const Model& model, const f32 dt)
+    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, const std::vector<Model>& models,
+                          const f32 dt)
     {
         // @TODO: maybe this shouldnt be here
         controller.update(dt);
@@ -63,7 +64,7 @@ namespace mag
         render_pass.before_render(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_rendering(pass);
 
-        render_pass.render(curr_frame.command_buffer, camera, model);
+        render_pass.render(curr_frame.command_buffer, camera, models);
 
         curr_frame.command_buffer.end_rendering();
         render_pass.after_render(curr_frame.command_buffer);

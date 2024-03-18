@@ -34,11 +34,11 @@ namespace mag
     class StandardRenderPass
     {
         public:
-            void initialize(const uvec2& size, const Model& model);
+            void initialize(const uvec2& size, const std::vector<Model>& models);
             void shutdown();
 
             void before_render(CommandBuffer& command_buffer);
-            void render(CommandBuffer& command_buffer, const Camera& camera, const Model& model);
+            void render(CommandBuffer& command_buffer, const Camera& camera, const std::vector<Model>& models);
             void after_render(CommandBuffer& command_buffer);
 
             Pass& get_pass() { return pass; };
@@ -73,7 +73,6 @@ namespace mag
             };
 
             std::vector<Buffer> data_buffers;
-            std::shared_ptr<Image> diffuse_texture;
             Descriptor uniform_descriptor, image_descriptor;
             // @TODO: temporary
     };
