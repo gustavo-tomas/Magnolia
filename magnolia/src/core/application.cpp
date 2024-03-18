@@ -50,11 +50,12 @@ namespace mag
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
 
         // @TODO: temp load assets
-        model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
         cube.initialize();
-        LOG_SUCCESS("Models imported");
+        model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
+        models.push_back(cube.get_model());
+        models.push_back(*model);
 
-        this->render_pass.initialize({width, height}, {cube.get_model(), *model});
+        this->render_pass.initialize(window.get_size(), models);
         LOG_SUCCESS("RenderPass initialized");
     }
 
@@ -114,7 +115,7 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor, render_pass, {cube.get_model(), *model}, dt);
+            renderer.update(editor, render_pass, models, dt);
         }
     }
 };  // namespace mag
