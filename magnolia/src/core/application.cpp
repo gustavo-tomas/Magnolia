@@ -6,6 +6,19 @@ namespace mag
 {
     ModelLoader Application::model_loader;
     TextureLoader Application::texture_loader;
+    std::mutex Application::meshes_mutex;
+    std::vector<Model> Application::models;
+    std::vector<std::future<void>> Application::futures;
+    StandardRenderPass Application::render_pass;
+    Window Application::window;
+
+    void Application::load_mesh(const str file)
+    {
+        std::lock_guard<std::mutex> lock(meshes_mutex);
+        auto model = Application::get_model_loader().load(file);
+
+        models.push_back(*model);
+    }
 
     void Application::initialize(const str& title, const u32 width, const u32 height)
     {
@@ -51,12 +64,27 @@ namespace mag
 
         // @TODO: temp load assets
         cube.initialize();
-        model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
         models.push_back(cube.get_model());
-        models.push_back(*model);
 
-        this->render_pass.initialize(window.get_size(), models);
+        // {
+        //     auto model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
+        //     models.push_back(*model);
+        // }
+
+        this->render_pass.initialize(window.get_size());
         LOG_SUCCESS("RenderPass initialized");
+
+        const std::vector<str> models_paths = {
+            "assets/models/sponza/sponza.obj",     "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj", "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj", "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj", "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj", "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj", "assets/models/backpack/backpack.obj",
+            "assets/models/backpack/backpack.obj"};
+
+        for (const auto& model_path : models_paths)
+            futures.push_back(std::async(std::launch::async, &Application::load_mesh, model_path));
     }
 
     void Application::shutdown()

@@ -9,5 +9,6 @@ layout (location = 0) out vec4 out_frag_color;
 
 void main()
 {
-	out_frag_color = texture(u_diffuse_texture, in_tex_coords);
+	// out_frag_color = texture(u_diffuse_texture, in_tex_coords);
+	out_frag_color = vec4(in_normal, 1.0);
 }

@@ -25,18 +25,30 @@ namespace mag
             math::vec2 tex_coords;
     };
 
-    struct Mesh
+    struct VkMesh
     {
             VertexBuffer vbo;
             IndexBuffer ibo;
+            // std::vector<std::shared_ptr<Image>> textures;
+    };
+
+    struct Mesh
+    {
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
-            std::vector<std::shared_ptr<Image>> textures;
     };
 
     struct Model
     {
+            b8 init = false;
             std::vector<Mesh> meshes;
+            str name;
+    };
+
+    struct VkModel
+    {
+            b8 init = false;
+            std::vector<VkMesh> meshes;
             str name;
     };
 
@@ -70,11 +82,11 @@ namespace mag
             virtual void initialize() override;
             virtual void shutdown() override;
 
-            std::shared_ptr<Model> load(const str& file);
+            static std::shared_ptr<Model> load(const str& file);
 
         private:
-            std::unique_ptr<Assimp::Importer> importer;
-            std::map<str, std::shared_ptr<Model>> models;
+            static std::unique_ptr<Assimp::Importer> importer;
+            static std::map<str, std::shared_ptr<Model>> models;
     };
 
     // @TODO: testing

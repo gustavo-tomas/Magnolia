@@ -28,6 +28,15 @@ namespace mag
     {
         this->context.get_device().waitIdle();
 
+        for (auto& vk_model : vk_models)
+        {
+            for (auto& vk_mesh : vk_model.meshes)
+            {
+                vk_mesh.ibo.shutdown();
+                vk_mesh.vbo.shutdown();
+            }
+        }
+
         this->controller.shutdown();
         LOG_SUCCESS("Controller destroyed");
 
@@ -38,9 +47,31 @@ namespace mag
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, const std::vector<Model>& models,
-                          const f32 dt)
+    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, std::vector<Model>& models, const f32 dt)
     {
+        for (u64 m = 0; m < models.size(); m++)
+        {
+            auto& model = models[m];
+
+            VkModel vk_model;
+            if (!model.init)
+            {
+                for (u64 i = 0; i < model.meshes.size(); i++)
+                {
+                    auto& mesh = model.meshes[i];
+                    VkMesh vk_mesh;
+
+                    vk_mesh.vbo.initialize(mesh.vertices.data(), mesh.vertices.size() * sizeof(Vertex));
+                    vk_mesh.ibo.initialize(mesh.indices.data(), mesh.indices.size() * sizeof(u32));
+
+                    vk_model.meshes.push_back(vk_mesh);
+                }
+
+                vk_models.push_back(vk_model);
+                model.init = true;
+            }
+        }
+
         // @TODO: maybe this shouldnt be here
         controller.update(dt);
 
@@ -64,7 +95,7 @@ namespace mag
         render_pass.before_render(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_rendering(pass);
 
-        render_pass.render(curr_frame.command_buffer, camera, models);
+        render_pass.render(curr_frame.command_buffer, camera, models, vk_models);
 
         curr_frame.command_buffer.end_rendering();
         render_pass.after_render(curr_frame.command_buffer);

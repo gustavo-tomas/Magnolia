@@ -1,5 +1,8 @@
 #pragma once
 
+#include <future>
+#include <mutex>
+
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
@@ -19,8 +22,10 @@ namespace mag
             static ModelLoader& get_model_loader() { return model_loader; };
             static TextureLoader& get_texture_loader() { return texture_loader; };
 
+            static void load_mesh(const str file);
+
         private:
-            Window window;
+            static Window window;
             Renderer renderer;
             Editor editor;
 
@@ -28,9 +33,11 @@ namespace mag
             static TextureLoader texture_loader;
 
             // @TODO: temp
-            StandardRenderPass render_pass;
-            std::vector<Model> models;
-            std::shared_ptr<Model> model;
             Cube cube;
+
+            static StandardRenderPass render_pass;
+            static std::mutex meshes_mutex;
+            static std::vector<Model> models;
+            static std::vector<std::future<void>> futures;
     };
 };  // namespace mag

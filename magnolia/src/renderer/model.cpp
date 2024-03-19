@@ -10,21 +10,24 @@
 
 namespace mag
 {
+    std::unique_ptr<Assimp::Importer> ModelLoader::importer;
+    std::map<str, std::shared_ptr<Model>> ModelLoader::models;
+
     void ModelLoader::initialize() { importer = std::make_unique<Assimp::Importer>(); }
 
     void ModelLoader::shutdown()
     {
         // @TODO: idk about this
-        get_context().get_device().waitIdle();
+        // get_context().get_device().waitIdle();
 
-        for (auto& [name, model] : models)
-        {
-            for (auto& mesh : model->meshes)
-            {
-                mesh.ibo.shutdown();
-                mesh.vbo.shutdown();
-            }
-        }
+        // for (auto& [name, model] : models)
+        // {
+        //     for (auto& mesh : model->meshes)
+        //     {
+        //         mesh.ibo.shutdown();
+        //         mesh.vbo.shutdown();
+        //     }
+        // }
     }
 
     std::shared_ptr<Model> ModelLoader::load(const str& file)
@@ -76,28 +79,30 @@ namespace mag
             }
 
             // Material
-            const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+            // const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-            const str directory = file.substr(0, file.find_last_of('/'));
-            for (u32 i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
-            {
-                aiString ai_mat_name;
-                material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);  // !TODO assert this
-                const str material_name = ai_mat_name.C_Str();
+            // const str directory = file.substr(0, file.find_last_of('/'));
+            // for (u32 i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
+            // {
+            //     aiString ai_mat_name;
+            //     material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);  // !TODO assert this
+            //     const str material_name = ai_mat_name.C_Str();
 
-                // Textures
-                auto texture = Application::get_texture_loader().load(directory + "/" + material_name);
-                textures.push_back(texture);
-            }
+            //     // Textures
+            //     auto texture = Application::get_texture_loader().load(directory + "/" + material_name);
+            //     textures.push_back(texture);
+            // }
 
             // Buffers
-            VertexBuffer vbo;
-            IndexBuffer ibo;
+            // VertexBuffer vbo;
+            // IndexBuffer ibo;
 
-            vbo.initialize(vertices.data(), vertices.size() * sizeof(Vertex));
-            ibo.initialize(indices.data(), indices.size() * sizeof(u32));
+            // vbo.initialize(vertices.data(), vertices.size() * sizeof(Vertex));
+            // ibo.initialize(indices.data(), indices.size() * sizeof(u32));
 
-            Mesh new_mesh = {vbo, ibo, vertices, indices, textures};
+            Mesh new_mesh = {};
+            new_mesh.indices = indices;
+            new_mesh.vertices = vertices;
             model->meshes.push_back(new_mesh);
         }
 
@@ -195,20 +200,20 @@ namespace mag
                         // Bottom face
                         20, 21, 22, 22, 23, 20};
 
-        mesh.vbo.initialize(mesh.vertices.data(), VECSIZE(mesh.vertices) * sizeof(Vertex));
-        mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
+        // mesh.vbo.initialize(mesh.vertices.data(), VECSIZE(mesh.vertices) * sizeof(Vertex));
+        // mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
 
-        // Create a diffuse texture
-        auto diffuse_texture = Application::get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        // // Create a diffuse texture
+        // auto diffuse_texture = Application::get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
 
-        mesh.textures.push_back(diffuse_texture);
+        // mesh.textures.push_back(diffuse_texture);
     }
 
     void Cube::shutdown()
     {
-        get_context().get_device().waitIdle();
+        // get_context().get_device().waitIdle();
 
-        model.meshes[0].vbo.shutdown();
-        model.meshes[0].ibo.shutdown();
+        // model.meshes[0].vbo.shutdown();
+        // model.meshes[0].ibo.shutdown();
     }
 };  // namespace mag
