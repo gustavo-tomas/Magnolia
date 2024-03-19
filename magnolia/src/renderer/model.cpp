@@ -143,6 +143,8 @@ namespace mag
         mesh.vertices[22].position = {1.0f, -1.0f, -1.0f};   // Bottom back-right
         mesh.vertices[23].position = {-1.0f, -1.0f, -1.0f};  // Bottom back-left
 
+        for (auto& vertex : mesh.vertices) vertex.normal = normalize(vertex.position);
+
         // Front face
         mesh.vertices[0].tex_coords = {0.0f, 0.0f};
         mesh.vertices[1].tex_coords = {1.0f, 0.0f};
