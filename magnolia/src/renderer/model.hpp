@@ -36,6 +36,7 @@ namespace mag
 
     struct Model
     {
+            mat4 model_matrix = mat4(1.0f);
             std::vector<Mesh> meshes;
             str name;
     };
@@ -84,7 +85,7 @@ namespace mag
             void initialize();
             void shutdown();
 
-            const Model& get_model() const { return model; };
+            Model& get_model() { return model; };
 
         private:
             Model model;

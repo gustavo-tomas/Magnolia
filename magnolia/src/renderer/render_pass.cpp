@@ -167,12 +167,8 @@ namespace mag
             .view = camera.get_view(), .projection = camera.get_projection(), .near_far = camera.get_near_far()};
         data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
 
-        // @TODO: hardcoded
-        const ModelData model_data = {.model = mat4(1.0f)};
-        const ModelData model_data1 = {.model = scale(vec3(10.0f))};
-
-        for (u64 b = 1; b < data_buffers.size(); b++) data_buffers[b].copy(&model_data, data_buffers[b].get_size());
-        data_buffers[1].copy(&model_data1, data_buffers[1].get_size());
+        for (u64 b = 1; b < data_buffers.size(); b++)
+            data_buffers[b].copy(&models[b - 1].model_matrix, data_buffers[b].get_size());
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
