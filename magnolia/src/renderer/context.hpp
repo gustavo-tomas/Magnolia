@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "core/window.hpp"
+#include "renderer/command.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/frame.hpp"
 #include "vk_mem_alloc.h"
@@ -80,6 +81,7 @@ namespace mag
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
             DescriptorLayoutCache descriptor_cache;
+            CommandBuffer submit_command_buffer;
     };
 
     Context& get_context();

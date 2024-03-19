@@ -290,6 +290,9 @@ namespace mag
                                                     queue_family_index);
         this->command_pool = device.createCommandPool(command_pool_info);
 
+        // Command buffer
+        this->submit_command_buffer.initialize(this->command_pool, vk::CommandBufferLevel::ePrimary);
+
         // Allocator
         VmaAllocatorCreateInfo allocator_create_info = {};
         allocator_create_info.physicalDevice = this->physical_device;
@@ -378,8 +381,7 @@ namespace mag
 
     void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
     {
-        // @TODO: prolly should use another command buffer instead of the frame command buffer
-        auto& cmd = this->get_curr_frame().command_buffer;
+        auto& cmd = this->submit_command_buffer;
 
         cmd.begin();
         function(cmd);  // execute the function
