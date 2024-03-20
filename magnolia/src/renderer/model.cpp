@@ -40,6 +40,8 @@ namespace mag
         ASSERT(scene->HasMeshes(), "Model has no meshes");
 
         Model* model = new Model();
+        model->name = scene->GetShortFilename(file.c_str());
+
         for (u32 m = 0; m < scene->mNumMeshes; m++)
         {
             const aiMesh* mesh = scene->mMeshes[m];
@@ -107,6 +109,7 @@ namespace mag
 
     void Cube::initialize()
     {
+        model.name = "Cube";
         model.meshes.resize(1);
 
         auto& mesh = model.meshes[0];
