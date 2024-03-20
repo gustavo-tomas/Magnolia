@@ -11,7 +11,7 @@ namespace mag
         public:
             void initialize(Window& window);
             void shutdown();
-            void update(CommandBuffer& cmd, const Image& viewport_image);
+            void update(CommandBuffer& cmd, const Image& viewport_image, std::vector<Model>& models);
             void process_events(SDL_Event& e);
 
             void on_resize(const uvec2& size);

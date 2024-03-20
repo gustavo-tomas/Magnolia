@@ -38,8 +38,7 @@ namespace mag
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, const std::vector<Model>& models,
-                          const f32 dt)
+    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, std::vector<Model>& models, const f32 dt)
     {
         // @TODO: maybe this shouldnt be here
         controller.update(dt);
@@ -70,7 +69,7 @@ namespace mag
         render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.update(curr_frame.command_buffer, render_pass.get_target_image());
+        editor.update(curr_frame.command_buffer, render_pass.get_target_image(), models);
 
         // Present
 
