@@ -19,7 +19,7 @@ namespace mag
     void Controller::update(const f32 dt)
     {
         vec3 direction(0.0f);
-        const f32 velocity = 15.0f;
+        const f32 velocity = 350.0f;
 
         if (window->is_key_down(SDLK_a)) direction.x -= 1.0f;
         if (window->is_key_down(SDLK_d)) direction.x += 1.0f;

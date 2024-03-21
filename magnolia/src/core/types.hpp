@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
@@ -61,6 +63,16 @@ namespace mag
 #else
     #define ASSERT(assertion, ...)
 #endif
+
+    // Singleton interface
+    // This singleton approach follows the implementation described in Game Engine Architecture
+    // (ch. 5.1 - Subsystem start-up and shut-down). Here the constructor shouldn't do anything at all.
+    class Singleton
+    {
+        public:
+            virtual void initialize() = 0;
+            virtual void shutdown() = 0;
+    };
 
 // Common macros
 #define VECSIZE(vec) static_cast<u32>(vec.size())

@@ -22,3 +22,6 @@
 [submodule "libs/stb"]
 	path = libs/stb
 	url = https://github.com/gustavo-tomas/stb.git
+[submodule "libs/assimp"]
+	path = libs/assimp
+	url = https://github.com/gustavo-tomas/assimp.git

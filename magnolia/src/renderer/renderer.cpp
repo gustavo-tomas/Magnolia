@@ -1,6 +1,7 @@
 #include "renderer/renderer.hpp"
 
 #include "core/logger.hpp"
+#include "renderer/render_pass.hpp"
 
 namespace mag
 {
@@ -16,26 +17,16 @@ namespace mag
         this->context.initialize(context_options);
         LOG_SUCCESS("Context initialized");
 
-        this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
-        LOG_SUCCESS("RenderPass initialized");
-
-        camera.initialize({10.35f, 5.13f, 10.35f}, {-20.0f, -45.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 1000.0f);
+        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
         LOG_SUCCESS("Camera initialized");
 
         controller.initialize(&camera, &window);
         LOG_SUCCESS("Controller initialized");
-
-        render_pass.set_camera(&camera);
-
-        // Create a cube mesh
-        cube.initialize();
     }
 
     void Renderer::shutdown()
     {
         this->context.get_device().waitIdle();
-
-        this->cube.shutdown();
 
         this->controller.shutdown();
         LOG_SUCCESS("Controller destroyed");
@@ -43,14 +34,11 @@ namespace mag
         this->camera.shutdown();
         LOG_SUCCESS("Camera destroyed");
 
-        this->render_pass.shutdown();
-        LOG_SUCCESS("RenderPass destroyed");
-
         this->context.shutdown();
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor, const f32 dt)
+    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, std::vector<Model>& models, const f32 dt)
     {
         // @TODO: maybe this shouldnt be here
         controller.update(dt);
@@ -74,12 +62,14 @@ namespace mag
         // Draw calls
         render_pass.before_render(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_rendering(pass);
-        render_pass.render(curr_frame.command_buffer, cube.get_mesh());
+
+        render_pass.render(curr_frame.command_buffer, camera, models);
+
         curr_frame.command_buffer.end_rendering();
         render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.update(curr_frame.command_buffer, render_pass.get_target_image());
+        editor.update(curr_frame.command_buffer, render_pass.get_target_image(), models);
 
         // Present
 
@@ -109,7 +99,6 @@ namespace mag
         context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
         const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
 
-        this->render_pass.on_resize(surface_extent);
         this->camera.set_aspect_ratio(surface_extent);
     }
 

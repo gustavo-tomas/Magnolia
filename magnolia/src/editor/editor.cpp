@@ -78,7 +78,7 @@ namespace mag
         context.get_device().destroyDescriptorPool(descriptor_pool);
     }
 
-    void Editor::update(CommandBuffer &cmd, const Image &viewport_image)
+    void Editor::update(CommandBuffer &cmd, const Image &viewport_image, std::vector<Model> &models)
     {
         // @TODO: this is not very pretty
         if (image_descriptor == nullptr)
@@ -147,6 +147,28 @@ namespace mag
 
         ImGui::End();
 
+        // @TODO: check imguizmo implementation
+        ImGui::Begin("Properties", NULL, window_flags);
+
+        for (auto &model : models)
+        {
+            if (ImGui::TreeNodeEx(model.name.c_str()))
+            {
+                vec3 translation = model.model_matrix[3];
+
+                ImGui::Text("Position");
+                if (ImGui::InputFloat3("##Position", value_ptr(translation)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
+                    model.model_matrix[3] = vec4(translation, model.model_matrix[3].w);
+
+                ImGui::Text("Rotation");
+                ImGui::Text("Scale");
+
+                ImGui::TreePop();
+            }
+        }
+
+        ImGui::End();
+
         // End
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
@@ -190,7 +212,7 @@ namespace mag
         // style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
         style.Colors[ImGuiCol_Border] = black_opaque;
         // style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, .00f, 1.00f, 1.0f);
-        style.Colors[ImGuiCol_FrameBg] = white_opaque;
+        // style.Colors[ImGuiCol_FrameBg] = white_opaque;
         // style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
         // style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
         style.Colors[ImGuiCol_TitleBg] = black_opaque;
