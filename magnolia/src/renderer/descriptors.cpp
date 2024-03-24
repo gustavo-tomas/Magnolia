@@ -119,7 +119,6 @@ namespace mag
         ASSERT(shader_reflection.descriptor_set_count > set, "Invalid descriptor set");
 
         auto& context = get_context();
-        auto& physical_device = context.get_physical_device();
         auto& device = context.get_device();
         auto& cache = context.get_descriptor_cache();
 
@@ -147,10 +146,7 @@ namespace mag
                                                             bindings);
         descriptor.layout = cache.create_descriptor_layout(&layout_info);
 
-        // @TODO: only needs to be done once
-        // 1. Get properties
-        device_properties.pNext = &descriptor_buffer_properties;
-        physical_device.getProperties2(&device_properties);
+        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
 
         // 2. Get size
         // Get set layout descriptor sizes and adjust them to satisfy alignment requirements.
@@ -166,7 +162,9 @@ namespace mag
 
     void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers)
     {
-        auto& device = get_context().get_device();
+        auto& context = get_context();
+        auto& device = context.get_device();
+        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
 
         // 4. Put the descriptors into buffers
         char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
@@ -187,7 +185,9 @@ namespace mag
 
     void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Image>& images)
     {
-        auto& device = get_context().get_device();
+        auto& context = get_context();
+        auto& device = context.get_device();
+        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
 
         // 4. Put the descriptors into buffers
         char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());

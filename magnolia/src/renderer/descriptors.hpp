@@ -60,9 +60,5 @@ namespace mag
 
             void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
             void build(const Descriptor& descriptor, const std::vector<Image>& images);
-
-        private:
-            vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
-            vk::PhysicalDeviceProperties2 device_properties;
     };
 };  // namespace mag

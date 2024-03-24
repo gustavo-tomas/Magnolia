@@ -47,6 +47,12 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
+
+            const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
+            {
+                return this->descriptor_buffer_properties;
+            };
+
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
             DescriptorLayoutCache& get_descriptor_cache() { return this->descriptor_cache; };
 
@@ -61,6 +67,8 @@ namespace mag
             vk::SurfaceFormatKHR surface_format;
             vk::Extent2D surface_extent;
             vk::PhysicalDevice physical_device;
+            vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
+            vk::PhysicalDeviceProperties2 physical_device_properties;
             vk::Device device;
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;

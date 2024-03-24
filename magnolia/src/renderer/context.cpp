@@ -173,10 +173,13 @@ namespace mag
         ASSERT(this->physical_device, "Failed to find suitable physical device");
         LOG_INFO("Selected physical device: {0}", str(physical_device.getProperties().deviceName));
 
+        // Properties
+        physical_device_properties.pNext = &descriptor_buffer_properties;
+        physical_device.getProperties2(&physical_device_properties);
+
         // @TODO: harcoded to max samples
         // @TODO: stencil buffer might bite
-        // Properties
-        const auto properties = this->physical_device.getProperties();
+        const auto properties = this->physical_device_properties.properties;
         const auto counts =
             properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
 
