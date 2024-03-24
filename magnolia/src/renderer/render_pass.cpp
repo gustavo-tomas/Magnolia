@@ -79,9 +79,8 @@ namespace mag
                     for (auto& texture : mesh.textures) textures.push_back(*texture);
 
             // Create descriptor sets
-            DescriptorBuilder descriptor_builder;
-            uniform_descriptor = descriptor_builder.build_layout(triangle_vs.get_reflection(), 0);
-            image_descriptor = descriptor_builder.build_layout(triangle_fs.get_reflection(), 2);
+            uniform_descriptor = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
+            image_descriptor = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
 
             // Create descriptor buffer that holds global data and model transform
             uniform_descriptor.buffer.initialize(
@@ -99,8 +98,8 @@ namespace mag
             uniform_descriptor.buffer.map_memory();
             image_descriptor.buffer.map_memory();
 
-            descriptor_builder.build(uniform_descriptor, data_buffers);
-            descriptor_builder.build(image_descriptor, textures);
+            DescriptorBuilder::build(uniform_descriptor, data_buffers);
+            DescriptorBuilder::build(image_descriptor, textures);
         }
 
         // Descriptor layouts

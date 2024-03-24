@@ -56,9 +56,9 @@ namespace mag
     class DescriptorBuilder
     {
         public:
-            Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
+            static Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
 
-            void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
-            void build(const Descriptor& descriptor, const std::vector<Image>& images);
+            static void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
+            static void build(const Descriptor& descriptor, const std::vector<Image>& images);
     };
 };  // namespace mag
