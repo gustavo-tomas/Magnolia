@@ -34,12 +34,16 @@ namespace mag
     class StandardRenderPass
     {
         public:
-            void initialize(const uvec2& size, const std::vector<Model>& models);
+            void initialize(const uvec2& size);
             void shutdown();
 
             void before_render(CommandBuffer& command_buffer);
             void render(CommandBuffer& command_buffer, const Camera& camera, const std::vector<Model>& models);
             void after_render(CommandBuffer& command_buffer);
+
+            // @TODO: temp
+            void add_model(const Model& model);
+            void set_camera();
 
             Pass& get_pass() { return pass; };
             const Image& get_target_image() const { return resolve_image; };
@@ -50,6 +54,8 @@ namespace mag
             void on_resize(const uvec2& size);
 
         private:
+            void add_uniform(const u64 buffer_size);
+
             Pass pass = {};
             Pipeline triangle_pipeline, grid_pipeline;
             Shader triangle_vs, triangle_fs, grid_vs, grid_fs;
@@ -73,6 +79,7 @@ namespace mag
             };
 
             std::vector<Buffer> data_buffers;
+            std::vector<Image> textures;
             Descriptor uniform_descriptor, image_descriptor;
             // @TODO: temporary
     };

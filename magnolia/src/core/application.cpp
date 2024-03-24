@@ -33,6 +33,10 @@ namespace mag
         texture_loader.initialize();
         LOG_SUCCESS("TextureLoader initialized");
 
+        // Create a render pass
+        render_pass.initialize(window.get_size());
+        LOG_SUCCESS("RenderPass initialized");
+
         // Set window callbacks
         window.on_resize(
             [&](const uvec2& size) mutable
@@ -55,13 +59,12 @@ namespace mag
         auto& cube_model_matrix = cube.get_model().model_matrix;
         cube_model_matrix = translate(cube_model_matrix, vec3(0, 10, 0));
         cube_model_matrix = scale(cube_model_matrix, vec3(10.0f));
+
         models.push_back(cube.get_model());
+        models.push_back(*Application::get_model_loader().load("assets/models/sponza/sponza.obj"));
 
-        model = Application::get_model_loader().load("assets/models/sponza/sponza.obj");
-        models.push_back(*model);
-
-        this->render_pass.initialize(window.get_size(), models);
-        LOG_SUCCESS("RenderPass initialized");
+        this->render_pass.set_camera();
+        for (const auto& m : models) this->render_pass.add_model(m);
     }
 
     void Application::shutdown()

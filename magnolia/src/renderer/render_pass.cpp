@@ -9,7 +9,7 @@
 
 namespace mag
 {
-    void StandardRenderPass::initialize(const uvec2& size, const std::vector<Model>& models)
+    void StandardRenderPass::initialize(const uvec2& size)
     {
         auto& context = get_context();
 
@@ -58,49 +58,9 @@ namespace mag
         grid_vs.initialize(shader_folder + "grid.vert.spv");
         grid_fs.initialize(shader_folder + "grid.frag.spv");
 
-        {
-            // @TODO: Create one camera buffer and descriptor set per frame
-            std::vector<u64> sizes(models.size() + 1, sizeof(ModelData));
-            sizes[0] = sizeof(CameraData);
-
-            for (const auto& size : sizes)
-            {
-                Buffer buffer;
-                buffer.initialize(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-                data_buffers.push_back(buffer);
-            }
-
-            // Put all models textures in a single array
-            std::vector<Image> textures;
-            for (auto& model : models)
-                for (auto& mesh : model.meshes)
-                    for (auto& texture : mesh.textures) textures.push_back(*texture);
-
-            // Create descriptor sets
-            uniform_descriptor = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
-            image_descriptor = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
-
-            // Create descriptor buffer that holds global data and model transform
-            uniform_descriptor.buffer.initialize(
-                (models.size() + 1) * uniform_descriptor.size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            // Create descriptor buffer that holds texture data
-            image_descriptor.buffer.initialize(
-                textures.size() * image_descriptor.size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            uniform_descriptor.buffer.map_memory();
-            image_descriptor.buffer.map_memory();
-
-            DescriptorBuilder::build(uniform_descriptor, data_buffers);
-            DescriptorBuilder::build(image_descriptor, textures);
-        }
+        // Create descriptors layouts
+        uniform_descriptor = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
+        image_descriptor = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
 
         // Descriptor layouts
         const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
@@ -235,6 +195,62 @@ namespace mag
         // Transition the draw image and the swapchain image into their correct transfer layouts
         command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
                                        vk::ImageLayout::eTransferSrcOptimal);
+    }
+
+    void StandardRenderPass::set_camera() { add_uniform(sizeof(CameraData)); }
+
+    void StandardRenderPass::add_uniform(const u64 buffer_size)
+    {
+        // Delete old descriptor buffers
+        if (data_buffers.size() > 0)
+        {
+            uniform_descriptor.buffer.unmap_memory();
+            uniform_descriptor.buffer.shutdown();
+        }
+
+        // @TODO: Create one camera buffer and descriptor set per frame
+        Buffer buffer;
+        buffer.initialize(buffer_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                          VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+        data_buffers.push_back(buffer);
+
+        // Create descriptor buffer that holds global data and model transform
+        uniform_descriptor.buffer.initialize(
+            data_buffers.size() * uniform_descriptor.size,
+            VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+            VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+        uniform_descriptor.buffer.map_memory();
+
+        DescriptorBuilder::build(uniform_descriptor, data_buffers);
+    }
+
+    void StandardRenderPass::add_model(const Model& model)
+    {
+        this->add_uniform(sizeof(ModelData));
+
+        // Delete old descriptor buffers
+        if (textures.size() > 0)
+        {
+            image_descriptor.buffer.unmap_memory();
+            image_descriptor.buffer.shutdown();
+        }
+
+        // Put all models textures in a single array
+        for (auto& mesh : model.meshes)
+            for (auto& texture : mesh.textures) textures.push_back(*texture);
+
+        // Create descriptor buffer that holds texture data
+        image_descriptor.buffer.initialize(
+            textures.size() * image_descriptor.size,
+            VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
+                VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+            VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+        image_descriptor.buffer.map_memory();
+
+        DescriptorBuilder::build(image_descriptor, textures);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)

@@ -30,7 +30,6 @@ namespace mag
             // @TODO: temp
             StandardRenderPass render_pass;
             std::vector<Model> models;
-            std::shared_ptr<Model> model;
             Cube cube;
     };
 };  // namespace mag
