@@ -134,10 +134,11 @@ namespace mag
         for (u32 b = 0; b < descriptor_set.binding_count; b++)
         {
             const u32 binding = descriptor_set.bindings[b]->binding;
+            const u32 count = descriptor_set.bindings[b]->count;
             const vk::DescriptorType type =
                 static_cast<vk::DescriptorType>(descriptor_set.bindings[b]->descriptor_type);
 
-            vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage);
+            vk::DescriptorSetLayoutBinding new_binding(binding, type, count, stage);
             bindings.push_back(new_binding);
         }
 
