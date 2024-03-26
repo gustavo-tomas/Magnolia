@@ -193,12 +193,18 @@ namespace mag
         // 4. Put the descriptors into buffers
         char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
 
+        std::vector<vk::DescriptorImageInfo> descriptor_image_infos;
         for (u64 i = 0; i < images.size(); i++)
         {
             const vk::DescriptorImageInfo image_info(images[i].get_sampler().get_handle(), images[i].get_image_view());
+            descriptor_image_infos.push_back(image_info);
+        }
 
-            const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler, {&image_info});
+        const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler,
+                                                       {descriptor_image_infos.data()});
 
+        for (u64 i = 0; i < images.size(); i++)
+        {
             const u64 offset = i * descriptor.size + descriptor.offset;
 
             device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize,

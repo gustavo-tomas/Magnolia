@@ -22,23 +22,20 @@ namespace mag
 
             math::vec3 position;
             math::vec3 normal;
-            math::vec2 tex_coords;
-    };
-
-    struct Mesh
-    {
-            VertexBuffer vbo;
-            IndexBuffer ibo;
-            std::vector<Vertex> vertices;
-            std::vector<u32> indices;
-            std::vector<std::shared_ptr<Image>> textures;
+            math::vec3 tex_coords;
     };
 
     struct Model
     {
             mat4 model_matrix = mat4(1.0f);
-            std::vector<Mesh> meshes;
             str name;
+
+            VertexBuffer vbo;
+            IndexBuffer ibo;
+
+            std::vector<Vertex> vertices;
+            std::vector<u32> indices;
+            std::vector<std::shared_ptr<Image>> textures;
     };
 
     inline VertexInputDescription Vertex::get_vertex_description()
@@ -58,7 +55,7 @@ namespace mag
                                                              offsetof(Vertex, normal));
         description.attributes.push_back(normal_attribute);
 
-        vk::VertexInputAttributeDescription tex_coords_attribute(location++, 0, vk::Format::eR32G32Sfloat,
+        vk::VertexInputAttributeDescription tex_coords_attribute(location++, 0, vk::Format::eR32G32B32Sfloat,
                                                                  offsetof(Vertex, tex_coords));
         description.attributes.push_back(tex_coords_attribute);
 

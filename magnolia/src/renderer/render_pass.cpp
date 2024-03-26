@@ -146,16 +146,21 @@ namespace mag
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
         const u32 buffer_indices = 0;
-        const u32 image_indices = 1;
+        // const u32 image_indices = 1;
         u64 buffer_offsets = 0;
 
         // Global matrices (set 0)
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   0, buffer_indices, buffer_offsets);
 
+        // Images (set 2)
+        // buffer_offsets = 0;
+        // command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point,
+        // triangle_pipeline.get_layout(),
+        //                                                           2, image_indices, buffer_offsets);
+
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
 
-        u64 tex_idx = 0;
         for (u64 m = 0; m < models.size(); m++)
         {
             const auto& model = models[m];
@@ -165,26 +170,10 @@ namespace mag
             command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
                 pipeline_bind_point, triangle_pipeline.get_layout(), 1, buffer_indices, buffer_offsets);
 
-            for (u64 i = 0; i < model.meshes.size(); i++)
-            {
-                const auto& mesh = model.meshes[i];
-
-                // @TODO: only one offset can be set
-                // Images (set 2)
-                if (!mesh.textures.empty())
-                {
-                    buffer_offsets = tex_idx * image_descriptor.size;
-                    command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-                        pipeline_bind_point, triangle_pipeline.get_layout(), 2, image_indices, buffer_offsets);
-
-                    tex_idx++;
-                }
-
-                // Draw the mesh
-                command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
-                command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
-                command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
-            }
+            // Draw the mesh
+            command_buffer.bind_vertex_buffer(model.vbo.get_buffer(), 0);
+            command_buffer.bind_index_buffer(model.ibo.get_buffer(), 0);
+            command_buffer.draw_indexed(VECSIZE(model.indices), 1, 0, 0, 0);
         }
 
         // Draw the grid
@@ -240,8 +229,7 @@ namespace mag
         }
 
         // Put all models textures in a single array
-        for (auto& mesh : model.meshes)
-            for (auto& texture : mesh.textures) textures.push_back(*texture);
+        for (auto& texture : model.textures) textures.push_back(*texture);
 
         // Create descriptor buffer that holds texture data
         image_descriptor.buffer.initialize(
