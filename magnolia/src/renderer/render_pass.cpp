@@ -169,8 +169,9 @@ namespace mag
             {
                 const auto& mesh = model.meshes[i];
 
+                // @TODO: only one offset can be set
                 // Images (set 2)
-                for (u64 j = 0; j < mesh.textures.size(); j++)
+                if (!mesh.textures.empty())
                 {
                     buffer_offsets = tex_idx * image_descriptor.size;
                     command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
