@@ -153,6 +153,8 @@ namespace mag
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   0, buffer_indices, buffer_offsets);
 
+        command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
+
         u64 tex_idx = 0;
         for (u64 m = 0; m < models.size(); m++)
         {
@@ -178,7 +180,6 @@ namespace mag
                 }
 
                 // Draw the mesh
-                command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
                 command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
                 command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
                 command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
