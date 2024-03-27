@@ -36,7 +36,10 @@ namespace mag
 
     struct Model
     {
-            mat4 model_matrix = mat4(1.0f);
+            vec3 position = vec3(0.0f);
+            vec3 rotation = vec3(0.0f);
+            vec3 scale = vec3(1.0f);
+
             std::vector<Mesh> meshes;
             str name;
     };

@@ -56,9 +56,8 @@ namespace mag
         // @TODO: temp load assets
         cube.initialize();
 
-        auto& cube_model_matrix = cube.get_model().model_matrix;
-        cube_model_matrix = translate(cube_model_matrix, vec3(0, 10, 0));
-        cube_model_matrix = scale(cube_model_matrix, vec3(10.0f));
+        cube.get_model().position = vec3(0, 10, 0);
+        cube.get_model().scale = vec3(10);
 
         models.push_back(cube.get_model());
         models.push_back(*Application::get_model_loader().load("assets/models/sponza/sponza.obj"));
@@ -124,8 +123,8 @@ namespace mag
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
             // @TODO: spiniignigngginign
-            auto& cube_model_matrix = models[0].model_matrix;
-            cube_model_matrix = rotate(cube_model_matrix, radians(60.0f * static_cast<f32>(dt)), vec3(0, 1, 0));
+            models[0].rotation = models[0].rotation + vec3(0, 60.0f * dt, 0);
+            for (u32 i = 0; i < 3; i++) models[0].rotation[i] = fmod(models[0].rotation[i], 360.0);
 
             renderer.update(editor, render_pass, models, dt);
         }

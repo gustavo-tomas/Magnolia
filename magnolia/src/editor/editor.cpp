@@ -154,14 +154,21 @@ namespace mag
         {
             if (ImGui::TreeNodeEx(model.name.c_str()))
             {
-                vec3 translation = model.model_matrix[3];
+                vec3 position = model.position;
+                vec3 rotation = model.rotation;
+                vec3 scale = model.scale;
 
                 ImGui::Text("Position");
-                if (ImGui::InputFloat3("##Position", value_ptr(translation)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
-                    model.model_matrix[3] = vec4(translation, model.model_matrix[3].w);
+                if (ImGui::InputFloat3("##Position", value_ptr(position)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
+                    model.position = position;
 
                 ImGui::Text("Rotation");
+                if (ImGui::InputFloat3("##Rotation", value_ptr(rotation)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
+                    model.rotation = rotation;
+
                 ImGui::Text("Scale");
+                if (ImGui::InputFloat3("##Scale", value_ptr(scale)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
+                    model.scale = scale;
 
                 ImGui::TreePop();
             }
