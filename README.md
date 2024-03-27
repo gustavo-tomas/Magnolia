@@ -1,6 +1,6 @@
 # Magnolia
 
-![screenshot](assets/screenshots/magnolia_v0.0.0.png)
+![screenshot](assets/screenshots/magnolia_v0.1.0.png)
 > Current state of the engine
 
 ## Requirements
