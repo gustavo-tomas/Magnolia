@@ -122,6 +122,9 @@ namespace mag
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(render_area.offset, render_area.extent);
 
+        command_buffer.get_handle().setViewport(0, viewport);
+        command_buffer.get_handle().setScissor(0, scissor);
+
         const CameraData camera_data = {
             .view = camera.get_view(), .projection = camera.get_projection(), .near_far = camera.get_near_far()};
         data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
@@ -142,9 +145,6 @@ namespace mag
 
             data_buffers[b].copy(value_ptr(model_matrix), data_buffers[b].get_size());
         }
-
-        command_buffer.get_handle().setViewport(0, viewport);
-        command_buffer.get_handle().setScissor(0, scissor);
 
         // The pipeline layout should be the same for both pipelines
         std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
