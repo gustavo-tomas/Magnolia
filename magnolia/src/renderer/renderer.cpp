@@ -53,10 +53,10 @@ namespace mag
 
         // @TODO: testing
         if (window->is_key_down(SDLK_UP))
-            render_pass.set_render_scale(render_pass.get_render_scale() + 0.01f);
+            render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
 
         else if (window->is_key_down(SDLK_DOWN))
-            render_pass.set_render_scale(render_pass.get_render_scale() - 0.01f);
+            render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
         // @TODO: testing
 
         // Draw calls
