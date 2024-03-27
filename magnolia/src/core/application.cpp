@@ -4,6 +4,9 @@
 
 namespace mag
 {
+    ModelLoader Application::model_loader;
+    TextureLoader Application::texture_loader;
+
     void Application::initialize(const str& title, const u32 width, const u32 height)
     {
         WindowOptions window_options;
@@ -22,6 +25,18 @@ namespace mag
         editor.initialize(window);
         LOG_SUCCESS("Editor initialized");
 
+        // Create the model loader
+        model_loader.initialize();
+        LOG_SUCCESS("ModelLoader initialized");
+
+        // Create the texture loader
+        texture_loader.initialize();
+        LOG_SUCCESS("TextureLoader initialized");
+
+        // Create a render pass
+        render_pass.initialize(window.get_size());
+        LOG_SUCCESS("RenderPass initialized");
+
         // Set window callbacks
         window.on_resize(
             [&](const uvec2& size) mutable
@@ -29,16 +44,41 @@ namespace mag
                 LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
                 renderer.on_resize(size);
                 editor.on_resize(size);
+                render_pass.on_resize(size);
             });
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->renderer.on_mouse_move(mouse_dir); });
+        window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
+
+        // @TODO: temp load assets
+        cube.initialize();
+
+        cube.get_model().position = vec3(0, 10, 0);
+        cube.get_model().scale = vec3(10);
+
+        models.push_back(cube.get_model());
+        models.push_back(*Application::get_model_loader().load("assets/models/sponza/sponza.obj"));
+
+        this->render_pass.set_camera();
+        for (const auto& m : models) this->render_pass.add_model(m);
     }
 
     void Application::shutdown()
     {
+        cube.shutdown();
+
+        this->render_pass.shutdown();
+        LOG_SUCCESS("RenderPass destroyed");
+
+        texture_loader.shutdown();
+        LOG_SUCCESS("TextureLoader destroyed");
+
+        model_loader.shutdown();
+        LOG_SUCCESS("ModelLoader destroyed");
+
         editor.shutdown();
         LOG_SUCCESS("Editor destroyed");
 
@@ -82,7 +122,11 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            renderer.update(editor, dt);
+            // @TODO: spiniignigngginign
+            models[0].rotation = models[0].rotation + vec3(0, 60.0f * dt, 0);
+            for (u32 i = 0; i < 3; i++) models[0].rotation[i] = fmod(models[0].rotation[i], 360.0);
+
+            renderer.update(editor, render_pass, models, dt);
         }
     }
 };  // namespace mag

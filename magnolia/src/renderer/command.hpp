@@ -9,6 +9,7 @@
 namespace mag
 {
     struct Pass;
+    class Image;
 
     class CommandBuffer
     {
@@ -17,21 +18,33 @@ namespace mag
 
             void begin();
             void end();
-            void begin_pass(const Pass& pass);
-            void end_pass(const Pass& pass);
+            void begin_rendering(const Pass& pass);
+            void end_rendering();
 
             void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                       const u32 first_instance);
+
+            void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                              const i32 vertex_offset, const u32 first_instance);
+
             void bind_vertex_buffer(const Buffer& buffer, const u64 offset);
+
+            void bind_index_buffer(const Buffer& buffer, const u64 offset);
 
             void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                              const u64 dst_offset);
 
+            void copy_buffer_to_image(const Buffer& src, const Image& image);
+
             void copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
                                      const vk::Extent3D& dst_extent);
 
+            void transfer_layout(const Image& image, const vk::ImageLayout curr_layout,
+                                 const vk::ImageLayout new_layout, const u32 base_mip_levels = 0);
+
             void transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,
-                                 const vk::ImageLayout new_layout);
+                                 const vk::ImageLayout new_layout, const u32 base_mip_levels = 0,
+                                 const u32 mip_levels = 1);
 
             const vk::CommandBuffer& get_handle() const { return this->command_buffer; }
 

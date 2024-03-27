@@ -11,7 +11,7 @@ namespace mag
         public:
             void initialize(Window& window);
             void shutdown();
-            void update(CommandBuffer& cmd, const Image& viewport_image);
+            void update(CommandBuffer& cmd, const Image& viewport_image, std::vector<Model>& models);
             void process_events(SDL_Event& e);
 
             void on_resize(const uvec2& size);
@@ -19,12 +19,12 @@ namespace mag
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
+            void set_style();
+
             Window* window;
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
             vk::DescriptorSet image_descriptor = {};
-
-            b8 fit_inside_viewport = false;
     };
 };  // namespace mag

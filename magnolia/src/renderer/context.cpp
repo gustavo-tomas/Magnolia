@@ -13,6 +13,8 @@
 #include "vk_mem_alloc.h"
 #pragma GCC diagnostic pop
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 namespace mag
 {
     static Context* context = nullptr;
@@ -48,28 +50,45 @@ namespace mag
     {
         context = this;
 
+        VULKAN_HPP_DEFAULT_DISPATCHER.init();
+
+        std::vector<const char*> instance_extensions;
+        std::vector<const char*> device_extensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+            VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
+        std::vector<const char*> validation_layers;
+
+        const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
+        const u32 api_version = VK_API_VERSION_1_3;
+        const u32 frame_count = 3;  // 3 for triple buffering
+
+        const std::vector<const char*> window_extensions = options.window.get_instance_extensions();
+        instance_extensions.insert(instance_extensions.begin(), window_extensions.begin(), window_extensions.end());
+
+        // Validation only on debug
+#if defined(MAG_DEBUG)
+        instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        validation_layers.push_back("VK_LAYER_KHRONOS_validation");
+#endif
+
         // Instance
         vk::ApplicationInfo app_info;
         app_info.setPApplicationName(options.application_name.c_str())
             .setApplicationVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
             .setPEngineName(options.engine_name.c_str())
             .setEngineVersion(VK_MAKE_API_VERSION(1, 0, 0, 0))
-            .setApiVersion(options.api_version);
-
-        std::vector<const char*> extensions = options.instance_extensions;
-        std::vector<const char*> window_extensions = options.window.get_instance_extensions();
-
-        extensions.insert(extensions.begin(), window_extensions.begin(), window_extensions.end());
+            .setApiVersion(api_version);
 
         vk::InstanceCreateInfo instance_create_info;
         instance_create_info.setPApplicationInfo(&app_info)
-            .setPEnabledExtensionNames(extensions)
-            .setPEnabledLayerNames(options.validation_layers);
+            .setPEnabledExtensionNames(instance_extensions)
+            .setPEnabledLayerNames(validation_layers);
 
         // Extensions
         LOG_INFO("Enumerating instance extensions");
         const auto extensions_properties = vk::enumerateInstanceExtensionProperties();
-        for (const auto& extension_name : extensions)
+        for (const auto& extension_name : instance_extensions)
         {
             LOG_INFO("Extension: {0}", extension_name);
             b8 available = false;
@@ -88,7 +107,7 @@ namespace mag
         // Validation layers
         LOG_INFO("Enumerating instance layer properties");
         const auto layer_properties = vk::enumerateInstanceLayerProperties();
-        for (const auto& layer_name : options.validation_layers)
+        for (const auto& layer_name : validation_layers)
         {
             LOG_INFO("Layer: {0}", layer_name);
             b8 available = false;
@@ -106,8 +125,10 @@ namespace mag
 
         VK_CHECK(vk::createInstance(&instance_create_info, nullptr, &instance));
 
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(this->instance);
+
         this->api_version = app_info.apiVersion;
-        this->frame_count = options.frame_count;
+        this->frame_count = frame_count;
 
         // Surface
         this->surface = options.window.create_surface(this->instance);
@@ -146,25 +167,29 @@ namespace mag
             this->physical_device = available_physical_device;
             this->queue_family_index = queue_family_index;
 
-            if (properties.deviceType == options.preferred_device_type) break;
+            if (properties.deviceType == preferred_device_type) break;
         }
 
         ASSERT(this->physical_device, "Failed to find suitable physical device");
         LOG_INFO("Selected physical device: {0}", str(physical_device.getProperties().deviceName));
 
         // Properties
-        // const auto properties = this->physical_device.getProperties();
-        // auto counts = properties.limits.framebufferColorSampleCounts &
-        // properties.limits.framebufferDepthSampleCounts;
+        physical_device_properties.pNext = &descriptor_buffer_properties;
+        physical_device.getProperties2(&physical_device_properties);
 
-        // @TODO: hardcoded to 1 for now
-        this->msaa_samples = vk::SampleCountFlagBits::e1;
-        // if (counts & vk::SampleCountFlagBits::e2) this->msaa_samples = vk::SampleCountFlagBits::e2;
-        // if (counts & vk::SampleCountFlagBits::e4) this->msaa_samples = vk::SampleCountFlagBits::e4;
-        // if (counts & vk::SampleCountFlagBits::e8) this->msaa_samples = vk::SampleCountFlagBits::e8;
-        // if (counts & vk::SampleCountFlagBits::e16) this->msaa_samples = vk::SampleCountFlagBits::e16;
-        // if (counts & vk::SampleCountFlagBits::e32) this->msaa_samples = vk::SampleCountFlagBits::e32;
-        // if (counts & vk::SampleCountFlagBits::e64) this->msaa_samples = vk::SampleCountFlagBits::e64;
+        // @TODO: harcoded to max samples
+        // @TODO: stencil buffer might bite
+        const auto properties = this->physical_device_properties.properties;
+        const auto counts =
+            properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+        this->msaa_samples = (counts & vk::SampleCountFlagBits::e64)   ? vk::SampleCountFlagBits::e64
+                             : (counts & vk::SampleCountFlagBits::e32) ? vk::SampleCountFlagBits::e32
+                             : (counts & vk::SampleCountFlagBits::e16) ? vk::SampleCountFlagBits::e16
+                             : (counts & vk::SampleCountFlagBits::e8)  ? vk::SampleCountFlagBits::e8
+                             : (counts & vk::SampleCountFlagBits::e4)  ? vk::SampleCountFlagBits::e4
+                             : (counts & vk::SampleCountFlagBits::e2)  ? vk::SampleCountFlagBits::e2
+                                                                       : vk::SampleCountFlagBits::e1;
 
         // Capabilities
         auto surface_present_modes = this->physical_device.getSurfacePresentModesKHR(this->surface);
@@ -193,15 +218,41 @@ namespace mag
         vk::PhysicalDeviceFeatures features;
         features.setSamplerAnisotropy(true);
 
-        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features;
-        shader_draw_parameters_features.setShaderDrawParameters(true);
+        vk::PhysicalDeviceSynchronization2FeaturesKHR synchronization_2_features(true);
+
+        vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
+        descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
+        descriptor_indexing_features.setPNext(&synchronization_2_features);
+
+        vk::PhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features(true, {}, {},
+                                                                                        &descriptor_indexing_features);
+        vk::PhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features(true, {}, {}, {},
+                                                                                 &buffer_device_address_features);
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &descriptor_buffer_features);
+        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
+                                                                                      &dynamic_rendering_features);
 
         vk::DeviceQueueCreateInfo device_queue_create_info;
         std::array queue_priorities = {1.0f};
         device_queue_create_info.setQueuePriorities(queue_priorities).setQueueFamilyIndex(this->queue_family_index);
 
-        auto device_extensions = options.device_extensions;
-        device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        LOG_INFO("Enumerating device extension properties");
+        const auto device_properties = this->physical_device.enumerateDeviceExtensionProperties();
+        for (const auto& device_extension : device_extensions)
+        {
+            LOG_INFO("Extension: {0}", device_extension);
+            b8 available = false;
+            for (const auto& device_property : device_properties)
+            {
+                if (std::strcmp(device_property.extensionName.data(), device_extension) == 0)
+                {
+                    available = true;
+                    break;
+                }
+            }
+
+            ASSERT(available, "Extension not available: " + str(device_extension));
+        }
 
         // Logical device
         vk::DeviceCreateInfo device_create_info;
@@ -211,11 +262,11 @@ namespace mag
             .setPNext(&shader_draw_parameters_features);
 
         this->device = this->physical_device.createDevice(device_create_info);
-        this->graphics_queue = this->device.getQueue(this->queue_family_index, 0);
-
         ASSERT(this->device, "Failed to create device");
 
-        this->dynamic_loader.init(this->instance, this->device);
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(this->device);
+
+        this->graphics_queue = this->device.getQueue(this->queue_family_index, 0);
 
         // Debug callback
 #if defined(MAG_DEBUG)
@@ -227,8 +278,7 @@ namespace mag
                             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance)
             .setPfnUserCallback(debug_callback);
 
-        this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info,
-                                                                                  nullptr, this->dynamic_loader);
+        this->debug_utils_messenger = this->instance.createDebugUtilsMessengerEXT(debug_utils_messenger_create_info);
 #endif
 
         // Swapchain
@@ -243,19 +293,22 @@ namespace mag
                                                     queue_family_index);
         this->command_pool = device.createCommandPool(command_pool_info);
 
+        // Command buffer
+        this->submit_command_buffer.initialize(this->command_pool, vk::CommandBufferLevel::ePrimary);
+
         // Allocator
         VmaAllocatorCreateInfo allocator_create_info = {};
         allocator_create_info.physicalDevice = this->physical_device;
         allocator_create_info.device = this->device;
         allocator_create_info.instance = this->instance;
         allocator_create_info.vulkanApiVersion = this->api_version;
+        allocator_create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &allocator)));
 
-        this->frame_provider.initialize(options.frame_count);
+        this->frame_provider.initialize(frame_count);
 
         // Descriptors
-        descriptor_allocator.initialize();
         descriptor_cache.initialize();
     }
 
@@ -265,7 +318,6 @@ namespace mag
 
         vmaDestroyAllocator(this->allocator);
 
-        this->descriptor_allocator.shutdown();
         this->descriptor_cache.shutdown();
         this->frame_provider.shutdown();
 
@@ -278,12 +330,12 @@ namespace mag
 
         this->instance.destroySurfaceKHR(this->surface);
 #if defined(MAG_DEBUG)
-        this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger, nullptr, this->dynamic_loader);
+        this->instance.destroyDebugUtilsMessengerEXT(this->debug_utils_messenger);
 #endif
         this->instance.destroy();
     }
 
-    void Context::recreate_swapchain(const glm::uvec2& size, const vk::PresentModeKHR present_mode)
+    void Context::recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode)
     {
         this->device.waitIdle();
 
@@ -332,8 +384,7 @@ namespace mag
 
     void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
     {
-        // @TODO: prolly should use another command buffer instead of the frame command buffer
-        auto& cmd = this->get_curr_frame().command_buffer;
+        auto& cmd = this->submit_command_buffer;
 
         cmd.begin();
         function(cmd);  // execute the function

@@ -96,6 +96,7 @@ def main():
     configuration = str(sys.argv[2])
 
     if command == "build":
+      shaders(system)
       build(system, configuration)
     
     elif command == "run":

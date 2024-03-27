@@ -1,6 +1,6 @@
 # Magnolia
 
-![screenshot](assets/screenshots/magnolia_v0.0.0.png)
+![screenshot](assets/screenshots/magnolia_v0.1.0.png)
 > Current state of the engine
 
 ## Requirements
@@ -9,7 +9,7 @@
 - Gcc 11.4.0
 - Python 3.10.12
 - Cmake 3.22.1
-- Vulkan SDK 1.1.198
+- Vulkan SDK 1.3.268
 
 ## Build
 To build and run the program use
