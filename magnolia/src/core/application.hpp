@@ -1,5 +1,7 @@
 #pragma once
 
+#include "camera/camera.hpp"
+#include "camera/controller.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
@@ -23,6 +25,8 @@ namespace mag
             Window window;
             Renderer renderer;
             Editor editor;
+            Controller controller;
+            Camera camera;
 
             static ModelLoader model_loader;
             static TextureLoader texture_loader;
