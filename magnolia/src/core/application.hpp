@@ -13,23 +13,28 @@ namespace mag
     class Application
     {
         public:
-            void initialize(const str& title, const u32 width = 800, const u32 height = 600);
-            void shutdown();
-
             void run();
 
-            static ModelLoader& get_model_loader() { return model_loader; };
-            static TextureLoader& get_texture_loader() { return texture_loader; };
+            static Application& get();
+
+            Window& get_window() { return window; };
+            ModelLoader& get_model_loader() { return model_loader; };
+            TextureLoader& get_texture_loader() { return texture_loader; };
 
         private:
+            Application();
+            ~Application();
+
+            static Application* instance;
+
             Window window;
             Renderer renderer;
             Editor editor;
             Controller controller;
             Camera camera;
 
-            static ModelLoader model_loader;
-            static TextureLoader texture_loader;
+            ModelLoader model_loader;
+            TextureLoader texture_loader;
 
             // @TODO: temp
             StandardRenderPass render_pass;

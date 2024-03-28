@@ -9,7 +9,7 @@ namespace mag
     class Editor
     {
         public:
-            void initialize(Window& window);
+            void initialize();
             void shutdown();
             void update(CommandBuffer& cmd, const Image& viewport_image, std::vector<Model>& models);
             void process_events(SDL_Event& e);
@@ -21,7 +21,6 @@ namespace mag
         private:
             void set_style();
 
-            Window* window;
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;

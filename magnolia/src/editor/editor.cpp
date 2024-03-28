@@ -2,14 +2,13 @@
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "core/application.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
-    void Editor::initialize(Window &window)
+    void Editor::initialize()
     {
-        this->window = std::addressof(window);
-
         auto &context = get_context();
         auto &device = context.get_device();
 
@@ -45,7 +44,8 @@ namespace mag
 
         this->set_style();
 
-        ASSERT(ImGui_ImplSDL2_InitForVulkan(window.get_handle()), "Failed to initialize editor window backend");
+        ASSERT(ImGui_ImplSDL2_InitForVulkan(Application::get().get_window().get_handle()),
+               "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();
@@ -98,7 +98,7 @@ namespace mag
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL2_NewFrame(window->get_handle());
+        ImGui_ImplSDL2_NewFrame(Application::get().get_window().get_handle());
         ImGui::NewFrame();
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;

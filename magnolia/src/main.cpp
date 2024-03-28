@@ -10,10 +10,7 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    mag::Application application;
-    application.initialize("Magnolia");
-    application.run();
-    application.shutdown();
+    mag::Application::get().run();
 
     return 0;
 }

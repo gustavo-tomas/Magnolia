@@ -4,11 +4,18 @@
 
 namespace mag
 {
-    ModelLoader Application::model_loader;
-    TextureLoader Application::texture_loader;
+    Application* Application::instance = nullptr;
 
-    void Application::initialize(const str& title, const u32 width, const u32 height)
+    Application::Application()
     {
+        ASSERT(instance == nullptr, "Application instance already exists");
+        instance = this;
+
+        // @TODO: hardcoded
+        const str title = "Magnolia";
+        const u32 width = 800;
+        const u32 height = 600;
+
         WindowOptions window_options;
         window_options.size = {width, height};
         window_options.title = title;
@@ -22,7 +29,7 @@ namespace mag
         LOG_SUCCESS("Renderer initialized");
 
         // Create the editor
-        editor.initialize(window);
+        editor.initialize();
         LOG_SUCCESS("Editor initialized");
 
         // Create the model loader
@@ -75,7 +82,7 @@ namespace mag
         for (const auto& m : models) this->render_pass.add_model(m);
     }
 
-    void Application::shutdown()
+    Application::~Application()
     {
         cube.shutdown();
 
@@ -146,4 +153,11 @@ namespace mag
             renderer.update(camera, editor, render_pass, models, dt);
         }
     }
+
+    Application& Application::get()
+    {
+        if (instance == nullptr) instance = new Application();
+
+        return *instance;
+    };
 };  // namespace mag
