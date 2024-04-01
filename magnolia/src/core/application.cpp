@@ -49,7 +49,7 @@ namespace mag
         LOG_SUCCESS("Camera initialized");
 
         // Create a camera controller
-        controller.initialize(&camera, &window);
+        controller.initialize(&camera);
         LOG_SUCCESS("Controller initialized");
 
         // Set window callbacks
@@ -76,7 +76,7 @@ namespace mag
         cube.get_model().scale = vec3(10);
 
         models.push_back(cube.get_model());
-        models.push_back(*Application::get_model_loader().load("assets/models/sponza/sponza.obj"));
+        models.push_back(*model_loader.load("assets/models/sponza/sponza.obj"));
 
         this->render_pass.set_camera();
         for (const auto& m : models) this->render_pass.add_model(m);

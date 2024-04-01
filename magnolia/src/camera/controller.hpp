@@ -1,14 +1,13 @@
 #pragma once
 
 #include "camera/camera.hpp"
-#include "core/window.hpp"
 
 namespace mag
 {
     class Controller
     {
         public:
-            void initialize(Camera* camera, Window* window);
+            void initialize(Camera* camera);
             void shutdown();
 
             void update(const f32 dt);
@@ -16,6 +15,5 @@ namespace mag
 
         private:
             Camera* camera;
-            Window* window;
     };
 };  // namespace mag

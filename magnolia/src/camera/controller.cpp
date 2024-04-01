@@ -1,32 +1,27 @@
 #include "camera/controller.hpp"
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
+#include "core/window.hpp"
 
 namespace mag
 {
-    void Controller::initialize(Camera* camera, Window* window)
-    {
-        this->camera = camera;
-        this->window = window;
-    }
+    void Controller::initialize(Camera* camera) { this->camera = camera; }
 
-    void Controller::shutdown()
-    {
-        this->camera = nullptr;
-        this->window = nullptr;
-    }
+    void Controller::shutdown() {}
 
     void Controller::update(const f32 dt)
     {
         vec3 direction(0.0f);
         const f32 velocity = 350.0f;
 
-        if (window->is_key_down(SDLK_a)) direction.x -= 1.0f;
-        if (window->is_key_down(SDLK_d)) direction.x += 1.0f;
-        if (window->is_key_down(SDLK_w)) direction.z -= 1.0f;
-        if (window->is_key_down(SDLK_s)) direction.z += 1.0f;
-        if (window->is_key_down(SDLK_SPACE)) direction.y += 1.0f;
-        if (window->is_key_down(SDLK_LCTRL)) direction.y -= 1.0f;
+        auto& window = get_application().get_window();
+        if (window.is_key_down(SDLK_a)) direction.x -= 1.0f;
+        if (window.is_key_down(SDLK_d)) direction.x += 1.0f;
+        if (window.is_key_down(SDLK_w)) direction.z -= 1.0f;
+        if (window.is_key_down(SDLK_s)) direction.z += 1.0f;
+        if (window.is_key_down(SDLK_SPACE)) direction.y += 1.0f;
+        if (window.is_key_down(SDLK_LCTRL)) direction.y -= 1.0f;
 
         // Prevent nan values
         if (length(direction) > 0.0f) direction = normalize(direction) * dt;
