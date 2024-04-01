@@ -34,14 +34,21 @@ project "magnolia"
         "libs/fmt/include",
         "libs/vulkan/include",
         "libs/vma/include",
+        "libs/assimp/include/assimp",
         "libs/imgui",
         "libs/glm",
+        "libs/stb",
         "libs/spirv_reflect"
+    }
+
+    defines
+    {
+        "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC"
     }
 
     links
     {
-        "fmt", "imgui"
+        "fmt", "imgui", "assimp"
     }
 
     libdirs
@@ -243,3 +250,25 @@ project "imgui"
 		pic "on"
 		systemversion "latest"
 		staticruntime "on"
+
+-- assimp --------------------------------------------------------------------------------------------------------------
+project "assimp"
+    kind "none"
+    
+    if os.host() == "windows" then
+        os.execute("echo @TODO WINDOWS ASSIMP")
+
+    elseif os.host() == "linux" then
+        if exists("build/linux/magnolia/libassimp.so") and
+           exists("build/linux/magnolia/libassimp.so.5") and
+           exists("build/linux/magnolia/libassimp.so.5.3.0") then
+            os.execute("echo Skipping assimp compilation...")
+
+        else
+            os.execute("mkdir -p build/linux/assimp")
+            os.execute("cd build/linux/assimp && cmake -S ../../../libs/assimp -B . && make -j" .. number_of_cores())
+            os.execute("cp build/linux/assimp/bin/libassimp.so build/linux/magnolia/libassimp.so")
+            os.execute("cp build/linux/assimp/bin/libassimp.so.5 build/linux/magnolia/libassimp.so.5")
+            os.execute("cp build/linux/assimp/bin/libassimp.so.5.3.0 build/linux/magnolia/libassimp.so.5.3.0")
+        end
+    end

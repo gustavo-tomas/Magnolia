@@ -44,3 +44,4 @@ compile_commands.json
 
 # Exceptions
 !ext/**
+!assets/**

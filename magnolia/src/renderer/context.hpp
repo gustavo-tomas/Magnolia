@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "core/window.hpp"
+#include "renderer/command.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/frame.hpp"
 #include "vk_mem_alloc.h"
@@ -19,14 +20,6 @@ namespace mag
             Window& window;
             str application_name = "Magnolia";
             str engine_name = "Magnolia";
-
-            std::vector<const char*> instance_extensions = {};
-            std::vector<const char*> device_extensions = {};
-            std::vector<const char*> validation_layers = {};
-
-            vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
-            u32 api_version = VK_API_VERSION_1_1;
-            u32 frame_count = 3;  // 3 for triple buffering
     };
 
     class Context
@@ -54,8 +47,13 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
+
+            const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
+            {
+                return this->descriptor_buffer_properties;
+            };
+
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
-            DescriptorAllocator& get_descriptor_allocator() { return this->descriptor_allocator; };
             DescriptorLayoutCache& get_descriptor_cache() { return this->descriptor_cache; };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
@@ -69,13 +67,14 @@ namespace mag
             vk::SurfaceFormatKHR surface_format;
             vk::Extent2D surface_extent;
             vk::PhysicalDevice physical_device;
+            vk::PhysicalDeviceDescriptorBufferPropertiesEXT descriptor_buffer_properties;
+            vk::PhysicalDeviceProperties2 physical_device_properties;
             vk::Device device;
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
             vk::CommandPool command_pool;
             vk::Fence upload_fence;
-            vk::DispatchLoaderDynamic dynamic_loader;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::SampleCountFlagBits msaa_samples;
 
@@ -89,8 +88,8 @@ namespace mag
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
-            DescriptorAllocator descriptor_allocator;
             DescriptorLayoutCache descriptor_cache;
+            CommandBuffer submit_command_buffer;
     };
 
     Context& get_context();

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <memory>
+
 #include "renderer/context.hpp"
 #include "renderer/sampler.hpp"
 
@@ -29,5 +32,17 @@ namespace mag
             VmaAllocation allocation;
 
             u32 mip_levels;
+    };
+
+    class TextureLoader : public Singleton
+    {
+        public:
+            virtual void initialize() override;
+            virtual void shutdown() override;
+
+            std::shared_ptr<Image> load(const str& file);
+
+        private:
+            std::map<str, std::shared_ptr<Image>> textures;
     };
 };  // namespace mag

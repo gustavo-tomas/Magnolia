@@ -5,16 +5,16 @@
 
 namespace mag
 {
-    class EditorRenderPass : public RenderPass
+    class EditorRenderPass
     {
         public:
-            virtual void initialize(const uvec2& size) override;
-            virtual void shutdown() override;
+            void initialize(const uvec2& size);
+            void shutdown();
 
-            virtual void before_pass(CommandBuffer& command_buffer) override;
-            virtual void after_pass(CommandBuffer& command_buffer) override;
+            void before_render(CommandBuffer& command_buffer);
+            void after_render(CommandBuffer& command_buffer);
 
-            virtual Pass& get_pass() override { return pass; };
+            Pass& get_pass() { return pass; };
             const Image& get_draw_image() const { return draw_image; };
             uvec3 get_draw_size() const { return draw_size; };
 
@@ -26,6 +26,5 @@ namespace mag
             Pass pass = {};
             Image draw_image;
             uvec3 draw_size;
-            vk::Framebuffer frame_buffer;
     };
 };  // namespace mag
