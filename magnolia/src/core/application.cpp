@@ -4,11 +4,18 @@
 
 namespace mag
 {
-    ModelLoader Application::model_loader;
-    TextureLoader Application::texture_loader;
+    static Application* application = nullptr;
+
+    Application& get_application()
+    {
+        ASSERT(application != nullptr, "Application is null");
+        return *application;
+    }
 
     void Application::initialize(const str& title, const u32 width, const u32 height)
     {
+        application = this;
+
         WindowOptions window_options;
         window_options.size = {width, height};
         window_options.title = title;

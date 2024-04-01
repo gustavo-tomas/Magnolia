@@ -88,7 +88,7 @@ namespace mag
                 const str material_name = ai_mat_name.C_Str();
 
                 // Textures
-                auto texture = Application::get_texture_loader().load(directory + "/" + material_name);
+                auto texture = get_application().get_texture_loader().load(directory + "/" + material_name);
                 textures.push_back(texture);
             }
 
@@ -202,7 +202,7 @@ namespace mag
         mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
 
         // Create a diffuse texture
-        auto diffuse_texture = Application::get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        auto diffuse_texture = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
 
         mesh.textures.push_back(diffuse_texture);
     }
