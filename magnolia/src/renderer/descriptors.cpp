@@ -17,7 +17,11 @@ namespace mag
         auto& context = get_context();
 
         // delete every descriptor layout held
-        for (const auto& [info, layout] : layout_cache) context.get_device().destroyDescriptorSetLayout(layout);
+        for (const auto& layout_pair : layout_cache)
+        {
+            const auto& layout = layout_pair.second;
+            context.get_device().destroyDescriptorSetLayout(layout);
+        }
     }
 
     vk::DescriptorSetLayout DescriptorLayoutCache::create_descriptor_layout(
@@ -47,7 +51,7 @@ namespace mag
         if (!is_sorted)
         {
             std::sort(layout_info.bindings.begin(), layout_info.bindings.end(),
-                      [](vk::DescriptorSetLayoutBinding& a, vk::DescriptorSetLayoutBinding& b)
+                      [](const vk::DescriptorSetLayoutBinding& a, const vk::DescriptorSetLayoutBinding& b)
                       { return a.binding < b.binding; });
         }
 
