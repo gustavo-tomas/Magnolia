@@ -108,6 +108,24 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
+        render_panel(window_flags);
+        render_viewport(window_flags, viewport_image);
+        render_properties(window_flags, models);
+
+        // End
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
+
+        cmd.end_rendering();
+        render_pass.after_render(cmd);
+
+        // Return the draw image to their original layout
+        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
+                            vk::ImageLayout::eTransferSrcOptimal);
+    }
+
+    void Editor::render_panel(const ImGuiWindowFlags window_flags)
+    {
         ImGui::Begin("Panel", NULL, window_flags);
         ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
         ImGui::Text("Press ESC to enter fullscreen mode");
@@ -115,7 +133,10 @@ namespace mag
         ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
         ImGui::Text("Press SHIFT to alternate between editor and scene views");
         ImGui::End();
+    }
 
+    void Editor::render_viewport(const ImGuiWindowFlags window_flags, const Image &viewport_image)
+    {
         ImGui::Begin("Viewport", NULL, window_flags);
 
         const ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
@@ -146,7 +167,10 @@ namespace mag
         }
 
         ImGui::End();
+    }
 
+    void Editor::render_properties(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
+    {
         // @TODO: check imguizmo implementation
         ImGui::Begin("Properties", NULL, window_flags);
 
@@ -175,17 +199,6 @@ namespace mag
         }
 
         ImGui::End();
-
-        // End
-        ImGui::Render();
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
-
-        cmd.end_rendering();
-        render_pass.after_render(cmd);
-
-        // Return the draw image to their original layout
-        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
-                            vk::ImageLayout::eTransferSrcOptimal);
     }
 
     void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
