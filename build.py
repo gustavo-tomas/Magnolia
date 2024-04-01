@@ -41,6 +41,11 @@ def format():
   os.system(f"find magnolia/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
   return
 
+# ----- Lint -----
+def lint(system):
+  assert os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
+  return
+
 # ----- Shaders -----
 def shaders(system):
   bar = "/"
@@ -85,6 +90,7 @@ def main():
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
     shaders(system)
+    lint(system)
     build(system, configuration)
     run(system, configuration)
   
@@ -104,6 +110,9 @@ def main():
     
     elif command == "clean":
       clean(configuration)
+
+    elif command == "lint":
+      lint(system)
 
     else:
       print(f"Invalid command: '{command}'")

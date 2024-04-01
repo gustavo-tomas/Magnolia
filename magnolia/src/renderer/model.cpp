@@ -17,8 +17,9 @@ namespace mag
         // @TODO: idk about this
         get_context().get_device().waitIdle();
 
-        for (auto& [name, model] : models)
+        for (const auto& model_pair : models)
         {
+            const auto& model = model_pair.second;
             for (auto& mesh : model->meshes)
             {
                 mesh.ibo.shutdown();

@@ -39,12 +39,10 @@ namespace mag
         this->on_resize(size);
 
         // Shaders
-        std::filesystem::path cwd = std::filesystem::current_path();
-        str last_folder;
-        for (const auto& component : cwd) last_folder = component.string();
-
-        str shader_folder = "shaders/";
+        const std::filesystem::path cwd = std::filesystem::current_path();
+        const str last_folder = cwd.filename().string();
         str system = "linux";
+        str shader_folder = "shaders/";
 
 // @TODO: clean this up (maybe use a filesystem class)
 #if defined(_WIN32)

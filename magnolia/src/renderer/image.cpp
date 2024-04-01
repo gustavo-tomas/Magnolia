@@ -11,8 +11,9 @@ namespace mag
 
     void TextureLoader::shutdown()
     {
-        for (auto& [name, texture] : textures)
+        for (const auto& texture_pair : textures)
         {
+            const auto& texture = texture_pair.second;
             texture->shutdown();
         }
     }
