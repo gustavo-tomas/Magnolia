@@ -129,9 +129,17 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
-            // @TODO: spiniignigngginign
+            // @TODO: testing
             models[0].rotation = models[0].rotation + vec3(0, 60.0f * dt, 0);
+
             for (u32 i = 0; i < 3; i++) models[0].rotation[i] = fmod(models[0].rotation[i], 360.0);
+
+            if (window.is_key_down(SDLK_UP))
+                render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
+
+            else if (window.is_key_down(SDLK_DOWN))
+                render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
+            // @TODO: testing
 
             renderer.update(editor, render_pass, models, dt);
         }
