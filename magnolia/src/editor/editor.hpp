@@ -21,6 +21,7 @@ namespace mag
         private:
             void set_style();
 
+            void render_dummy(const ImGuiWindowFlags window_flags, const str& name);
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_viewport(const ImGuiWindowFlags window_flags, const Image& viewport_image);
             void render_properties(const ImGuiWindowFlags window_flags, std::vector<Model>& models);

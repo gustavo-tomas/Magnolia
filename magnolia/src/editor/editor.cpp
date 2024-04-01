@@ -112,6 +112,9 @@ namespace mag
         render_viewport(window_flags, viewport_image);
         render_properties(window_flags, models);
 
+        // @TODO: rendering empty window just for symmetry. This will be changed in the future.
+        render_dummy(window_flags, "Dummy");
+
         // End
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
@@ -122,6 +125,13 @@ namespace mag
         // Return the draw image to their original layout
         cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
                             vk::ImageLayout::eTransferSrcOptimal);
+    }
+
+    void Editor::render_dummy(const ImGuiWindowFlags window_flags, const str &name)
+    {
+        ImGui::Begin(name.c_str(), NULL, window_flags);
+        ImGui::Text("%s", name.c_str());
+        ImGui::End();
     }
 
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
