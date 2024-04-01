@@ -44,11 +44,20 @@ namespace mag
         render_pass.initialize(window.get_size());
         LOG_SUCCESS("RenderPass initialized");
 
+        // Create a camera
+        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
+        LOG_SUCCESS("Camera initialized");
+
+        // Create a camera controller
+        controller.initialize(&camera, &window);
+        LOG_SUCCESS("Controller initialized");
+
         // Set window callbacks
         window.on_resize(
             [&](const uvec2& size) mutable
             {
                 LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
+                camera.set_aspect_ratio(size);
                 renderer.on_resize(size);
                 editor.on_resize(size);
                 render_pass.on_resize(size);
@@ -56,7 +65,7 @@ namespace mag
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
-        window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->renderer.on_mouse_move(mouse_dir); });
+        window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->controller.on_mouse_move(mouse_dir); });
         window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
 
@@ -76,6 +85,12 @@ namespace mag
     void Application::shutdown()
     {
         cube.shutdown();
+
+        this->controller.shutdown();
+        LOG_SUCCESS("Controller destroyed");
+
+        this->camera.shutdown();
+        LOG_SUCCESS("Camera destroyed");
 
         this->render_pass.shutdown();
         LOG_SUCCESS("RenderPass destroyed");
@@ -129,6 +144,8 @@ namespace mag
 
             if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
 
+            controller.update(dt);
+
             // @TODO: testing
             models[0].rotation = models[0].rotation + vec3(0, 60.0f * dt, 0);
 
@@ -141,7 +158,8 @@ namespace mag
                 render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
             // @TODO: testing
 
-            renderer.update(editor, render_pass, models, dt);
+            // Skip rendering if minimized
+            if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
         }
     }
 };  // namespace mag

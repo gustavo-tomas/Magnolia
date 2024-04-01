@@ -1,5 +1,7 @@
 #pragma once
 
+#include "camera/camera.hpp"
+#include "camera/controller.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
@@ -31,6 +33,8 @@ namespace mag
             StandardRenderPass render_pass;
             std::vector<Model> models;
             Cube cube;
+            Camera camera;
+            Controller controller;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(

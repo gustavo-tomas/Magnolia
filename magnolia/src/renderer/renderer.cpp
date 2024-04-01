@@ -16,36 +16,19 @@ namespace mag
 
         this->context.initialize(context_options);
         LOG_SUCCESS("Context initialized");
-
-        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
-        LOG_SUCCESS("Camera initialized");
-
-        controller.initialize(&camera, &window);
-        LOG_SUCCESS("Controller initialized");
     }
 
     void Renderer::shutdown()
     {
         this->context.get_device().waitIdle();
 
-        this->controller.shutdown();
-        LOG_SUCCESS("Controller destroyed");
-
-        this->camera.shutdown();
-        LOG_SUCCESS("Camera destroyed");
-
         this->context.shutdown();
         LOG_SUCCESS("Context destroyed");
     }
 
-    void Renderer::update(Editor& editor, StandardRenderPass& render_pass, std::vector<Model>& models, const f32 dt)
+    void Renderer::update(const Camera& camera, Editor& editor, StandardRenderPass& render_pass,
+                          std::vector<Model>& models)
     {
-        // @TODO: maybe this shouldnt be here
-        controller.update(dt);
-
-        // Skip rendering if minimized
-        if (window->is_minimized()) return;
-
         Frame& curr_frame = context.get_curr_frame();
         Pass& pass = render_pass.get_pass();
 
@@ -87,12 +70,7 @@ namespace mag
     {
         context.get_device().waitIdle();
 
-        // Use the surface extent after recreating the swapchain
+        // @TODO: hardcoded present mode
         context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
-        const uvec2 surface_extent = uvec2(context.get_surface_extent().width, context.get_surface_extent().height);
-
-        this->camera.set_aspect_ratio(surface_extent);
     }
-
-    void Renderer::on_mouse_move(const ivec2& mouse_dir) { this->controller.on_mouse_move(mouse_dir); }
 };  // namespace mag
