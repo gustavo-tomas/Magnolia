@@ -106,7 +106,7 @@ namespace mag
 
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
-        // ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
         render_panel(window_flags);
         render_viewport(window_flags, viewport_image);
@@ -232,7 +232,7 @@ namespace mag
 
         const ImVec4 black_opaque = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
         const ImVec4 white_opaque = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-        // const ImVec4 gray_opaque = ImVec4(0.03f, 0.03f, 0.03f, 1.00f);
+        const ImVec4 gray_opaque = ImVec4(0.05f, 0.05f, 0.05f, 1.00f);
         const ImVec4 blue_opaque = ImVec4(0.03f, 0.124f, 0.315f, 1.00f);
 
         style.Colors[ImGuiCol_Text] = white_opaque;
@@ -240,20 +240,20 @@ namespace mag
         // style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
         style.Colors[ImGuiCol_WindowBg] = black_opaque;
         // style.Colors[ImGuiCol_PopupBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.94f);
-        style.Colors[ImGuiCol_Border] = black_opaque;
+        style.Colors[ImGuiCol_Border] = gray_opaque;
         // style.Colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, .00f, 1.00f, 1.0f);
         // style.Colors[ImGuiCol_FrameBg] = white_opaque;
         // style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
         // style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-        style.Colors[ImGuiCol_TitleBg] = black_opaque;
+        style.Colors[ImGuiCol_TitleBg] = gray_opaque;
         // style.Colors[ImGuiCol_TitleBgCollapsed] = white_opaque;
         style.Colors[ImGuiCol_TitleBgActive] = blue_opaque;
         style.Colors[ImGuiCol_MenuBarBg] = black_opaque;
-        style.Colors[ImGuiCol_Tab] = black_opaque;
+        style.Colors[ImGuiCol_Tab] = gray_opaque;
         style.Colors[ImGuiCol_TabHovered] = blue_opaque;
         style.Colors[ImGuiCol_TabActive] = blue_opaque;
-        style.Colors[ImGuiCol_TabUnfocused] = black_opaque;
-        style.Colors[ImGuiCol_TabUnfocusedActive] = black_opaque;
+        style.Colors[ImGuiCol_TabUnfocused] = gray_opaque;
+        style.Colors[ImGuiCol_TabUnfocusedActive] = gray_opaque;
         style.Colors[ImGuiCol_ScrollbarBg] = black_opaque;
         // style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.69f, 0.69f, 0.69f, 1.00f);
         // style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.59f, 0.59f, 0.59f, 1.00f);
