@@ -106,7 +106,7 @@ namespace mag
 
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
 
         render_panel(window_flags);
         render_viewport(window_flags, viewport_image);
