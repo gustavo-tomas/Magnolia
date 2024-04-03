@@ -13,7 +13,7 @@ namespace mag
     class Application
     {
         public:
-            void initialize(const str& title, const u32 width = 800, const u32 height = 600);
+            void initialize(const str& title, const uvec2& size = WindowOptions::MAX_SIZE);
             void shutdown();
 
             void run();

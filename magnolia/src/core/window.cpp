@@ -8,10 +8,26 @@ namespace mag
     {
         ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
+        i32 width = 800, height = 600;
+
+        if (options.size == WindowOptions::MAX_SIZE)
+        {
+            SDL_DisplayMode display_mode;
+            if (SDL_GetDesktopDisplayMode(0, &display_mode) != 0)
+            {
+                LOG_ERROR("Failed to retrieve display mode: {0}", SDL_GetError());
+            }
+
+            else
+            {
+                width = display_mode.w;
+                height = display_mode.h;
+            }
+        }
+
         const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
-        handle = SDL_CreateWindow(options.title.c_str(), options.position.x, options.position.y, options.size.x,
-                                  options.size.y, flags);
+        handle = SDL_CreateWindow(options.title.c_str(), options.position.x, options.position.y, width, height, flags);
 
         ASSERT(handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
 

@@ -12,12 +12,12 @@ namespace mag
         return *application;
     }
 
-    void Application::initialize(const str& title, const u32 width, const u32 height)
+    void Application::initialize(const str& title, const uvec2& size)
     {
         application = this;
 
         WindowOptions window_options;
-        window_options.size = {width, height};
+        window_options.size = size;
         window_options.title = title;
 
         // Create the window
