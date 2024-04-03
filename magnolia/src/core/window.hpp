@@ -16,7 +16,7 @@ namespace mag
     {
             uvec2 size = {1024, 600};
             ivec2 position = {SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED};
-            str title = "BlossV";
+            str title = "Magnolia";
     };
 
     class Window
