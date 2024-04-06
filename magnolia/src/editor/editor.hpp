@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "core/window.hpp"
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
@@ -30,6 +32,7 @@ namespace mag
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
-            vk::DescriptorSet image_descriptor = {};
+            vk::DescriptorSet image_descriptor = {}, button_image_descriptor = {};
+            std::shared_ptr<Image> button_image;
     };
 };  // namespace mag

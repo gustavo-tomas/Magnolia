@@ -1,7 +1,11 @@
 #include "editor/editor.hpp"
 
+#include <filesystem>
+#include <memory>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "core/application.hpp"
 #include "core/logger.hpp"
 
 namespace mag
@@ -62,6 +66,12 @@ namespace mag
         ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
+
+        button_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+
+        button_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(button_image->get_sampler().get_handle(), button_image->get_image_view(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     void Editor::shutdown()
@@ -102,7 +112,7 @@ namespace mag
         ImGui::NewFrame();
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
@@ -129,8 +139,46 @@ namespace mag
 
     void Editor::render_dummy(const ImGuiWindowFlags window_flags, const str &name)
     {
+        std::filesystem::path m_CurrentDirectory = std::filesystem::path("assets/");
         ImGui::Begin(name.c_str(), NULL, window_flags);
-        ImGui::Text("%s", name.c_str());
+
+        static f32 padding = 16.0f;
+        static f32 thumbnailSize = 45.0f;
+        f32 cellSize = thumbnailSize + padding;
+
+        f32 panelWidth = ImGui::GetContentRegionAvail().x;
+        i32 columnCount = (panelWidth / cellSize);
+        if (columnCount < 1) columnCount = 1;
+
+        ImGui::Columns(columnCount, 0, false);
+
+        for (auto &directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+        {
+            const auto &path = directoryEntry.path();
+            const str filenameString = path.filename().string();
+
+            ImGui::PushID(filenameString.c_str());
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::ImageButton(filenameString.c_str(), button_image_descriptor, {thumbnailSize, thumbnailSize}, {0, 1},
+                               {1, 0});
+
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                if (directoryEntry.is_directory()) m_CurrentDirectory /= path.filename();
+            }
+            ImGui::TextWrapped("%s", filenameString.c_str());
+
+            ImGui::NextColumn();
+
+            ImGui::PopID();
+        }
+
+        ImGui::Columns(1);
+
+        ImGui::SliderFloat("Thumbnail Size", &thumbnailSize, 16, 512);
+        ImGui::SliderFloat("Padding", &padding, 0, 32);
+
         ImGui::End();
     }
 
