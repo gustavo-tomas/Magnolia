@@ -57,10 +57,13 @@ namespace mag
             [&](const uvec2& size) mutable
             {
                 LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
-                camera.set_aspect_ratio(size);
                 renderer.on_resize(size);
                 editor.on_resize(size);
-                render_pass.on_resize(size);
+
+                // @TODO: change sizes in runtime!
+                // render_pass.on_resize(size);
+                // editor.set_viewport_image(render_pass.get_target_image());
+                // camera.set_aspect_ratio(size);
             });
 
         window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
@@ -68,6 +71,19 @@ namespace mag
         window.on_mouse_move([this](const ivec2& mouse_dir) mutable { this->controller.on_mouse_move(mouse_dir); });
         window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
+
+        // Set editor viewport image
+        editor.set_viewport_image(render_pass.get_target_image());
+
+        // Set editor callbacks
+        editor.on_viewport_resize(
+            [&](const uvec2& size) mutable
+            {
+                LOG_INFO("VIEWPORT WINDOW RESIZE: {0}", math::to_string(size));
+                render_pass.on_resize(size);
+                editor.set_viewport_image(render_pass.get_target_image());
+                camera.set_aspect_ratio(size);
+            });
 
         // @TODO: temp load assets
         cube.initialize();
@@ -157,6 +173,8 @@ namespace mag
             else if (window.is_key_down(SDLK_DOWN))
                 render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
             // @TODO: testing
+
+            editor.update();
 
             // Skip rendering if minimized
             if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
