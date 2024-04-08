@@ -148,6 +148,9 @@ namespace mag
 
     void Editor::render_viewport(const ImGuiWindowFlags window_flags)
     {
+        // Remove padding for the viewport
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
         ImGui::Begin("Viewport", NULL, window_flags);
 
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
@@ -159,6 +162,8 @@ namespace mag
         ImGui::Image(image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
         ImGui::End();
+
+        ImGui::PopStyleVar();
     }
 
     void Editor::render_properties(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
