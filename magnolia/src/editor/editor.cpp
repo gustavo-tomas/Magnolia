@@ -166,8 +166,18 @@ namespace mag
         // @TODO: check imguizmo implementation
         ImGui::Begin("Properties", NULL, window_flags);
 
+        static char model_path[50];
+        ImGui::InputText("##AddModel", model_path, 50);
+
+        if (ImGui::Button("Add model"))
+        {
+            get_application().add_model(model_path);
+        }
+
         for (auto &model : models)
         {
+            ImGui::Separator();
+
             if (ImGui::TreeNodeEx(model.name.c_str()))
             {
                 vec3 position = model.position;
