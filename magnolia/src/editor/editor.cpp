@@ -2,14 +2,13 @@
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "core/application.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
-    void Editor::initialize(Window &window)
+    void Editor::initialize()
     {
-        this->window = std::addressof(window);
-
         auto &context = get_context();
         auto &device = context.get_device();
 
@@ -45,7 +44,8 @@ namespace mag
 
         this->set_style();
 
-        ASSERT(ImGui_ImplSDL2_InitForVulkan(window.get_handle()), "Failed to initialize editor window backend");
+        ASSERT(ImGui_ImplSDL2_InitForVulkan(get_application().get_window().get_handle()),
+               "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();
@@ -78,18 +78,19 @@ namespace mag
         context.get_device().destroyDescriptorPool(descriptor_pool);
     }
 
-    void Editor::update(CommandBuffer &cmd, const Image &viewport_image, std::vector<Model> &models)
+    void Editor::update()
     {
-        // @TODO: this is not very pretty
-        if (image_descriptor == nullptr)
+        if (resize_needed)
         {
-            image_descriptor =
-                ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
-                                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            viewport_resize(viewport_size);
+            resize_needed = false;
         }
+    }
 
+    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models)
+    {
         // Transition the draw image into their correct transfer layouts
-        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eTransferSrcOptimal,
+        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
                             vk::ImageLayout::eShaderReadOnlyOptimal);
 
         // @TODO: put this inside the render pass?
@@ -98,7 +99,7 @@ namespace mag
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL2_NewFrame(window->get_handle());
+        ImGui_ImplSDL2_NewFrame(get_application().get_window().get_handle());
         ImGui::NewFrame();
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -109,7 +110,7 @@ namespace mag
         // ImGui::ShowDemoWindow();
 
         render_panel(window_flags);
-        render_viewport(window_flags, viewport_image);
+        render_viewport(window_flags);
         render_properties(window_flags, models);
 
         // @TODO: rendering empty window just for symmetry. This will be changed in the future.
@@ -123,7 +124,7 @@ namespace mag
         render_pass.after_render(cmd);
 
         // Return the draw image to their original layout
-        cmd.transfer_layout(viewport_image.get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
+        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
                             vk::ImageLayout::eTransferSrcOptimal);
     }
 
@@ -145,36 +146,17 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::render_viewport(const ImGuiWindowFlags window_flags, const Image &viewport_image)
+    void Editor::render_viewport(const ImGuiWindowFlags window_flags)
     {
         ImGui::Begin("Viewport", NULL, window_flags);
 
-        const ImVec2 image_size(viewport_image.get_extent().width, viewport_image.get_extent().height);
-        const ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+        const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
-        // See this: https://www.reddit.com/r/opengl/comments/114lxvr/comment/j91nuyz/
+        if (current_viewport_size != viewport_size) resize_needed = true;
 
-        // Calculate the aspect ratio of the image and the content region
-        const f32 image_aspect_ratio = image_size.x / image_size.y;
-        const f32 viewport_aspect_ratio = viewport_size.x / viewport_size.y;
+        viewport_size = current_viewport_size;
 
-        // Scale the image horizontally if the content region is wider than the image
-        if (viewport_aspect_ratio > image_aspect_ratio)
-        {
-            const f32 image_width = viewport_size.y * image_aspect_ratio;
-            const f32 offset = (viewport_size.x - image_width) / 2;
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
-            ImGui::Image(image_descriptor, ImVec2(image_width, viewport_size.y));
-        }
-
-        // Scale the image vertically if the content region is taller than the image
-        else
-        {
-            const f32 image_height = viewport_size.x / image_aspect_ratio;
-            const f32 offset = (viewport_size.y - image_height) / 2;
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-            ImGui::Image(image_descriptor, ImVec2(viewport_size.x, image_height));
-        }
+        ImGui::Image(image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
         ImGui::End();
     }
@@ -215,6 +197,23 @@ namespace mag
 
     void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
 
+    void Editor::on_viewport_resize(std::function<void(const uvec2 &)> callback)
+    {
+        this->viewport_resize = std::move(callback);
+    }
+
+    void Editor::set_viewport_image(const Image &viewport_image)
+    {
+        // Dont forget to delete old descriptor
+        if (image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(image_descriptor);
+
+        image_descriptor =
+            ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        this->viewport_image = std::addressof(viewport_image);
+    }
+
     void Editor::set_style()
     {
         ImGuiStyle &style = ImGui::GetStyle();
@@ -222,6 +221,7 @@ namespace mag
         style.Alpha = 1.0f;
         style.WindowRounding = 3.0f;
         style.WindowBorderSize = 0.0f;
+        style.WindowMinSize = {150.0f, 100.0f};
         style.FrameRounding = 3.0f;
         style.FrameBorderSize = 0.0f;
         style.FramePadding = ImVec2(6.0f, 4.0f);

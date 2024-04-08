@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include "camera/camera.hpp"
@@ -54,6 +53,7 @@ namespace mag
             void on_resize(const uvec2& size);
 
         private:
+            void initialize_images();
             void add_uniform(const u64 buffer_size);
 
             Pass pass = {};

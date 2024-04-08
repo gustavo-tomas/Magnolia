@@ -11,29 +11,12 @@ namespace mag
 {
     void StandardRenderPass::initialize(const uvec2& size)
     {
-        auto& context = get_context();
-
-        // The frame is rendered into this image and then copied to the swapchain
-        const vk::ImageUsageFlags draw_image_usage =
-            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
-
-        const vk::ImageUsageFlags resolve_image_usage =
-            vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
-            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
-
-        draw_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
-                              vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
-
-        depth_image.initialize({size.x, size.y, 1}, vk::Format::eD32Sfloat, /* !TODO: hardcoded depth format */
-                               vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
-                               context.get_msaa_samples());
-
-        resolve_image.initialize({size.x, size.y, 1}, vk::Format::eR16G16B16A16Sfloat, resolve_image_usage,
-                                 vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
-
+        // Set draw size before initializing images
         this->draw_size = {size, 1};
         this->pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
+
+        this->initialize_images();
 
         // Create attachments and rendering info
         this->on_resize(size);
@@ -106,6 +89,30 @@ namespace mag
         triangle_fs.shutdown();
         grid_vs.shutdown();
         grid_fs.shutdown();
+    }
+
+    void StandardRenderPass::initialize_images()
+    {
+        auto& context = get_context();
+
+        // The frame is rendered into this image and then copied to the swapchain
+        const vk::ImageUsageFlags draw_image_usage =
+            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
+
+        const vk::ImageUsageFlags resolve_image_usage =
+            vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
+            vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
+
+        draw_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
+                              vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
+
+        depth_image.initialize({draw_size.x, draw_size.y, 1},
+                               vk::Format::eD32Sfloat, /* !TODO: hardcoded depth format */
+                               vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
+                               context.get_msaa_samples());
+
+        resolve_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, resolve_image_usage,
+                                 vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
     }
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
@@ -272,9 +279,15 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        draw_size.x = min(size.x, draw_image.get_extent().width) * render_scale;
-        draw_size.y = min(size.y, draw_image.get_extent().height) * render_scale;
+        draw_size.x = size.x * render_scale;
+        draw_size.y = size.y * render_scale;
         draw_size.z = 1;
+
+        draw_image.shutdown();
+        depth_image.shutdown();
+        resolve_image.shutdown();
+
+        this->initialize_images();
 
         render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
@@ -303,8 +316,13 @@ namespace mag
 
     void StandardRenderPass::set_render_scale(const f32 scale)
     {
+        auto& context = get_context();
+
         this->render_scale = clamp(scale, 0.01f, 1.0f);
-        this->on_resize({draw_image.get_extent().width, draw_image.get_extent().height});
+        this->on_resize({context.get_surface_extent().width, context.get_surface_extent().height});
         LOG_INFO("Render scale: {0:.2f}", render_scale);
+
+        // Dont forget to set editor viewport image
+        get_application().get_editor().set_viewport_image(this->get_target_image());
     }
 };  // namespace mag

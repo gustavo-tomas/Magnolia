@@ -19,6 +19,7 @@ namespace mag
             void run();
 
             Window& get_window() { return window; };
+            Editor& get_editor() { return editor; };
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
 
