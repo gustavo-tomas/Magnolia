@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/window.hpp"
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
 
@@ -9,7 +8,7 @@ namespace mag
     class Editor
     {
         public:
-            void initialize(Window& window);
+            void initialize();
             void shutdown();
             void update();
             void render(CommandBuffer& cmd, std::vector<Model>& models);
@@ -32,7 +31,6 @@ namespace mag
 
             std::function<void(const vec2&)> viewport_resize = {};
 
-            Window* window;
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;

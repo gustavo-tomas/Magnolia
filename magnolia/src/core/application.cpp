@@ -29,7 +29,7 @@ namespace mag
         LOG_SUCCESS("Renderer initialized");
 
         // Create the editor
-        editor.initialize(window);
+        editor.initialize();
         LOG_SUCCESS("Editor initialized");
 
         // Create the model loader
