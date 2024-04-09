@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <memory>
 
+#include "IconsFontAwesome5.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
@@ -46,7 +47,22 @@ namespace mag
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-        io.Fonts->AddFontFromFileTTF("assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf", 15);
+        // FontAwesome fonts need to have their sizes reduced by 2/3 in order to align correctly
+        const f32 font_size = 15.0f;
+        const f32 icon_font_size = font_size * 2.0f / 3.0f;
+
+        // Merge in icons from Font Awesome
+        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+        ImFontConfig icons_config;
+        icons_config.MergeMode = true;
+        icons_config.PixelSnapH = true;
+        icons_config.GlyphMinAdvanceX = icon_font_size;
+
+        const str icon_path = str("assets/fonts/FontAwesome/") + FONT_ICON_FILE_NAME_FAS;
+        const str font_path = "assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
+
+        io.Fonts->AddFontFromFileTTF(font_path.c_str(), font_size);
+        io.Fonts->AddFontFromFileTTF(icon_path.c_str(), icon_font_size, &icons_config, icons_ranges);
 
         this->set_style();
 
@@ -148,7 +164,7 @@ namespace mag
         // Traverse directories
         if (current_directory != std::filesystem::path(base_directory))
         {
-            if (ImGui::Button("<"))
+            if (ImGui::Button(ICON_FA_ARROW_LEFT))
             {
                 current_directory = current_directory.parent_path();
             }
@@ -252,9 +268,8 @@ namespace mag
 
         for (auto &model : models)
         {
-            ImGui::Separator();
-
-            if (ImGui::TreeNodeEx(model.name.c_str()))
+            const str node_name = str(ICON_FA_CUBE) + " " + model.name;
+            if (ImGui::TreeNodeEx(node_name.c_str()))
             {
                 vec3 position = model.position;
                 vec3 rotation = model.rotation;

@@ -24,7 +24,8 @@ project "magnolia"
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.cpp",
         "libs/spirv_reflect/spirv_reflect.h",
-        "libs/spirv_reflect/spirv_reflect.cpp"
+        "libs/spirv_reflect/spirv_reflect.cpp",
+        "libs/font_awesome/IconsFontAwesome5.h"
     }
 
     includedirs 
@@ -38,7 +39,8 @@ project "magnolia"
         "libs/imgui",
         "libs/glm",
         "libs/stb",
-        "libs/spirv_reflect"
+        "libs/spirv_reflect",
+        "libs/font_awesome"
     }
 
     defines

@@ -24,3 +24,6 @@ python3 build.py debug
 - [[VulkanTutorial](https://github.com/Overv/VulkanTutorial)] Vulkan foundations
 - [[VkGuide](https://github.com/vblanco20-1/vulkan-guide)] Render to texture and other vulkan optimizations
 - [[ASliceOfRendering](https://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/)] Generating an infinite grid using shaders
+- [[Hazel](https://github.com/TheCherno/Hazel)] Content browser and other editor widgets
+- [[FontAwesome](https://github.com/FortAwesome/Font-Awesome/)] Icon fonts
+- [[IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders)] Font awesome for C++
