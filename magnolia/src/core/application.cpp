@@ -195,13 +195,30 @@ namespace mag
 
     void Application::add_model(const str& path)
     {
-        // Enqueue the model if it exists
+        // First check if the path exists
         if (!std::filesystem::exists(path))
         {
             LOG_ERROR("File not found: {0}", path);
             return;
         }
 
+        // Then check if its a directory
+        if (std::filesystem::is_directory(path))
+        {
+            LOG_ERROR("Path is a directory: {0}", path);
+            return;
+        }
+
+        // Then check if assimp supports this extension
+        const std::filesystem::path file_path(path);
+        const str extension = file_path.extension().c_str();
+        if (!model_loader.is_extension_supported(extension))
+        {
+            LOG_ERROR("Extension not supported: {0}", extension);
+            return;
+        }
+
+        // Finally enqueue the model
         models_queue.push_back(path);
     }
 };  // namespace mag
