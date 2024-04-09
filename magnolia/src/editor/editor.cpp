@@ -1,5 +1,8 @@
 #include "editor/editor.hpp"
 
+#include <filesystem>
+#include <memory>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
@@ -7,6 +10,9 @@
 
 namespace mag
 {
+    // ImGui drag and drop types
+    const char *CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
+
     void Editor::initialize()
     {
         auto &context = get_context();
@@ -62,6 +68,12 @@ namespace mag
         ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
+
+        button_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+
+        button_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(button_image->get_sampler().get_handle(), button_image->get_image_view(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     void Editor::shutdown()
@@ -103,7 +115,7 @@ namespace mag
         ImGui::NewFrame();
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
         // ImGui windows goes here
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
@@ -111,10 +123,8 @@ namespace mag
 
         render_panel(window_flags);
         render_viewport(window_flags);
+        render_content_browser(window_flags);
         render_properties(window_flags, models);
-
-        // @TODO: rendering empty window just for symmetry. This will be changed in the future.
-        render_dummy(window_flags, "Dummy");
 
         // End
         ImGui::Render();
@@ -128,10 +138,67 @@ namespace mag
                             vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void Editor::render_dummy(const ImGuiWindowFlags window_flags, const str &name)
+    void Editor::render_content_browser(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin(name.c_str(), NULL, window_flags);
-        ImGui::Text("%s", name.c_str());
+        ImGui::Begin("Content Browser", NULL, window_flags);
+
+        const std::filesystem::path base_directory = std::filesystem::path("assets");
+        static std::filesystem::path current_directory = base_directory;
+
+        // Traverse directories
+        if (current_directory != std::filesystem::path(base_directory))
+        {
+            if (ImGui::Button("<"))
+            {
+                current_directory = current_directory.parent_path();
+            }
+        }
+
+        static f32 padding = 24.0f;
+        static f32 thumbnail_size = 45.0f;
+        const f32 cell_size = thumbnail_size + padding;
+
+        const f32 panel_width = ImGui::GetContentRegionAvail().x;
+        i32 column_count = panel_width / cell_size;
+        if (column_count < 1) column_count = 1;
+
+        ImGui::Columns(column_count, 0, false);
+
+        for (auto &directory_entry : std::filesystem::directory_iterator(current_directory))
+        {
+            const auto &path = directory_entry.path();
+            const str filename_string = path.filename().string();
+
+            ImGui::PushID(filename_string.c_str());
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));  // Remove button background
+            ImGui::ImageButton(filename_string.c_str(), button_image_descriptor, {thumbnail_size, thumbnail_size},
+                               {0, 1}, {1, 0});
+
+            if (ImGui::BeginDragDropSource())
+            {
+                std::filesystem::path relative_path(path);
+                const wchar_t *item_path = reinterpret_cast<const wchar_t *>(relative_path.c_str());
+                ImGui::SetDragDropPayload(CONTENT_BROWSER_ITEM, item_path, (wcslen(item_path) + 1) * sizeof(wchar_t));
+                ImGui::EndDragDropSource();
+            }
+
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            {
+                if (directory_entry.is_directory()) current_directory /= path.filename();
+            }
+            ImGui::TextWrapped("%s", filename_string.c_str());
+
+            ImGui::NextColumn();
+
+            ImGui::PopID();
+        }
+
+        ImGui::Columns(1);
+
+        ImGui::SliderFloat("Thumbnail Size", &thumbnail_size, 16, 512);
+        ImGui::SliderFloat("Padding", &padding, 0, 32);
+
         ImGui::End();
     }
 
@@ -143,6 +210,7 @@ namespace mag
         ImGui::Text("Press TAB to capture the cursor");
         ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
         ImGui::Text("Press SHIFT to alternate between editor and scene views");
+        ImGui::Text("Drag and drop assets into the viewport to load them");
         ImGui::End();
     }
 
@@ -161,6 +229,17 @@ namespace mag
 
         ImGui::Image(image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
+        // Load models
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+            {
+                const char *path = static_cast<const char *>(payload->Data);
+                get_application().add_model(path);
+            }
+            ImGui::EndDragDropTarget();
+        }
+
         ImGui::End();
 
         ImGui::PopStyleVar();
@@ -170,14 +249,6 @@ namespace mag
     {
         // @TODO: check imguizmo implementation
         ImGui::Begin("Properties", NULL, window_flags);
-
-        static char model_path[50];
-        ImGui::InputText("##AddModel", model_path, 50);
-
-        if (ImGui::Button("Add model"))
-        {
-            get_application().add_model(model_path);
-        }
 
         for (auto &model : models)
         {

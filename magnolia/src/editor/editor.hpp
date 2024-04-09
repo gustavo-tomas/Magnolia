@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
 
@@ -24,7 +26,7 @@ namespace mag
         private:
             void set_style();
 
-            void render_dummy(const ImGuiWindowFlags window_flags, const str& name);
+            void render_content_browser(const ImGuiWindowFlags window_flags);
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_viewport(const ImGuiWindowFlags window_flags);
             void render_properties(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
@@ -34,7 +36,8 @@ namespace mag
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
-            vk::DescriptorSet image_descriptor = {};
+            vk::DescriptorSet image_descriptor = {}, button_image_descriptor = {};
+            std::shared_ptr<Image> button_image;
             const Image* viewport_image = {};
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
