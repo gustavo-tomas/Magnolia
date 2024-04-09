@@ -1,5 +1,7 @@
 #include "core/application.hpp"
 
+#include <filesystem>
+
 #include "core/logger.hpp"
 
 namespace mag
@@ -89,6 +91,8 @@ namespace mag
                 camera.set_aspect_ratio(size);
             });
 
+        this->render_pass.set_camera();
+
         // @TODO: temp load assets
         cube.initialize();
 
@@ -96,10 +100,7 @@ namespace mag
         cube.get_model().scale = vec3(10);
 
         models.push_back(cube.get_model());
-        models.push_back(*model_loader.load("assets/models/sponza/sponza.obj"));
-
-        this->render_pass.set_camera();
-        for (const auto& m : models) this->render_pass.add_model(m);
+        render_pass.add_model(cube.get_model());
     }
 
     void Application::shutdown()
@@ -167,10 +168,6 @@ namespace mag
             if (window.is_mouse_captured()) controller.update(dt);
 
             // @TODO: testing
-            models[0].rotation = models[0].rotation + vec3(0, 60.0f * dt, 0);
-
-            for (u32 i = 0; i < 3; i++) models[0].rotation[i] = fmod(models[0].rotation[i], 360.0);
-
             if (window.is_key_down(SDLK_UP))
                 render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
 
@@ -178,10 +175,50 @@ namespace mag
                 render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
             // @TODO: testing
 
+            while (!models_queue.empty())
+            {
+                const str& model_path = models_queue.front();
+                const auto model = model_loader.load(model_path);
+
+                models.push_back(*model);
+                this->render_pass.add_model(*model);
+
+                models_queue.erase(models_queue.begin());
+            }
+
             editor.update();
 
             // Skip rendering if minimized
             if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
         }
+    }
+
+    void Application::add_model(const str& path)
+    {
+        // First check if the path exists
+        if (!std::filesystem::exists(path))
+        {
+            LOG_ERROR("File not found: {0}", path);
+            return;
+        }
+
+        // Then check if its a directory
+        if (std::filesystem::is_directory(path))
+        {
+            LOG_ERROR("Path is a directory: {0}", path);
+            return;
+        }
+
+        // Then check if assimp supports this extension
+        const std::filesystem::path file_path(path);
+        const str extension = file_path.extension().c_str();
+        if (!model_loader.is_extension_supported(extension))
+        {
+            LOG_ERROR("Extension not supported: {0}", extension);
+            return;
+        }
+
+        // Finally enqueue the model
+        models_queue.push_back(path);
     }
 };  // namespace mag

@@ -75,6 +75,7 @@ namespace mag
             virtual void shutdown() override;
 
             std::shared_ptr<Model> load(const str& file);
+            b8 is_extension_supported(const str& extension_with_dot);
 
         private:
             std::unique_ptr<Assimp::Importer> importer;

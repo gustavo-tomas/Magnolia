@@ -108,6 +108,11 @@ namespace mag
         return models[file];
     }
 
+    b8 ModelLoader::is_extension_supported(const str& extension_with_dot)
+    {
+        return importer->IsExtensionSupported(extension_with_dot);
+    }
+
     void Cube::initialize()
     {
         model.name = "Cube";

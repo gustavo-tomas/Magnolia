@@ -74,11 +74,17 @@ namespace mag
 
         for (auto& buffer : data_buffers) buffer.shutdown();
 
-        uniform_descriptor.buffer.unmap_memory();
-        uniform_descriptor.buffer.shutdown();
+        if (!data_buffers.empty())
+        {
+            uniform_descriptor.buffer.unmap_memory();
+            uniform_descriptor.buffer.shutdown();
+        }
 
-        image_descriptor.buffer.unmap_memory();
-        image_descriptor.buffer.shutdown();
+        if (!textures.empty())
+        {
+            image_descriptor.buffer.unmap_memory();
+            image_descriptor.buffer.shutdown();
+        }
 
         draw_image.shutdown();
         depth_image.shutdown();
@@ -130,12 +136,21 @@ namespace mag
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
-        const CameraData camera_data = {
-            .view = camera.get_view(), .projection = camera.get_projection(), .near_far = camera.get_near_far()};
-        data_buffers[0].copy(&camera_data, data_buffers[0].get_size());
-
-        for (u64 b = 1; b < data_buffers.size(); b++)
+        for (u64 b = 0; b < data_buffers.size(); b++)
         {
+            // Camera
+            if (b == 0)
+            {
+                const CameraData camera_data = {.view = camera.get_view(),
+                                                .projection = camera.get_projection(),
+                                                .near_far = camera.get_near_far()};
+
+                data_buffers[b].copy(&camera_data, data_buffers[b].get_size());
+
+                continue;
+            }
+
+            // Models
             const auto& model = models[b - 1];
 
             const quat pitch = angleAxis(radians(model.rotation.x), vec3(1.0f, 0.0f, 0.0f));
@@ -154,12 +169,18 @@ namespace mag
         // The pipeline layout should be the same for both pipelines
         std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
 
-        descriptor_buffer_binding_infos.push_back(
-            {uniform_descriptor.buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+        if (!data_buffers.empty())
+        {
+            descriptor_buffer_binding_infos.push_back({uniform_descriptor.buffer.get_device_address(),
+                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+        }
 
-        descriptor_buffer_binding_infos.push_back(
-            {image_descriptor.buffer.get_device_address(), vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
-                                                               vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
+        if (!textures.empty())
+        {
+            descriptor_buffer_binding_infos.push_back({image_descriptor.buffer.get_device_address(),
+                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
+                                                           vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
+        }
 
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);

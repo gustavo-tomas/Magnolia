@@ -23,6 +23,9 @@ namespace mag
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
 
+            // @TODO: temp
+            void add_model(const str& path);
+
         private:
             Window window;
             Renderer renderer;
@@ -34,6 +37,7 @@ namespace mag
             // @TODO: temp
             StandardRenderPass render_pass;
             std::vector<Model> models;
+            std::vector<str> models_queue;
             Cube cube;
             Camera camera;
             Controller controller;
