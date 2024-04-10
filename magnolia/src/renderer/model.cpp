@@ -54,6 +54,7 @@ namespace mag
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
             std::vector<std::shared_ptr<Image>> textures;
+            const str name = mesh->mName.C_Str();
 
             // Vertices/Indices
             for (u32 f = 0; f < mesh->mNumFaces; f++)
@@ -100,7 +101,7 @@ namespace mag
             vbo.initialize(vertices.data(), vertices.size() * sizeof(Vertex));
             ibo.initialize(indices.data(), indices.size() * sizeof(u32));
 
-            Mesh new_mesh = {vbo, ibo, vertices, indices, textures};
+            Mesh new_mesh = {name, vbo, ibo, vertices, indices, textures};
             model->meshes.push_back(new_mesh);
         }
 
@@ -119,6 +120,7 @@ namespace mag
         model.meshes.resize(1);
 
         auto& mesh = model.meshes[0];
+        mesh.name = "Cube";
         mesh.vertices.resize(24);
 
         // Positions for each vertex

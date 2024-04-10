@@ -27,6 +27,7 @@ namespace mag
 
     struct Mesh
     {
+            str name;
             VertexBuffer vbo;
             IndexBuffer ibo;
             std::vector<Vertex> vertices;
