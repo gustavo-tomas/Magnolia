@@ -96,7 +96,7 @@ namespace mag
         // @TODO: temp load assets
         cube.initialize();
 
-        cube.get_model().position = vec3(0, 10, 0);
+        cube.get_model().translation = vec3(0, 10, 0);
         cube.get_model().scale = vec3(10);
 
         models.push_back(cube.get_model());

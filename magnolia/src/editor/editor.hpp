@@ -29,7 +29,8 @@ namespace mag
             void render_content_browser(const ImGuiWindowFlags window_flags);
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_viewport(const ImGuiWindowFlags window_flags);
-            void render_properties(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
+            void render_scene(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
+            void render_properties(const ImGuiWindowFlags window_flags, Model* model = nullptr);
 
             std::function<void(const vec2&)> viewport_resize = {};
 

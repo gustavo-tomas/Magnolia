@@ -1,6 +1,7 @@
 #include "editor/editor.hpp"
 
 #include <filesystem>
+#include <limits>
 #include <memory>
 
 #include "IconsFontAwesome5.h"
@@ -140,7 +141,7 @@ namespace mag
         render_panel(window_flags);
         render_viewport(window_flags);
         render_content_browser(window_flags);
-        render_properties(window_flags, models);
+        render_scene(window_flags, models);
 
         // End
         ImGui::Render();
@@ -261,33 +262,71 @@ namespace mag
         ImGui::PopStyleVar();
     }
 
-    void Editor::render_properties(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
+    void Editor::render_scene(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
     {
-        // @TODO: check imguizmo implementation
+        ImGui::Begin("Scene", NULL, window_flags);
+
+        static u64 selected_model_idx = std::numeric_limits<u64>().max();
+        for (u64 i = 0; i < models.size(); i++)
+        {
+            auto &model = models[i];
+
+            const str node_name = str(ICON_FA_CUBE) + " " + model.name;
+            if (ImGui::Selectable(node_name.c_str(), selected_model_idx == i))
+            {
+                selected_model_idx = i;
+            }
+        }
+
+        ImGui::End();
+
+        // Only render properties if a model is selected
+        if (selected_model_idx != std::numeric_limits<u64>().max())
+            render_properties(window_flags, &models[selected_model_idx]);
+
+        else
+            render_properties(window_flags, nullptr);
+    }
+
+    void Editor::render_properties(const ImGuiWindowFlags window_flags, Model *model)
+    {
         ImGui::Begin("Properties", NULL, window_flags);
 
-        for (auto &model : models)
+        if (model != nullptr)
         {
-            const str node_name = str(ICON_FA_CUBE) + " " + model.name;
-            if (ImGui::TreeNodeEx(node_name.c_str()))
+            if (ImGui::CollapsingHeader("Transform"))
             {
-                vec3 position = model.position;
-                vec3 rotation = model.rotation;
-                vec3 scale = model.scale;
+                vec3 translation = model->translation;
+                vec3 rotation = model->rotation;
+                vec3 scale = model->scale;
 
-                ImGui::Text("Position");
-                if (ImGui::InputFloat3("##Position", value_ptr(position)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
-                    model.position = position;
+                const f32 left_offset = 100.0f;
+                const char *format = "%.2f";
+                const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+                ImGui::Text("Translation");
+                ImGui::SameLine(left_offset);
+
+                if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
+                {
+                    model->translation = translation;
+                }
 
                 ImGui::Text("Rotation");
-                if (ImGui::InputFloat3("##Rotation", value_ptr(rotation)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
-                    model.rotation = rotation;
+                ImGui::SameLine(left_offset);
+
+                if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
+                {
+                    model->rotation = rotation;
+                }
 
                 ImGui::Text("Scale");
-                if (ImGui::InputFloat3("##Scale", value_ptr(scale)) && ImGui::IsKeyPressed(ImGuiKey_Enter))
-                    model.scale = scale;
+                ImGui::SameLine(left_offset);
 
-                ImGui::TreePop();
+                if (ImGui::InputFloat3("##Scale", value_ptr(scale), format, input_flags))
+                {
+                    model->scale = scale;
+                }
             }
         }
 
