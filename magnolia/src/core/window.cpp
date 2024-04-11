@@ -80,8 +80,12 @@ namespace mag
 
                 case SDL_MOUSEMOTION:
                     // Ignore first mouse move after capturing cursor
-                    if (!ignore_mouse_motion_events) mouse_move(ivec2(e.motion.xrel, e.motion.yrel));
+                    if (!ignore_mouse_motion_events) mouse_move({e.motion.xrel, e.motion.yrel});
                     ignore_mouse_motion_events = false;
+                    break;
+
+                case SDL_MOUSEWHEEL:
+                    wheel_move({e.wheel.x, e.wheel.y});
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:
@@ -98,7 +102,7 @@ namespace mag
 
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                        this->resize(uvec2(e.window.data1, e.window.data2));
+                        this->resize({e.window.data1, e.window.data2});
                     break;
             }
 
@@ -130,6 +134,8 @@ namespace mag
     }
 
     void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
+
+    void Window::on_wheel_move(std::function<void(const ivec2&)> callback) { this->wheel_move = std::move(callback); }
 
     void Window::on_button_press(std::function<void(const u8)> callback) { this->button_press = std::move(callback); }
 
