@@ -52,4 +52,11 @@ namespace mag
         this->aspect_ratio = size.x / size.y;
         calculate_projection();
     }
+
+    void Camera::set_fov(const f32 fov)
+    {
+        this->fov = fov;
+        calculate_projection();
+    }
+
 };  // namespace mag
