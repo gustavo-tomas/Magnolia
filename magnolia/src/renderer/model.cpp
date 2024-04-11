@@ -85,12 +85,24 @@ namespace mag
             const str directory = file.substr(0, file.find_last_of('/'));
             for (u32 i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++)
             {
+                std::shared_ptr<Image> texture = nullptr;
                 aiString ai_mat_name;
-                material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);  // !TODO assert this
-                const str material_name = ai_mat_name.C_Str();
+                auto result = material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);
+
+                if (result != aiReturn::aiReturn_SUCCESS)
+                {
+                    LOG_ERROR("Failed to retrieve texture with index {0}", i);
+                    texture = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+                }
+
+                else
+                {
+                    const str texture_path = directory + "/" + ai_mat_name.C_Str();
+                    texture = get_application().get_texture_loader().load(texture_path);
+                    LOG_INFO("Loaded texture: {0}", texture_path);
+                }
 
                 // Textures
-                auto texture = get_application().get_texture_loader().load(directory + "/" + material_name);
                 textures.push_back(texture);
             }
 
@@ -105,6 +117,7 @@ namespace mag
             model->meshes.push_back(new_mesh);
         }
 
+        LOG_SUCCESS("Loaded model: {0}", file);
         models[file] = std::shared_ptr<Model>(model);
         return models[file];
     }

@@ -28,7 +28,21 @@ namespace mag
         i32 tex_width, tex_height, tex_channels;
 
         stbi_uc* pixels = stbi_load(file.c_str(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
-        ASSERT(pixels, "Failed to load texture file: {0}", file);
+        if (pixels == NULL)
+        {
+            LOG_ERROR("Failed to load texture file: {0}", file);
+            stbi_image_free(pixels);
+
+            // Return the default texture
+            it = textures.find("assets/images/DefaultAlbedoSeamless.png");
+            if (it != textures.end())
+            {
+                return it->second;
+            }
+
+            // If the default texture has not been loaded, there is a serious logic error and we should not proceed
+            ASSERT(false, "Default albedo texture has not been loaded");
+        }
 
         const u64 image_size = tex_width * tex_height * 4;  // !TODO: hardcoded
         vk::Format image_format = vk::Format::eR8G8B8A8Srgb;
