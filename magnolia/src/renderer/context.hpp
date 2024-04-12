@@ -47,6 +47,7 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
+            const u32& get_curr_frame_number() const { return this->frame_provider.get_current_frame_number(); };
 
             const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
             {

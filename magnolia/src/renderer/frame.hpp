@@ -26,7 +26,8 @@ namespace mag
             b8 end_frame(const Image& draw_image, const vk::Extent3D& extent);
 
             Frame& get_current_frame() { return frames[frame_number]; }
-            u32 get_swapchain_image_index() const { return this->swapchain_image_index; };
+            const u32& get_swapchain_image_index() const { return this->swapchain_image_index; };
+            const u32& get_current_frame_number() const { return frame_number; };
 
         private:
             std::vector<Frame> frames;
