@@ -112,8 +112,7 @@ namespace mag
         draw_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
                               vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
 
-        depth_image.initialize({draw_size.x, draw_size.y, 1},
-                               vk::Format::eD32Sfloat, /* !TODO: hardcoded depth format */
+        depth_image.initialize({draw_size.x, draw_size.y, 1}, context.get_supported_depth_format(),
                                vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
                                context.get_msaa_samples());
 

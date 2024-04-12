@@ -53,6 +53,10 @@ namespace mag
                 return this->descriptor_buffer_properties;
             };
 
+            vk::Format get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
+                                            const vk::FormatFeatureFlags features) const;
+            vk::Format get_supported_depth_format() const;
+
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
             DescriptorLayoutCache& get_descriptor_cache() { return this->descriptor_cache; };
 

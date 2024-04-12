@@ -398,4 +398,33 @@ namespace mag
         this->device.resetFences(this->upload_fence);
         this->device.resetCommandPool(command_pool);
     }
+
+    vk::Format Context::get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
+                                             const vk::FormatFeatureFlags features) const
+    {
+        for (const auto& format : candidates)
+        {
+            const vk::FormatProperties properties = physical_device.getFormatProperties(format);
+
+            if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features)
+            {
+                return format;
+            }
+
+            else if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
+            {
+                return format;
+            }
+        }
+
+        ASSERT(false, "Failed to get supported format for Tiling: " + vk::to_string(tiling) +
+                          ", Features: " + vk::to_string(features));
+    }
+
+    vk::Format Context::get_supported_depth_format() const
+    {
+        return this->get_supported_format(
+            {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+            vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+    }
 };  // namespace mag
