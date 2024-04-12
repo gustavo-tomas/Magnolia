@@ -57,19 +57,15 @@ namespace mag
         // This is not ideal but gets the job done
         this->initialize_draw_image();
 
-        delete pass.rendering_info;
-        delete pass.color_attachment;
-        delete pass.depth_attachment;
-
         // Create attachments
         const vk::Rect2D render_area({}, {draw_size.x, draw_size.y});
         const vk::ClearValue color_clear_value({0.6f, 0.4f, 0.2f, 1.0f});
 
-        pass.color_attachment = new vk::RenderingAttachmentInfo(
+        pass.color_attachment = vk::RenderingAttachmentInfo(
             draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
             {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear_value);
 
-        pass.rendering_info = new vk::RenderingInfo({}, render_area, 1, {}, *pass.color_attachment, {}, {});
+        pass.rendering_info = vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, {}, {});
     }
 
     void EditorRenderPass::initialize_draw_image()

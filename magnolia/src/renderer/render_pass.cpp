@@ -5,7 +5,6 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
-#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -15,6 +14,12 @@ namespace mag
         this->draw_size = {size, 1};
         this->pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
+
+        const u32 frame_count = get_context().get_frame_count();
+        draw_images.resize(frame_count);
+        depth_images.resize(frame_count);
+        resolve_images.resize(frame_count);
+        passes.resize(frame_count);
 
         this->initialize_images();
 
@@ -40,16 +45,22 @@ namespace mag
         grid_fs.initialize(shader_folder + "grid.frag.spv");
 
         // Create descriptors layouts
-        uniform_descriptor = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
-        image_descriptor = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
+        uniform_descriptors.resize(frame_count);
+        image_descriptors.resize(frame_count);
+
+        for (u64 i = 0; i < frame_count; i++)
+        {
+            uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
+            image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
+        }
 
         // Descriptor layouts
         const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
-            uniform_descriptor.layout, uniform_descriptor.layout, image_descriptor.layout};
+            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout};
 
         // Pipelines
-        const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_image.get_format(),
-                                                                   depth_image.get_format());
+        const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
+                                                                   depth_images[0].get_format());
 
         triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {triangle_vs, triangle_fs},
                                      Vertex::get_vertex_description(), draw_size);
@@ -72,23 +83,47 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        for (auto& buffer : data_buffers) buffer.shutdown();
+        for (auto& buffers : data_buffers)
+        {
+            for (auto& buffer : buffers)
+            {
+                buffer.shutdown();
+            }
+        }
 
         if (!data_buffers.empty())
         {
-            uniform_descriptor.buffer.unmap_memory();
-            uniform_descriptor.buffer.shutdown();
+            for (auto& descriptor : uniform_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
         }
 
         if (!textures.empty())
         {
-            image_descriptor.buffer.unmap_memory();
-            image_descriptor.buffer.shutdown();
+            for (auto& descriptor : image_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
         }
 
-        draw_image.shutdown();
-        depth_image.shutdown();
-        resolve_image.shutdown();
+        for (auto& image : draw_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : depth_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : resolve_images)
+        {
+            image.shutdown();
+        }
+
         triangle_pipeline.shutdown();
         grid_pipeline.shutdown();
         triangle_vs.shutdown();
@@ -109,20 +144,28 @@ namespace mag
             vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
             vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
 
-        draw_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
-                              vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
+        const u32 frame_count = context.get_frame_count();
 
-        depth_image.initialize({draw_size.x, draw_size.y, 1}, context.get_supported_depth_format(),
-                               vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
-                               context.get_msaa_samples());
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            draw_images[i].initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
+                                      vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
 
-        resolve_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, resolve_image_usage,
-                                 vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+            depth_images[i].initialize({draw_size.x, draw_size.y, 1}, context.get_supported_depth_format(),
+                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth,
+                                       1, context.get_msaa_samples());
+
+            resolve_images[i].initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat,
+                                         resolve_image_usage, vk::ImageAspectFlagBits::eColor, 1,
+                                         vk::SampleCountFlagBits::e1);
+        }
     }
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
-        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eUndefined,
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
@@ -135,7 +178,10 @@ namespace mag
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
-        for (u64 b = 0; b < data_buffers.size(); b++)
+        auto& context = get_context();
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
             // Camera
             if (b == 0)
@@ -144,7 +190,7 @@ namespace mag
                                                 .projection = camera.get_projection(),
                                                 .near_far = camera.get_near_far()};
 
-                data_buffers[b].copy(&camera_data, data_buffers[b].get_size());
+                data_buffers[curr_frame_number][b].copy(&camera_data, data_buffers[curr_frame_number][b].get_size());
 
                 continue;
             }
@@ -162,7 +208,8 @@ namespace mag
 
             const mat4 model_matrix = translation_matrix * rotation_matrix * scale_matrix;
 
-            data_buffers[b].copy(value_ptr(model_matrix), data_buffers[b].get_size());
+            data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
+                                                    data_buffers[curr_frame_number][b].get_size());
         }
 
         // The pipeline layout should be the same for both pipelines
@@ -170,13 +217,14 @@ namespace mag
 
         if (!data_buffers.empty())
         {
-            descriptor_buffer_binding_infos.push_back({uniform_descriptor.buffer.get_device_address(),
-                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+            descriptor_buffer_binding_infos.push_back(
+                {uniform_descriptors[curr_frame_number].buffer.get_device_address(),
+                 vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
         }
 
         if (!textures.empty())
         {
-            descriptor_buffer_binding_infos.push_back({image_descriptor.buffer.get_device_address(),
+            descriptor_buffer_binding_infos.push_back({image_descriptors[curr_frame_number].buffer.get_device_address(),
                                                        vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
                                                            vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
         }
@@ -200,7 +248,7 @@ namespace mag
             const auto& model = models[m];
 
             // Model matrices (set 1)
-            buffer_offsets = (m + 1) * uniform_descriptor.size;
+            buffer_offsets = (m + 1) * uniform_descriptors[curr_frame_number].size;
             command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
                 pipeline_bind_point, triangle_pipeline.get_layout(), 1, buffer_indices, buffer_offsets);
 
@@ -212,7 +260,7 @@ namespace mag
                 // Images (set 2)
                 if (!mesh.textures.empty())
                 {
-                    buffer_offsets = tex_idx * image_descriptor.size;
+                    buffer_offsets = tex_idx * image_descriptors[curr_frame_number].size;
                     command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
                         pipeline_bind_point, triangle_pipeline.get_layout(), 2, image_indices, buffer_offsets);
 
@@ -234,37 +282,54 @@ namespace mag
     void StandardRenderPass::after_render(CommandBuffer& command_buffer)
     {
         // Transition the draw image and the swapchain image into their correct transfer layouts
-        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
-                                       vk::ImageLayout::eTransferSrcOptimal);
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(),
+                                       vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
     void StandardRenderPass::set_camera() { add_uniform(sizeof(CameraData)); }
 
     void StandardRenderPass::add_uniform(const u64 buffer_size)
     {
+        auto& context = get_context();
+
+        const u32 frame_count = context.get_frame_count();
+
         // Delete old descriptor buffers
         if (data_buffers.size() > 0)
         {
-            uniform_descriptor.buffer.unmap_memory();
-            uniform_descriptor.buffer.shutdown();
+            for (auto& descriptor : uniform_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
         }
 
-        // @TODO: Create one camera buffer and descriptor set per frame
-        Buffer buffer;
-        buffer.initialize(buffer_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                          VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+        else
+        {
+            data_buffers.resize(frame_count);
+        }
 
-        data_buffers.push_back(buffer);
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            Buffer buffer;
+            buffer.initialize(buffer_size,
+                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                              VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-        // Create descriptor buffer that holds global data and model transform
-        uniform_descriptor.buffer.initialize(
-            data_buffers.size() * uniform_descriptor.size,
-            VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-            VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+            data_buffers[i].push_back(buffer);
 
-        uniform_descriptor.buffer.map_memory();
+            // Create descriptor buffer that holds global data and model transform
+            uniform_descriptors[i].buffer.initialize(
+                data_buffers[i].size() * uniform_descriptors[i].size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-        DescriptorBuilder::build(uniform_descriptor, data_buffers);
+            uniform_descriptors[i].buffer.map_memory();
+
+            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
+        }
     }
 
     void StandardRenderPass::add_model(const Model& model)
@@ -274,24 +339,33 @@ namespace mag
         // Delete old descriptor buffers
         if (textures.size() > 0)
         {
-            image_descriptor.buffer.unmap_memory();
-            image_descriptor.buffer.shutdown();
+            for (auto& descriptor : image_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
         }
 
         // Put all models textures in a single array
         for (auto& mesh : model.meshes)
             for (auto& texture : mesh.textures) textures.push_back(*texture);
 
-        // Create descriptor buffer that holds texture data
-        image_descriptor.buffer.initialize(
-            textures.size() * image_descriptor.size,
-            VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-            VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+        auto& context = get_context();
 
-        image_descriptor.buffer.map_memory();
+        const u32 frame_count = context.get_frame_count();
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            // Create descriptor buffer that holds texture data
+            image_descriptors[i].buffer.initialize(
+                textures.size() * image_descriptors[i].size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
+                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-        DescriptorBuilder::build(image_descriptor, textures);
+            image_descriptors[i].buffer.map_memory();
+
+            DescriptorBuilder::build(image_descriptors[i], textures);
+        }
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)
@@ -303,35 +377,46 @@ namespace mag
         draw_size.y = size.y * render_scale;
         draw_size.z = 1;
 
-        draw_image.shutdown();
-        depth_image.shutdown();
-        resolve_image.shutdown();
+        for (auto& image : draw_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : depth_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : resolve_images)
+        {
+            image.shutdown();
+        }
 
         this->initialize_images();
 
         render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
-        delete pass.rendering_info;
-        delete pass.color_attachment;
-        delete pass.depth_attachment;
-
         // Create attachments
         const vk::ClearValue color_clear_value({0.2f, 0.4f, 0.6f, 1.0f});
         const vk::ClearValue depth_clear_value(1.0f);
 
-        // @TODO: check attachments load/store ops
-        pass.color_attachment = new vk::RenderingAttachmentInfo(
-            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eAverage,
-            resolve_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eStore, color_clear_value);
+        for (u64 i = 0; i < passes.size(); i++)
+        {
+            // @TODO: check attachments load/store ops
+            passes[i].color_attachment =
+                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
+                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
+                                            vk::AttachmentStoreOp::eStore, color_clear_value);
 
-        pass.depth_attachment = new vk::RenderingAttachmentInfo(
-            depth_image.get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-            vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-            depth_clear_value);
+            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
+                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+                depth_clear_value);
 
-        pass.rendering_info =
-            new vk::RenderingInfo({}, render_area, 1, {}, *pass.color_attachment, pass.depth_attachment, {});
+            passes[i].rendering_info =
+                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
+        }
     }
 
     void StandardRenderPass::set_render_scale(const f32 scale)
@@ -345,4 +430,18 @@ namespace mag
         // Dont forget to set editor viewport image
         get_application().get_editor().set_viewport_image(this->get_target_image());
     }
+
+    Pass& StandardRenderPass::get_pass()
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        return passes[curr_frame_number];
+    };
+
+    const Image& StandardRenderPass::get_target_image() const
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        return resolve_images[curr_frame_number];
+    };
 };  // namespace mag
