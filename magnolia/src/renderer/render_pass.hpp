@@ -18,16 +18,9 @@ namespace mag
 
     struct Pass
     {
-            ~Pass()
-            {
-                delete rendering_info;
-                delete color_attachment;
-                delete depth_attachment;
-            }
-
-            vk::RenderingInfo* rendering_info;
-            vk::RenderingAttachmentInfo* color_attachment;
-            vk::RenderingAttachmentInfo* depth_attachment;
+            vk::RenderingInfo rendering_info;
+            vk::RenderingAttachmentInfo color_attachment;
+            vk::RenderingAttachmentInfo depth_attachment;
     };
 
     class StandardRenderPass
@@ -44,8 +37,8 @@ namespace mag
             void add_model(const Model& model);
             void set_camera();
 
-            Pass& get_pass() { return pass; };
-            const Image& get_target_image() const { return resolve_image; };
+            Pass& get_pass();
+            const Image& get_target_image() const;
             f32 get_render_scale() const { return render_scale; };
             uvec3 get_draw_size() const { return draw_size; };
             void set_render_scale(const f32 scale);
@@ -56,10 +49,10 @@ namespace mag
             void initialize_images();
             void add_uniform(const u64 buffer_size);
 
-            Pass pass = {};
+            std::vector<Pass> passes = {};
             Pipeline triangle_pipeline, grid_pipeline;
             Shader triangle_vs, triangle_fs, grid_vs, grid_fs;
-            Image draw_image, depth_image, resolve_image;
+            std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vk::PipelineBindPoint pipeline_bind_point;

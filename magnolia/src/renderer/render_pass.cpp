@@ -5,7 +5,6 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
-#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -15,6 +14,12 @@ namespace mag
         this->draw_size = {size, 1};
         this->pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
+
+        const u32 frame_count = get_context().get_frame_count();
+        draw_images.resize(frame_count);
+        depth_images.resize(frame_count);
+        resolve_images.resize(frame_count);
+        passes.resize(frame_count);
 
         this->initialize_images();
 
@@ -40,7 +45,6 @@ namespace mag
         grid_fs.initialize(shader_folder + "grid.frag.spv");
 
         // Create descriptors layouts
-        const u32 frame_count = get_context().get_frame_count();
         uniform_descriptors.resize(frame_count);
         image_descriptors.resize(frame_count);
 
@@ -55,8 +59,8 @@ namespace mag
             uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout};
 
         // Pipelines
-        const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_image.get_format(),
-                                                                   depth_image.get_format());
+        const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
+                                                                   depth_images[0].get_format());
 
         triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {triangle_vs, triangle_fs},
                                      Vertex::get_vertex_description(), draw_size);
@@ -105,9 +109,21 @@ namespace mag
             }
         }
 
-        draw_image.shutdown();
-        depth_image.shutdown();
-        resolve_image.shutdown();
+        for (auto& image : draw_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : depth_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : resolve_images)
+        {
+            image.shutdown();
+        }
+
         triangle_pipeline.shutdown();
         grid_pipeline.shutdown();
         triangle_vs.shutdown();
@@ -128,20 +144,28 @@ namespace mag
             vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst |
             vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled;
 
-        draw_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
-                              vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
+        const u32 frame_count = context.get_frame_count();
 
-        depth_image.initialize({draw_size.x, draw_size.y, 1}, context.get_supported_depth_format(),
-                               vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth, 1,
-                               context.get_msaa_samples());
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            draw_images[i].initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, draw_image_usage,
+                                      vk::ImageAspectFlagBits::eColor, 1, context.get_msaa_samples());
 
-        resolve_image.initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat, resolve_image_usage,
-                                 vk::ImageAspectFlagBits::eColor, 1, vk::SampleCountFlagBits::e1);
+            depth_images[i].initialize({draw_size.x, draw_size.y, 1}, context.get_supported_depth_format(),
+                                       vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::ImageAspectFlagBits::eDepth,
+                                       1, context.get_msaa_samples());
+
+            resolve_images[i].initialize({draw_size.x, draw_size.y, 1}, vk::Format::eR16G16B16A16Sfloat,
+                                         resolve_image_usage, vk::ImageAspectFlagBits::eColor, 1,
+                                         vk::SampleCountFlagBits::e1);
+        }
     }
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
-        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eUndefined,
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
@@ -258,15 +282,16 @@ namespace mag
     void StandardRenderPass::after_render(CommandBuffer& command_buffer)
     {
         // Transition the draw image and the swapchain image into their correct transfer layouts
-        command_buffer.transfer_layout(resolve_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
-                                       vk::ImageLayout::eTransferSrcOptimal);
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(),
+                                       vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
     void StandardRenderPass::set_camera() { add_uniform(sizeof(CameraData)); }
 
     void StandardRenderPass::add_uniform(const u64 buffer_size)
     {
-        // @TODO: Create one camera buffer and descriptor set per frame
         auto& context = get_context();
 
         const u32 frame_count = context.get_frame_count();
@@ -352,35 +377,46 @@ namespace mag
         draw_size.y = size.y * render_scale;
         draw_size.z = 1;
 
-        draw_image.shutdown();
-        depth_image.shutdown();
-        resolve_image.shutdown();
+        for (auto& image : draw_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : depth_images)
+        {
+            image.shutdown();
+        }
+
+        for (auto& image : resolve_images)
+        {
+            image.shutdown();
+        }
 
         this->initialize_images();
 
         render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
-        delete pass.rendering_info;
-        delete pass.color_attachment;
-        delete pass.depth_attachment;
-
         // Create attachments
         const vk::ClearValue color_clear_value({0.2f, 0.4f, 0.6f, 1.0f});
         const vk::ClearValue depth_clear_value(1.0f);
 
-        // @TODO: check attachments load/store ops
-        pass.color_attachment = new vk::RenderingAttachmentInfo(
-            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eAverage,
-            resolve_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eStore, color_clear_value);
+        for (u64 i = 0; i < passes.size(); i++)
+        {
+            // @TODO: check attachments load/store ops
+            passes[i].color_attachment =
+                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
+                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
+                                            vk::AttachmentStoreOp::eStore, color_clear_value);
 
-        pass.depth_attachment = new vk::RenderingAttachmentInfo(
-            depth_image.get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-            vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-            depth_clear_value);
+            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
+                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+                depth_clear_value);
 
-        pass.rendering_info =
-            new vk::RenderingInfo({}, render_area, 1, {}, *pass.color_attachment, pass.depth_attachment, {});
+            passes[i].rendering_info =
+                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
+        }
     }
 
     void StandardRenderPass::set_render_scale(const f32 scale)
@@ -394,4 +430,18 @@ namespace mag
         // Dont forget to set editor viewport image
         get_application().get_editor().set_viewport_image(this->get_target_image());
     }
+
+    Pass& StandardRenderPass::get_pass()
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        return passes[curr_frame_number];
+    };
+
+    const Image& StandardRenderPass::get_target_image() const
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        return resolve_images[curr_frame_number];
+    };
 };  // namespace mag
