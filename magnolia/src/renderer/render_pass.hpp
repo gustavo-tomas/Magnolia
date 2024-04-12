@@ -78,9 +78,9 @@ namespace mag
                     mat4 model;  // 64 bytes (16 x 4)
             };
 
-            std::vector<Buffer> data_buffers;
+            std::vector<std::vector<Buffer>> data_buffers;
             std::vector<Image> textures;
-            Descriptor uniform_descriptor, image_descriptor;
+            std::vector<Descriptor> uniform_descriptors, image_descriptors;
             // @TODO: temporary
     };
 };  // namespace mag
