@@ -62,16 +62,16 @@ namespace mag
 
 #if !defined(MAG_RELEASE)
     #define LOG_ERROR(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Error, message, ##__VA_ARGS__)
+        mag::Logger::log(std::source_location::current(), mag::LogType::Error, message __VA_OPT__(, ) __VA_ARGS__)
 
     #define LOG_WARNING(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Warning, message, ##__VA_ARGS__)
+        mag::Logger::log(std::source_location::current(), mag::LogType::Warning, message __VA_OPT__(, ) __VA_ARGS__)
 
     #define LOG_INFO(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Info, message, ##__VA_ARGS__)
+        mag::Logger::log(std::source_location::current(), mag::LogType::Info, message __VA_OPT__(, ) __VA_ARGS__)
 
     #define LOG_SUCCESS(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Success, message, ##__VA_ARGS__)
+        mag::Logger::log(std::source_location::current(), mag::LogType::Success, message __VA_OPT__(, ) __VA_ARGS__)
 #else
     #define LOG_ERROR(message, ...)
     #define LOG_WARNING(message, ...)
