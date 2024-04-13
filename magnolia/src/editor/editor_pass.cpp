@@ -59,7 +59,7 @@ namespace mag
 
         // Create attachments
         const vk::Rect2D render_area({}, {draw_size.x, draw_size.y});
-        const vk::ClearValue color_clear_value({0.6f, 0.4f, 0.2f, 1.0f});
+        const vk::ClearValue color_clear_value({0.0f, 0.0f, 0.0f, 1.0f});
 
         pass.color_attachment = vk::RenderingAttachmentInfo(
             draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},

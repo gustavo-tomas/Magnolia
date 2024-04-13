@@ -20,6 +20,8 @@ namespace mag
             void on_viewport_resize(std::function<void(const uvec2&)> callback);
 
             void set_viewport_image(const Image& image);
+            void set_input_disabled(const b8 disable);
+            const b8& is_input_disabled() const { return disabled; };
             const Image& get_image() const { return render_pass.get_draw_image(); };
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
@@ -42,5 +44,6 @@ namespace mag
             const Image* viewport_image = {};
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
+            b8 disabled = false;
     };
 };  // namespace mag

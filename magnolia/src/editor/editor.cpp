@@ -131,6 +131,9 @@ namespace mag
         ImGui_ImplSDL2_NewFrame(get_application().get_window().get_handle());
         ImGui::NewFrame();
 
+        // Disable widgets
+        ImGui::BeginDisabled(disabled);
+
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
@@ -139,9 +142,14 @@ namespace mag
         // ImGui::ShowDemoWindow();
 
         render_panel(window_flags);
-        render_viewport(window_flags);
         render_content_browser(window_flags);
         render_scene(window_flags, models);
+
+        ImGui::EndDisabled();
+
+        // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
+        // by rendering after the ImGui::EndDisabled()
+        render_viewport(window_flags);
 
         // End
         ImGui::Render();
@@ -333,7 +341,10 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
+    void Editor::process_events(SDL_Event &e)
+    {
+        if (!disabled) ImGui_ImplSDL2_ProcessEvent(&e);
+    }
 
     void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
 
@@ -354,11 +365,14 @@ namespace mag
         this->viewport_image = std::addressof(viewport_image);
     }
 
+    void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
+
     void Editor::set_style()
     {
         ImGuiStyle &style = ImGui::GetStyle();
 
         style.Alpha = 1.0f;
+        style.DisabledAlpha = 0.07f;
         style.WindowRounding = 3.0f;
         style.WindowBorderSize = 0.0f;
         style.WindowMinSize = {150.0f, 100.0f};

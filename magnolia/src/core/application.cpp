@@ -171,6 +171,9 @@ namespace mag
 
             if (window.is_mouse_captured()) controller.update(dt);
 
+            // Disable editor input if in runtime mode
+            editor.set_input_disabled(window.is_mouse_captured());
+
             // @TODO: testing
             if (window.is_key_down(SDLK_UP))
                 render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
