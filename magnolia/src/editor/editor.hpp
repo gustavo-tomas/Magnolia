@@ -45,9 +45,11 @@ namespace mag
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
-            vk::DescriptorSet image_descriptor = {}, button_image_descriptor = {};
-            std::shared_ptr<Image> button_image;
+            vk::DescriptorSet viewport_image_descriptor = {}, asset_image_descriptor = {};
+
+            std::shared_ptr<Image> asset_image;
             const Image* viewport_image = {};
+
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
             b8 disabled = false;

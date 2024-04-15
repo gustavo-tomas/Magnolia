@@ -88,10 +88,10 @@ namespace mag
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        button_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        asset_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
 
-        button_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(button_image->get_sampler().get_handle(), button_image->get_image_view(),
+        asset_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(asset_image->get_sampler().get_handle(), asset_image->get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
@@ -200,7 +200,7 @@ namespace mag
 
             ImGui::PushID(filename_string.c_str());
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));  // Remove button background
-            ImGui::ImageButton(filename_string.c_str(), button_image_descriptor, {thumbnail_size, thumbnail_size},
+            ImGui::ImageButton(filename_string.c_str(), asset_image_descriptor, {thumbnail_size, thumbnail_size},
                                {0, 1}, {1, 0});
 
             if (ImGui::BeginDragDropSource())
@@ -267,7 +267,7 @@ namespace mag
 
         viewport_size = current_viewport_size;
 
-        ImGui::Image(image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+        ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
         // Load models
         if (ImGui::BeginDragDropTarget())
@@ -433,9 +433,9 @@ namespace mag
     void Editor::set_viewport_image(const Image &viewport_image)
     {
         // Dont forget to delete old descriptor
-        if (image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(image_descriptor);
+        if (viewport_image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
 
-        image_descriptor =
+        viewport_image_descriptor =
             ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
