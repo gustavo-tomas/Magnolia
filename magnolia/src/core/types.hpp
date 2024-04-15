@@ -87,5 +87,18 @@ namespace mag
         const f32 Half_Pi = glm::half_pi<f32>();
         const f32 Pi = glm::pi<f32>();
         const f32 Two_Pi = glm::two_pi<f32>();
+
+        // Simpler version of glm::decompose
+        inline b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation)
+        {
+            quat orientation;
+            vec3 skew;
+            vec4 perspective;
+
+            const b8 result = glm::decompose(model_matrix, scale, orientation, translation, skew, perspective);
+            rotation = degrees(glm::eulerAngles(orientation));
+
+            return result;
+        }
     };  // namespace math
 };      // namespace mag

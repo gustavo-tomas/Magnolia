@@ -296,12 +296,13 @@ namespace mag
                                      (ImGuizmo::OPERATION)ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::WORLD,
                                      value_ptr(transform_matrix)))
             {
-                quat orientation;
-                vec3 skew;
-                vec4 perspective;
-                math::decompose(transform_matrix, model.scale, orientation, model.translation, skew, perspective);
+                const b8 result =
+                    math::decompose_simple(transform_matrix, model.scale, model.rotation, model.translation);
 
-                model.rotation = degrees(math::eulerAngles(orientation));
+                if (!result)
+                {
+                    LOG_ERROR("Failed to decompose transformation matrix");
+                }
             }
         }
 
