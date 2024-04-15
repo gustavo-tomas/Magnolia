@@ -50,7 +50,7 @@ namespace mag
 
         // @TODO: testing
         static bool swap = false;
-        if (window->is_key_pressed(SDLK_LSHIFT)) swap = !swap;
+        if (window->is_key_pressed(SDLK_TAB)) swap = !swap;
 
         if (swap)
         {

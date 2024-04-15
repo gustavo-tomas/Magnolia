@@ -237,7 +237,7 @@ namespace mag
 
         ImGui::SeparatorText("In any mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press SHIFT to alternate between editor and scene views");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press TAB to alternate between editor and scene views");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Click PLAY to switch between runtime and editor mode");
 
