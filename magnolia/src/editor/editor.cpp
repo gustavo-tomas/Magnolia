@@ -267,7 +267,41 @@ namespace mag
 
         viewport_size = current_viewport_size;
 
+        ImGui::SetNextItemAllowOverlap();
         ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+
+        // Center the button - https://github.com/ocornut/imgui/discussions/3862
+        ImGuiStyle &style = ImGui::GetStyle();
+
+        const f32 size_x = ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 2.0f;
+        const f32 size_y = ImGui::CalcTextSize(ICON_FA_PLAY).y * 2.0f - style.FramePadding.y + 10.0f;
+        const f32 avail = ImGui::GetContentRegionAvail().x;
+
+        const f32 off = (avail - size_x) * 0.5f;
+        if (off > 0.0f)
+        {
+            ImGui::SetCursorPos({ImGui::GetCursorPosX() + off, ImGui::GetCursorPosY() - size_y});
+        }
+
+        // Play/pause button
+        static const char *button_icon = ICON_FA_PLAY;
+        if (ImGui::Button(button_icon))
+        {
+            auto &app = get_application();
+            auto curr_mode = app.get_active_mode();
+
+            if (curr_mode == Application::Mode::Editor)
+            {
+                app.set_active_mode(Application::Mode::Runtime);
+                button_icon = ICON_FA_PAUSE;
+            }
+
+            else
+            {
+                app.set_active_mode(Application::Mode::Editor);
+                button_icon = ICON_FA_PLAY;
+            }
+        }
 
         // Load models
         if (ImGui::BeginDragDropTarget())
@@ -394,10 +428,7 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::process_events(SDL_Event &e)
-    {
-        if (!disabled) ImGui_ImplSDL2_ProcessEvent(&e);
-    }
+    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
 
     void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
 

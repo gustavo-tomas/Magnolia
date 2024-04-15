@@ -13,6 +13,12 @@ namespace mag
     class Application
     {
         public:
+            enum class Mode
+            {
+                Editor = 0,
+                Runtime
+            };
+
             void initialize(const str& title, const uvec2& size = WindowOptions::MAX_SIZE);
             void shutdown();
 
@@ -22,21 +28,18 @@ namespace mag
             Editor& get_editor() { return editor; };
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
+            const Mode& get_active_mode() const { return active_mode; };
 
             // @TODO: temp
             void add_model(const str& path);
+            void set_active_mode(const Mode mode) { update_active_mode = mode; };
 
         private:
-            enum class Mode
-            {
-                Editor = 0,
-                Runtime
-            };
-
             Window window;
             Renderer renderer;
             Editor editor;
             Mode active_mode = Mode::Editor;
+            Mode update_active_mode = Mode::Editor;
 
             ModelLoader model_loader;
             TextureLoader texture_loader;

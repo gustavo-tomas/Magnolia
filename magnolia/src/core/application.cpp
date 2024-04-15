@@ -184,13 +184,9 @@ namespace mag
                     window.set_fullscreen(0);
             }
 
-            if (window.is_key_pressed(SDLK_TAB))
+            if (active_mode != update_active_mode)
             {
-                if (active_mode == Mode::Editor)
-                    active_mode = Mode::Runtime;
-
-                else
-                    active_mode = Mode::Editor;
+                active_mode = update_active_mode;
 
                 // Disable editor input if in runtime mode
                 editor.set_input_disabled(active_mode == Mode::Runtime);
