@@ -239,8 +239,7 @@ namespace mag
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press SHIFT to alternate between editor and scene views");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
-                           " Press TAB to switch between runtime and editor mode (capture the cursor)");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Click PLAY to switch between runtime and editor mode");
 
         ImGui::SeparatorText("In runtime mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Use WASD and CTRL/ESCAPE to navigate");
@@ -248,6 +247,7 @@ namespace mag
         ImGui::SeparatorText("In editor mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Drag and drop assets into the viewport to load them");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press MOUSE_WHEEL and move the mouse to look around");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
                            " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
 
@@ -270,18 +270,17 @@ namespace mag
         ImGui::SetNextItemAllowOverlap();
         ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
-        // Center the button - https://github.com/ocornut/imgui/discussions/3862
+        // Position the button - https://github.com/ocornut/imgui/discussions/3862
         ImGuiStyle &style = ImGui::GetStyle();
 
-        const f32 size_x = ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 2.0f;
-        const f32 size_y = ImGui::CalcTextSize(ICON_FA_PLAY).y * 2.0f - style.FramePadding.y + 10.0f;
-        const f32 avail = ImGui::GetContentRegionAvail().x;
+        // @TODO: this is a bit hardcoded
+        const ImVec2 size(ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 0.25f,
+                          ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 4.0f);
 
-        const f32 off = (avail - size_x) * 0.5f;
-        if (off > 0.0f)
-        {
-            ImGui::SetCursorPos({ImGui::GetCursorPosX() + off, ImGui::GetCursorPosY() - size_y});
-        }
+        ImGui::SetCursorPos(size);
+
+        ImGui::PushStyleColor(ImGuiCol_Button, 0x00000000);
+        ImGui::PushStyleColor(ImGuiCol_Text, 0xff000000);
 
         // Play/pause button
         static const char *button_icon = ICON_FA_PLAY;
@@ -302,6 +301,8 @@ namespace mag
                 button_icon = ICON_FA_PLAY;
             }
         }
+
+        ImGui::PopStyleColor(2);
 
         // Load models
         if (ImGui::BeginDragDropTarget())
