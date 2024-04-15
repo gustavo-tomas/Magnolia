@@ -36,9 +36,24 @@ namespace mag
     {
         auto& window = get_application().get_window();
 
-        if (!window.is_button_down(SDL_BUTTON_MIDDLE)) return;
+        // Rotate
+        if (window.is_button_down(SDL_BUTTON_MIDDLE))
+        {
+            const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
+            this->camera->set_rotation(new_rot);
+        }
 
-        const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
-        this->camera->set_rotation(new_rot);
+        // Translate
+        else if (window.is_key_down(SDLK_LSHIFT))
+        {
+            const vec3 side = this->camera->get_side();
+            const vec3 up = this->camera->get_up();
+
+            vec3 camera_position = camera->get_position();
+            camera_position += up * static_cast<f32>(mouse_dir.y);
+            camera_position += side * static_cast<f32>(-mouse_dir.x);
+
+            this->camera->set_position(camera_position);
+        }
     }
 };  // namespace mag
