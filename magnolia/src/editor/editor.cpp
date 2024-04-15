@@ -51,7 +51,7 @@ namespace mag
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // FontAwesome fonts need to have their sizes reduced by 2/3 in order to align correctly
-        const f32 font_size = 15.0f;
+        const f32 font_size = 16.0f;
         const f32 icon_font_size = font_size * 2.0f / 3.0f;
 
         // Merge in icons from Font Awesome
