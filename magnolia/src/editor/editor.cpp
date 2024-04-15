@@ -342,7 +342,7 @@ namespace mag
 
         if (model != nullptr)
         {
-            if (ImGui::CollapsingHeader("Transform"))
+            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 vec3 translation = model->translation;
                 vec3 rotation = model->rotation;
