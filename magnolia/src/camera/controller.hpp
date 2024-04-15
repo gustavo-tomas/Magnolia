@@ -4,16 +4,29 @@
 
 namespace mag
 {
-    class Controller
+    // Keep this small and flexible
+    class CameraController
     {
         public:
-            void initialize(Camera* camera);
-            void shutdown();
+            virtual void initialize(Camera* camera) { this->camera = camera; };
+            virtual void shutdown() { this->camera = nullptr; };
 
-            void update(const f32 dt);
+            virtual void update(const f32 dt) { (void)dt; };
+
+        protected:
+            Camera* camera = nullptr;
+    };
+
+    class RuntimeController : public CameraController
+    {
+        public:
+            virtual void update(const f32 dt) override;
             void on_mouse_move(const ivec2& mouse_dir);
+    };
 
-        private:
-            Camera* camera;
+    class EditorController : public CameraController
+    {
+        public:
+            void on_mouse_move(const ivec2& mouse_dir);
     };
 };  // namespace mag

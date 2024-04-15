@@ -27,9 +27,16 @@ namespace mag
             void add_model(const str& path);
 
         private:
+            enum class Mode
+            {
+                Editor = 0,
+                Runtime
+            };
+
             Window window;
             Renderer renderer;
             Editor editor;
+            Mode active_mode = Mode::Editor;
 
             ModelLoader model_loader;
             TextureLoader texture_loader;
@@ -40,7 +47,8 @@ namespace mag
             std::vector<str> models_queue;
             Cube cube;
             Camera camera;
-            Controller controller;
+            RuntimeController runtime_controller;
+            EditorController editor_controller;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(

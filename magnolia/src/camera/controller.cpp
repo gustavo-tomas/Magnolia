@@ -1,16 +1,11 @@
 #include "camera/controller.hpp"
 
 #include "core/application.hpp"
-#include "core/logger.hpp"
 #include "core/window.hpp"
 
 namespace mag
 {
-    void Controller::initialize(Camera* camera) { this->camera = camera; }
-
-    void Controller::shutdown() {}
-
-    void Controller::update(const f32 dt)
+    void RuntimeController::update(const f32 dt)
     {
         vec3 direction(0.0f);
         const f32 velocity = 350.0f;
@@ -31,8 +26,18 @@ namespace mag
         camera->set_position(camera_position);
     }
 
-    void Controller::on_mouse_move(const ivec2& mouse_dir)
+    void RuntimeController::on_mouse_move(const ivec2& mouse_dir)
     {
+        const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
+        this->camera->set_rotation(new_rot);
+    }
+
+    void EditorController::on_mouse_move(const ivec2& mouse_dir)
+    {
+        auto& window = get_application().get_window();
+
+        if (!window.is_button_down(SDL_BUTTON_MIDDLE)) return;
+
         const vec3 new_rot = this->camera->get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
         this->camera->set_rotation(new_rot);
     }

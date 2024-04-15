@@ -27,7 +27,7 @@ namespace mag
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
-            const b8& is_input_disabled() const { return disabled; };
+
             const Image& get_image() const { return render_pass.get_draw_image(); };
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 

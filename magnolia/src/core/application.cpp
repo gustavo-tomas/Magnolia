@@ -50,9 +50,13 @@ namespace mag
         camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
         LOG_SUCCESS("Camera initialized");
 
-        // Create a camera controller
-        controller.initialize(&camera);
-        LOG_SUCCESS("Controller initialized");
+        // Create a camera controller for runtime
+        runtime_controller.initialize(&camera);
+        LOG_SUCCESS("RuntimeController initialized");
+
+        // Create a camera controller for editor
+        editor_controller.initialize(&camera);
+        LOG_SUCCESS("EditorController initialized");
 
         // Set window callbacks
         window.on_resize(
@@ -79,7 +83,11 @@ namespace mag
         window.on_mouse_move(
             [this](const ivec2& mouse_dir) mutable
             {
-                if (window.is_mouse_captured()) this->controller.on_mouse_move(mouse_dir);
+                if (active_mode == Mode::Editor)
+                    this->editor_controller.on_mouse_move(mouse_dir);
+
+                else
+                    this->runtime_controller.on_mouse_move(mouse_dir);
             });
 
         window.on_wheel_move([](const ivec2& wheel_dir) mutable
@@ -117,8 +125,11 @@ namespace mag
     {
         cube.shutdown();
 
-        this->controller.shutdown();
-        LOG_SUCCESS("Controller destroyed");
+        this->editor_controller.shutdown();
+        LOG_SUCCESS("EditorController destroyed");
+
+        this->runtime_controller.shutdown();
+        LOG_SUCCESS("RuntimeController destroyed");
 
         this->camera.shutdown();
         LOG_SUCCESS("Camera destroyed");
@@ -173,12 +184,28 @@ namespace mag
                     window.set_fullscreen(0);
             }
 
-            if (window.is_key_pressed(SDLK_TAB)) window.set_capture_mouse(!window.is_mouse_captured());
+            if (window.is_key_pressed(SDLK_TAB))
+            {
+                if (active_mode == Mode::Editor)
+                    active_mode = Mode::Runtime;
 
-            if (window.is_mouse_captured()) controller.update(dt);
+                else
+                    active_mode = Mode::Editor;
 
-            // Disable editor input if in runtime mode
-            editor.set_input_disabled(window.is_mouse_captured());
+                // Disable editor input if in runtime mode
+                editor.set_input_disabled(active_mode == Mode::Runtime);
+            }
+
+            switch (active_mode)
+            {
+                case Mode::Editor:
+                    editor_controller.update(dt);
+                    break;
+
+                case Mode::Runtime:
+                    runtime_controller.update(dt);
+                    break;
+            }
 
             // @TODO: testing
             if (window.is_key_down(SDLK_UP))
@@ -199,7 +226,7 @@ namespace mag
                 models_queue.erase(models_queue.begin());
             }
 
-            editor.update();
+            if (active_mode == Mode::Editor) editor.update();
 
             // Skip rendering if minimized
             if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
