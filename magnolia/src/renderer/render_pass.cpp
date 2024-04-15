@@ -197,7 +197,7 @@ namespace mag
 
             // Models
             const auto& model = models[b - 1];
-            const mat4 model_matrix = Model::get_transform_matrix(model);
+            const mat4 model_matrix = Model::get_transformation_matrix(model);
 
             data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
                                                     data_buffers[curr_frame_number][b].get_size());

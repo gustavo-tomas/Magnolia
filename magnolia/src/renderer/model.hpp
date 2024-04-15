@@ -37,7 +37,7 @@ namespace mag
 
     struct Model
     {
-            static mat4 get_transform_matrix(const Model& model);
+            static mat4 get_transformation_matrix(const Model& model);
 
             vec3 translation = vec3(0.0f);
             vec3 rotation = vec3(0.0f);
@@ -47,7 +47,7 @@ namespace mag
             str name;
     };
 
-    inline mat4 Model::get_transform_matrix(const Model& model)
+    inline mat4 Model::get_transformation_matrix(const Model& model)
     {
         const quat pitch = angleAxis(radians(model.rotation.x), vec3(1.0f, 0.0f, 0.0f));
         const quat yaw = angleAxis(radians(model.rotation.y), vec3(0.0f, 1.0f, 0.0f));
