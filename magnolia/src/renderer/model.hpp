@@ -37,6 +37,8 @@ namespace mag
 
     struct Model
     {
+            static mat4 get_transformation_matrix(const Model& model);
+
             vec3 translation = vec3(0.0f);
             vec3 rotation = vec3(0.0f);
             vec3 scale = vec3(1.0f);
@@ -44,6 +46,21 @@ namespace mag
             std::vector<Mesh> meshes;
             str name;
     };
+
+    inline mat4 Model::get_transformation_matrix(const Model& model)
+    {
+        const quat pitch = angleAxis(radians(model.rotation.x), vec3(1.0f, 0.0f, 0.0f));
+        const quat yaw = angleAxis(radians(model.rotation.y), vec3(0.0f, 1.0f, 0.0f));
+        const quat roll = angleAxis(radians(model.rotation.z), vec3(0.0f, 0.0f, 1.0f));
+
+        const mat4 rotation_matrix = toMat4(roll) * toMat4(yaw) * toMat4(pitch);
+        const mat4 translation_matrix = translate(mat4(1.0f), model.translation);
+        const mat4 scale_matrix = math::scale(mat4(1.0f), model.scale);
+
+        const mat4 model_matrix = translation_matrix * rotation_matrix * scale_matrix;
+
+        return model_matrix;
+    }
 
     inline VertexInputDescription Vertex::get_vertex_description()
     {

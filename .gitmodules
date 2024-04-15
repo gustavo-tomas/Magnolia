@@ -25,3 +25,6 @@
 [submodule "libs/assimp"]
 	path = libs/assimp
 	url = https://github.com/gustavo-tomas/assimp.git
+[submodule "libs/imguizmo"]
+	path = libs/imguizmo
+	url = https://github.com/gustavo-tomas/ImGuizmo.git

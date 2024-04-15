@@ -2,8 +2,13 @@
 
 #include <memory>
 
+// clang-format off
+
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
+#include "ImGuizmo.h"
+
+// clang-format on
 
 namespace mag
 {
@@ -13,11 +18,12 @@ namespace mag
             void initialize();
             void shutdown();
             void update();
-            void render(CommandBuffer& cmd, std::vector<Model>& models);
+            void render(CommandBuffer& cmd, std::vector<Model>& models, const Camera& camera);
             void process_events(SDL_Event& e);
 
             void on_resize(const uvec2& size);
             void on_viewport_resize(std::function<void(const uvec2&)> callback);
+            void on_key_press(const SDL_Keycode key);
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
@@ -30,7 +36,7 @@ namespace mag
 
             void render_content_browser(const ImGuiWindowFlags window_flags);
             void render_panel(const ImGuiWindowFlags window_flags);
-            void render_viewport(const ImGuiWindowFlags window_flags);
+            void render_viewport(const ImGuiWindowFlags window_flags, std::vector<Model>& models, const Camera& camera);
             void render_scene(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
             void render_properties(const ImGuiWindowFlags window_flags, Model* model = nullptr);
 
@@ -45,5 +51,7 @@ namespace mag
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
             b8 disabled = false;
+            u64 selected_model_idx = std::numeric_limits<u64>().max();
+            ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };
 };  // namespace mag

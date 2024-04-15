@@ -197,16 +197,7 @@ namespace mag
 
             // Models
             const auto& model = models[b - 1];
-
-            const quat pitch = angleAxis(radians(model.rotation.x), vec3(1.0f, 0.0f, 0.0f));
-            const quat yaw = angleAxis(radians(model.rotation.y), vec3(0.0f, 1.0f, 0.0f));
-            const quat roll = angleAxis(radians(model.rotation.z), vec3(0.0f, 0.0f, 1.0f));
-
-            const mat4 rotation_matrix = toMat4(roll) * toMat4(yaw) * toMat4(pitch);
-            const mat4 translation_matrix = translate(mat4(1.0f), model.translation);
-            const mat4 scale_matrix = scale(mat4(1.0f), model.scale);
-
-            const mat4 model_matrix = translation_matrix * rotation_matrix * scale_matrix;
+            const mat4 model_matrix = Model::get_transformation_matrix(model);
 
             data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
                                                     data_buffers[curr_frame_number][b].get_size());

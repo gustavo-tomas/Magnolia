@@ -1,14 +1,16 @@
 #include "editor/editor.hpp"
 
 #include <filesystem>
-#include <limits>
 #include <memory>
 
 #include "IconsFontAwesome5.h"
+#include "ImGuizmo.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "imgui_internal.h"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -49,7 +51,7 @@ namespace mag
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         // FontAwesome fonts need to have their sizes reduced by 2/3 in order to align correctly
-        const f32 font_size = 15.0f;
+        const f32 font_size = 16.0f;
         const f32 icon_font_size = font_size * 2.0f / 3.0f;
 
         // Merge in icons from Font Awesome
@@ -116,7 +118,7 @@ namespace mag
         }
     }
 
-    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models)
+    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the draw image into their correct transfer layouts
         cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
@@ -134,7 +136,9 @@ namespace mag
         // Disable widgets
         ImGui::BeginDisabled(disabled);
 
-        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
+                                              static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
+
         const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
         // ImGui windows goes here
@@ -149,7 +153,7 @@ namespace mag
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        render_viewport(window_flags);
+        render_viewport(window_flags, models, camera);
 
         // End
         ImGui::Render();
@@ -165,7 +169,7 @@ namespace mag
 
     void Editor::render_content_browser(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin("Content Browser", NULL, window_flags);
+        ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
         const std::filesystem::path base_directory = std::filesystem::path("assets");
         static std::filesystem::path current_directory = base_directory;
@@ -229,22 +233,33 @@ namespace mag
 
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin("Panel", NULL, window_flags);
-        ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
-        ImGui::Text("Press ESC to enter fullscreen mode");
-        ImGui::Text("Press TAB to capture the cursor");
-        ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::Text("Press SHIFT to alternate between editor and scene views");
-        ImGui::Text("Drag and drop assets into the viewport to load them");
+        ImGui::Begin(ICON_FA_INFO_CIRCLE " Panel", NULL, window_flags);
+
+        ImGui::SeparatorText("In any mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press SHIFT to alternate between editor and scene views");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
+                           " Press TAB to switch between runtime and editor mode (capture the cursor)");
+
+        ImGui::SeparatorText("In runtime mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Use WASD and CTRL/ESCAPE to navigate");
+
+        ImGui::SeparatorText("In editor mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Drag and drop assets into the viewport to load them");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
+                           " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
+
         ImGui::End();
     }
 
-    void Editor::render_viewport(const ImGuiWindowFlags window_flags)
+    void Editor::render_viewport(const ImGuiWindowFlags window_flags, std::vector<Model> &models, const Camera &camera)
     {
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-        ImGui::Begin("Viewport", NULL, window_flags);
+        ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
@@ -265,6 +280,45 @@ namespace mag
             ImGui::EndDragDropTarget();
         }
 
+        // Render gizmos for selected model
+        if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
+        {
+            auto &model = models[selected_model_idx];
+
+            mat4 view = camera.get_view();
+            const mat4 &proj = camera.get_projection();
+
+            // Convert from LH to RH coordinates (flip Y)
+            const mat4 scale_matrix = scale(mat4(1.0f), vec3(1, -1, 1));
+            view = scale_matrix * view;
+
+            auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+            auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+            auto viewport_offset = ImGui::GetWindowPos();
+
+            vec2 viewport_bounds[2] = {
+                {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y},
+                {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y}};
+
+            ImGuizmo::SetDrawlist();
+            ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
+                              viewport_bounds[1].y - viewport_bounds[0].y);
+
+            mat4 transform_matrix = Model::get_transformation_matrix(model);
+
+            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
+                                     value_ptr(transform_matrix)))
+            {
+                const b8 result =
+                    math::decompose_simple(transform_matrix, model.scale, model.rotation, model.translation);
+
+                if (!result)
+                {
+                    LOG_ERROR("Failed to decompose transformation matrix");
+                }
+            }
+        }
+
         ImGui::End();
 
         ImGui::PopStyleVar();
@@ -272,9 +326,8 @@ namespace mag
 
     void Editor::render_scene(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
     {
-        ImGui::Begin("Scene", NULL, window_flags);
+        ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 
-        static u64 selected_model_idx = std::numeric_limits<u64>().max();
         for (u64 i = 0; i < models.size(); i++)
         {
             auto &model = models[i];
@@ -298,11 +351,11 @@ namespace mag
 
     void Editor::render_properties(const ImGuiWindowFlags window_flags, Model *model)
     {
-        ImGui::Begin("Properties", NULL, window_flags);
+        ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
 
         if (model != nullptr)
         {
-            if (ImGui::CollapsingHeader("Transform"))
+            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 vec3 translation = model->translation;
                 vec3 rotation = model->rotation;
@@ -353,6 +406,30 @@ namespace mag
         this->viewport_resize = std::move(callback);
     }
 
+    void Editor::on_key_press(const SDL_Keycode key)
+    {
+        if (disabled) return;
+
+        // These are basically the same keybinds as blender
+        switch (key)
+        {
+            // Move
+            case SDLK_g:
+                gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+                break;
+
+            // Rotate
+            case SDLK_r:
+                gizmo_operation = ImGuizmo::OPERATION::ROTATE;
+                break;
+
+            // Scale
+            case SDLK_s:
+                gizmo_operation = ImGuizmo::OPERATION::SCALE;
+                break;
+        }
+    }
+
     void Editor::set_viewport_image(const Image &viewport_image)
     {
         // Dont forget to delete old descriptor
@@ -379,6 +456,7 @@ namespace mag
         style.FrameRounding = 3.0f;
         style.FrameBorderSize = 0.0f;
         style.FramePadding = ImVec2(6.0f, 4.0f);
+        style.SeparatorTextPadding.y = style.FramePadding.y;
         style.TabRounding = 1.0f;
         style.TabBorderSize = 0.0f;
         style.TabBarBorderSize = 0.0f;
