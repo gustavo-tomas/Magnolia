@@ -24,7 +24,11 @@ namespace mag
             const vec3& get_position() const { return position; };
             const vec3& get_rotation() const { return rotation; };
             const mat4& get_rotation_mat() const { return rotation_mat; };
-            vec2 get_near_far() const { return vec2(near, far); };
+
+            vec3 get_side() const { return rotation_mat[0]; };
+            vec3 get_up() const { return rotation_mat[1]; };
+            vec3 get_forward() const { return rotation_mat[2]; };
+            vec2 get_near_far() const { return {near, far}; };
 
         private:
             void calculate_view();
