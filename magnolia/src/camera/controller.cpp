@@ -50,10 +50,21 @@ namespace mag
             const vec3 up = this->camera->get_up();
 
             vec3 camera_position = camera->get_position();
-            camera_position += up * static_cast<f32>(mouse_dir.y);
-            camera_position += side * static_cast<f32>(-mouse_dir.x);
+            camera_position += up * static_cast<f32>(mouse_dir.y) * 0.25f;
+            camera_position += side * static_cast<f32>(-mouse_dir.x) * 0.25f;
 
             this->camera->set_position(camera_position);
         }
+    }
+
+    void EditorController::on_wheel_move(const ivec2& wheel_dir)
+    {
+        // We dont change the camera fov, just the position (avoid distortions)
+        const vec3 forward = this->camera->get_forward();
+
+        vec3 camera_position = camera->get_position();
+        camera_position += forward * static_cast<f32>(-wheel_dir.y) * 25.0f;
+
+        this->camera->set_position(camera_position);
     }
 };  // namespace mag

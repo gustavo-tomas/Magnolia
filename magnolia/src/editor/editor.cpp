@@ -249,6 +249,7 @@ namespace mag
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press MOUSE_WHEEL and move the mouse to look around");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press LEFT_SHIFT and move the mouse to move the camera");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Roll MOUSE_WHEEL to zoom in/out");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
                            " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
 

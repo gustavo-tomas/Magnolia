@@ -90,8 +90,8 @@ namespace mag
                     this->runtime_controller.on_mouse_move(mouse_dir);
             });
 
-        window.on_wheel_move([](const ivec2& wheel_dir) mutable
-                             { LOG_INFO("WHEEL MOVE: {0}", math::to_string(wheel_dir)); });
+        window.on_wheel_move([this](const ivec2& wheel_dir) mutable
+                             { this->editor_controller.on_wheel_move(wheel_dir); });
 
         window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });

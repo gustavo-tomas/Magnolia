@@ -28,5 +28,6 @@ namespace mag
     {
         public:
             void on_mouse_move(const ivec2& mouse_dir);
+            void on_wheel_move(const ivec2& wheel_dir);
     };
 };  // namespace mag
