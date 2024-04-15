@@ -2,8 +2,13 @@
 
 #include <memory>
 
+// clang-format off
+
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
+#include "ImGuizmo.h"
+
+// clang-format on
 
 namespace mag
 {
@@ -18,6 +23,7 @@ namespace mag
 
             void on_resize(const uvec2& size);
             void on_viewport_resize(std::function<void(const uvec2&)> callback);
+            void on_key_press(const SDL_Keycode key);
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
@@ -46,5 +52,6 @@ namespace mag
             b8 resize_needed = false;
             b8 disabled = false;
             u64 selected_model_idx = std::numeric_limits<u64>().max();
+            ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };
 };  // namespace mag

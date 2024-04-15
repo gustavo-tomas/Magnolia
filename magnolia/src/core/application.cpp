@@ -68,7 +68,13 @@ namespace mag
                 // camera.set_aspect_ratio(size);
             });
 
-        window.on_key_press([](const SDL_Keycode key) mutable { LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key)); });
+        window.on_key_press(
+            [this](const SDL_Keycode key) mutable
+            {
+                LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key));
+                editor.on_key_press(key);
+            });
+
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
         window.on_mouse_move(
             [this](const ivec2& mouse_dir) mutable

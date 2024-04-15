@@ -231,12 +231,23 @@ namespace mag
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
     {
         ImGui::Begin("Panel", NULL, window_flags);
-        ImGui::Text("Use WASD and CTRL/ESCAPE to navigate");
-        ImGui::Text("Press ESC to enter fullscreen mode");
-        ImGui::Text("Press TAB to capture the cursor");
-        ImGui::Text("Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::Text("Press SHIFT to alternate between editor and scene views");
-        ImGui::Text("Drag and drop assets into the viewport to load them");
+
+        ImGui::SeparatorText("In any mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press SHIFT to alternate between editor and scene views");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
+                           " Press TAB to switch between runtime and editor mode (capture the cursor)");
+
+        ImGui::SeparatorText("In runtime mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Use WASD and CTRL/ESCAPE to navigate");
+
+        ImGui::SeparatorText("In editor mode");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Drag and drop assets into the viewport to load them");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
+                           " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
+
         ImGui::End();
     }
 
@@ -267,7 +278,7 @@ namespace mag
         }
 
         // Render gizmos for selected model
-        if (selected_model_idx != std::numeric_limits<u64>().max())
+        if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
         {
             auto &model = models[selected_model_idx];
 
@@ -292,8 +303,7 @@ namespace mag
 
             mat4 transform_matrix = Model::get_transformation_matrix(model);
 
-            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj),
-                                     (ImGuizmo::OPERATION)ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::WORLD,
+            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
             {
                 const b8 result =
@@ -393,6 +403,30 @@ namespace mag
         this->viewport_resize = std::move(callback);
     }
 
+    void Editor::on_key_press(const SDL_Keycode key)
+    {
+        if (disabled) return;
+
+        // These are basically the same keybinds as blender
+        switch (key)
+        {
+            // Move
+            case SDLK_g:
+                gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+                break;
+
+            // Rotate
+            case SDLK_r:
+                gizmo_operation = ImGuizmo::OPERATION::ROTATE;
+                break;
+
+            // Scale
+            case SDLK_s:
+                gizmo_operation = ImGuizmo::OPERATION::SCALE;
+                break;
+        }
+    }
+
     void Editor::set_viewport_image(const Image &viewport_image)
     {
         // Dont forget to delete old descriptor
@@ -419,6 +453,7 @@ namespace mag
         style.FrameRounding = 3.0f;
         style.FrameBorderSize = 0.0f;
         style.FramePadding = ImVec2(6.0f, 4.0f);
+        style.SeparatorTextPadding.y = style.FramePadding.y;
         style.TabRounding = 1.0f;
         style.TabBorderSize = 0.0f;
         style.TabBarBorderSize = 0.0f;
