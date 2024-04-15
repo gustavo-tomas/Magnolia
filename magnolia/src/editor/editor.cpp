@@ -9,6 +9,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "imgui_internal.h"
 #include "renderer/model.hpp"
 
 namespace mag
@@ -135,7 +136,9 @@ namespace mag
         // Disable widgets
         ImGui::BeginDisabled(disabled);
 
-        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
+                                              static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
+
         const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
         // ImGui windows goes here
@@ -166,7 +169,7 @@ namespace mag
 
     void Editor::render_content_browser(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin("Content Browser", NULL, window_flags);
+        ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
         const std::filesystem::path base_directory = std::filesystem::path("assets");
         static std::filesystem::path current_directory = base_directory;
@@ -230,7 +233,7 @@ namespace mag
 
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin("Panel", NULL, window_flags);
+        ImGui::Begin(ICON_FA_INFO_CIRCLE " Panel", NULL, window_flags);
 
         ImGui::SeparatorText("In any mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
@@ -256,7 +259,7 @@ namespace mag
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-        ImGui::Begin("Viewport", NULL, window_flags);
+        ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
@@ -323,7 +326,7 @@ namespace mag
 
     void Editor::render_scene(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
     {
-        ImGui::Begin("Scene", NULL, window_flags);
+        ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 
         for (u64 i = 0; i < models.size(); i++)
         {
@@ -348,7 +351,7 @@ namespace mag
 
     void Editor::render_properties(const ImGuiWindowFlags window_flags, Model *model)
     {
-        ImGui::Begin("Properties", NULL, window_flags);
+        ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
 
         if (model != nullptr)
         {
