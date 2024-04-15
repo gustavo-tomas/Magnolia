@@ -270,6 +270,17 @@ namespace mag
         ImGui::SetNextItemAllowOverlap();
         ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
+        // Load models if any was draged over the viewport
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+            {
+                const char *path = static_cast<const char *>(payload->Data);
+                get_application().add_model(path);
+            }
+            ImGui::EndDragDropTarget();
+        }
+
         // Position the button - https://github.com/ocornut/imgui/discussions/3862
         ImGuiStyle &style = ImGui::GetStyle();
 
@@ -303,17 +314,6 @@ namespace mag
         }
 
         ImGui::PopStyleColor(2);
-
-        // Load models
-        if (ImGui::BeginDragDropTarget())
-        {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
-            {
-                const char *path = static_cast<const char *>(payload->Data);
-                get_application().add_model(path);
-            }
-            ImGui::EndDragDropTarget();
-        }
 
         // Render gizmos for selected model
         if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
