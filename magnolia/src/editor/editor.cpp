@@ -1,14 +1,15 @@
 #include "editor/editor.hpp"
 
 #include <filesystem>
-#include <limits>
 #include <memory>
 
 #include "IconsFontAwesome5.h"
+#include "ImGuizmo.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -116,7 +117,7 @@ namespace mag
         }
     }
 
-    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models)
+    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the draw image into their correct transfer layouts
         cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
@@ -149,7 +150,7 @@ namespace mag
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        render_viewport(window_flags);
+        render_viewport(window_flags, models, camera);
 
         // End
         ImGui::Render();
@@ -239,7 +240,7 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::render_viewport(const ImGuiWindowFlags window_flags)
+    void Editor::render_viewport(const ImGuiWindowFlags window_flags, std::vector<Model> &models, const Camera &camera)
     {
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -265,6 +266,45 @@ namespace mag
             ImGui::EndDragDropTarget();
         }
 
+        // Render gizmos for selected model
+        if (selected_model_idx != std::numeric_limits<u64>().max())
+        {
+            auto &model = models[selected_model_idx];
+
+            mat4 view = camera.get_view();
+            const mat4 &proj = camera.get_projection();
+
+            // Convert from LH to RH coordinates (flip Y)
+            const mat4 scale_matrix = scale(mat4(1.0f), vec3(1, -1, 1));
+            view = scale_matrix * view;
+
+            auto viewport_min_region = ImGui::GetWindowContentRegionMin();
+            auto viewport_max_region = ImGui::GetWindowContentRegionMax();
+            auto viewport_offset = ImGui::GetWindowPos();
+
+            vec2 viewport_bounds[2] = {
+                {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y},
+                {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y}};
+
+            ImGuizmo::SetDrawlist();
+            ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
+                              viewport_bounds[1].y - viewport_bounds[0].y);
+
+            mat4 transform_matrix = Model::get_transformation_matrix(model);
+
+            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj),
+                                     (ImGuizmo::OPERATION)ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::WORLD,
+                                     value_ptr(transform_matrix)))
+            {
+                quat orientation;
+                vec3 skew;
+                vec4 perspective;
+                math::decompose(transform_matrix, model.scale, orientation, model.translation, skew, perspective);
+
+                model.rotation = degrees(math::eulerAngles(orientation));
+            }
+        }
+
         ImGui::End();
 
         ImGui::PopStyleVar();
@@ -274,7 +314,6 @@ namespace mag
     {
         ImGui::Begin("Scene", NULL, window_flags);
 
-        static u64 selected_model_idx = std::numeric_limits<u64>().max();
         for (u64 i = 0; i < models.size(); i++)
         {
             auto &model = models[i];

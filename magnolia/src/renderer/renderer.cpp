@@ -44,7 +44,7 @@ namespace mag
         render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.render(curr_frame.command_buffer, models);
+        editor.render(curr_frame.command_buffer, models, camera);
 
         // Present
 
