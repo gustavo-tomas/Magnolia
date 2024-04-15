@@ -37,6 +37,7 @@ project "magnolia"
         "libs/vma/include",
         "libs/assimp/include/assimp",
         "libs/imgui",
+        "libs/imguizmo",
         "libs/glm",
         "libs/stb",
         "libs/spirv_reflect",
@@ -50,7 +51,7 @@ project "magnolia"
 
     links
     {
-        "fmt", "imgui", "assimp"
+        "fmt", "imgui", "imguizmo", "assimp"
     }
 
     libdirs
@@ -246,6 +247,32 @@ project "imgui"
 		"libs/imgui/backends/imgui_impl_vulkan.h",
 		"libs/imgui/backends/imgui_impl_sdl2.cpp",
 		"libs/imgui/backends/imgui_impl_vulkan.cpp"
+	}
+
+	filter "system:linux"
+		pic "on"
+		systemversion "latest"
+		staticruntime "on"
+        
+-- imguizmo ------------------------------------------------------------------------------------------------------------
+project "imguizmo"
+	kind "staticlib"
+	language "c++"
+	cppdialect "c++20"
+
+	targetdir ("build/%{cfg.system}/lib")
+    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
+
+	includedirs { ".", "libs/imguizmo", "libs/imgui" }
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\imguizmo 2>NUL")
+    end
+
+	files
+	{
+		"libs/imguizmo/ImGuizmo.h",
+		"libs/imguizmo/ImGuizmo.cpp"
 	}
 
 	filter "system:linux"
