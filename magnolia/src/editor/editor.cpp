@@ -88,10 +88,10 @@ namespace mag
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        button_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        asset_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
 
-        button_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(button_image->get_sampler().get_handle(), button_image->get_image_view(),
+        asset_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(asset_image->get_sampler().get_handle(), asset_image->get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
@@ -200,7 +200,7 @@ namespace mag
 
             ImGui::PushID(filename_string.c_str());
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));  // Remove button background
-            ImGui::ImageButton(filename_string.c_str(), button_image_descriptor, {thumbnail_size, thumbnail_size},
+            ImGui::ImageButton(filename_string.c_str(), asset_image_descriptor, {thumbnail_size, thumbnail_size},
                                {0, 1}, {1, 0});
 
             if (ImGui::BeginDragDropSource())
@@ -237,10 +237,9 @@ namespace mag
 
         ImGui::SeparatorText("In any mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press SHIFT to alternate between editor and scene views");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press TAB to alternate between editor and scene views");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
-                           " Press TAB to switch between runtime and editor mode (capture the cursor)");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Click PLAY to switch between runtime and editor mode");
 
         ImGui::SeparatorText("In runtime mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Use WASD and CTRL/ESCAPE to navigate");
@@ -248,6 +247,9 @@ namespace mag
         ImGui::SeparatorText("In editor mode");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Drag and drop assets into the viewport to load them");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press MOUSE_WHEEL and move the mouse to look around");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press LEFT_SHIFT and move the mouse to move the camera");
+        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Roll MOUSE_WHEEL to zoom in/out");
         ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
                            " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
 
@@ -267,9 +269,10 @@ namespace mag
 
         viewport_size = current_viewport_size;
 
-        ImGui::Image(image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+        ImGui::SetNextItemAllowOverlap();
+        ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
-        // Load models
+        // Load models if any was draged over the viewport
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
@@ -279,6 +282,40 @@ namespace mag
             }
             ImGui::EndDragDropTarget();
         }
+
+        // Position the button - https://github.com/ocornut/imgui/discussions/3862
+        ImGuiStyle &style = ImGui::GetStyle();
+
+        // @TODO: this is a bit hardcoded
+        const ImVec2 size(ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 0.25f,
+                          ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 4.0f);
+
+        ImGui::SetCursorPos(size);
+
+        ImGui::PushStyleColor(ImGuiCol_Button, 0x00000000);
+        ImGui::PushStyleColor(ImGuiCol_Text, 0xff000000);
+
+        // Play/pause button
+        static const char *button_icon = ICON_FA_PLAY;
+        if (ImGui::Button(button_icon))
+        {
+            auto &app = get_application();
+            auto curr_mode = app.get_active_mode();
+
+            if (curr_mode == Application::Mode::Editor)
+            {
+                app.set_active_mode(Application::Mode::Runtime);
+                button_icon = ICON_FA_PAUSE;
+            }
+
+            else
+            {
+                app.set_active_mode(Application::Mode::Editor);
+                button_icon = ICON_FA_PLAY;
+            }
+        }
+
+        ImGui::PopStyleColor(2);
 
         // Render gizmos for selected model
         if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
@@ -394,10 +431,7 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::process_events(SDL_Event &e)
-    {
-        if (!disabled) ImGui_ImplSDL2_ProcessEvent(&e);
-    }
+    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
 
     void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
 
@@ -433,9 +467,9 @@ namespace mag
     void Editor::set_viewport_image(const Image &viewport_image)
     {
         // Dont forget to delete old descriptor
-        if (image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(image_descriptor);
+        if (viewport_image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
 
-        image_descriptor =
+        viewport_image_descriptor =
             ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

@@ -27,7 +27,7 @@ namespace mag
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
-            const b8& is_input_disabled() const { return disabled; };
+
             const Image& get_image() const { return render_pass.get_draw_image(); };
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
@@ -45,9 +45,11 @@ namespace mag
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
-            vk::DescriptorSet image_descriptor = {}, button_image_descriptor = {};
-            std::shared_ptr<Image> button_image;
+            vk::DescriptorSet viewport_image_descriptor = {}, asset_image_descriptor = {};
+
+            std::shared_ptr<Image> asset_image;
             const Image* viewport_image = {};
+
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
             b8 disabled = false;
