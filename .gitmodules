@@ -28,3 +28,6 @@
 [submodule "libs/imguizmo"]
 	path = libs/imguizmo
 	url = https://github.com/gustavo-tomas/ImGuizmo.git
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/gustavo-tomas/json.git

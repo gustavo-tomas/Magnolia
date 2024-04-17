@@ -1,6 +1,7 @@
 #include "editor/editor.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
 
 #include "IconsFontAwesome5.h"
@@ -10,10 +11,13 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "imgui_internal.h"
+#include "nlohmann/json.hpp"
 #include "renderer/model.hpp"
 
 namespace mag
 {
+    using json = nlohmann::json;
+
     // ImGui drag and drop types
     const char *CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
@@ -233,25 +237,34 @@ namespace mag
 
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin(ICON_FA_INFO_CIRCLE " Panel", NULL, window_flags);
+        // Parse instructions from the json file
+        const str file_path = "assets/json/editor_instructions.json";
+        std::ifstream file(file_path);
 
-        ImGui::SeparatorText("In any mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press ESC to enter fullscreen mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press TAB to alternate between editor and scene views");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press KEY_DOWN/KEY_UP to scale image resolution");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Click PLAY to switch between runtime and editor mode");
+        if (!file.is_open())
+        {
+            LOG_ERROR("Failed to open editor instructions from json file: {0}", file_path);
+            return;
+        }
 
-        ImGui::SeparatorText("In runtime mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Use WASD and CTRL/ESCAPE to navigate");
+        // Parse the file
+        const json data = json::parse(file);
 
-        ImGui::SeparatorText("In editor mode");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Drag and drop assets into the viewport to load them");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Select a model in the Scene tab to view its properties");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press MOUSE_WHEEL and move the mouse to look around");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Press LEFT_SHIFT and move the mouse to move the camera");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT " Roll MOUSE_WHEEL to zoom in/out");
-        ImGui::TextWrapped(ICON_FA_ARROW_ALT_CIRCLE_RIGHT
-                           " Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model");
+        // Read the instructions
+        const str window_name = data["window_name"];
+        ImGui::Begin((str(ICON_FA_INFO_CIRCLE) + " " + window_name).c_str(), NULL, window_flags);
+
+        for (const auto &section : data["sections"])
+        {
+            const str section_name = section["name"];
+            ImGui::SeparatorText(section_name.c_str());
+
+            for (const auto &instruction : section["instructions"])
+            {
+                const str instruction_name = instruction;
+                ImGui::TextWrapped("%s", (str(ICON_FA_ARROW_ALT_CIRCLE_RIGHT) + " " + instruction_name).c_str());
+            }
+        }
 
         ImGui::End();
     }
