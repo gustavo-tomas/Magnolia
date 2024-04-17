@@ -1,0 +1,30 @@
+{
+    "window_name": "Panel",
+    "sections": [
+        {
+            "name": "In any mode",
+            "instructions": [
+                "Press ESC to enter fullscreen mode",
+                "Press TAB to alternate between editor and scene views",
+                "Press KEY_DOWN/KEY_UP to scale image resolution",
+                "Click PLAY to switch between runtime and editor mode"
+            ]
+        },
+        {
+            "name": "In runtime mode",
+            "instructions": [
+                "Use WASD and CTRL/ESCAPE to navigate"
+            ]
+        },
+        {
+            "name": "In editor mode",
+            "instructions": [
+                "Drag and drop assets into the viewport to load them",
+                "Select a model in the Scene tab to view its properties",
+                "Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model",
+                "Press MOUSE_WHEEL and move the mouse to look around",
+                "Press LEFT_SHIFT and move the mouse to move the camera"
+            ]
+        }
+    ]
+}
