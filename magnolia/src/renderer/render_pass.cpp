@@ -279,9 +279,9 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::set_camera() { add_uniform(sizeof(CameraData)); }
+    void StandardRenderPass::set_camera() { add_uniform_data(sizeof(CameraData)); }
 
-    void StandardRenderPass::add_uniform(const u64 buffer_size)
+    void StandardRenderPass::add_uniform_data(const u64 buffer_size)
     {
         auto& context = get_context();
 
@@ -302,6 +302,7 @@ namespace mag
             data_buffers.resize(frame_count);
         }
 
+        // Create descriptor buffer that holds global data and model transform
         for (u32 i = 0; i < frame_count; i++)
         {
             Buffer buffer;
@@ -311,7 +312,6 @@ namespace mag
 
             data_buffers[i].push_back(buffer);
 
-            // Create descriptor buffer that holds global data and model transform
             uniform_descriptors[i].buffer.initialize(
                 data_buffers[i].size() * uniform_descriptors[i].size,
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
@@ -323,9 +323,11 @@ namespace mag
         }
     }
 
-    void StandardRenderPass::add_model(const Model& model)
+    void StandardRenderPass::add_uniform_texture(const Model& model)
     {
-        this->add_uniform(sizeof(ModelData));
+        auto& context = get_context();
+
+        const u32 frame_count = context.get_frame_count();
 
         // Delete old descriptor buffers
         if (textures.size() > 0)
@@ -339,14 +341,16 @@ namespace mag
 
         // Put all models textures in a single array
         for (auto& mesh : model.meshes)
-            for (auto& texture : mesh.textures) textures.push_back(*texture);
+        {
+            for (auto& texture : mesh.textures)
+            {
+                textures.push_back(*texture);
+            }
+        }
 
-        auto& context = get_context();
-
-        const u32 frame_count = context.get_frame_count();
+        // Create descriptor buffer that holds texture data
         for (u32 i = 0; i < frame_count; i++)
         {
-            // Create descriptor buffer that holds texture data
             image_descriptors[i].buffer.initialize(
                 textures.size() * image_descriptors[i].size,
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
@@ -357,6 +361,12 @@ namespace mag
 
             DescriptorBuilder::build(image_descriptors[i], textures);
         }
+    }
+
+    void StandardRenderPass::add_model(const Model& model)
+    {
+        this->add_uniform_data(sizeof(ModelData));
+        this->add_uniform_texture(model);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)

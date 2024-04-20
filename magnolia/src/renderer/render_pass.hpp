@@ -47,7 +47,8 @@ namespace mag
 
         private:
             void initialize_images();
-            void add_uniform(const u64 buffer_size);
+            void add_uniform_data(const u64 buffer_size);
+            void add_uniform_texture(const Model& model);
 
             std::vector<Pass> passes = {};
             Pipeline triangle_pipeline, grid_pipeline;
