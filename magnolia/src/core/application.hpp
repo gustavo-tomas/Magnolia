@@ -10,17 +10,20 @@
 
 namespace mag
 {
+    // Expand app options if necessary
+    typedef WindowOptions ApplicationOptions;
+
     class Application
     {
         public:
+            explicit Application(const ApplicationOptions& options);
+            virtual ~Application();
+
             enum class Mode
             {
                 Editor = 0,
                 Runtime
             };
-
-            void initialize(const str& title, const uvec2& size = WindowOptions::MAX_SIZE);
-            void shutdown();
 
             void run();
 
@@ -56,4 +59,7 @@ namespace mag
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(
     Application& get_application();
+
+    // Defined by the client
+    Application* create_application();
 };  // namespace mag

@@ -23,6 +23,7 @@ project "magnolia"
     {
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.cpp",
+        "sprout/**.cpp", -- @TODO: create client project in a separate project
         "libs/spirv_reflect/spirv_reflect.h",
         "libs/spirv_reflect/spirv_reflect.cpp",
         "libs/font_awesome/IconsFontAwesome5.h",

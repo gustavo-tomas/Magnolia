@@ -1,4 +1,8 @@
+#pragma once
+
 #include "core/application.hpp"
+
+extern mag::Application* mag::create_application();
 
 #ifdef _WIN32
 int WinMain(int argc, char* argv[])  // @TODO: moises fix pls tyty
@@ -10,10 +14,11 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    mag::Application application;
-    application.initialize("Magnolia");
-    application.run();
-    application.shutdown();
+    auto app = mag::create_application();
+
+    app->run();
+
+    delete app;
 
     return 0;
 }

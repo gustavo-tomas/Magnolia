@@ -14,13 +14,13 @@ namespace mag
         return *application;
     }
 
-    void Application::initialize(const str& title, const uvec2& size)
+    Application::Application(const ApplicationOptions& options)
     {
         application = this;
 
         WindowOptions window_options;
-        window_options.size = size;
-        window_options.title = title;
+        window_options.size = options.size;
+        window_options.title = options.title;
 
         // Create the window
         window.initialize(window_options);
@@ -121,7 +121,7 @@ namespace mag
         render_pass.add_model(cube.get_model());
     }
 
-    void Application::shutdown()
+    Application::~Application()
     {
         cube.shutdown();
 
