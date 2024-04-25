@@ -124,7 +124,7 @@ namespace mag
 
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
-        // Transition the draw image into their correct transfer layouts
+        // Transition the viewport image into their correct transfer layouts for imgui texture
         cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
                             vk::ImageLayout::eShaderReadOnlyOptimal);
 
@@ -166,7 +166,7 @@ namespace mag
         cmd.end_rendering();
         render_pass.after_render(cmd);
 
-        // Return the draw image to their original layout
+        // Return the viewport image to their original layout
         cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
                             vk::ImageLayout::eTransferSrcOptimal);
     }
