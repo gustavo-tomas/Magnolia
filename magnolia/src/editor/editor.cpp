@@ -82,8 +82,8 @@ namespace mag
         init_info.Device = device;
         init_info.Queue = context.get_graphics_queue();
         init_info.DescriptorPool = static_cast<VkDescriptorPool>(descriptor_pool);
-        init_info.MinImageCount = 3;
-        init_info.ImageCount = 3;
+        init_info.MinImageCount = context.get_swapchain_images().size();
+        init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
         init_info.ColorAttachmentFormat = static_cast<VkFormat>(render_pass.get_draw_image().get_format());
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
