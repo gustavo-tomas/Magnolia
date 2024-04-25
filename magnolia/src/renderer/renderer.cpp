@@ -71,6 +71,6 @@ namespace mag
         context.get_device().waitIdle();
 
         // @TODO: hardcoded present mode
-        context.recreate_swapchain(size, vk::PresentModeKHR::eImmediate);
+        context.recreate_swapchain(size);
     }
 };  // namespace mag
