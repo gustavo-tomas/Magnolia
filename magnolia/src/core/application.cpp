@@ -194,14 +194,6 @@ namespace mag
                     break;
             }
 
-            // @TODO: testing
-            if (window.is_key_down(SDLK_UP))
-                scene.get_render_pass().set_render_scale(scene.get_render_pass().get_render_scale() + 0.15f * dt);
-
-            else if (window.is_key_down(SDLK_DOWN))
-                scene.get_render_pass().set_render_scale(scene.get_render_pass().get_render_scale() - 0.15f * dt);
-            // @TODO: testing
-
             scene.update(dt);
 
             if (active_mode == Mode::Editor) editor.update();
