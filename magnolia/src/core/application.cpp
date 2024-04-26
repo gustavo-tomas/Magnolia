@@ -1,7 +1,5 @@
 #include "core/application.hpp"
 
-#include <filesystem>
-
 #include "core/logger.hpp"
 
 namespace mag
@@ -42,20 +40,16 @@ namespace mag
         texture_loader.initialize();
         LOG_SUCCESS("TextureLoader initialized");
 
-        // Create a render pass
-        render_pass.initialize(window.get_size());
-        LOG_SUCCESS("RenderPass initialized");
-
-        // Create a camera
-        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
-        LOG_SUCCESS("Camera initialized");
+        // @TODO: temp create a basic scene
+        scene.initialize();
+        LOG_SUCCESS("Scene initialized");
 
         // Create a camera controller for runtime
-        runtime_controller.initialize(&camera);
+        runtime_controller.initialize(&scene.get_camera());
         LOG_SUCCESS("RuntimeController initialized");
 
         // Create a camera controller for editor
-        editor_controller.initialize(&camera);
+        editor_controller.initialize(&scene.get_camera());
         LOG_SUCCESS("EditorController initialized");
 
         // Set window callbacks
@@ -97,19 +91,19 @@ namespace mag
         window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
 
         // Set editor viewport image
-        editor.set_viewport_image(render_pass.get_target_image());
+        editor.set_viewport_image(scene.get_render_pass().get_target_image());
 
         // Set editor callbacks
         editor.on_viewport_resize(
             [&](const uvec2& size) mutable
             {
                 LOG_INFO("VIEWPORT WINDOW RESIZE: {0}", math::to_string(size));
-                render_pass.on_resize(size);
-                editor.set_viewport_image(render_pass.get_target_image());
-                camera.set_aspect_ratio(size);
+                scene.get_render_pass().on_resize(size);
+                editor.set_viewport_image(scene.get_render_pass().get_target_image());
+                scene.get_camera().set_aspect_ratio(size);
             });
 
-        this->render_pass.set_camera();
+        this->scene.get_render_pass().set_camera();
 
         // @TODO: temp load assets
         cube.initialize();
@@ -117,8 +111,8 @@ namespace mag
         cube.get_model().translation = vec3(0, 10, 0);
         cube.get_model().scale = vec3(10);
 
-        models.push_back(cube.get_model());
-        render_pass.add_model(cube.get_model());
+        scene.get_models().push_back(cube.get_model());
+        scene.get_render_pass().add_model(cube.get_model());
     }
 
     Application::~Application()
@@ -131,11 +125,8 @@ namespace mag
         this->runtime_controller.shutdown();
         LOG_SUCCESS("RuntimeController destroyed");
 
-        this->camera.shutdown();
-        LOG_SUCCESS("Camera destroyed");
-
-        this->render_pass.shutdown();
-        LOG_SUCCESS("RenderPass destroyed");
+        this->scene.shutdown();
+        LOG_SUCCESS("Scene destroyed");
 
         texture_loader.shutdown();
         LOG_SUCCESS("TextureLoader destroyed");
@@ -205,56 +196,19 @@ namespace mag
 
             // @TODO: testing
             if (window.is_key_down(SDLK_UP))
-                render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
+                scene.get_render_pass().set_render_scale(scene.get_render_pass().get_render_scale() + 0.15f * dt);
 
             else if (window.is_key_down(SDLK_DOWN))
-                render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
+                scene.get_render_pass().set_render_scale(scene.get_render_pass().get_render_scale() - 0.15f * dt);
             // @TODO: testing
 
-            while (!models_queue.empty())
-            {
-                const str& model_path = models_queue.front();
-                const auto model = model_loader.load(model_path);
-
-                models.push_back(*model);
-                this->render_pass.add_model(*model);
-
-                models_queue.erase(models_queue.begin());
-            }
+            scene.update(dt);
 
             if (active_mode == Mode::Editor) editor.update();
 
             // Skip rendering if minimized
-            if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
+            if (!window.is_minimized())
+                renderer.update(scene.get_camera(), editor, scene.get_render_pass(), scene.get_models());
         }
-    }
-
-    void Application::add_model(const str& path)
-    {
-        // First check if the path exists
-        if (!std::filesystem::exists(path))
-        {
-            LOG_ERROR("File not found: {0}", path);
-            return;
-        }
-
-        // Then check if its a directory
-        if (std::filesystem::is_directory(path))
-        {
-            LOG_ERROR("Path is a directory: {0}", path);
-            return;
-        }
-
-        // Then check if assimp supports this extension
-        const std::filesystem::path file_path(path);
-        const str extension = file_path.extension().c_str();
-        if (!model_loader.is_extension_supported(extension))
-        {
-            LOG_ERROR("Extension not supported: {0}", extension);
-            return;
-        }
-
-        // Finally enqueue the model
-        models_queue.push_back(path);
     }
 };  // namespace mag

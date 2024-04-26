@@ -291,7 +291,7 @@ namespace mag
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
             {
                 const char *path = static_cast<const char *>(payload->Data);
-                get_application().add_model(path);
+                get_application().get_active_scene().add_model(path);
             }
             ImGui::EndDragDropTarget();
         }

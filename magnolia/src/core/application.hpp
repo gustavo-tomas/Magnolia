@@ -1,12 +1,12 @@
 #pragma once
 
-#include "camera/camera.hpp"
 #include "camera/controller.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -31,10 +31,10 @@ namespace mag
             Editor& get_editor() { return editor; };
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
+            Scene& get_active_scene() { return scene; };
             const Mode& get_active_mode() const { return active_mode; };
 
             // @TODO: temp
-            void add_model(const str& path);
             void set_active_mode(const Mode mode) { update_active_mode = mode; };
 
         private:
@@ -47,12 +47,10 @@ namespace mag
             ModelLoader model_loader;
             TextureLoader texture_loader;
 
+            Scene scene;
+
             // @TODO: temp
-            StandardRenderPass render_pass;
-            std::vector<Model> models;
-            std::vector<str> models_queue;
             Cube cube;
-            Camera camera;
             RuntimeController runtime_controller;
             EditorController editor_controller;
     };
