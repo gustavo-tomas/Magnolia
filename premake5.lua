@@ -9,7 +9,7 @@ workspace "magnolia"
     staticruntime "on"
     
     -- Output directories
-    targetdir ("build/%{cfg.system}")
+    targetdir ("build/%{cfg.system}/%{prj.name}")
     objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
 
 -- @TODO: consistent build folders/output
@@ -110,8 +110,6 @@ project "sprout"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "consoleapp"
 
-    targetdir ("build/%{cfg.system}/%{prj.name}")
-    
     files
     {
         "%{prj.name}/src/**.hpp",
