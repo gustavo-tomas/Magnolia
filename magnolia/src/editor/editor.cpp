@@ -115,10 +115,23 @@ namespace mag
 
     void Editor::update()
     {
+        auto &window = get_application().get_window();
+
         if (resize_needed)
         {
             viewport_resize(viewport_size);
             resize_needed = false;
+        }
+
+        if (window.is_key_pressed(SDLK_ESCAPE))
+        {
+            // Fullscreen
+            if (!window.is_flag_set(SDL_WINDOW_FULLSCREEN_DESKTOP))
+                window.set_fullscreen(SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+            // Windowed
+            else
+                window.set_fullscreen(0);
         }
     }
 
