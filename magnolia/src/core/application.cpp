@@ -44,10 +44,6 @@ namespace mag
         scene.initialize();
         LOG_SUCCESS("Scene initialized");
 
-        // Create a camera controller for runtime
-        runtime_controller.initialize(&scene.get_camera());
-        LOG_SUCCESS("RuntimeController initialized");
-
         // Create a camera controller for editor
         editor_controller.initialize(&scene.get_camera());
         LOG_SUCCESS("EditorController initialized");
@@ -74,15 +70,8 @@ namespace mag
             });
 
         window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
-        window.on_mouse_move(
-            [this](const ivec2& mouse_dir) mutable
-            {
-                if (active_mode == Mode::Editor)
-                    this->editor_controller.on_mouse_move(mouse_dir);
-
-                else
-                    this->runtime_controller.on_mouse_move(mouse_dir);
-            });
+        window.on_mouse_move([this](const ivec2& mouse_dir) mutable
+                             { this->editor_controller.on_mouse_move(mouse_dir); });
 
         window.on_wheel_move([this](const ivec2& wheel_dir) mutable
                              { this->editor_controller.on_wheel_move(wheel_dir); });
@@ -121,9 +110,6 @@ namespace mag
 
         this->editor_controller.shutdown();
         LOG_SUCCESS("EditorController destroyed");
-
-        this->runtime_controller.shutdown();
-        LOG_SUCCESS("RuntimeController destroyed");
 
         this->scene.shutdown();
         LOG_SUCCESS("Scene destroyed");
@@ -175,28 +161,11 @@ namespace mag
                     window.set_fullscreen(0);
             }
 
-            if (active_mode != update_active_mode)
-            {
-                active_mode = update_active_mode;
-
-                // Disable editor input if in runtime mode
-                editor.set_input_disabled(active_mode == Mode::Runtime);
-            }
-
-            switch (active_mode)
-            {
-                case Mode::Editor:
-                    editor_controller.update(dt);
-                    break;
-
-                case Mode::Runtime:
-                    runtime_controller.update(dt);
-                    break;
-            }
+            editor_controller.update(dt);
 
             scene.update(dt);
 
-            if (active_mode == Mode::Editor) editor.update();
+            editor.update();
 
             // Skip rendering if minimized
             if (!window.is_minimized())

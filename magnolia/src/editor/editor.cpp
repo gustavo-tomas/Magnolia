@@ -296,40 +296,6 @@ namespace mag
             ImGui::EndDragDropTarget();
         }
 
-        // Position the button - https://github.com/ocornut/imgui/discussions/3862
-        ImGuiStyle &style = ImGui::GetStyle();
-
-        // @TODO: this is a bit hardcoded
-        const ImVec2 size(ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 0.25f,
-                          ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 4.0f);
-
-        ImGui::SetCursorPos(size);
-
-        ImGui::PushStyleColor(ImGuiCol_Button, 0x00000000);
-        ImGui::PushStyleColor(ImGuiCol_Text, 0xff000000);
-
-        // Play/pause button
-        static const char *button_icon = ICON_FA_PLAY;
-        if (ImGui::Button(button_icon))
-        {
-            auto &app = get_application();
-            auto curr_mode = app.get_active_mode();
-
-            if (curr_mode == Application::Mode::Editor)
-            {
-                app.set_active_mode(Application::Mode::Runtime);
-                button_icon = ICON_FA_PAUSE;
-            }
-
-            else
-            {
-                app.set_active_mode(Application::Mode::Editor);
-                button_icon = ICON_FA_PLAY;
-            }
-        }
-
-        ImGui::PopStyleColor(2);
-
         // Render gizmos for selected model
         if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
         {

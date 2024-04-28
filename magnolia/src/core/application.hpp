@@ -19,12 +19,6 @@ namespace mag
             explicit Application(const ApplicationOptions& options);
             virtual ~Application();
 
-            enum class Mode
-            {
-                Editor = 0,
-                Runtime
-            };
-
             void run();
 
             Window& get_window() { return window; };
@@ -32,17 +26,11 @@ namespace mag
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
             Scene& get_active_scene() { return scene; };
-            const Mode& get_active_mode() const { return active_mode; };
-
-            // @TODO: temp
-            void set_active_mode(const Mode mode) { update_active_mode = mode; };
 
         private:
             Window window;
             Renderer renderer;
             Editor editor;
-            Mode active_mode = Mode::Editor;
-            Mode update_active_mode = Mode::Editor;
 
             ModelLoader model_loader;
             TextureLoader texture_loader;
@@ -51,7 +39,8 @@ namespace mag
 
             // @TODO: temp
             Cube cube;
-            RuntimeController runtime_controller;
+
+            // @TODO: idk what im doing so we'll keep things simple with only the editor controller
             EditorController editor_controller;
     };
 
