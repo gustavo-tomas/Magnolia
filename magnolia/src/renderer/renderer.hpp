@@ -21,6 +21,6 @@ namespace mag
 
         private:
             Window& window;
-            Context context;
+            std::unique_ptr<Context> context;
     };
 };  // namespace mag
