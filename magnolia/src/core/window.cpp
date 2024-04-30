@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    Window::Window(const WindowOptions& options) : event_manager(options.event_manager)
+    Window::Window(const WindowOptions& options) : event_callback(options.event_callback)
     {
         ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
@@ -63,7 +63,7 @@ namespace mag
                 case SDL_KEYDOWN:
                 {
                     auto event = KeyPressEvent(key);
-                    event_manager.emit(EventType::KeyPress, event);
+                    event_callback(event);
 
                     if (e.key.repeat == 1) continue;
                     key_state[key] = true;
@@ -74,7 +74,7 @@ namespace mag
                 case SDL_KEYUP:
                 {
                     auto event = KeyReleaseEvent(key);
-                    event_manager.emit(EventType::KeyRelease, event);
+                    event_callback(event);
 
                     key_state[key] = false;
                     key_update[key] = update_counter;
@@ -87,7 +87,7 @@ namespace mag
                     if (!ignore_mouse_motion_events)
                     {
                         auto event = MouseMoveEvent(e.motion.xrel, e.motion.yrel);
-                        event_manager.emit(EventType::MouseMove, event);
+                        event_callback(event);
                     }
 
                     ignore_mouse_motion_events = false;
@@ -97,14 +97,14 @@ namespace mag
                 case SDL_MOUSEWHEEL:
                 {
                     auto event = MouseScrollEvent(e.wheel.x, e.wheel.y);
-                    event_manager.emit(EventType::MouseScroll, event);
+                    event_callback(event);
                 }
                 break;
 
                 case SDL_MOUSEBUTTONDOWN:
                 {
                     auto event = MousePressEvent(button);
-                    event_manager.emit(EventType::MousePress, event);
+                    event_callback(event);
 
                     button_state[button] = true;
                     button_update[button] = update_counter;
@@ -120,19 +120,19 @@ namespace mag
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
                         auto event = WindowResizeEvent(e.window.data1, e.window.data2);
-                        event_manager.emit(EventType::WindowResize, event);
+                        event_callback(event);
                     }
 
                     else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
                     {
                         auto event = WindowCloseEvent();
-                        event_manager.emit(EventType::WindowClose, event);
+                        event_callback(event);
                     }
                     break;
             }
 
             auto event = SDLEvent(e);
-            event_manager.emit(EventType::SDLEvent, event);
+            event_callback(event);
         }
     }
 

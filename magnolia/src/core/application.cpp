@@ -20,7 +20,9 @@ namespace mag
         // Remember that smart pointers are destroyed in the reverse order of creation
 
         // Create the window
-        const WindowOptions window_options = {event_manager, options.size, options.position, options.title};
+        const WindowOptions window_options = {BIND_FN(Application::on_event), options.size, options.position,
+                                              options.title};
+
         window = std::make_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
@@ -47,14 +49,6 @@ namespace mag
         // Create a camera controller for editor
         editor_controller.initialize(&scene.get_camera());
         LOG_SUCCESS("EditorController initialized");
-
-        // Set window callbacks
-        event_manager.subscribe(EventType::WindowClose, BIND_FN(Application::on_window_close));
-        event_manager.subscribe(EventType::WindowResize, BIND_FN(Application::on_window_resize));
-        event_manager.subscribe(EventType::KeyPress, BIND_FN(Application::on_key_press));
-        event_manager.subscribe(EventType::MouseMove, BIND_FN(Application::on_mouse_move));
-        event_manager.subscribe(EventType::MouseScroll, BIND_FN(Application::on_mouse_scroll));
-        event_manager.subscribe(EventType::SDLEvent, BIND_FN(Application::on_event));
 
         // Set editor viewport image
         editor->set_viewport_image(scene.get_render_pass().get_target_image());
@@ -133,6 +127,41 @@ namespace mag
         }
     }
 
+    void Application::on_event(Event& e)
+    {
+        if (dynamic_cast<WindowCloseEvent*>(&e))
+        {
+            on_window_close(e);
+        }
+
+        else if (dynamic_cast<WindowResizeEvent*>(&e))
+        {
+            on_window_resize(e);
+        }
+
+        // @TODO: create on_event method to pipe these down
+
+        else if (dynamic_cast<KeyPressEvent*>(&e))
+        {
+            on_key_press(e);
+        }
+
+        else if (dynamic_cast<MouseMoveEvent*>(&e))
+        {
+            on_mouse_move(e);
+        }
+
+        else if (dynamic_cast<MouseScrollEvent*>(&e))
+        {
+            on_mouse_scroll(e);
+        }
+
+        else if (dynamic_cast<SDLEvent*>(&e))
+        {
+            on_sdl_event(e);
+        }
+    }
+
     void Application::on_window_close(Event& e)
     {
         (void)e;
@@ -171,7 +200,7 @@ namespace mag
         this->editor_controller.on_wheel_move(offset);
     }
 
-    void Application::on_event(Event& e)
+    void Application::on_sdl_event(Event& e)
     {
         SDLEvent* event = reinterpret_cast<SDLEvent*>(&e);
 

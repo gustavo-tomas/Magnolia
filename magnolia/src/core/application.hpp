@@ -28,6 +28,7 @@ namespace mag
             virtual ~Application();
 
             void run();
+            void on_event(Event& e);
 
             Window& get_window() { return *window; };
             Editor& get_editor() { return *editor; };
@@ -41,7 +42,7 @@ namespace mag
             void on_key_press(Event& e);
             void on_mouse_move(Event& e);
             void on_mouse_scroll(Event& e);
-            void on_event(Event& e);
+            void on_sdl_event(Event& e);
 
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
