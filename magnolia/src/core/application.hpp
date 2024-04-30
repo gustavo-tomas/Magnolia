@@ -36,6 +36,7 @@ namespace mag
             Scene& get_active_scene() { return scene; };
 
         private:
+            void on_window_close(Event& e);
             void on_window_resize(Event& e);
             void on_key_press(Event& e);
             void on_mouse_move(Event& e);
@@ -45,6 +46,8 @@ namespace mag
             std::unique_ptr<Window> window;
             Renderer renderer;
             Editor editor;
+
+            b8 running;
 
             ModelLoader model_loader;
             TextureLoader texture_loader;

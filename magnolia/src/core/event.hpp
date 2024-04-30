@@ -11,7 +11,8 @@ namespace mag
 {
     enum class EventType
     {
-        WindowResize = 0,
+        WindowClose = 0,
+        WindowResize,
         KeyPress,
         KeyRelease,
         MouseMove,

@@ -47,6 +47,7 @@ namespace mag
         LOG_SUCCESS("EditorController initialized");
 
         // Set window callbacks
+        event_manager.subscribe(EventType::WindowClose, BIND_FN(Application::on_window_close));
         event_manager.subscribe(EventType::WindowResize, BIND_FN(Application::on_window_resize));
         event_manager.subscribe(EventType::KeyPress, BIND_FN(Application::on_key_press));
         event_manager.subscribe(EventType::MouseMove, BIND_FN(Application::on_mouse_move));
@@ -76,6 +77,8 @@ namespace mag
 
         scene.get_models().push_back(cube.get_model());
         scene.get_render_pass().add_model(cube.get_model());
+
+        running = true;
     }
 
     Application::~Application()
@@ -106,7 +109,7 @@ namespace mag
         u64 last_time = 0, curr_time = SDL_GetPerformanceCounter(), frame_counter = 0;
         f64 time_counter = 0.0, dt = 0.0;
 
-        while (window->update())
+        while (running)
         {
             // Calculate dt
             last_time = curr_time;
@@ -120,6 +123,8 @@ namespace mag
                 LOG_INFO("CPU: {0:.3f} ms/frame - {1} fps", 1000.0 / static_cast<f64>(frame_counter), frame_counter);
                 frame_counter = time_counter = 0;
             }
+
+            window->update();
 
             // Skip rendering if minimized
             if (window->is_minimized())
@@ -136,6 +141,12 @@ namespace mag
 
             renderer.update(scene.get_camera(), editor, scene.get_render_pass(), scene.get_models());
         }
+    }
+
+    void Application::on_window_close(Event& e)
+    {
+        (void)e;
+        running = false;
     }
 
     void Application::on_window_resize(Event& e)

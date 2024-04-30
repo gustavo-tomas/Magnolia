@@ -1,7 +1,5 @@
 #include "core/window.hpp"
 
-#include <memory>
-
 #include "core/event.hpp"
 #include "core/logger.hpp"
 
@@ -49,7 +47,7 @@ namespace mag
         SDL_Quit();
     }
 
-    b8 Window::update()
+    void Window::update()
     {
         update_counter++;
 
@@ -62,10 +60,6 @@ namespace mag
 
             switch (e.type)
             {
-                case SDL_QUIT:
-                    return false;
-                    break;
-
                 case SDL_KEYDOWN:
                 {
                     auto event = KeyPressEvent(key);
@@ -128,14 +122,18 @@ namespace mag
                         auto event = WindowResizeEvent(e.window.data1, e.window.data2);
                         event_manager.emit(EventType::WindowResize, event);
                     }
+
+                    else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+                    {
+                        auto event = WindowCloseEvent();
+                        event_manager.emit(EventType::WindowClose, event);
+                    }
                     break;
             }
 
             auto event = SDLEvent(e);
             event_manager.emit(EventType::SDLEvent, event);
         }
-
-        return true;
     }
 
     vk::SurfaceKHR Window::create_surface(const vk::Instance instance) const
