@@ -138,41 +138,41 @@ namespace mag
         }
     }
 
-    void Application::on_window_resize(std::shared_ptr<Event> e)
+    void Application::on_window_resize(Event& e)
     {
-        const WindowResizeEvent* event = reinterpret_cast<WindowResizeEvent*>(e.get());
+        const WindowResizeEvent* event = reinterpret_cast<WindowResizeEvent*>(&e);
         const uvec2 size = {event->width, event->height};
 
         renderer.on_resize(size);
         editor.on_resize(size);
     }
 
-    void Application::on_key_press(std::shared_ptr<Event> e)
+    void Application::on_key_press(Event& e)
     {
-        const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(e.get());
+        const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(&e);
 
         editor.on_key_press(event->key);
     }
 
-    void Application::on_mouse_move(std::shared_ptr<Event> e)
+    void Application::on_mouse_move(Event& e)
     {
-        const MouseMoveEvent* event = reinterpret_cast<MouseMoveEvent*>(e.get());
+        const MouseMoveEvent* event = reinterpret_cast<MouseMoveEvent*>(&e);
         const ivec2 mouse_dir = {event->x_direction, event->y_direction};
 
         this->editor_controller.on_mouse_move(mouse_dir);
     }
 
-    void Application::on_mouse_scroll(std::shared_ptr<Event> e)
+    void Application::on_mouse_scroll(Event& e)
     {
-        const MouseScrollEvent* event = reinterpret_cast<MouseScrollEvent*>(e.get());
+        const MouseScrollEvent* event = reinterpret_cast<MouseScrollEvent*>(&e);
         const vec2 offset = {event->x_offset, event->y_offset};
 
         this->editor_controller.on_wheel_move(offset);
     }
 
-    void Application::on_event(std::shared_ptr<Event> e)
+    void Application::on_event(Event& e)
     {
-        SDLEvent* event = reinterpret_cast<SDLEvent*>(e.get());
+        SDLEvent* event = reinterpret_cast<SDLEvent*>(&e);
 
         this->editor.process_events(event->e);
     }

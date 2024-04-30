@@ -68,7 +68,7 @@ namespace mag
 
                 case SDL_KEYDOWN:
                 {
-                    auto event = std::make_shared<KeyPressEvent>(key);
+                    auto event = KeyPressEvent(key);
                     event_manager.emit(EventType::KeyPress, event);
 
                     if (e.key.repeat == 1) continue;
@@ -79,7 +79,7 @@ namespace mag
 
                 case SDL_KEYUP:
                 {
-                    auto event = std::make_shared<KeyReleaseEvent>(key);
+                    auto event = KeyReleaseEvent(key);
                     event_manager.emit(EventType::KeyRelease, event);
 
                     key_state[key] = false;
@@ -92,7 +92,7 @@ namespace mag
                     // Ignore first mouse move after capturing cursor
                     if (!ignore_mouse_motion_events)
                     {
-                        auto event = std::make_shared<MouseMoveEvent>(e.motion.xrel, e.motion.yrel);
+                        auto event = MouseMoveEvent(e.motion.xrel, e.motion.yrel);
                         event_manager.emit(EventType::MouseMove, event);
                     }
 
@@ -102,14 +102,14 @@ namespace mag
 
                 case SDL_MOUSEWHEEL:
                 {
-                    auto event = std::make_shared<MouseScrollEvent>(e.wheel.x, e.wheel.y);
+                    auto event = MouseScrollEvent(e.wheel.x, e.wheel.y);
                     event_manager.emit(EventType::MouseScroll, event);
                 }
                 break;
 
                 case SDL_MOUSEBUTTONDOWN:
                 {
-                    auto event = std::make_shared<MousePress>(button);
+                    auto event = MousePress(button);
                     event_manager.emit(EventType::MousePress, event);
 
                     button_state[button] = true;
@@ -125,13 +125,13 @@ namespace mag
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                     {
-                        auto event = std::make_shared<WindowResizeEvent>(e.window.data1, e.window.data2);
+                        auto event = WindowResizeEvent(e.window.data1, e.window.data2);
                         event_manager.emit(EventType::WindowResize, event);
                     }
                     break;
             }
 
-            auto event = std::make_shared<SDLEvent>(e);
+            auto event = SDLEvent(e);
             event_manager.emit(EventType::SDLEvent, event);
         }
 

@@ -36,11 +36,11 @@ namespace mag
             Scene& get_active_scene() { return scene; };
 
         private:
-            void on_window_resize(std::shared_ptr<Event> e);
-            void on_key_press(std::shared_ptr<Event> e);
-            void on_mouse_move(std::shared_ptr<Event> e);
-            void on_mouse_scroll(std::shared_ptr<Event> e);
-            void on_event(std::shared_ptr<Event> e);
+            void on_window_resize(Event& e);
+            void on_key_press(Event& e);
+            void on_mouse_move(Event& e);
+            void on_mouse_scroll(Event& e);
+            void on_event(Event& e);
 
             std::unique_ptr<Window> window;
             Renderer renderer;
