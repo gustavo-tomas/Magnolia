@@ -135,6 +135,24 @@ namespace mag
         }
     }
 
+    void Editor::on_event(Event &e)
+    {
+        if (auto event = dynamic_cast<SDLEvent *>(&e))
+        {
+            ImGui_ImplSDL2_ProcessEvent(&event->e);
+        }
+
+        else if (auto event = dynamic_cast<WindowResizeEvent *>(&e))
+        {
+            on_resize(*event);
+        }
+
+        else if (auto event = dynamic_cast<KeyPressEvent *>(&e))
+        {
+            on_key_press(*event);
+        }
+    }
+
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the draw image into their correct transfer layouts
@@ -423,21 +441,14 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
+    void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
 
-    void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
-
-    void Editor::on_viewport_resize(std::function<void(const uvec2 &)> callback)
-    {
-        this->viewport_resize = std::move(callback);
-    }
-
-    void Editor::on_key_press(const SDL_Keycode key)
+    void Editor::on_key_press(KeyPressEvent &e)
     {
         if (disabled) return;
 
         // These are basically the same keybinds as blender
-        switch (key)
+        switch (e.key)
         {
             // Move
             case SDLK_g:
@@ -454,6 +465,11 @@ namespace mag
                 gizmo_operation = ImGuizmo::OPERATION::SCALE;
                 break;
         }
+    }
+
+    void Editor::on_viewport_resize(std::function<void(const uvec2 &)> callback)
+    {
+        this->viewport_resize = std::move(callback);
     }
 
     void Editor::set_viewport_image(const Image &viewport_image)

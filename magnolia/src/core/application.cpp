@@ -139,19 +139,8 @@ namespace mag
             on_window_resize(e);
         }
 
-        // @TODO: create on_event method to pipe these down
-
-        else if (dynamic_cast<KeyPressEvent*>(&e))
-        {
-            on_key_press(e);
-        }
-
-        else if (dynamic_cast<SDLEvent*>(&e))
-        {
-            on_sdl_event(e);
-        }
-
         editor_controller.on_event(e);
+        editor->on_event(e);
     }
 
     void Application::on_window_close(Event& e)
@@ -166,20 +155,5 @@ namespace mag
         const uvec2 size = {event->width, event->height};
 
         renderer->on_resize(size);
-        editor->on_resize(size);
-    }
-
-    void Application::on_key_press(Event& e)
-    {
-        const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(&e);
-
-        editor->on_key_press(event->key);
-    }
-
-    void Application::on_sdl_event(Event& e)
-    {
-        SDLEvent* event = reinterpret_cast<SDLEvent*>(&e);
-
-        this->editor->process_events(event->e);
     }
 };  // namespace mag
