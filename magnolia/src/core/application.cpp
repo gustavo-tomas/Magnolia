@@ -1,5 +1,6 @@
 #include "core/application.hpp"
 
+#include "core/event.hpp"
 #include "core/logger.hpp"
 
 namespace mag
@@ -16,16 +17,13 @@ namespace mag
     {
         application = this;
 
-        WindowOptions window_options;
-        window_options.size = options.size;
-        window_options.title = options.title;
-
         // Create the window
-        window.initialize(window_options);
+        const WindowOptions window_options = {event_manager, options.size, options.position, options.title};
+        window = std::make_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
         // Create the renderer
-        renderer.initialize(window);
+        renderer.initialize(*window);
         LOG_SUCCESS("Renderer initialized");
 
         // Create the editor
@@ -49,35 +47,11 @@ namespace mag
         LOG_SUCCESS("EditorController initialized");
 
         // Set window callbacks
-        window.on_resize(
-            [&](const uvec2& size) mutable
-            {
-                LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
-                renderer.on_resize(size);
-                editor.on_resize(size);
-
-                // @TODO: change sizes in runtime!
-                // render_pass.on_resize(size);
-                // editor.set_viewport_image(render_pass.get_target_image());
-                // camera.set_aspect_ratio(size);
-            });
-
-        window.on_key_press(
-            [this](const SDL_Keycode key) mutable
-            {
-                LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key));
-                editor.on_key_press(key);
-            });
-
-        window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
-        window.on_mouse_move([this](const ivec2& mouse_dir) mutable
-                             { this->editor_controller.on_mouse_move(mouse_dir); });
-
-        window.on_wheel_move([this](const ivec2& wheel_dir) mutable
-                             { this->editor_controller.on_wheel_move(wheel_dir); });
-
-        window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
-        window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
+        event_manager.subscribe(EventType::WindowResize, BIND_FN(Application::on_window_resize));
+        event_manager.subscribe(EventType::KeyPress, BIND_FN(Application::on_key_press));
+        event_manager.subscribe(EventType::MouseMove, BIND_FN(Application::on_mouse_move));
+        event_manager.subscribe(EventType::MouseScroll, BIND_FN(Application::on_mouse_scroll));
+        event_manager.subscribe(EventType::SDLEvent, BIND_FN(Application::on_event));
 
         // Set editor viewport image
         editor.set_viewport_image(scene.get_render_pass().get_target_image());
@@ -125,9 +99,6 @@ namespace mag
 
         renderer.shutdown();
         LOG_SUCCESS("Renderer destroyed");
-
-        window.shutdown();
-        LOG_SUCCESS("Window destroyed");
     }
 
     void Application::run()
@@ -135,7 +106,7 @@ namespace mag
         u64 last_time = 0, curr_time = SDL_GetPerformanceCounter(), frame_counter = 0;
         f64 time_counter = 0.0, dt = 0.0;
 
-        while (window.update())
+        while (window->update())
         {
             // Calculate dt
             last_time = curr_time;
@@ -150,15 +121,59 @@ namespace mag
                 frame_counter = time_counter = 0;
             }
 
+            // Skip rendering if minimized
+            if (window->is_minimized())
+            {
+                // @TODO: sleep for a lil bit
+                continue;
+            }
+
             editor_controller.update(dt);
 
             scene.update(dt);
 
             editor.update();
 
-            // Skip rendering if minimized
-            if (!window.is_minimized())
-                renderer.update(scene.get_camera(), editor, scene.get_render_pass(), scene.get_models());
+            renderer.update(scene.get_camera(), editor, scene.get_render_pass(), scene.get_models());
         }
+    }
+
+    void Application::on_window_resize(std::shared_ptr<Event> e)
+    {
+        const WindowResizeEvent* event = reinterpret_cast<WindowResizeEvent*>(e.get());
+        const uvec2 size = {event->width, event->height};
+
+        renderer.on_resize(size);
+        editor.on_resize(size);
+    }
+
+    void Application::on_key_press(std::shared_ptr<Event> e)
+    {
+        const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(e.get());
+
+        editor.on_key_press(event->key);
+    }
+
+    void Application::on_mouse_move(std::shared_ptr<Event> e)
+    {
+        const MouseMoveEvent* event = reinterpret_cast<MouseMoveEvent*>(e.get());
+        const ivec2 mouse_dir = {event->x_direction, event->y_direction};
+
+        this->editor_controller.on_mouse_move(mouse_dir);
+    }
+
+    void Application::on_mouse_scroll(std::shared_ptr<Event> e)
+    {
+        const MouseScrollEvent* event = reinterpret_cast<MouseScrollEvent*>(e.get());
+        const vec2 offset = {event->x_offset, event->y_offset};
+
+        this->editor_controller.on_wheel_move(offset);
+    }
+
+    void Application::on_event(std::shared_ptr<Event> e)
+    {
+        SDLEvent* event = reinterpret_cast<SDLEvent*>(e.get());
+
+        this->editor.process_events(event->e);
     }
 };  // namespace mag

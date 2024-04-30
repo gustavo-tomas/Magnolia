@@ -1,10 +1,13 @@
 #include "core/window.hpp"
 
+#include <memory>
+
+#include "core/event.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
-    void Window::initialize(const WindowOptions& options)
+    Window::Window(const WindowOptions& options) : event_manager(options.event_manager)
     {
         ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
@@ -40,7 +43,7 @@ namespace mag
                "Failed to get extensions: " + str(SDL_GetError()));
     }
 
-    void Window::shutdown()
+    Window::~Window()
     {
         SDL_DestroyWindow(handle);
         SDL_Quit();
@@ -64,36 +67,55 @@ namespace mag
                     break;
 
                 case SDL_KEYDOWN:
-                    this->key_press(key);
+                {
+                    auto event = std::make_shared<KeyPressEvent>(key);
+                    event_manager.emit(EventType::KeyPress, event);
 
                     if (e.key.repeat == 1) continue;
                     key_state[key] = true;
                     key_update[key] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_KEYUP:
-                    this->key_release(key);
+                {
+                    auto event = std::make_shared<KeyReleaseEvent>(key);
+                    event_manager.emit(EventType::KeyRelease, event);
 
                     key_state[key] = false;
                     key_update[key] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEMOTION:
+                {
                     // Ignore first mouse move after capturing cursor
-                    if (!ignore_mouse_motion_events) mouse_move({e.motion.xrel, e.motion.yrel});
+                    if (!ignore_mouse_motion_events)
+                    {
+                        auto event = std::make_shared<MouseMoveEvent>(e.motion.xrel, e.motion.yrel);
+                        event_manager.emit(EventType::MouseMove, event);
+                    }
+
                     ignore_mouse_motion_events = false;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEWHEEL:
-                    wheel_move({e.wheel.x, e.wheel.y});
-                    break;
+                {
+                    auto event = std::make_shared<MouseScrollEvent>(e.wheel.x, e.wheel.y);
+                    event_manager.emit(EventType::MouseScroll, event);
+                }
+                break;
 
                 case SDL_MOUSEBUTTONDOWN:
-                    this->button_press(button);
+                {
+                    auto event = std::make_shared<MousePress>(button);
+                    event_manager.emit(EventType::MousePress, event);
 
                     button_state[button] = true;
                     button_update[button] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEBUTTONUP:
                     button_state[button] = false;
@@ -102,11 +124,15 @@ namespace mag
 
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                        this->resize({e.window.data1, e.window.data2});
+                    {
+                        auto event = std::make_shared<WindowResizeEvent>(e.window.data1, e.window.data2);
+                        event_manager.emit(EventType::WindowResize, event);
+                    }
                     break;
             }
 
-            this->editor_events(e);
+            auto event = std::make_shared<SDLEvent>(e);
+            event_manager.emit(EventType::SDLEvent, event);
         }
 
         return true;
@@ -120,26 +146,6 @@ namespace mag
 
         return surface;
     }
-
-    void Window::on_resize(std::function<void(const uvec2&)> callback) { this->resize = std::move(callback); }
-
-    void Window::on_key_press(std::function<void(const SDL_Keycode key)> callback)
-    {
-        this->key_press = std::move(callback);
-    }
-
-    void Window::on_key_release(std::function<void(const SDL_Keycode key)> callback)
-    {
-        this->key_release = std::move(callback);
-    }
-
-    void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
-
-    void Window::on_wheel_move(std::function<void(const ivec2&)> callback) { this->wheel_move = std::move(callback); }
-
-    void Window::on_button_press(std::function<void(const u8)> callback) { this->button_press = std::move(callback); }
-
-    void Window::on_event(std::function<void(SDL_Event e)> callback) { this->editor_events = std::move(callback); }
 
     b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 

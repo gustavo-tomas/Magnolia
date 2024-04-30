@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include "camera/controller.hpp"
+#include "core/event.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
@@ -11,7 +14,12 @@
 namespace mag
 {
     // Expand app options if necessary
-    typedef WindowOptions ApplicationOptions;
+    struct ApplicationOptions
+    {
+            uvec2 size = WindowOptions::MAX_SIZE;
+            ivec2 position = WindowOptions::CENTER_POS;
+            str title = "Magnolia";
+    };
 
     class Application
     {
@@ -21,20 +29,27 @@ namespace mag
 
             void run();
 
-            Window& get_window() { return window; };
+            Window& get_window() { return *window; };
             Editor& get_editor() { return editor; };
             ModelLoader& get_model_loader() { return model_loader; };
             TextureLoader& get_texture_loader() { return texture_loader; };
             Scene& get_active_scene() { return scene; };
 
         private:
-            Window window;
+            void on_window_resize(std::shared_ptr<Event> e);
+            void on_key_press(std::shared_ptr<Event> e);
+            void on_mouse_move(std::shared_ptr<Event> e);
+            void on_mouse_scroll(std::shared_ptr<Event> e);
+            void on_event(std::shared_ptr<Event> e);
+
+            std::unique_ptr<Window> window;
             Renderer renderer;
             Editor editor;
 
             ModelLoader model_loader;
             TextureLoader texture_loader;
 
+            EventManager event_manager;
             Scene scene;
 
             // @TODO: temp
