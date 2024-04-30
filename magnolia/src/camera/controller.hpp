@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera/camera.hpp"
+#include "core/event.hpp"
 
 namespace mag
 {
@@ -12,11 +13,13 @@ namespace mag
             virtual void shutdown() { this->camera = nullptr; };
 
             virtual void update(const f32 dt) { (void)dt; };
+            virtual void on_event(Event& e) { (void)e; };
 
         protected:
             Camera* camera = nullptr;
     };
 
+    // @TODO: legacy event handling. update before use
     class RuntimeController : public CameraController
     {
         public:
@@ -27,7 +30,10 @@ namespace mag
     class EditorController : public CameraController
     {
         public:
-            void on_mouse_move(const ivec2& mouse_dir);
-            void on_wheel_move(const ivec2& wheel_dir);
+            virtual void on_event(Event& e) override;
+
+        private:
+            void on_mouse_move(MouseMoveEvent& e);
+            void on_mouse_scroll(MouseScrollEvent& e);
     };
 };  // namespace mag

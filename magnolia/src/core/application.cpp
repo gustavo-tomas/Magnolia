@@ -146,20 +146,12 @@ namespace mag
             on_key_press(e);
         }
 
-        else if (dynamic_cast<MouseMoveEvent*>(&e))
-        {
-            on_mouse_move(e);
-        }
-
-        else if (dynamic_cast<MouseScrollEvent*>(&e))
-        {
-            on_mouse_scroll(e);
-        }
-
         else if (dynamic_cast<SDLEvent*>(&e))
         {
             on_sdl_event(e);
         }
+
+        editor_controller.on_event(e);
     }
 
     void Application::on_window_close(Event& e)
@@ -182,22 +174,6 @@ namespace mag
         const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(&e);
 
         editor->on_key_press(event->key);
-    }
-
-    void Application::on_mouse_move(Event& e)
-    {
-        const MouseMoveEvent* event = reinterpret_cast<MouseMoveEvent*>(&e);
-        const ivec2 mouse_dir = {event->x_direction, event->y_direction};
-
-        this->editor_controller.on_mouse_move(mouse_dir);
-    }
-
-    void Application::on_mouse_scroll(Event& e)
-    {
-        const MouseScrollEvent* event = reinterpret_cast<MouseScrollEvent*>(&e);
-        const vec2 offset = {event->x_offset, event->y_offset};
-
-        this->editor_controller.on_wheel_move(offset);
     }
 
     void Application::on_sdl_event(Event& e)

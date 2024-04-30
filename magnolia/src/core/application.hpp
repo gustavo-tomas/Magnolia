@@ -40,8 +40,6 @@ namespace mag
             void on_window_close(Event& e);
             void on_window_resize(Event& e);
             void on_key_press(Event& e);
-            void on_mouse_move(Event& e);
-            void on_mouse_scroll(Event& e);
             void on_sdl_event(Event& e);
 
             std::unique_ptr<Window> window;

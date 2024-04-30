@@ -32,9 +32,24 @@ namespace mag
         this->camera->set_rotation(new_rot);
     }
 
-    void EditorController::on_mouse_move(const ivec2& mouse_dir)
+    void EditorController::on_event(Event& e)
+    {
+        if (auto event = dynamic_cast<MouseMoveEvent*>(&e))
+        {
+            on_mouse_move(*event);
+        }
+
+        else if (auto event = dynamic_cast<MouseScrollEvent*>(&e))
+        {
+            on_mouse_scroll(*event);
+        }
+    }
+
+    void EditorController::on_mouse_move(MouseMoveEvent& e)
     {
         auto& window = get_application().get_window();
+
+        const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
         // Rotate
         if (window.is_button_down(SDL_BUTTON_MIDDLE))
@@ -57,13 +72,15 @@ namespace mag
         }
     }
 
-    void EditorController::on_wheel_move(const ivec2& wheel_dir)
+    void EditorController::on_mouse_scroll(MouseScrollEvent& e)
     {
-        // We dont change the camera fov, just the position (avoid distortions)
+        const ivec2 mouse_scroll = {e.x_offset, e.y_offset};
+
+        // We dont change the camera fov, just the position (avoid fov distortions)
         const vec3 forward = this->camera->get_forward();
 
         vec3 camera_position = camera->get_position();
-        camera_position += forward * static_cast<f32>(-wheel_dir.y) * 25.0f;
+        camera_position += forward * static_cast<f32>(-mouse_scroll.y) * 25.0f;
 
         this->camera->set_position(camera_position);
     }
