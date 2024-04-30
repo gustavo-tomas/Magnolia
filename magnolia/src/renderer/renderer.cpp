@@ -5,10 +5,8 @@
 
 namespace mag
 {
-    Renderer::Renderer(Window& window)
+    Renderer::Renderer(Window& window) : window(window)
     {
-        this->window = std::addressof(window);
-
         // Create context
         ContextCreateOptions context_options = {.window = window};
         context_options.application_name = "Magnolia";
@@ -50,7 +48,7 @@ namespace mag
 
         // @TODO: testing
         static bool swap = false;
-        if (window->is_key_pressed(SDLK_TAB)) swap = !swap;
+        if (window.is_key_pressed(SDLK_TAB)) swap = !swap;
 
         if (swap)
         {
