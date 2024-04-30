@@ -15,8 +15,9 @@ namespace mag
     class Editor
     {
         public:
-            void initialize();
-            void shutdown();
+            Editor();
+            ~Editor();
+
             void update();
             void render(CommandBuffer& cmd, std::vector<Model>& models, const Camera& camera);
             void process_events(SDL_Event& e);

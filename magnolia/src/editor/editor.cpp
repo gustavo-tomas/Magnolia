@@ -21,7 +21,7 @@ namespace mag
     // ImGui drag and drop types
     const char *CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
-    void Editor::initialize()
+    Editor::Editor()
     {
         auto &context = get_context();
         auto &device = context.get_device();
@@ -99,7 +99,7 @@ namespace mag
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    void Editor::shutdown()
+    Editor::~Editor()
     {
         auto &context = get_context();
 

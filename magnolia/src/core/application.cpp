@@ -17,26 +17,28 @@ namespace mag
     {
         application = this;
 
+        // Remember that smart pointers are destroyed in the reverse order of creation
+
         // Create the window
         const WindowOptions window_options = {event_manager, options.size, options.position, options.title};
         window = std::make_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
         // Create the renderer
-        renderer.initialize(*window);
+        renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
-        // Create the editor
-        editor.initialize();
-        LOG_SUCCESS("Editor initialized");
-
         // Create the model loader
-        model_loader.initialize();
+        model_loader = std::make_unique<ModelLoader>();
         LOG_SUCCESS("ModelLoader initialized");
 
         // Create the texture loader
-        texture_loader.initialize();
+        texture_loader = std::make_unique<TextureLoader>();
         LOG_SUCCESS("TextureLoader initialized");
+
+        // Create the editor
+        editor = std::make_unique<Editor>();
+        LOG_SUCCESS("Editor initialized");
 
         // @TODO: temp create a basic scene
         scene.initialize();
@@ -55,15 +57,15 @@ namespace mag
         event_manager.subscribe(EventType::SDLEvent, BIND_FN(Application::on_event));
 
         // Set editor viewport image
-        editor.set_viewport_image(scene.get_render_pass().get_target_image());
+        editor->set_viewport_image(scene.get_render_pass().get_target_image());
 
         // Set editor callbacks
-        editor.on_viewport_resize(
+        editor->on_viewport_resize(
             [&](const uvec2& size) mutable
             {
                 LOG_INFO("VIEWPORT WINDOW RESIZE: {0}", math::to_string(size));
                 scene.get_render_pass().on_resize(size);
-                editor.set_viewport_image(scene.get_render_pass().get_target_image());
+                editor->set_viewport_image(scene.get_render_pass().get_target_image());
                 scene.get_camera().set_aspect_ratio(size);
             });
 
@@ -90,18 +92,6 @@ namespace mag
 
         this->scene.shutdown();
         LOG_SUCCESS("Scene destroyed");
-
-        texture_loader.shutdown();
-        LOG_SUCCESS("TextureLoader destroyed");
-
-        model_loader.shutdown();
-        LOG_SUCCESS("ModelLoader destroyed");
-
-        editor.shutdown();
-        LOG_SUCCESS("Editor destroyed");
-
-        renderer.shutdown();
-        LOG_SUCCESS("Renderer destroyed");
     }
 
     void Application::run()
@@ -137,9 +127,9 @@ namespace mag
 
             scene.update(dt);
 
-            editor.update();
+            editor->update();
 
-            renderer.update(scene.get_camera(), editor, scene.get_render_pass(), scene.get_models());
+            renderer->update(scene.get_camera(), *editor, scene.get_render_pass(), scene.get_models());
         }
     }
 
@@ -154,15 +144,15 @@ namespace mag
         const WindowResizeEvent* event = reinterpret_cast<WindowResizeEvent*>(&e);
         const uvec2 size = {event->width, event->height};
 
-        renderer.on_resize(size);
-        editor.on_resize(size);
+        renderer->on_resize(size);
+        editor->on_resize(size);
     }
 
     void Application::on_key_press(Event& e)
     {
         const KeyPressEvent* event = reinterpret_cast<KeyPressEvent*>(&e);
 
-        editor.on_key_press(event->key);
+        editor->on_key_press(event->key);
     }
 
     void Application::on_mouse_move(Event& e)
@@ -185,6 +175,6 @@ namespace mag
     {
         SDLEvent* event = reinterpret_cast<SDLEvent*>(&e);
 
-        this->editor.process_events(event->e);
+        this->editor->process_events(event->e);
     }
 };  // namespace mag

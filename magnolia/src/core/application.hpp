@@ -30,9 +30,9 @@ namespace mag
             void run();
 
             Window& get_window() { return *window; };
-            Editor& get_editor() { return editor; };
-            ModelLoader& get_model_loader() { return model_loader; };
-            TextureLoader& get_texture_loader() { return texture_loader; };
+            Editor& get_editor() { return *editor; };
+            ModelLoader& get_model_loader() { return *model_loader; };
+            TextureLoader& get_texture_loader() { return *texture_loader; };
             Scene& get_active_scene() { return scene; };
 
         private:
@@ -44,13 +44,12 @@ namespace mag
             void on_event(Event& e);
 
             std::unique_ptr<Window> window;
-            Renderer renderer;
-            Editor editor;
+            std::unique_ptr<Renderer> renderer;
+            std::unique_ptr<Editor> editor;
+            std::unique_ptr<ModelLoader> model_loader;
+            std::unique_ptr<TextureLoader> texture_loader;
 
             b8 running;
-
-            ModelLoader model_loader;
-            TextureLoader texture_loader;
 
             EventManager event_manager;
             Scene scene;

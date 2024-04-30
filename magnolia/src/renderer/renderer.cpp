@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    void Renderer::initialize(Window& window)
+    Renderer::Renderer(Window& window)
     {
         this->window = std::addressof(window);
 
@@ -18,7 +18,7 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
-    void Renderer::shutdown()
+    Renderer::~Renderer()
     {
         this->context.get_device().waitIdle();
 

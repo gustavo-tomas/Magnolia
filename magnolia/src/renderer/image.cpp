@@ -7,9 +7,7 @@
 
 namespace mag
 {
-    void TextureLoader::initialize() {}
-
-    void TextureLoader::shutdown()
+    TextureLoader::~TextureLoader()
     {
         for (const auto& texture_pair : textures)
         {

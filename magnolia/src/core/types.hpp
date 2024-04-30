@@ -64,16 +64,6 @@ namespace mag
     #define ASSERT(assertion, ...)
 #endif
 
-    // Singleton interface
-    // This singleton approach follows the implementation described in Game Engine Architecture
-    // (ch. 5.1 - Subsystem start-up and shut-down). Here the constructor shouldn't do anything at all.
-    class Singleton
-    {
-        public:
-            virtual void initialize() = 0;
-            virtual void shutdown() = 0;
-    };
-
 // Common macros
 #define VECSIZE(vec) static_cast<u32>(vec.size())
 #define MAG_TIMEOUT 1'000'000'000                             /* 1 second in nanoseconds */
