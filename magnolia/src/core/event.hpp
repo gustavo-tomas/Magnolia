@@ -105,9 +105,9 @@ namespace mag
             f64 y_offset;
     };
 
-    struct MousePress : public Event
+    struct MousePressEvent : public Event
     {
-            MousePress(const u8 button) : button(button) {}
+            MousePressEvent(const u8 button) : button(button) {}
 
             u8 button;
     };

@@ -103,7 +103,7 @@ namespace mag
 
                 case SDL_MOUSEBUTTONDOWN:
                 {
-                    auto event = MousePress(button);
+                    auto event = MousePressEvent(button);
                     event_manager.emit(EventType::MousePress, event);
 
                     button_state[button] = true;
