@@ -32,15 +32,21 @@ namespace mag
             // @TODO: dynamic casting pls tyty
             using Callback = std::function<void(std::shared_ptr<Event>)>;
 
-            // @TODO: check if a callback is already registered
-            void subscribe(const EventType event_type, const Callback& callback) { callbacks[event_type] = callback; }
+            void subscribe(const EventType event_type, const Callback& callback)
+            {
+                callbacks[event_type].push_back(callback);
+            }
 
             void emit(const EventType event_type, std::shared_ptr<Event> event)
             {
                 auto it = callbacks.find(event_type);
                 if (it != callbacks.end())
                 {
-                    it->second(event);
+                    auto& registered_callbacks = it->second;
+                    for (auto& callback : registered_callbacks)
+                    {
+                        callback(event);
+                    }
                 }
 
                 else
@@ -50,7 +56,7 @@ namespace mag
             }
 
         private:
-            std::map<EventType, Callback> callbacks;
+            std::map<EventType, std::vector<Callback>> callbacks;
     };
 
     struct WindowCloseEvent : public Event
