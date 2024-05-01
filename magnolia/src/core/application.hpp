@@ -48,7 +48,6 @@ namespace mag
 
             b8 running;
 
-            EventManager event_manager;
             Scene scene;
 
             // @TODO: temp

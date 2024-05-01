@@ -18,7 +18,7 @@ namespace mag
             static constexpr uvec2 MAX_SIZE = uvec2(std::numeric_limits<u32>().max());
             static constexpr ivec2 CENTER_POS = ivec2(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-            const EventManager::Callback& event_callback;
+            const EventCallback& event_callback;
             uvec2 size = MAX_SIZE;
             ivec2 position = CENTER_POS;
             str title = "Magnolia";
@@ -52,7 +52,7 @@ namespace mag
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
-            EventManager::Callback event_callback;
+            EventCallback event_callback;
 
             SDL_Window* handle = {};
             u32 update_counter = {};

@@ -1,14 +1,15 @@
 #pragma once
 
 #include <functional>
-#include <map>
 
 #include "SDL_events.h"
-#include "core/logger.hpp"
 #include "core/types.hpp"
 
 namespace mag
 {
+#define EVENT_CLASS_TYPE(type) \
+    static EventType GetStaticType() { return EventType::type; }
+
     enum class EventType
     {
         WindowClose = 0,
@@ -24,49 +25,45 @@ namespace mag
     struct Event
     {
             virtual ~Event() {}
+
+            virtual EventType get_type() const = 0;
     };
 
-    class EventManager
+    using EventCallback = std::function<void(Event&)>;
+
+    // Automatic type deduction
+    // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h
+    class EventDispatcher
     {
         public:
-            // @TODO: dynamic casting pls tyty
-            using Callback = std::function<void(Event&)>;
+            EventDispatcher(Event& event) : event(event) {}
 
-            void subscribe(const EventType event_type, const Callback& callback)
+            // F will be deduced by the compiler
+            template <typename T, typename F>
+            void dispatch(const F& func)
             {
-                callbacks[event_type].push_back(callback);
-            }
-
-            void emit(const EventType event_type, Event& event)
-            {
-                auto it = callbacks.find(event_type);
-                if (it != callbacks.end())
+                if (event.get_type() == T::GetStaticType())
                 {
-                    auto& registered_callbacks = it->second;
-                    for (auto& callback : registered_callbacks)
-                    {
-                        callback(event);
-                    }
-                }
-
-                else
-                {
-                    LOG_WARNING("No registered callback for type: {0}", static_cast<u32>(event_type));
+                    func(static_cast<T&>(event));
                 }
             }
 
         private:
-            std::map<EventType, std::vector<Callback>> callbacks;
+            Event& event;
     };
 
     struct WindowCloseEvent : public Event
     {
+            virtual EventType get_type() const override { return EventType::WindowClose; }
+
             // Empty
     };
 
     struct WindowResizeEvent : public Event
     {
             WindowResizeEvent(const u32 width, const u32 height) : width(width), height(height) {}
+
+            virtual EventType get_type() const override { return EventType::WindowResize; }
 
             u32 width;
             u32 height;
@@ -76,12 +73,16 @@ namespace mag
     {
             KeyPressEvent(const u32 key) : key(key) {}
 
+            virtual EventType get_type() const override { return EventType::KeyPress; }
+
             u32 key;
     };
 
     struct KeyReleaseEvent : public Event
     {
             KeyReleaseEvent(const u32 key) : key(key) {}
+
+            virtual EventType get_type() const override { return EventType::KeyRelease; }
 
             u32 key;
     };
@@ -93,6 +94,8 @@ namespace mag
             {
             }
 
+            virtual EventType get_type() const override { return EventType::MouseMove; }
+
             i32 x_direction;
             i32 y_direction;
     };
@@ -100,6 +103,8 @@ namespace mag
     struct MouseScrollEvent : public Event
     {
             MouseScrollEvent(const f64 x_offset, const f64 y_offset) : x_offset(x_offset), y_offset(y_offset) {}
+
+            virtual EventType get_type() const override { return EventType::MouseScroll; }
 
             f64 x_offset;
             f64 y_offset;
@@ -109,6 +114,8 @@ namespace mag
     {
             MousePressEvent(const u8 button) : button(button) {}
 
+            virtual EventType get_type() const override { return EventType::MousePress; }
+
             u8 button;
     };
 
@@ -116,6 +123,8 @@ namespace mag
     struct SDLEvent : public Event
     {
             SDLEvent(const SDL_Event e) : e(e) {}
+
+            virtual EventType get_type() const override { return EventType::SDLEvent; }
 
             SDL_Event e;
     };
