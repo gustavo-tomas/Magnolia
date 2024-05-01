@@ -20,6 +20,10 @@ namespace mag
         camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
         LOG_SUCCESS("Camera initialized");
 
+        // Create a camera controller for editor
+        camera_controller.initialize(&camera);
+        LOG_SUCCESS("CameraController initialized");
+
         get_render_pass().set_camera();
 
         // @TODO: temp load assets
@@ -36,6 +40,9 @@ namespace mag
     {
         cube.shutdown();
 
+        this->camera_controller.shutdown();
+        LOG_SUCCESS("EditorController destroyed");
+
         this->camera.shutdown();
         LOG_SUCCESS("Camera destroyed");
 
@@ -48,6 +55,8 @@ namespace mag
         auto& app = get_application();
         auto& model_loader = app.get_model_loader();
         auto& window = app.get_window();
+
+        camera_controller.update(dt);
 
         // @TODO: testing
         if (window.is_key_down(SDLK_UP))
@@ -69,6 +78,8 @@ namespace mag
             models_queue.erase(models_queue.begin());
         }
     }
+
+    void Scene::on_event(Event& e) { camera_controller.on_event(e); }
 
     void Scene::add_model(const str& path)
     {

@@ -32,14 +32,14 @@ namespace mag
         this->camera->set_rotation(new_rot);
     }
 
-    void EditorController::on_event(Event& e)
+    void EditorCameraController::on_event(Event& e)
     {
         EventDispatcher dispatcher(e);
-        dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorController::on_mouse_move));
-        dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorController::on_mouse_scroll));
+        dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorCameraController::on_mouse_move));
+        dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorCameraController::on_mouse_scroll));
     }
 
-    void EditorController::on_mouse_move(MouseMoveEvent& e)
+    void EditorCameraController::on_mouse_move(MouseMoveEvent& e)
     {
         auto& window = get_application().get_window();
 
@@ -66,7 +66,7 @@ namespace mag
         }
     }
 
-    void EditorController::on_mouse_scroll(MouseScrollEvent& e)
+    void EditorCameraController::on_mouse_scroll(MouseScrollEvent& e)
     {
         const ivec2 mouse_scroll = {e.x_offset, e.y_offset};
 

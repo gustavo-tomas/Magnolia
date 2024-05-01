@@ -27,7 +27,7 @@ namespace mag
             void on_mouse_move(const ivec2& mouse_dir);
     };
 
-    class EditorController : public CameraController
+    class EditorCameraController : public CameraController
     {
         public:
             virtual void on_event(Event& e) override;

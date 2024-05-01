@@ -46,10 +46,6 @@ namespace mag
         scene.initialize();
         LOG_SUCCESS("Scene initialized");
 
-        // Create a camera controller for editor
-        editor_controller.initialize(&scene.get_camera());
-        LOG_SUCCESS("EditorController initialized");
-
         // Set editor viewport image
         editor->set_viewport_image(scene.get_render_pass().get_target_image());
 
@@ -68,9 +64,6 @@ namespace mag
 
     Application::~Application()
     {
-        this->editor_controller.shutdown();
-        LOG_SUCCESS("EditorController destroyed");
-
         this->scene.shutdown();
         LOG_SUCCESS("Scene destroyed");
     }
@@ -104,8 +97,6 @@ namespace mag
                 continue;
             }
 
-            editor_controller.update(dt);
-
             scene.update(dt);
 
             editor->update();
@@ -120,7 +111,7 @@ namespace mag
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
 
-        editor_controller.on_event(e);
+        scene.on_event(e);
         editor->on_event(e);
     }
 

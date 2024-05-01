@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "camera/controller.hpp"
 #include "core/event.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
@@ -50,9 +49,6 @@ namespace mag
 
             // @TODO: temp
             Scene scene;
-
-            // @TODO: idk what im doing so we'll keep things simple with only the editor controller
-            EditorController editor_controller;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(
