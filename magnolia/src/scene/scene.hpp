@@ -24,6 +24,7 @@ namespace mag
 
         private:
             Camera camera;
+            Cube cube;
             std::vector<Model> models;
             std::vector<str> models_queue;
             StandardRenderPass render_pass;

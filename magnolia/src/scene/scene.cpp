@@ -19,10 +19,23 @@ namespace mag
         // Create a camera
         camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
         LOG_SUCCESS("Camera initialized");
+
+        get_render_pass().set_camera();
+
+        // @TODO: temp load assets
+        cube.initialize();
+
+        cube.get_model().translation = vec3(0, 10, 0);
+        cube.get_model().scale = vec3(10);
+
+        models.push_back(cube.get_model());
+        render_pass.add_model(cube.get_model());
     }
 
     void Scene::shutdown()
     {
+        cube.shutdown();
+
         this->camera.shutdown();
         LOG_SUCCESS("Camera destroyed");
 

@@ -63,24 +63,11 @@ namespace mag
                 scene.get_camera().set_aspect_ratio(size);
             });
 
-        this->scene.get_render_pass().set_camera();
-
-        // @TODO: temp load assets
-        cube.initialize();
-
-        cube.get_model().translation = vec3(0, 10, 0);
-        cube.get_model().scale = vec3(10);
-
-        scene.get_models().push_back(cube.get_model());
-        scene.get_render_pass().add_model(cube.get_model());
-
         running = true;
     }
 
     Application::~Application()
     {
-        cube.shutdown();
-
         this->editor_controller.shutdown();
         LOG_SUCCESS("EditorController destroyed");
 

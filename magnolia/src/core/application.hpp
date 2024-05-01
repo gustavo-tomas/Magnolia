@@ -48,10 +48,8 @@ namespace mag
 
             b8 running;
 
-            Scene scene;
-
             // @TODO: temp
-            Cube cube;
+            Scene scene;
 
             // @TODO: idk what im doing so we'll keep things simple with only the editor controller
             EditorController editor_controller;
