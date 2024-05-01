@@ -34,6 +34,8 @@ namespace mag
 
             vk::SurfaceKHR create_surface(const vk::Instance instance) const;
 
+            void sleep(const u32 ms);
+
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
             void set_resizable(const b8 resizable);

@@ -1,5 +1,6 @@
 #include "core/window.hpp"
 
+#include "SDL_timer.h"
 #include "core/event.hpp"
 #include "core/logger.hpp"
 
@@ -144,6 +145,8 @@ namespace mag
 
         return surface;
     }
+
+    void Window::sleep(const u32 ms) { SDL_Delay(ms); }
 
     b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 

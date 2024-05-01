@@ -93,7 +93,7 @@ namespace mag
             // Skip rendering if minimized
             if (window->is_minimized())
             {
-                // @TODO: sleep for a lil bit
+                window->sleep(100);
                 continue;
             }
 
