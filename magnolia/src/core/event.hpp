@@ -7,8 +7,10 @@
 
 namespace mag
 {
-#define EVENT_CLASS_TYPE(type) \
-    static EventType GetStaticType() { return EventType::type; }
+    // Dark magic
+#define EVENT_CLASS_TYPE(type)                                     \
+    static EventType get_static_type() { return EventType::type; } \
+    virtual EventType get_type() const override { return get_static_type(); }
 
     enum class EventType
     {
@@ -42,7 +44,7 @@ namespace mag
             template <typename T, typename F>
             void dispatch(const F& func)
             {
-                if (event.get_type() == T::GetStaticType())
+                if (event.get_type() == T::get_static_type())
                 {
                     func(static_cast<T&>(event));
                 }
@@ -54,7 +56,7 @@ namespace mag
 
     struct WindowCloseEvent : public Event
     {
-            virtual EventType get_type() const override { return EventType::WindowClose; }
+            EVENT_CLASS_TYPE(WindowClose);
 
             // Empty
     };
@@ -63,7 +65,7 @@ namespace mag
     {
             WindowResizeEvent(const u32 width, const u32 height) : width(width), height(height) {}
 
-            virtual EventType get_type() const override { return EventType::WindowResize; }
+            EVENT_CLASS_TYPE(WindowResize);
 
             u32 width;
             u32 height;
@@ -73,7 +75,7 @@ namespace mag
     {
             KeyPressEvent(const u32 key) : key(key) {}
 
-            virtual EventType get_type() const override { return EventType::KeyPress; }
+            EVENT_CLASS_TYPE(KeyPress);
 
             u32 key;
     };
@@ -82,7 +84,7 @@ namespace mag
     {
             KeyReleaseEvent(const u32 key) : key(key) {}
 
-            virtual EventType get_type() const override { return EventType::KeyRelease; }
+            EVENT_CLASS_TYPE(KeyRelease);
 
             u32 key;
     };
@@ -94,7 +96,7 @@ namespace mag
             {
             }
 
-            virtual EventType get_type() const override { return EventType::MouseMove; }
+            EVENT_CLASS_TYPE(MouseMove);
 
             i32 x_direction;
             i32 y_direction;
@@ -104,7 +106,7 @@ namespace mag
     {
             MouseScrollEvent(const f64 x_offset, const f64 y_offset) : x_offset(x_offset), y_offset(y_offset) {}
 
-            virtual EventType get_type() const override { return EventType::MouseScroll; }
+            EVENT_CLASS_TYPE(MouseScroll);
 
             f64 x_offset;
             f64 y_offset;
@@ -114,7 +116,7 @@ namespace mag
     {
             MousePressEvent(const u8 button) : button(button) {}
 
-            virtual EventType get_type() const override { return EventType::MousePress; }
+            EVENT_CLASS_TYPE(MousePress);
 
             u8 button;
     };
@@ -124,7 +126,7 @@ namespace mag
     {
             SDLEvent(const SDL_Event e) : e(e) {}
 
-            virtual EventType get_type() const override { return EventType::SDLEvent; }
+            EVENT_CLASS_TYPE(SDLEvent);
 
             SDL_Event e;
     };

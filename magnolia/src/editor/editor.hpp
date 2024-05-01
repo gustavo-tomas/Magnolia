@@ -31,6 +31,7 @@ namespace mag
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
+            void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
             void on_key_press(KeyPressEvent& e);
 

@@ -34,15 +34,9 @@ namespace mag
 
     void EditorController::on_event(Event& e)
     {
-        if (auto event = dynamic_cast<MouseMoveEvent*>(&e))
-        {
-            on_mouse_move(*event);
-        }
-
-        else if (auto event = dynamic_cast<MouseScrollEvent*>(&e))
-        {
-            on_mouse_scroll(*event);
-        }
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorController::on_mouse_move));
+        dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorController::on_mouse_scroll));
     }
 
     void EditorController::on_mouse_move(MouseMoveEvent& e)

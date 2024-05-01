@@ -135,24 +135,6 @@ namespace mag
         }
     }
 
-    void Editor::on_event(Event &e)
-    {
-        if (auto event = dynamic_cast<SDLEvent *>(&e))
-        {
-            ImGui_ImplSDL2_ProcessEvent(&event->e);
-        }
-
-        else if (auto event = dynamic_cast<WindowResizeEvent *>(&e))
-        {
-            on_resize(*event);
-        }
-
-        else if (auto event = dynamic_cast<KeyPressEvent *>(&e))
-        {
-            on_key_press(*event);
-        }
-    }
-
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the draw image into their correct transfer layouts
@@ -440,6 +422,16 @@ namespace mag
 
         ImGui::End();
     }
+
+    void Editor::on_event(Event &e)
+    {
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
+        dispatcher.dispatch<KeyPressEvent>(BIND_FN(Editor::on_key_press));
+    }
+
+    void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
 
     void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
 

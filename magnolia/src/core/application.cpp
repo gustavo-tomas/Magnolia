@@ -129,15 +129,9 @@ namespace mag
 
     void Application::on_event(Event& e)
     {
-        if (dynamic_cast<WindowCloseEvent*>(&e))
-        {
-            on_window_close(e);
-        }
-
-        else if (dynamic_cast<WindowResizeEvent*>(&e))
-        {
-            on_window_resize(e);
-        }
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
 
         editor_controller.on_event(e);
         editor->on_event(e);
