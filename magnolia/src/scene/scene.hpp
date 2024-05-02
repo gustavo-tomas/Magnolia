@@ -26,6 +26,8 @@ namespace mag
             StandardRenderPass& get_render_pass() { return render_pass; };
 
         private:
+            void on_viewport_resize(ViewportResizeEvent& e);
+
             Camera camera;
             EditorCameraController camera_controller;
             Cube cube;

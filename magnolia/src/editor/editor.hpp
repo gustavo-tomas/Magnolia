@@ -16,13 +16,12 @@ namespace mag
     class Editor
     {
         public:
-            Editor();
+            Editor(const EventCallback& event_callback);
             ~Editor();
 
             void update();
             void render(CommandBuffer& cmd, std::vector<Model>& models, const Camera& camera);
             void on_event(Event& e);
-            void on_viewport_resize(std::function<void(const uvec2&)> callback);
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
@@ -43,7 +42,7 @@ namespace mag
             void render_scene(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
             void render_properties(const ImGuiWindowFlags window_flags, Model* model = nullptr);
 
-            std::function<void(const vec2&)> viewport_resize = {};
+            EventCallback event_callback;
 
             EditorRenderPass render_pass;
             ImDrawData* draw_data;

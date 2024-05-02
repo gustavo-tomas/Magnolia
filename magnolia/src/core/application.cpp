@@ -38,7 +38,7 @@ namespace mag
         LOG_SUCCESS("TextureLoader initialized");
 
         // Create the editor
-        editor = std::make_unique<Editor>();
+        editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");
 
         // @TODO: temp create a basic scene
@@ -47,16 +47,6 @@ namespace mag
 
         // Set editor viewport image
         editor->set_viewport_image(scene.get_render_pass().get_target_image());
-
-        // Set editor callbacks
-        editor->on_viewport_resize(
-            [&](const uvec2& size) mutable
-            {
-                LOG_INFO("VIEWPORT WINDOW RESIZE: {0}", math::to_string(size));
-                scene.get_render_pass().on_resize(size);
-                editor->set_viewport_image(scene.get_render_pass().get_target_image());
-                scene.get_camera().set_aspect_ratio(size);
-            });
 
         running = true;
     }
@@ -114,16 +104,15 @@ namespace mag
         editor->on_event(e);
     }
 
-    void Application::on_window_close(Event& e)
+    void Application::on_window_close(WindowCloseEvent& e)
     {
         (void)e;
         running = false;
     }
 
-    void Application::on_window_resize(Event& e)
+    void Application::on_window_resize(WindowResizeEvent& e)
     {
-        const WindowResizeEvent* event = reinterpret_cast<WindowResizeEvent*>(&e);
-        const uvec2 size = {event->width, event->height};
+        const uvec2 size = {e.width, e.height};
 
         renderer->on_resize(size);
     }

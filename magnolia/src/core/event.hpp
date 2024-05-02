@@ -14,6 +14,7 @@ namespace mag
 
     enum class EventType
     {
+        // Window events
         WindowClose = 0,
         WindowResize,
         KeyPress,
@@ -21,7 +22,10 @@ namespace mag
         MouseMove,
         MouseScroll,
         MousePress,
-        SDLEvent
+        SDLEvent,
+
+        // Editor events
+        ViewportResize
     };
 
     struct Event
@@ -129,5 +133,15 @@ namespace mag
             EVENT_CLASS_TYPE(SDLEvent);
 
             SDL_Event e;
+    };
+
+    struct ViewportResizeEvent : public Event
+    {
+            ViewportResizeEvent(const u32 width, const u32 height) : width(width), height(height) {}
+
+            EVENT_CLASS_TYPE(ViewportResize);
+
+            u32 width;
+            u32 height;
     };
 };  // namespace mag

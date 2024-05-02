@@ -79,7 +79,21 @@ namespace mag
         }
     }
 
-    void Scene::on_event(Event& e) { camera_controller.on_event(e); }
+    void Scene::on_event(Event& e)
+    {
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
+
+        camera_controller.on_event(e);
+    }
+
+    void Scene::on_viewport_resize(ViewportResizeEvent& e)
+    {
+        const uvec2 size = {e.width, e.height};
+
+        render_pass.on_resize(size);
+        camera.set_aspect_ratio(size);
+    }
 
     void Scene::add_model(const str& path)
     {

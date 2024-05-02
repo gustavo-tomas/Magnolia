@@ -21,7 +21,7 @@ namespace mag
     // ImGui drag and drop types
     const char *CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
-    Editor::Editor()
+    Editor::Editor(const EventCallback &event_callback) : event_callback(event_callback)
     {
         auto &context = get_context();
         auto &device = context.get_device();
@@ -116,10 +116,17 @@ namespace mag
     void Editor::update()
     {
         auto &window = get_application().get_window();
+        auto &scene = get_application().get_active_scene();
 
+        // Emit event back to the application
         if (resize_needed)
         {
-            viewport_resize(viewport_size);
+            auto event = ViewportResizeEvent(viewport_size.x, viewport_size.y);
+            event_callback(event);
+
+            // By now the scene should be updated
+            set_viewport_image(scene.get_render_pass().get_target_image());
+
             resize_needed = false;
         }
 
@@ -457,11 +464,6 @@ namespace mag
                 gizmo_operation = ImGuizmo::OPERATION::SCALE;
                 break;
         }
-    }
-
-    void Editor::on_viewport_resize(std::function<void(const uvec2 &)> callback)
-    {
-        this->viewport_resize = std::move(callback);
     }
 
     void Editor::set_viewport_image(const Image &viewport_image)

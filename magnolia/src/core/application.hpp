@@ -36,8 +36,8 @@ namespace mag
             Scene& get_active_scene() { return scene; };
 
         private:
-            void on_window_close(Event& e);
-            void on_window_resize(Event& e);
+            void on_window_close(WindowCloseEvent& e);
+            void on_window_resize(WindowResizeEvent& e);
 
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
