@@ -7,7 +7,7 @@
 
 namespace mag
 {
-    void Scene::initialize()
+    Scene::Scene()
     {
         // @TODO: temp hardcoding inside for now
         auto& window = get_application().get_window();
@@ -36,7 +36,7 @@ namespace mag
         render_pass.add_model(cube.get_model());
     }
 
-    void Scene::shutdown()
+    Scene::~Scene()
     {
         cube.shutdown();
 

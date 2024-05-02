@@ -41,18 +41,10 @@ namespace mag
         editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");
 
-        // @TODO: temp create a basic scene
-        scene.initialize();
-        LOG_SUCCESS("Scene initialized");
-
         running = true;
     }
 
-    Application::~Application()
-    {
-        this->scene.shutdown();
-        LOG_SUCCESS("Scene destroyed");
-    }
+    Application::~Application() {}
 
     void Application::run()
     {
@@ -83,11 +75,12 @@ namespace mag
                 continue;
             }
 
-            scene.update(dt);
+            active_scene->update(dt);
 
             editor->update();
 
-            renderer->update(scene.get_camera(), *editor, scene.get_render_pass(), scene.get_models());
+            renderer->update(active_scene->get_camera(), *editor, active_scene->get_render_pass(),
+                             active_scene->get_models());
         }
     }
 
@@ -97,7 +90,7 @@ namespace mag
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
 
-        scene.on_event(e);
+        active_scene->on_event(e);
         editor->on_event(e);
     }
 

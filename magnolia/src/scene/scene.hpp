@@ -9,11 +9,12 @@
 namespace mag
 {
     // @TODO: for now is basically just the models and a camera
+    // @TODO: create a base class for this
     class Scene
     {
         public:
-            void initialize();
-            void shutdown();
+            Scene();
+            ~Scene();
 
             void update(const f32 dt);
             void on_event(Event& e);

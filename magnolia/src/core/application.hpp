@@ -29,11 +29,13 @@ namespace mag
             void run();
             void on_event(Event& e);
 
+            void set_active_scene(Scene* scene) { active_scene = std::unique_ptr<Scene>(scene); };
+
             Window& get_window() { return *window; };
             Editor& get_editor() { return *editor; };
             ModelLoader& get_model_loader() { return *model_loader; };
             TextureLoader& get_texture_loader() { return *texture_loader; };
-            Scene& get_active_scene() { return scene; };
+            Scene& get_active_scene() { return *active_scene; };
 
         private:
             void on_window_close(WindowCloseEvent& e);
@@ -44,11 +46,9 @@ namespace mag
             std::unique_ptr<Editor> editor;
             std::unique_ptr<ModelLoader> model_loader;
             std::unique_ptr<TextureLoader> texture_loader;
+            std::unique_ptr<Scene> active_scene;
 
             b8 running;
-
-            // @TODO: temp
-            Scene scene;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(
