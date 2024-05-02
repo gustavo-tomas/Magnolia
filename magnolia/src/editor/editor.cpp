@@ -145,8 +145,11 @@ namespace mag
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the draw image into their correct transfer layouts
-        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
-                            vk::ImageLayout::eShaderReadOnlyOptimal);
+        if (viewport_image)
+        {
+            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
+                                vk::ImageLayout::eShaderReadOnlyOptimal);
+        }
 
         // @TODO: put this inside the render pass?
         render_pass.before_render(cmd);
@@ -187,8 +190,11 @@ namespace mag
         render_pass.after_render(cmd);
 
         // Return the draw image to their original layout
-        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
-                            vk::ImageLayout::eTransferSrcOptimal);
+        if (viewport_image)
+        {
+            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
+                                vk::ImageLayout::eTransferSrcOptimal);
+        }
     }
 
     void Editor::render_content_browser(const ImGuiWindowFlags window_flags)

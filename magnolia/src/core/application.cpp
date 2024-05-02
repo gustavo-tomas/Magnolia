@@ -45,9 +45,6 @@ namespace mag
         scene.initialize();
         LOG_SUCCESS("Scene initialized");
 
-        // Set editor viewport image
-        editor->set_viewport_image(scene.get_render_pass().get_target_image());
-
         running = true;
     }
 
