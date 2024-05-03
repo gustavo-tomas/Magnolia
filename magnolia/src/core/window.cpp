@@ -122,6 +122,9 @@ namespace mag
                     {
                         auto event = WindowResizeEvent(e.window.data1, e.window.data2);
                         event_callback(event);
+
+                        last_resize_time = get_time();
+                        resizing = true;
                     }
 
                     else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
@@ -134,6 +137,12 @@ namespace mag
 
             auto event = SDLEvent(e);
             event_callback(event);
+
+            // Check if it's been more than 10 milliseconds since the last resize
+            if (resizing && (get_time() - last_resize_time > 10))
+            {
+                resizing = false;  // Reset the flag
+            }
         }
     }
 

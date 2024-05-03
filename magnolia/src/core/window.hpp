@@ -47,6 +47,7 @@ namespace mag
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
             b8 is_flag_set(const u32 flag) const;
+            const b8& is_resizing() const { return resizing; };
 
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
@@ -59,6 +60,8 @@ namespace mag
 
             SDL_Window* handle = {};
             u32 update_counter = {};
+            u64 last_resize_time = {};
+            b8 resizing = {};
             b8 ignore_mouse_motion_events = {};
             std::vector<const char*> extensions;
 

@@ -68,10 +68,15 @@ namespace mag
 
             window->update();
 
-            // Skip rendering if minimized
+            // Skip rendering if minimized or resizing
             if (window->is_minimized())
             {
-                window->sleep(100);
+                window->sleep(50);
+                continue;
+            }
+
+            if (window->is_resizing())
+            {
                 continue;
             }
 
