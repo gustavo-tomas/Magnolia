@@ -39,15 +39,14 @@ namespace mag
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
             void set_resizable(const b8 resizable);
-            void set_fullscreen(const u32 flags = 0);
+            void set_fullscreen(const b8 fullscreen);
 
             b8 is_key_pressed(const SDL_Keycode key);
             b8 is_key_down(const SDL_Keycode key);
             b8 is_button_down(const u8 button);
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
-            b8 is_flag_set(const u32 flag) const;
-            const b8& is_resizing() const { return resizing; };
+            b8 is_fullscreen() const;
 
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
@@ -56,12 +55,12 @@ namespace mag
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
         private:
+            b8 is_flag_set(const u32 flag) const;
+
             EventCallback event_callback;
 
             SDL_Window* handle = {};
             u32 update_counter = {};
-            u64 last_resize_time = {};
-            b8 resizing = {};
             b8 ignore_mouse_motion_events = {};
             std::vector<const char*> extensions;
 

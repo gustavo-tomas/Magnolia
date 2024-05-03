@@ -122,9 +122,6 @@ namespace mag
                     {
                         auto event = WindowResizeEvent(e.window.data1, e.window.data2);
                         event_callback(event);
-
-                        last_resize_time = get_time();
-                        resizing = true;
                     }
 
                     else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
@@ -137,12 +134,6 @@ namespace mag
 
             auto event = SDLEvent(e);
             event_callback(event);
-
-            // Check if it's been more than 10 milliseconds since the last resize
-            if (resizing && (get_time() - last_resize_time > 10))
-            {
-                resizing = false;  // Reset the flag
-            }
         }
     }
 
@@ -173,6 +164,8 @@ namespace mag
         // Might be worth checking these too: || !(flags & SDL_WINDOW_INPUT_FOCUS) || !(flags & SDL_WINDOW_MOUSE_FOCUS)
     }
 
+    b8 Window::is_fullscreen() const { return is_flag_set(SDL_WINDOW_FULLSCREEN_DESKTOP); }
+
     b8 Window::is_flag_set(const u32 flag) const
     {
         const u32 flags = SDL_GetWindowFlags(this->handle);
@@ -197,9 +190,10 @@ namespace mag
         SDL_SetWindowResizable(this->handle, static_cast<SDL_bool>(resizable));
     }
 
-    void Window::set_fullscreen(const u32 flags)
+    void Window::set_fullscreen(const b8 fullscreen)
     {
-        if (SDL_SetWindowFullscreen(this->handle, flags) != 0)
+        const SDL_WindowFlags flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (SDL_SetWindowFullscreen(this->handle, fullscreen ? flag : 0) != 0)
         {
             LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
         }

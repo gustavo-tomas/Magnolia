@@ -75,11 +75,6 @@ namespace mag
                 continue;
             }
 
-            if (window->is_resizing())
-            {
-                continue;
-            }
-
             active_scene->update(dt);
 
             editor->update();
