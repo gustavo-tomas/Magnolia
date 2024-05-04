@@ -28,6 +28,7 @@ namespace mag
             Context(const ContextCreateOptions& options);
             ~Context();
 
+            void recreate_swapchain(const uvec2& size);
             void recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode);
             void begin_frame();
             b8 end_frame(const Image& image, const vk::Extent3D& extent);

@@ -335,6 +335,8 @@ namespace mag
         this->instance.destroy();
     }
 
+    void Context::recreate_swapchain(const uvec2& size) { this->recreate_swapchain(size, this->surface_present_mode); }
+
     void Context::recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode)
     {
         this->device.waitIdle();

@@ -82,8 +82,8 @@ namespace mag
         init_info.Device = device;
         init_info.Queue = context.get_graphics_queue();
         init_info.DescriptorPool = static_cast<VkDescriptorPool>(descriptor_pool);
-        init_info.MinImageCount = 3;
-        init_info.ImageCount = 3;
+        init_info.MinImageCount = context.get_swapchain_images().size();
+        init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
         init_info.ColorAttachmentFormat = static_cast<VkFormat>(render_pass.get_draw_image().get_format());
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -139,7 +139,7 @@ namespace mag
 
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
-        // Transition the draw image into their correct transfer layouts
+        // Transition the viewport image into their correct transfer layouts for imgui texture
         if (viewport_image)
         {
             cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
@@ -184,7 +184,7 @@ namespace mag
         cmd.end_rendering();
         render_pass.after_render(cmd);
 
-        // Return the draw image to their original layout
+        // Return the viewport image to their original layout
         if (viewport_image)
         {
             cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
