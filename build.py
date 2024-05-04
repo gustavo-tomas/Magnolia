@@ -28,7 +28,7 @@ def run(system, configuration):
   bar = "/"
   if system == "windows":
     bar = "\\"
-  assert os.system(f"build{bar}{system}{bar}magnolia{bar}magnolia_{configuration}") == 0
+  assert os.system(f"build{bar}{system}{bar}sprout{bar}sprout_{configuration}") == 0
   return
 
 # ----- Clean -----

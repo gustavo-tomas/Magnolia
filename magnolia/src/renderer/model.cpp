@@ -10,9 +10,9 @@
 
 namespace mag
 {
-    void ModelLoader::initialize() { importer = std::make_unique<Assimp::Importer>(); }
+    ModelLoader::ModelLoader() { importer = std::make_unique<Assimp::Importer>(); }
 
-    void ModelLoader::shutdown()
+    ModelLoader::~ModelLoader()
     {
         // @TODO: idk about this
         get_context().get_device().waitIdle();

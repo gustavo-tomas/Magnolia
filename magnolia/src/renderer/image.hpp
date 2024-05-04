@@ -34,11 +34,11 @@ namespace mag
             u32 mip_levels;
     };
 
-    class TextureLoader : public Singleton
+    class TextureLoader
     {
         public:
-            virtual void initialize() override;
-            virtual void shutdown() override;
+            TextureLoader() = default;
+            ~TextureLoader();
 
             std::shared_ptr<Image> load(const str& file);
 

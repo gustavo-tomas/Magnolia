@@ -1,59 +1,59 @@
 #pragma once
 
-#include "camera/camera.hpp"
-#include "camera/controller.hpp"
+#include <memory>
+
+#include "core/event.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
+    // Expand app options if necessary
+    struct ApplicationOptions
+    {
+            uvec2 size = WindowOptions::MAX_SIZE;
+            ivec2 position = WindowOptions::CENTER_POS;
+            str title = "Magnolia";
+    };
+
     class Application
     {
         public:
-            enum class Mode
-            {
-                Editor = 0,
-                Runtime
-            };
-
-            void initialize(const str& title, const uvec2& size = WindowOptions::MAX_SIZE);
-            void shutdown();
+            explicit Application(const ApplicationOptions& options);
+            virtual ~Application();
 
             void run();
+            void on_event(Event& e);
 
-            Window& get_window() { return window; };
-            Editor& get_editor() { return editor; };
-            ModelLoader& get_model_loader() { return model_loader; };
-            TextureLoader& get_texture_loader() { return texture_loader; };
-            const Mode& get_active_mode() const { return active_mode; };
+            void set_active_scene(Scene* scene) { active_scene = std::unique_ptr<Scene>(scene); };
 
-            // @TODO: temp
-            void add_model(const str& path);
-            void set_active_mode(const Mode mode) { update_active_mode = mode; };
+            Window& get_window() { return *window; };
+            Editor& get_editor() { return *editor; };
+            ModelLoader& get_model_loader() { return *model_loader; };
+            TextureLoader& get_texture_loader() { return *texture_loader; };
+            Scene& get_active_scene() { return *active_scene; };
 
         private:
-            Window window;
-            Renderer renderer;
-            Editor editor;
-            Mode active_mode = Mode::Editor;
-            Mode update_active_mode = Mode::Editor;
+            void on_window_close(WindowCloseEvent& e);
+            void on_window_resize(WindowResizeEvent& e);
 
-            ModelLoader model_loader;
-            TextureLoader texture_loader;
+            std::unique_ptr<Window> window;
+            std::unique_ptr<Renderer> renderer;
+            std::unique_ptr<Editor> editor;
+            std::unique_ptr<ModelLoader> model_loader;
+            std::unique_ptr<TextureLoader> texture_loader;
+            std::unique_ptr<Scene> active_scene;
 
-            // @TODO: temp
-            StandardRenderPass render_pass;
-            std::vector<Model> models;
-            std::vector<str> models_queue;
-            Cube cube;
-            Camera camera;
-            RuntimeController runtime_controller;
-            EditorController editor_controller;
+            b8 running;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(
     Application& get_application();
+
+    // Defined by the client
+    Application* create_application();
 };  // namespace mag

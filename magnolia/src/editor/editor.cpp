@@ -21,7 +21,7 @@ namespace mag
     // ImGui drag and drop types
     const char *CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
-    void Editor::initialize()
+    Editor::Editor(const EventCallback &event_callback) : event_callback(event_callback)
     {
         auto &context = get_context();
         auto &device = context.get_device();
@@ -99,7 +99,7 @@ namespace mag
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    void Editor::shutdown()
+    Editor::~Editor()
     {
         auto &context = get_context();
 
@@ -115,18 +115,36 @@ namespace mag
 
     void Editor::update()
     {
+        auto &window = get_application().get_window();
+        auto &scene = get_application().get_active_scene();
+
+        // Emit event back to the application
         if (resize_needed)
         {
-            viewport_resize(viewport_size);
+            auto event = ViewportResizeEvent(viewport_size.x, viewport_size.y);
+            event_callback(event);
+
+            // By now the scene should be updated
+            set_viewport_image(scene.get_render_pass().get_target_image());
+
             resize_needed = false;
+        }
+
+        // Alternate between Fullscreen and Windowed
+        if (window.is_key_pressed(SDLK_ESCAPE))
+        {
+            window.set_fullscreen(!window.is_fullscreen());
         }
     }
 
     void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
     {
         // Transition the viewport image into their correct transfer layouts for imgui texture
-        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
-                            vk::ImageLayout::eShaderReadOnlyOptimal);
+        if (viewport_image)
+        {
+            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
+                                vk::ImageLayout::eShaderReadOnlyOptimal);
+        }
 
         // @TODO: put this inside the render pass?
         render_pass.before_render(cmd);
@@ -167,8 +185,11 @@ namespace mag
         render_pass.after_render(cmd);
 
         // Return the viewport image to their original layout
-        cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
-                            vk::ImageLayout::eTransferSrcOptimal);
+        if (viewport_image)
+        {
+            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
+                                vk::ImageLayout::eTransferSrcOptimal);
+        }
     }
 
     void Editor::render_content_browser(const ImGuiWindowFlags window_flags)
@@ -291,44 +312,10 @@ namespace mag
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
             {
                 const char *path = static_cast<const char *>(payload->Data);
-                get_application().add_model(path);
+                get_application().get_active_scene().add_model(path);
             }
             ImGui::EndDragDropTarget();
         }
-
-        // Position the button - https://github.com/ocornut/imgui/discussions/3862
-        ImGuiStyle &style = ImGui::GetStyle();
-
-        // @TODO: this is a bit hardcoded
-        const ImVec2 size(ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 0.25f,
-                          ImGui::CalcTextSize(ICON_FA_PLAY).x + style.FramePadding.x * 4.0f);
-
-        ImGui::SetCursorPos(size);
-
-        ImGui::PushStyleColor(ImGuiCol_Button, 0x00000000);
-        ImGui::PushStyleColor(ImGuiCol_Text, 0xff000000);
-
-        // Play/pause button
-        static const char *button_icon = ICON_FA_PLAY;
-        if (ImGui::Button(button_icon))
-        {
-            auto &app = get_application();
-            auto curr_mode = app.get_active_mode();
-
-            if (curr_mode == Application::Mode::Editor)
-            {
-                app.set_active_mode(Application::Mode::Runtime);
-                button_icon = ICON_FA_PAUSE;
-            }
-
-            else
-            {
-                app.set_active_mode(Application::Mode::Editor);
-                button_icon = ICON_FA_PLAY;
-            }
-        }
-
-        ImGui::PopStyleColor(2);
 
         // Render gizmos for selected model
         if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
@@ -444,21 +431,24 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::process_events(SDL_Event &e) { ImGui_ImplSDL2_ProcessEvent(&e); }
-
-    void Editor::on_resize(const uvec2 &size) { this->render_pass.on_resize(size); }
-
-    void Editor::on_viewport_resize(std::function<void(const uvec2 &)> callback)
+    void Editor::on_event(Event &e)
     {
-        this->viewport_resize = std::move(callback);
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
+        dispatcher.dispatch<KeyPressEvent>(BIND_FN(Editor::on_key_press));
     }
 
-    void Editor::on_key_press(const SDL_Keycode key)
+    void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
+
+    void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
+
+    void Editor::on_key_press(KeyPressEvent &e)
     {
         if (disabled) return;
 
         // These are basically the same keybinds as blender
-        switch (key)
+        switch (e.key)
         {
             // Move
             case SDLK_g:

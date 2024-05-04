@@ -11,8 +11,8 @@ namespace mag
     class Renderer
     {
         public:
-            void initialize(Window& window);
-            void shutdown();
+            Renderer(Window& window);
+            ~Renderer();
 
             void update(const Camera& camera, Editor& editor, StandardRenderPass& render_pass,
                         std::vector<Model>& models);
@@ -20,7 +20,7 @@ namespace mag
             void on_resize(const uvec2& size);
 
         private:
-            Window* window;
-            Context context;
+            Window& window;
+            std::unique_ptr<Context> context;
     };
 };  // namespace mag

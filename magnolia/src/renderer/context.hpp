@@ -25,8 +25,8 @@ namespace mag
     class Context
     {
         public:
-            void initialize(const ContextCreateOptions& options);
-            void shutdown();
+            Context(const ContextCreateOptions& options);
+            ~Context();
 
             void recreate_swapchain(const uvec2& size);
             void recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode);

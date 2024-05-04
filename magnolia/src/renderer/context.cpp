@@ -46,7 +46,7 @@ namespace mag
         return VK_FALSE;
     }
 
-    void Context::initialize(const ContextCreateOptions& options)
+    Context::Context(const ContextCreateOptions& options)
     {
         context = this;
 
@@ -312,7 +312,7 @@ namespace mag
         descriptor_cache.initialize();
     }
 
-    void Context::shutdown()
+    Context::~Context()
     {
         this->device.waitIdle();
 

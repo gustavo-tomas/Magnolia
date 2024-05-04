@@ -86,11 +86,11 @@ namespace mag
         return description;
     }
 
-    class ModelLoader : public Singleton
+    class ModelLoader
     {
         public:
-            virtual void initialize() override;
-            virtual void shutdown() override;
+            ModelLoader();
+            ~ModelLoader();
 
             std::shared_ptr<Model> load(const str& file);
             b8 is_extension_supported(const str& extension_with_dot);

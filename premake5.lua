@@ -9,7 +9,7 @@ workspace "magnolia"
     staticruntime "on"
     
     -- Output directories
-    targetdir ("build/%{cfg.system}/magnolia")
+    targetdir ("build/%{cfg.system}/%{prj.name}")
     objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
 
 -- @TODO: consistent build folders/output
@@ -17,7 +17,7 @@ workspace "magnolia"
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
-    kind "consoleapp"
+    kind "staticlib"
     
     files
     {
@@ -105,6 +105,89 @@ project "magnolia"
         optimize "full" -- '-O3'
         runtime "release"
 
+-- Client Application --------------------------------------------------------------------------------------------------
+project "sprout"
+    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    kind "consoleapp"
+
+    files
+    {
+        "%{prj.name}/src/**.hpp",
+        "%{prj.name}/src/**.cpp"
+    }
+
+    includedirs 
+    { 
+        "%{prj.name}/src",
+        "magnolia",
+        "magnolia/src",
+        "libs/sdl/include",
+        "libs/fmt/include",
+        "libs/vulkan/include",
+        "libs/vma/include",
+        "libs/assimp/include/assimp",
+        "libs/imgui",
+        "libs/imguizmo",
+        "libs/glm",
+        "libs/stb",
+        "libs/spirv_reflect",
+        "libs/font_awesome",
+        "libs/json/single_include"
+    }
+
+    libdirs
+    { 
+        "build/%{cfg.system}/lib"
+    }
+
+    links
+    {
+        "magnolia", "fmt", "imgui", "imguizmo", "assimp"
+    }
+
+    filter "system:linux"
+        pic "on"
+        links
+        {
+            "vulkan", "sdl"
+        }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines
+        {
+            "_CRT_SECURE_NO_WARNINGS"
+        }
+
+        links
+        {
+            "vulkan-1",
+            "SDL2",
+            "SDL2main",
+        }
+        -- entrypoint("mainCRTStartup")            
+        
+    filter "configurations:debug"
+        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
+        symbols "on" -- '-g'
+        optimize "off" -- '-O0'
+        runtime "debug"
+
+    filter "configurations:profile"
+        buildoptions { "-Werror" }
+        defines { "MAG_PROFILE" }
+        symbols "off"
+        optimize "on" -- '-O2'
+        runtime "release"
+
+    filter "configurations:release"
+        buildoptions { "-Werror" }
+        defines { "MAG_RELEASE", "MAG_ASSERTIONS_ENABLED" } -- @TODO: fix this
+        symbols "off"
+        optimize "full" -- '-O3'
+        runtime "release"
 
 -- Libs ----------------------------------------------------------------------------------------------------------------
 

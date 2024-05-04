@@ -1,7 +1,5 @@
 #include "core/application.hpp"
 
-#include <filesystem>
-
 #include "core/logger.hpp"
 
 namespace mag
@@ -14,247 +12,98 @@ namespace mag
         return *application;
     }
 
-    void Application::initialize(const str& title, const uvec2& size)
+    Application::Application(const ApplicationOptions& options)
     {
         application = this;
 
-        WindowOptions window_options;
-        window_options.size = size;
-        window_options.title = title;
+        // Remember that smart pointers are destroyed in the reverse order of creation
 
         // Create the window
-        window.initialize(window_options);
+        const WindowOptions window_options = {BIND_FN(Application::on_event), options.size, options.position,
+                                              options.title};
+
+        window = std::make_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
         // Create the renderer
-        renderer.initialize(window);
+        renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
-        // Create the editor
-        editor.initialize();
-        LOG_SUCCESS("Editor initialized");
-
         // Create the model loader
-        model_loader.initialize();
+        model_loader = std::make_unique<ModelLoader>();
         LOG_SUCCESS("ModelLoader initialized");
 
         // Create the texture loader
-        texture_loader.initialize();
+        texture_loader = std::make_unique<TextureLoader>();
         LOG_SUCCESS("TextureLoader initialized");
 
-        // Create a render pass
-        render_pass.initialize(window.get_size());
-        LOG_SUCCESS("RenderPass initialized");
+        // Create the editor
+        editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
+        LOG_SUCCESS("Editor initialized");
 
-        // Create a camera
-        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
-        LOG_SUCCESS("Camera initialized");
-
-        // Create a camera controller for runtime
-        runtime_controller.initialize(&camera);
-        LOG_SUCCESS("RuntimeController initialized");
-
-        // Create a camera controller for editor
-        editor_controller.initialize(&camera);
-        LOG_SUCCESS("EditorController initialized");
-
-        // Set window callbacks
-        window.on_resize(
-            [&](const uvec2& size) mutable
-            {
-                LOG_INFO("WINDOW RESIZE: {0}", math::to_string(size));
-                renderer.on_resize(size);
-                editor.on_resize(size);
-
-                // @TODO: change sizes in runtime!
-                // render_pass.on_resize(size);
-                // editor.set_viewport_image(render_pass.get_target_image());
-                // camera.set_aspect_ratio(size);
-            });
-
-        window.on_key_press(
-            [this](const SDL_Keycode key) mutable
-            {
-                LOG_INFO("KEY PRESS: {0}", SDL_GetKeyName(key));
-                editor.on_key_press(key);
-            });
-
-        window.on_key_release([](const SDL_Keycode key) mutable { LOG_INFO("KEY RELEASE: {0}", SDL_GetKeyName(key)); });
-        window.on_mouse_move(
-            [this](const ivec2& mouse_dir) mutable
-            {
-                if (active_mode == Mode::Editor)
-                    this->editor_controller.on_mouse_move(mouse_dir);
-
-                else
-                    this->runtime_controller.on_mouse_move(mouse_dir);
-            });
-
-        window.on_wheel_move([this](const ivec2& wheel_dir) mutable
-                             { this->editor_controller.on_wheel_move(wheel_dir); });
-
-        window.on_button_press([](const u8 button) mutable { LOG_INFO("BUTTON PRESS: {0}", button); });
-        window.on_event([this](SDL_Event e) mutable { this->editor.process_events(e); });
-
-        // Set editor viewport image
-        editor.set_viewport_image(render_pass.get_target_image());
-
-        // Set editor callbacks
-        editor.on_viewport_resize(
-            [&](const uvec2& size) mutable
-            {
-                LOG_INFO("VIEWPORT WINDOW RESIZE: {0}", math::to_string(size));
-                render_pass.on_resize(size);
-                editor.set_viewport_image(render_pass.get_target_image());
-                camera.set_aspect_ratio(size);
-            });
-
-        this->render_pass.set_camera();
-
-        // @TODO: temp load assets
-        cube.initialize();
-
-        cube.get_model().translation = vec3(0, 10, 0);
-        cube.get_model().scale = vec3(10);
-
-        models.push_back(cube.get_model());
-        render_pass.add_model(cube.get_model());
+        running = true;
     }
 
-    void Application::shutdown()
-    {
-        cube.shutdown();
-
-        this->editor_controller.shutdown();
-        LOG_SUCCESS("EditorController destroyed");
-
-        this->runtime_controller.shutdown();
-        LOG_SUCCESS("RuntimeController destroyed");
-
-        this->camera.shutdown();
-        LOG_SUCCESS("Camera destroyed");
-
-        this->render_pass.shutdown();
-        LOG_SUCCESS("RenderPass destroyed");
-
-        texture_loader.shutdown();
-        LOG_SUCCESS("TextureLoader destroyed");
-
-        model_loader.shutdown();
-        LOG_SUCCESS("ModelLoader destroyed");
-
-        editor.shutdown();
-        LOG_SUCCESS("Editor destroyed");
-
-        renderer.shutdown();
-        LOG_SUCCESS("Renderer destroyed");
-
-        window.shutdown();
-        LOG_SUCCESS("Window destroyed");
-    }
+    Application::~Application() {}
 
     void Application::run()
     {
-        u64 last_time = 0, curr_time = SDL_GetPerformanceCounter(), frame_counter = 0;
+        u64 curr_time = 0, last_time = 0, frame_counter = 0;
         f64 time_counter = 0.0, dt = 0.0;
 
-        while (window.update())
+        while (running)
         {
             // Calculate dt
+            curr_time = window->get_time();
+            dt = curr_time - last_time;
             last_time = curr_time;
-            curr_time = SDL_GetPerformanceCounter();
-            dt = (curr_time - last_time) * 1000.0 / (SDL_GetPerformanceFrequency() * 1000.0);
 
             frame_counter++;
             time_counter += dt;
-            if (time_counter >= 1.0)
+            if (time_counter >= 1000.0)
             {
                 LOG_INFO("CPU: {0:.3f} ms/frame - {1} fps", 1000.0 / static_cast<f64>(frame_counter), frame_counter);
                 frame_counter = time_counter = 0;
             }
 
-            if (window.is_key_pressed(SDLK_ESCAPE))
-            {
-                // Fullscreen
-                if (!window.is_flag_set(SDL_WINDOW_FULLSCREEN_DESKTOP))
-                    window.set_fullscreen(SDL_WINDOW_FULLSCREEN_DESKTOP);
+            window->update();
 
-                // Windowed
-                else
-                    window.set_fullscreen(0);
+            // Skip rendering if minimized or resizing
+            if (window->is_minimized())
+            {
+                window->sleep(50);
+                continue;
             }
 
-            if (active_mode != update_active_mode)
-            {
-                active_mode = update_active_mode;
+            active_scene->update(dt);
 
-                // Disable editor input if in runtime mode
-                editor.set_input_disabled(active_mode == Mode::Runtime);
-            }
+            editor->update();
 
-            switch (active_mode)
-            {
-                case Mode::Editor:
-                    editor_controller.update(dt);
-                    break;
-
-                case Mode::Runtime:
-                    runtime_controller.update(dt);
-                    break;
-            }
-
-            // @TODO: testing
-            if (window.is_key_down(SDLK_UP))
-                render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
-
-            else if (window.is_key_down(SDLK_DOWN))
-                render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
-            // @TODO: testing
-
-            while (!models_queue.empty())
-            {
-                const str& model_path = models_queue.front();
-                const auto model = model_loader.load(model_path);
-
-                models.push_back(*model);
-                this->render_pass.add_model(*model);
-
-                models_queue.erase(models_queue.begin());
-            }
-
-            if (active_mode == Mode::Editor) editor.update();
-
-            // Skip rendering if minimized
-            if (!window.is_minimized()) renderer.update(camera, editor, render_pass, models);
+            renderer->update(active_scene->get_camera(), *editor, active_scene->get_render_pass(),
+                             active_scene->get_models());
         }
     }
 
-    void Application::add_model(const str& path)
+    void Application::on_event(Event& e)
     {
-        // First check if the path exists
-        if (!std::filesystem::exists(path))
-        {
-            LOG_ERROR("File not found: {0}", path);
-            return;
-        }
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
 
-        // Then check if its a directory
-        if (std::filesystem::is_directory(path))
-        {
-            LOG_ERROR("Path is a directory: {0}", path);
-            return;
-        }
+        active_scene->on_event(e);
+        editor->on_event(e);
+    }
 
-        // Then check if assimp supports this extension
-        const std::filesystem::path file_path(path);
-        const str extension = file_path.extension().c_str();
-        if (!model_loader.is_extension_supported(extension))
-        {
-            LOG_ERROR("Extension not supported: {0}", extension);
-            return;
-        }
+    void Application::on_window_close(WindowCloseEvent& e)
+    {
+        (void)e;
+        running = false;
+    }
 
-        // Finally enqueue the model
-        models_queue.push_back(path);
+    void Application::on_window_resize(WindowResizeEvent& e)
+    {
+        const uvec2 size = {e.width, e.height};
+
+        renderer->on_resize(size);
     }
 };  // namespace mag

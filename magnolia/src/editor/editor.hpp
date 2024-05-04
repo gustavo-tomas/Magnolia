@@ -4,6 +4,7 @@
 
 // clang-format off
 
+#include "core/event.hpp"
 #include "editor/editor_pass.hpp"
 #include "imgui.h"
 #include "ImGuizmo.h"
@@ -15,15 +16,12 @@ namespace mag
     class Editor
     {
         public:
-            void initialize();
-            void shutdown();
+            Editor(const EventCallback& event_callback);
+            ~Editor();
+
             void update();
             void render(CommandBuffer& cmd, std::vector<Model>& models, const Camera& camera);
-            void process_events(SDL_Event& e);
-
-            void on_resize(const uvec2& size);
-            void on_viewport_resize(std::function<void(const uvec2&)> callback);
-            void on_key_press(const SDL_Keycode key);
+            void on_event(Event& e);
 
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
@@ -32,6 +30,10 @@ namespace mag
             uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
+            void on_sdl_event(SDLEvent& e);
+            void on_resize(WindowResizeEvent& e);
+            void on_key_press(KeyPressEvent& e);
+
             void set_style();
 
             void render_content_browser(const ImGuiWindowFlags window_flags);
@@ -40,7 +42,7 @@ namespace mag
             void render_scene(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
             void render_properties(const ImGuiWindowFlags window_flags, Model* model = nullptr);
 
-            std::function<void(const vec2&)> viewport_resize = {};
+            EventCallback event_callback;
 
             EditorRenderPass render_pass;
             ImDrawData* draw_data;

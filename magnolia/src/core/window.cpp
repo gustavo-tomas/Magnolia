@@ -1,10 +1,12 @@
 #include "core/window.hpp"
 
+#include "SDL_timer.h"
+#include "core/event.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
-    void Window::initialize(const WindowOptions& options)
+    Window::Window(const WindowOptions& options) : event_callback(options.event_callback)
     {
         ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
@@ -40,13 +42,13 @@ namespace mag
                "Failed to get extensions: " + str(SDL_GetError()));
     }
 
-    void Window::shutdown()
+    Window::~Window()
     {
         SDL_DestroyWindow(handle);
         SDL_Quit();
     }
 
-    b8 Window::update()
+    void Window::update()
     {
         update_counter++;
 
@@ -59,41 +61,56 @@ namespace mag
 
             switch (e.type)
             {
-                case SDL_QUIT:
-                    return false;
-                    break;
-
                 case SDL_KEYDOWN:
-                    this->key_press(key);
+                {
+                    auto event = KeyPressEvent(key);
+                    event_callback(event);
 
                     if (e.key.repeat == 1) continue;
                     key_state[key] = true;
                     key_update[key] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_KEYUP:
-                    this->key_release(key);
+                {
+                    auto event = KeyReleaseEvent(key);
+                    event_callback(event);
 
                     key_state[key] = false;
                     key_update[key] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEMOTION:
+                {
                     // Ignore first mouse move after capturing cursor
-                    if (!ignore_mouse_motion_events) mouse_move({e.motion.xrel, e.motion.yrel});
+                    if (!ignore_mouse_motion_events)
+                    {
+                        auto event = MouseMoveEvent(e.motion.xrel, e.motion.yrel);
+                        event_callback(event);
+                    }
+
                     ignore_mouse_motion_events = false;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEWHEEL:
-                    wheel_move({e.wheel.x, e.wheel.y});
-                    break;
+                {
+                    auto event = MouseScrollEvent(e.wheel.x, e.wheel.y);
+                    event_callback(event);
+                }
+                break;
 
                 case SDL_MOUSEBUTTONDOWN:
-                    this->button_press(button);
+                {
+                    auto event = MousePressEvent(button);
+                    event_callback(event);
 
                     button_state[button] = true;
                     button_update[button] = update_counter;
-                    break;
+                }
+                break;
 
                 case SDL_MOUSEBUTTONUP:
                     button_state[button] = false;
@@ -102,14 +119,22 @@ namespace mag
 
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                        this->resize({e.window.data1, e.window.data2});
+                    {
+                        auto event = WindowResizeEvent(e.window.data1, e.window.data2);
+                        event_callback(event);
+                    }
+
+                    else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
+                    {
+                        auto event = WindowCloseEvent();
+                        event_callback(event);
+                    }
                     break;
             }
 
-            this->editor_events(e);
+            auto event = SDLEvent(e);
+            event_callback(event);
         }
-
-        return true;
     }
 
     vk::SurfaceKHR Window::create_surface(const vk::Instance instance) const
@@ -121,25 +146,7 @@ namespace mag
         return surface;
     }
 
-    void Window::on_resize(std::function<void(const uvec2&)> callback) { this->resize = std::move(callback); }
-
-    void Window::on_key_press(std::function<void(const SDL_Keycode key)> callback)
-    {
-        this->key_press = std::move(callback);
-    }
-
-    void Window::on_key_release(std::function<void(const SDL_Keycode key)> callback)
-    {
-        this->key_release = std::move(callback);
-    }
-
-    void Window::on_mouse_move(std::function<void(const ivec2&)> callback) { this->mouse_move = std::move(callback); }
-
-    void Window::on_wheel_move(std::function<void(const ivec2&)> callback) { this->wheel_move = std::move(callback); }
-
-    void Window::on_button_press(std::function<void(const u8)> callback) { this->button_press = std::move(callback); }
-
-    void Window::on_event(std::function<void(SDL_Event e)> callback) { this->editor_events = std::move(callback); }
+    void Window::sleep(const u32 ms) { SDL_Delay(ms); }
 
     b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
 
@@ -156,6 +163,8 @@ namespace mag
 
         // Might be worth checking these too: || !(flags & SDL_WINDOW_INPUT_FOCUS) || !(flags & SDL_WINDOW_MOUSE_FOCUS)
     }
+
+    b8 Window::is_fullscreen() const { return is_flag_set(SDL_WINDOW_FULLSCREEN_DESKTOP); }
 
     b8 Window::is_flag_set(const u32 flag) const
     {
@@ -181,9 +190,10 @@ namespace mag
         SDL_SetWindowResizable(this->handle, static_cast<SDL_bool>(resizable));
     }
 
-    void Window::set_fullscreen(const u32 flags)
+    void Window::set_fullscreen(const b8 fullscreen)
     {
-        if (SDL_SetWindowFullscreen(this->handle, flags) != 0)
+        const SDL_WindowFlags flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (SDL_SetWindowFullscreen(this->handle, fullscreen ? flag : 0) != 0)
         {
             LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
         }
