@@ -59,6 +59,6 @@ namespace mag
     {
         context->get_device().waitIdle();
 
-        context.recreate_swapchain(size);
+        context->recreate_swapchain(size);
     }
 };  // namespace mag
