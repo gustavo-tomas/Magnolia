@@ -67,6 +67,8 @@ namespace mag
             template <typename T>
             void add_component(const u32 entity_id, T* c)
             {
+                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+
                 // Check if entity exists
                 if (!entities.contains(entity_id))
                 {
@@ -88,6 +90,8 @@ namespace mag
             template <typename T>
             T* get_component(const u32 entity_id)
             {
+                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+
                 // Validate ID
                 auto entity = entities.find(entity_id);
                 if (entity == entities.end())
@@ -113,6 +117,8 @@ namespace mag
             template <typename T>
             std::vector<T*> get_components()
             {
+                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+
                 std::vector<T*> components;
 
                 for (auto& [id, entity] : entities)
