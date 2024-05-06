@@ -4,6 +4,7 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "ecs/ecs.hpp"
 
 namespace mag
 {
@@ -34,6 +35,27 @@ namespace mag
 
         models.push_back(cube.get_model());
         render_pass.add_model(cube.get_model());
+
+        // @TODO: implement ECS
+        ECS ecs;
+
+        for (u32 i = 0; i < 10; i++)
+        {
+            auto e = ecs.create_entity();
+            ecs.add_component<Transform>(e, new Transform(vec3(10 + i)));
+            ecs.add_component<Transform2>(e, new Transform2(vec3(15 + i)));
+
+            if (auto t1 = ecs.get_component<Transform>(e))
+            {
+                LOG_INFO("T1: {0}", math::to_string(t1->translation));
+            }
+        }
+
+        auto cs = ecs.get_components<Transform>();
+        for (auto& c : cs)
+        {
+            LOG_WARNING("C: {0}", math::to_string(c->translation));
+        }
     }
 
     Scene::~Scene()
