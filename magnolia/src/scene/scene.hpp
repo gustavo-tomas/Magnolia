@@ -33,7 +33,7 @@ namespace mag
             Camera camera;
             EditorCameraController camera_controller;
             ECS ecs;
-            Cube cube;
+            std::vector<Cube*> cubes;
             std::vector<str> models_queue;
             StandardRenderPass render_pass;
     };

@@ -27,19 +27,35 @@ namespace mag
 
         get_render_pass().set_camera();
 
-        // @TODO: temp load assets
-        cube.initialize();
+        const u32 loops = 10;
+        for (u32 i = 0; i < loops; i++)
+        {
+            for (u32 j = 0; j < loops; j++)
+            {
+                Cube* cube = new Cube();
 
-        auto cube_entity = ecs.create_entity();
-        ecs.add_component(cube_entity, new TransformComponent(vec3(0, 10, 0), vec3(0), vec3(10)));
-        ecs.add_component(cube_entity, new ModelComponent(cube.get_model()));
+                // @TODO: temp load assets
+                cube->initialize();
 
-        render_pass.add_model(cube.get_model());
+                auto cube_entity = ecs.create_entity();
+                ecs.add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
+                ecs.add_component(cube_entity, new ModelComponent(cube->get_model()));
+
+                cubes.emplace_back(cube);
+                render_pass.add_model(cube->get_model());
+
+                LOG_INFO("Cube created");
+            }
+        }
     }
 
     Scene::~Scene()
     {
-        cube.shutdown();
+        for (auto& cube : cubes)
+        {
+            cube->shutdown();
+            delete cube;
+        }
 
         this->camera_controller.shutdown();
         LOG_SUCCESS("EditorController destroyed");
