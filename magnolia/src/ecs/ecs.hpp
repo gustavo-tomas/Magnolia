@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <typeindex>
 #include <vector>
 
 #include "core/logger.hpp"
@@ -60,6 +61,7 @@ namespace mag
                 }
 
                 entities[entity_id].emplace_back(c);
+                component_map[typeid(T)].insert(entity_id);
             }
 
             // Get component of that type
@@ -90,7 +92,6 @@ namespace mag
             }
 
             // Get all components of that type
-            // @TODO: this is pretty slow
             template <typename T>
             std::vector<T*> get_components()
             {
@@ -98,7 +99,7 @@ namespace mag
 
                 std::vector<T*> components;
 
-                for (auto& [id, entity] : entities)
+                for (auto& id : component_map[typeid(T)])
                 {
                     if (auto c = get_component<T>(id))
                     {
@@ -115,5 +116,8 @@ namespace mag
 
             // Table of entities
             std::map<u32, Entity> entities;
+
+            // Map from component type to entities that have it
+            std::map<std::type_index, std::set<u32>> component_map;
     };
 };  // namespace mag
