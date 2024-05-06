@@ -83,8 +83,8 @@ namespace mag
     class Cube
     {
         public:
-            void initialize();
-            void shutdown();
+            Cube(const str& name = "Cube");
+            ~Cube();
 
             Model& get_model() { return model; };
 

@@ -32,10 +32,8 @@ namespace mag
         {
             for (u32 j = 0; j < loops; j++)
             {
-                Cube* cube = new Cube();
-
-                // @TODO: temp load assets
-                cube->initialize();
+                const str name = "Cube" + std::to_string(i) + std::to_string(j);
+                Cube* cube = new Cube(name);
 
                 auto cube_entity = ecs.create_entity();
                 ecs.add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
@@ -51,12 +49,6 @@ namespace mag
 
     Scene::~Scene()
     {
-        for (auto& cube : cubes)
-        {
-            cube->shutdown();
-            delete cube;
-        }
-
         this->camera_controller.shutdown();
         LOG_SUCCESS("EditorController destroyed");
 

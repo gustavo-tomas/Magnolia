@@ -23,18 +23,18 @@ namespace mag
             void add_model(const str& path);
             void set_camera(const Camera& camera) { this->camera = std::move(camera); }
 
-            Camera& get_camera() { return camera; };
             ECS& get_ecs() { return ecs; };
+            Camera& get_camera() { return camera; };
             StandardRenderPass& get_render_pass() { return render_pass; };
 
         private:
             void on_viewport_resize(ViewportResizeEvent& e);
 
+            ECS ecs;
             Camera camera;
             EditorCameraController camera_controller;
-            ECS ecs;
-            std::vector<Cube*> cubes;
-            std::vector<str> models_queue;
             StandardRenderPass render_pass;
+            std::vector<std::unique_ptr<Cube>> cubes;
+            std::vector<str> models_queue;
     };
 };  // namespace mag
