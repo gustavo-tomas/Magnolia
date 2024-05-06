@@ -3,8 +3,7 @@
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/context.hpp"
-#include "renderer/model.hpp"
-#include "renderer/render_pass.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -14,8 +13,7 @@ namespace mag
             Renderer(Window& window);
             ~Renderer();
 
-            void update(const Camera& camera, Editor& editor, StandardRenderPass& render_pass,
-                        std::vector<Model>& models);
+            void update(Scene& scene, Editor& editor);
 
             void on_resize(const uvec2& size);
 

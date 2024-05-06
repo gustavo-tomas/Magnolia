@@ -137,7 +137,7 @@ namespace mag
         }
     }
 
-    void Editor::render(CommandBuffer &cmd, std::vector<Model> &models, const Camera &camera)
+    void Editor::render(CommandBuffer &cmd, const Camera &camera, ECS &ecs)
     {
         // Transition the viewport image into their correct transfer layouts for imgui texture
         if (viewport_image)
@@ -169,13 +169,13 @@ namespace mag
 
         render_panel(window_flags);
         render_content_browser(window_flags);
-        render_scene(window_flags, models);
+        render_scene(window_flags, ecs);
 
         ImGui::EndDisabled();
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        render_viewport(window_flags, models, camera);
+        render_viewport(window_flags, camera, ecs);
 
         // End
         ImGui::Render();
@@ -290,7 +290,7 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::render_viewport(const ImGuiWindowFlags window_flags, std::vector<Model> &models, const Camera &camera)
+    void Editor::render_viewport(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs)
     {
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -320,7 +320,8 @@ namespace mag
         // Render gizmos for selected model
         if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
         {
-            auto &model = models[selected_model_idx];
+            auto transforms = ecs.get_components<TransformComponent>();
+            auto &transform = transforms[selected_model_idx];
 
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
@@ -341,13 +342,13 @@ namespace mag
             ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
                               viewport_bounds[1].y - viewport_bounds[0].y);
 
-            mat4 transform_matrix = Model::get_transformation_matrix(model);
+            mat4 transform_matrix = TransformComponent::get_transformation_matrix(*transform);
 
             if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
             {
-                const b8 result =
-                    math::decompose_simple(transform_matrix, model.scale, model.rotation, model.translation);
+                const b8 result = math::decompose_simple(transform_matrix, transform->scale, transform->rotation,
+                                                         transform->translation);
 
                 if (!result)
                 {
@@ -361,13 +362,16 @@ namespace mag
         ImGui::PopStyleVar();
     }
 
-    void Editor::render_scene(const ImGuiWindowFlags window_flags, std::vector<Model> &models)
+    void Editor::render_scene(const ImGuiWindowFlags window_flags, ECS &ecs)
     {
         ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 
+        auto models = ecs.get_components<ModelComponent>();
+        auto transform = ecs.get_components<TransformComponent>();
+
         for (u64 i = 0; i < models.size(); i++)
         {
-            auto &model = models[i];
+            auto &model = models[i]->model;
 
             const str node_name = str(ICON_FA_CUBE) + " " + model.name;
             if (ImGui::Selectable(node_name.c_str(), selected_model_idx == i))
@@ -380,23 +384,23 @@ namespace mag
 
         // Only render properties if a model is selected
         if (selected_model_idx != std::numeric_limits<u64>().max())
-            render_properties(window_flags, &models[selected_model_idx]);
+            render_properties(window_flags, transform[selected_model_idx]);
 
         else
             render_properties(window_flags, nullptr);
     }
 
-    void Editor::render_properties(const ImGuiWindowFlags window_flags, Model *model)
+    void Editor::render_properties(const ImGuiWindowFlags window_flags, TransformComponent *transform)
     {
         ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
 
-        if (model != nullptr)
+        if (transform != nullptr)
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                vec3 translation = model->translation;
-                vec3 rotation = model->rotation;
-                vec3 scale = model->scale;
+                vec3 translation = transform->translation;
+                vec3 rotation = transform->rotation;
+                vec3 scale = transform->scale;
 
                 const f32 left_offset = 100.0f;
                 const char *format = "%.2f";
@@ -407,7 +411,7 @@ namespace mag
 
                 if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
                 {
-                    model->translation = translation;
+                    transform->translation = translation;
                 }
 
                 ImGui::Text("Rotation");
@@ -415,7 +419,7 @@ namespace mag
 
                 if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
                 {
-                    model->rotation = rotation;
+                    transform->rotation = rotation;
                 }
 
                 ImGui::Text("Scale");
@@ -423,7 +427,7 @@ namespace mag
 
                 if (ImGui::InputFloat3("##Scale", value_ptr(scale), format, input_flags))
                 {
-                    model->scale = scale;
+                    transform->scale = scale;
                 }
             }
         }

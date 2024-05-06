@@ -79,8 +79,7 @@ namespace mag
 
             editor->update();
 
-            renderer->update(active_scene->get_camera(), *editor, active_scene->get_render_pass(),
-                             active_scene->get_models());
+            renderer->update(*active_scene, *editor);
         }
     }
 

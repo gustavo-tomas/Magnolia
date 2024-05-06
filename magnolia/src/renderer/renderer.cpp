@@ -15,10 +15,12 @@ namespace mag
 
     Renderer::~Renderer() { this->context->get_device().waitIdle(); }
 
-    void Renderer::update(const Camera& camera, Editor& editor, StandardRenderPass& render_pass,
-                          std::vector<Model>& models)
+    void Renderer::update(Scene& scene, Editor& editor)
     {
         Frame& curr_frame = context->get_curr_frame();
+        Camera& camera = scene.get_camera();
+        ECS& ecs = scene.get_ecs();
+        StandardRenderPass& render_pass = scene.get_render_pass();
         Pass& pass = render_pass.get_pass();
 
         this->context->begin_frame();
@@ -27,13 +29,13 @@ namespace mag
         render_pass.before_render(curr_frame.command_buffer);
         curr_frame.command_buffer.begin_rendering(pass);
 
-        render_pass.render(curr_frame.command_buffer, camera, models);
+        render_pass.render(curr_frame.command_buffer, camera, ecs);
 
         curr_frame.command_buffer.end_rendering();
         render_pass.after_render(curr_frame.command_buffer);
 
         // @TODO: maybe dont do this here
-        editor.render(curr_frame.command_buffer, models, camera);
+        editor.render(curr_frame.command_buffer, camera, ecs);
 
         // Present
 

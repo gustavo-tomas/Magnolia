@@ -3,6 +3,7 @@
 #include "camera/camera.hpp"
 #include "camera/controller.hpp"
 #include "core/event.hpp"
+#include "ecs/ecs.hpp"
 #include "renderer/model.hpp"
 #include "renderer/render_pass.hpp"
 
@@ -23,7 +24,7 @@ namespace mag
             void set_camera(const Camera& camera) { this->camera = std::move(camera); }
 
             Camera& get_camera() { return camera; };
-            std::vector<Model>& get_models() { return models; };
+            ECS& get_ecs() { return ecs; };
             StandardRenderPass& get_render_pass() { return render_pass; };
 
         private:
@@ -31,8 +32,8 @@ namespace mag
 
             Camera camera;
             EditorCameraController camera_controller;
+            ECS ecs;
             Cube cube;
-            std::vector<Model> models;
             std::vector<str> models_queue;
             StandardRenderPass render_pass;
     };

@@ -30,32 +30,11 @@ namespace mag
         // @TODO: temp load assets
         cube.initialize();
 
-        cube.get_model().translation = vec3(0, 10, 0);
-        cube.get_model().scale = vec3(10);
+        auto cube_entity = ecs.create_entity();
+        ecs.add_component(cube_entity, new TransformComponent(vec3(0, 10, 0), vec3(0), vec3(10)));
+        ecs.add_component(cube_entity, new ModelComponent(cube.get_model()));
 
-        models.push_back(cube.get_model());
         render_pass.add_model(cube.get_model());
-
-        // @TODO: implement ECS
-        ECS ecs;
-
-        for (u32 i = 0; i < 10; i++)
-        {
-            auto e = ecs.create_entity();
-            ecs.add_component<Transform>(e, new Transform(vec3(10 + i)));
-            ecs.add_component<Transform2>(e, new Transform2(vec3(15 + i)));
-
-            if (auto t1 = ecs.get_component<Transform>(e))
-            {
-                LOG_INFO("T1: {0}", math::to_string(t1->translation));
-            }
-        }
-
-        auto cs = ecs.get_components<Transform>();
-        for (auto& c : cs)
-        {
-            LOG_WARNING("C: {0}", math::to_string(c->translation));
-        }
     }
 
     Scene::~Scene()
@@ -94,8 +73,11 @@ namespace mag
             const str& model_path = models_queue.front();
             const auto model = model_loader.load(model_path);
 
-            models.push_back(*model);
-            this->render_pass.add_model(*model);
+            auto entity = ecs.create_entity();
+            ecs.add_component(entity, new TransformComponent());
+            ecs.add_component(entity, new ModelComponent(*model));
+
+            render_pass.add_model(*model);
 
             models_queue.erase(models_queue.begin());
         }

@@ -3,12 +3,13 @@
 #include <vector>
 
 #include "camera/camera.hpp"
+#include "ecs/ecs.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
 
-// @TODO: review this whole system
+// @TODO: review this whole chicanery
 
 namespace mag
 {
@@ -30,7 +31,7 @@ namespace mag
             void shutdown();
 
             void before_render(CommandBuffer& command_buffer);
-            void render(CommandBuffer& command_buffer, const Camera& camera, const std::vector<Model>& models);
+            void render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs);
             void after_render(CommandBuffer& command_buffer);
 
             // @TODO: temp
