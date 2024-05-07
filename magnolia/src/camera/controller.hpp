@@ -9,14 +9,14 @@ namespace mag
     class CameraController
     {
         public:
-            virtual void initialize(Camera* camera) { this->camera = camera; };
-            virtual void shutdown() { this->camera = nullptr; };
+            CameraController(Camera& camera) : camera(camera){};
+            virtual ~CameraController() = default;
 
             virtual void update(const f32 dt) { (void)dt; };
             virtual void on_event(Event& e) { (void)e; };
 
         protected:
-            Camera* camera = nullptr;
+            Camera& camera;
     };
 
     // @TODO: legacy event handling. update before use
@@ -30,6 +30,8 @@ namespace mag
     class EditorCameraController : public CameraController
     {
         public:
+            EditorCameraController(Camera& camera) : CameraController(camera){};
+
             virtual void on_event(Event& e) override;
 
         private:
