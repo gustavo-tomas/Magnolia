@@ -10,15 +10,9 @@ namespace mag
 {
     Scene::Scene()
         : camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
-          camera_controller(camera)
+          camera_controller(camera),
+          render_pass({800, 600})
     {
-        // @TODO: temp hardcoding inside for now
-        auto& window = get_application().get_window();
-
-        // Create a render pass
-        render_pass.initialize(window.get_size());
-        LOG_SUCCESS("RenderPass initialized");
-
         get_render_pass().set_camera();
 
         const u32 loops = 10;
@@ -39,12 +33,6 @@ namespace mag
                 LOG_INFO("Cube created");
             }
         }
-    }
-
-    Scene::~Scene()
-    {
-        this->render_pass.shutdown();
-        LOG_SUCCESS("RenderPass destroyed");
     }
 
     void Scene::update(const f32 dt)

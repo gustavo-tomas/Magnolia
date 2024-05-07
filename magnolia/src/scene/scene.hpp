@@ -15,7 +15,7 @@ namespace mag
     {
         public:
             Scene();
-            ~Scene();
+            ~Scene() = default;
 
             void update(const f32 dt);
             void on_event(Event& e);

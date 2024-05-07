@@ -8,7 +8,7 @@
 
 namespace mag
 {
-    void StandardRenderPass::initialize(const uvec2& size)
+    StandardRenderPass::StandardRenderPass(const uvec2& size)
     {
         // Set draw size before initializing images
         this->draw_size = {size, 1};
@@ -78,7 +78,7 @@ namespace mag
                                  color_blend_attachment);
     }
 
-    void StandardRenderPass::shutdown()
+    StandardRenderPass::~StandardRenderPass()
     {
         auto& context = get_context();
         context.get_device().waitIdle();

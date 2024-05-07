@@ -27,8 +27,8 @@ namespace mag
     class StandardRenderPass
     {
         public:
-            void initialize(const uvec2& size);
-            void shutdown();
+            StandardRenderPass(const uvec2& size);
+            ~StandardRenderPass();
 
             void before_render(CommandBuffer& command_buffer);
             void render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs);
