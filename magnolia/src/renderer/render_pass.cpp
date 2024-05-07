@@ -399,7 +399,7 @@ namespace mag
         render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
         // Create attachments
-        const vk::ClearValue color_clear_value({0.2f, 0.4f, 0.6f, 1.0f});
+        const vk::ClearValue color_clear_value({0.1f, 0.1f, 0.1f, 1.0f});
         const vk::ClearValue depth_clear_value(1.0f);
 
         for (u64 i = 0; i < passes.size(); i++)
