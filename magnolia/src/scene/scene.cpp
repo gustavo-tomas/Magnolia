@@ -8,7 +8,7 @@
 
 namespace mag
 {
-    Scene::Scene()
+    Scene::Scene() : camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f)
     {
         // @TODO: temp hardcoding inside for now
         auto& window = get_application().get_window();
@@ -16,10 +16,6 @@ namespace mag
         // Create a render pass
         render_pass.initialize(window.get_size());
         LOG_SUCCESS("RenderPass initialized");
-
-        // Create a camera
-        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
-        LOG_SUCCESS("Camera initialized");
 
         // Create a camera controller for editor
         camera_controller.initialize(&camera);
@@ -51,9 +47,6 @@ namespace mag
     {
         this->camera_controller.shutdown();
         LOG_SUCCESS("EditorController destroyed");
-
-        this->camera.shutdown();
-        LOG_SUCCESS("Camera destroyed");
 
         this->render_pass.shutdown();
         LOG_SUCCESS("RenderPass destroyed");
