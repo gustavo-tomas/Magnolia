@@ -4,14 +4,14 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
-#include "ecs/ecs.hpp"
 
 namespace mag
 {
     Scene::Scene()
-        : camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
-          camera_controller(camera),
-          render_pass({800, 600})
+        : BaseScene(new ECS(),
+                    new Camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
+                    new StandardRenderPass({800, 600})),
+          camera_controller(new EditorCameraController(*camera))
     {
         get_render_pass().set_camera();
 
@@ -23,12 +23,12 @@ namespace mag
                 const str name = "Cube" + std::to_string(i) + std::to_string(j);
                 Cube* cube = new Cube(name);
 
-                auto cube_entity = ecs.create_entity();
-                ecs.add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
-                ecs.add_component(cube_entity, new ModelComponent(cube->get_model()));
+                auto cube_entity = ecs->create_entity();
+                ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
+                ecs->add_component(cube_entity, new ModelComponent(cube->get_model()));
 
                 cubes.emplace_back(cube);
-                render_pass.add_model(cube->get_model());
+                render_pass->add_model(cube->get_model());
 
                 LOG_INFO("Cube created");
             }
@@ -41,14 +41,14 @@ namespace mag
         auto& model_loader = app.get_model_loader();
         auto& window = app.get_window();
 
-        camera_controller.update(dt);
+        camera_controller->update(dt);
 
         // @TODO: testing
         if (window.is_key_down(SDLK_UP))
-            render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
+            render_pass->set_render_scale(render_pass->get_render_scale() + 0.15f * dt);
 
         else if (window.is_key_down(SDLK_DOWN))
-            render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
+            render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
         // @TODO: testing
 
         // Load enqueued models
@@ -57,11 +57,11 @@ namespace mag
             const str& model_path = models_queue.front();
             const auto model = model_loader.load(model_path);
 
-            auto entity = ecs.create_entity();
-            ecs.add_component(entity, new TransformComponent());
-            ecs.add_component(entity, new ModelComponent(*model));
+            auto entity = ecs->create_entity();
+            ecs->add_component(entity, new TransformComponent());
+            ecs->add_component(entity, new ModelComponent(*model));
 
-            render_pass.add_model(*model);
+            render_pass->add_model(*model);
 
             models_queue.erase(models_queue.begin());
         }
@@ -72,15 +72,7 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
 
-        camera_controller.on_event(e);
-    }
-
-    void Scene::on_viewport_resize(ViewportResizeEvent& e)
-    {
-        const uvec2 size = {e.width, e.height};
-
-        render_pass.on_resize(size);
-        camera.set_aspect_ratio(size);
+        camera_controller->on_event(e);
     }
 
     void Scene::add_model(const str& path)
