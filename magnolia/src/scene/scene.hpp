@@ -21,7 +21,6 @@ namespace mag
             void on_event(Event& e);
 
             void add_model(const str& path);
-            void set_camera(const Camera& camera) { this->camera = std::move(camera); }
 
             ECS& get_ecs() { return ecs; };
             Camera& get_camera() { return camera; };
