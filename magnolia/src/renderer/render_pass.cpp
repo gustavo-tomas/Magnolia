@@ -8,7 +8,7 @@
 
 namespace mag
 {
-    void StandardRenderPass::initialize(const uvec2& size)
+    StandardRenderPass::StandardRenderPass(const uvec2& size)
     {
         // Set draw size before initializing images
         this->draw_size = {size, 1};
@@ -78,7 +78,7 @@ namespace mag
                                  color_blend_attachment);
     }
 
-    void StandardRenderPass::shutdown()
+    StandardRenderPass::~StandardRenderPass()
     {
         auto& context = get_context();
         context.get_device().waitIdle();
@@ -169,8 +169,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera,
-                                    const std::vector<Model>& models)
+    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
     {
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor(render_area.offset, render_area.extent);
@@ -180,6 +179,9 @@ namespace mag
 
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
+
+        auto models = ecs.get_components<ModelComponent>();
+        auto transforms = ecs.get_components<TransformComponent>();
 
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
@@ -196,8 +198,7 @@ namespace mag
             }
 
             // Models
-            const auto& model = models[b - 1];
-            const mat4 model_matrix = Model::get_transformation_matrix(model);
+            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transforms[b - 1]);
 
             data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
                                                     data_buffers[curr_frame_number][b].get_size());
@@ -236,7 +237,7 @@ namespace mag
         u64 tex_idx = 0;
         for (u64 m = 0; m < models.size(); m++)
         {
-            const auto& model = models[m];
+            const auto& model = models[m]->model;
 
             // Model matrices (set 1)
             buffer_offsets = (m + 1) * uniform_descriptors[curr_frame_number].size;

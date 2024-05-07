@@ -9,9 +9,9 @@ namespace mag
     class Camera
     {
         public:
-            void initialize(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
-                            const f32 far);
-            void shutdown();
+            Camera(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
+                   const f32 far);
+            ~Camera() = default;
 
             void set_position(const vec3& position);
             void set_rotation(const vec3& rotation);

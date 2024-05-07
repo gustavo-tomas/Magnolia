@@ -2,8 +2,8 @@
 
 namespace mag
 {
-    void Camera::initialize(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
-                            const f32 far)
+    Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
+                   const f32 far)
     {
         this->position = position;
         this->rotation = rotation;
@@ -15,8 +15,6 @@ namespace mag
         calculate_view();
         calculate_projection();
     }
-
-    void Camera::shutdown() {}
 
     void Camera::calculate_view()
     {

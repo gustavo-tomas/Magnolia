@@ -127,13 +127,13 @@ namespace mag
         return importer->IsExtensionSupported(extension_with_dot);
     }
 
-    void Cube::initialize()
+    Cube::Cube(const str& name)
     {
-        model.name = "Cube";
+        model.name = name;
         model.meshes.resize(1);
 
         auto& mesh = model.meshes[0];
-        mesh.name = "Cube";
+        mesh.name = name;
         mesh.vertices.resize(24);
 
         // Positions for each vertex
@@ -228,7 +228,7 @@ namespace mag
         mesh.textures.push_back(diffuse_texture);
     }
 
-    void Cube::shutdown()
+    Cube::~Cube()
     {
         get_context().get_device().waitIdle();
 

@@ -6,6 +6,7 @@
 
 #include "core/event.hpp"
 #include "editor/editor_pass.hpp"
+#include "ecs/ecs.hpp"
 #include "imgui.h"
 #include "ImGuizmo.h"
 
@@ -20,7 +21,7 @@ namespace mag
             ~Editor();
 
             void update();
-            void render(CommandBuffer& cmd, std::vector<Model>& models, const Camera& camera);
+            void render(CommandBuffer& cmd, const Camera& camera, ECS& ecs);
             void on_event(Event& e);
 
             void set_viewport_image(const Image& image);
@@ -38,9 +39,9 @@ namespace mag
 
             void render_content_browser(const ImGuiWindowFlags window_flags);
             void render_panel(const ImGuiWindowFlags window_flags);
-            void render_viewport(const ImGuiWindowFlags window_flags, std::vector<Model>& models, const Camera& camera);
-            void render_scene(const ImGuiWindowFlags window_flags, std::vector<Model>& models);
-            void render_properties(const ImGuiWindowFlags window_flags, Model* model = nullptr);
+            void render_viewport(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs);
+            void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
+            void render_properties(const ImGuiWindowFlags window_flags, TransformComponent* transform = nullptr);
 
             EventCallback event_callback;
 

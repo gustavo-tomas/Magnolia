@@ -8,46 +8,31 @@
 namespace mag
 {
     Scene::Scene()
+        : BaseScene(new ECS(),
+                    new Camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
+                    new StandardRenderPass({800, 600})),
+          camera_controller(new EditorCameraController(*camera))
     {
-        // @TODO: temp hardcoding inside for now
-        auto& window = get_application().get_window();
-
-        // Create a render pass
-        render_pass.initialize(window.get_size());
-        LOG_SUCCESS("RenderPass initialized");
-
-        // Create a camera
-        camera.initialize({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, window.get_size(), 0.1f, 10000.0f);
-        LOG_SUCCESS("Camera initialized");
-
-        // Create a camera controller for editor
-        camera_controller.initialize(&camera);
-        LOG_SUCCESS("CameraController initialized");
-
         get_render_pass().set_camera();
 
-        // @TODO: temp load assets
-        cube.initialize();
+        const u32 loops = 10;
+        for (u32 i = 0; i < loops; i++)
+        {
+            for (u32 j = 0; j < loops; j++)
+            {
+                const str name = "Cube" + std::to_string(i) + std::to_string(j);
+                Cube* cube = new Cube(name);
 
-        cube.get_model().translation = vec3(0, 10, 0);
-        cube.get_model().scale = vec3(10);
+                auto cube_entity = ecs->create_entity();
+                ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
+                ecs->add_component(cube_entity, new ModelComponent(cube->get_model()));
 
-        models.push_back(cube.get_model());
-        render_pass.add_model(cube.get_model());
-    }
+                cubes.emplace_back(cube);
+                render_pass->add_model(cube->get_model());
 
-    Scene::~Scene()
-    {
-        cube.shutdown();
-
-        this->camera_controller.shutdown();
-        LOG_SUCCESS("EditorController destroyed");
-
-        this->camera.shutdown();
-        LOG_SUCCESS("Camera destroyed");
-
-        this->render_pass.shutdown();
-        LOG_SUCCESS("RenderPass destroyed");
+                LOG_INFO("Cube created");
+            }
+        }
     }
 
     void Scene::update(const f32 dt)
@@ -56,14 +41,14 @@ namespace mag
         auto& model_loader = app.get_model_loader();
         auto& window = app.get_window();
 
-        camera_controller.update(dt);
+        camera_controller->update(dt);
 
         // @TODO: testing
         if (window.is_key_down(SDLK_UP))
-            render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
+            render_pass->set_render_scale(render_pass->get_render_scale() + 0.15f * dt);
 
         else if (window.is_key_down(SDLK_DOWN))
-            render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
+            render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
         // @TODO: testing
 
         // Load enqueued models
@@ -72,8 +57,11 @@ namespace mag
             const str& model_path = models_queue.front();
             const auto model = model_loader.load(model_path);
 
-            models.push_back(*model);
-            this->render_pass.add_model(*model);
+            auto entity = ecs->create_entity();
+            ecs->add_component(entity, new TransformComponent());
+            ecs->add_component(entity, new ModelComponent(*model));
+
+            render_pass->add_model(*model);
 
             models_queue.erase(models_queue.begin());
         }
@@ -84,15 +72,7 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
 
-        camera_controller.on_event(e);
-    }
-
-    void Scene::on_viewport_resize(ViewportResizeEvent& e)
-    {
-        const uvec2 size = {e.width, e.height};
-
-        render_pass.on_resize(size);
-        camera.set_aspect_ratio(size);
+        camera_controller->on_event(e);
     }
 
     void Scene::add_model(const str& path)
