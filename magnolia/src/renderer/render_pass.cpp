@@ -8,6 +8,14 @@
 
 namespace mag
 {
+    // Conversion helper
+    vk::ClearValue const vec_to_vk_clear_value(const vec4& v)
+    {
+        const vk::ClearValue vk_clear_value({v.r, v.g, v.b, v.a});
+
+        return vk_clear_value;
+    }
+
     StandardRenderPass::StandardRenderPass(const uvec2& size)
     {
         // Set draw size before initializing images
@@ -163,6 +171,30 @@ namespace mag
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
+        render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
+
+        // Create attachments
+        const vk::ClearValue color_clear_value(vec_to_vk_clear_value(clear_color));
+        const vk::ClearValue depth_clear_value(1.0f);
+
+        for (u64 i = 0; i < passes.size(); i++)
+        {
+            // @TODO: check attachments load/store ops
+            passes[i].color_attachment =
+                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
+                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
+                                            vk::AttachmentStoreOp::eStore, color_clear_value);
+
+            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
+                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+                depth_clear_value);
+
+            passes[i].rendering_info =
+                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
+        }
+
         const u32 curr_frame_number = get_context().get_curr_frame_number();
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
@@ -395,30 +427,6 @@ namespace mag
         }
 
         this->initialize_images();
-
-        render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
-
-        // Create attachments
-        const vk::ClearValue color_clear_value({0.2f, 0.4f, 0.6f, 1.0f});
-        const vk::ClearValue depth_clear_value(1.0f);
-
-        for (u64 i = 0; i < passes.size(); i++)
-        {
-            // @TODO: check attachments load/store ops
-            passes[i].color_attachment =
-                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
-                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
-                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
-                                            vk::AttachmentStoreOp::eStore, color_clear_value);
-
-            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
-                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                depth_clear_value);
-
-            passes[i].rendering_info =
-                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
-        }
     }
 
     void StandardRenderPass::set_render_scale(const f32 scale)
