@@ -41,6 +41,7 @@ namespace mag
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_viewport(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs);
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
+            void render_settings(const ImGuiWindowFlags window_flags);
             void render_properties(const ImGuiWindowFlags window_flags, TransformComponent* transform = nullptr);
 
             EventCallback event_callback;

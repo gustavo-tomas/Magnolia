@@ -170,6 +170,7 @@ namespace mag
         render_panel(window_flags);
         render_content_browser(window_flags);
         render_scene(window_flags, ecs);
+        render_settings(window_flags);
 
         ImGui::EndDisabled();
 
@@ -388,6 +389,18 @@ namespace mag
 
         else
             render_properties(window_flags, nullptr);
+    }
+
+    void Editor::render_settings(const ImGuiWindowFlags window_flags)
+    {
+        ImGui::Begin(ICON_FA_PAINT_BRUSH " Settings", NULL, window_flags);
+
+        ImGui::SeparatorText("Scene Settings");
+        auto &clear_color = get_application().get_active_scene().get_render_pass().get_clear_color();
+
+        ImGui::ColorEdit4("Background Color", value_ptr(clear_color));
+
+        ImGui::End();
     }
 
     void Editor::render_properties(const ImGuiWindowFlags window_flags, TransformComponent *transform)
