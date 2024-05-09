@@ -371,7 +371,7 @@ namespace mag
         for (const auto entity_id : entities)
         {
             const str entity_name = ecs.get_component<NameComponent>(entity_id)->name;
-            const str node_name = str(ICON_FA_CUBE) + " " + entity_name;
+            const str node_name = str(ICON_FA_CIRCLE_NOTCH) + " " + entity_name;
 
             if (ImGui::Selectable(node_name.c_str(), selected_entity_id == entity_id))
             {
