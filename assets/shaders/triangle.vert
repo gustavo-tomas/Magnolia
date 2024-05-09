@@ -1,6 +1,6 @@
 #version 460
 
-#include "types.hglsl"
+#include "include/types.hglsl"
 
 layout (location = 0) in vec3 in_position;
 layout (location = 1) in vec3 in_normal;

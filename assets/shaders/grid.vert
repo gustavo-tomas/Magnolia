@@ -1,6 +1,6 @@
 #version 460
 
-#include "types.hglsl"
+#include "include/types.hglsl"
 
 layout (location = 0) out vec2 out_near_far;
 layout (location = 1) out vec3 out_near_point;

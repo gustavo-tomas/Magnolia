@@ -1,7 +1,7 @@
 #version 460
 
-#include "types.hglsl"
-#include "phong.hglsl"
+#include "include/types.hglsl"
+#include "include/phong.hglsl"
 
 layout (location = 0) in vec3 in_normal;
 layout (location = 1) in vec2 in_tex_coords;
