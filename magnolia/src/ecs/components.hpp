@@ -11,6 +11,13 @@ namespace mag
             virtual ~Component() = default;
     };
 
+    struct NameComponent : public Component
+    {
+            NameComponent(const str& name) : name(name){};
+
+            str name;
+    };
+
     struct TransformComponent : public Component
     {
             TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),

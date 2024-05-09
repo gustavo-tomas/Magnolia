@@ -23,7 +23,7 @@ namespace mag
                 const str name = "Cube" + std::to_string(i) + std::to_string(j);
                 Cube* cube = new Cube(name);
 
-                auto cube_entity = ecs->create_entity();
+                auto cube_entity = ecs->create_entity(name);
                 ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
                 ecs->add_component(cube_entity, new ModelComponent(cube->get_model()));
 
@@ -37,7 +37,7 @@ namespace mag
         // Light
         Cube* cube = new Cube("cubeson");
 
-        auto light = ecs->create_entity();
+        auto light = ecs->create_entity("Light");
         ecs->add_component(light, new LightComponent());
         ecs->add_component(light, new ModelComponent(cube->get_model()));
         ecs->add_component(light, new TransformComponent(vec3(0, 30, 0)));
