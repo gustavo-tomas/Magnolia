@@ -110,6 +110,18 @@ namespace mag
                 return components;
             }
 
+            // Get all ids in use
+            std::vector<u32> get_entities_ids()
+            {
+                std::vector<u32> ids;
+                for (auto& [id, entity] : entities)
+                {
+                    ids.push_back(id);
+                }
+
+                return ids;
+            };
+
         private:
             // Entities IDs
             std::set<u32> available_ids;

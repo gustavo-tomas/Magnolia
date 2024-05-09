@@ -32,6 +32,14 @@ namespace mag
             const Model& model;
     };
 
+    struct LightComponent : public Component
+    {
+            LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
+
+            vec3 color;
+            f32 intensity;
+    };
+
     inline mat4 TransformComponent::get_transformation_matrix(const TransformComponent& transform)
     {
         const quat pitch = angleAxis(radians(transform.rotation.x), vec3(1.0f, 0.0f, 0.0f));
