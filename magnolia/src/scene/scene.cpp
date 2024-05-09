@@ -14,6 +14,7 @@ namespace mag
           camera_controller(new EditorCameraController(*camera))
     {
         get_render_pass().set_camera();
+        get_render_pass().add_light();  // @TODO: can only add one light
 
         const u32 loops = 10;
         for (u32 i = 0; i < loops; i++)

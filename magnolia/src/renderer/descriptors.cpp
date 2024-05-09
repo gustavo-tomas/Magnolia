@@ -128,7 +128,9 @@ namespace mag
 
         Descriptor descriptor;
 
-        const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
+        // @TODO: setting both vertex and fragment stages
+        // const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
+        const vk::ShaderStageFlags stage = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment;
 
         // Create the descriptor binding for the layout
         const SpvReflectDescriptorSet& descriptor_set = shader_reflection.descriptor_sets[set];

@@ -1,14 +1,27 @@
 #version 460
 
 #include "types.hglsl"
+#include "phong.hglsl"
 
 layout (location = 0) in vec3 in_normal;
 layout (location = 1) in vec2 in_tex_coords;
+layout (location = 2) in vec3 in_frag_position;
 
 layout (location = 0) out vec4 out_frag_color;
 
 void main()
 {
-	out_frag_color = texture(u_diffuse_texture, in_tex_coords);
-	if (out_frag_color.a < 0.5) discard;
+	vec4 object_color = texture(u_diffuse_texture, in_tex_coords);
+	if (object_color.a < 0.5) discard;
+
+	// Phong shading
+	Light light;
+	light.color = u_light.color_intensity.rgb;
+	light.intensity = u_light.color_intensity.a;
+	light.position = u_light.position;
+
+	vec3 camera_position = vec3(inverse(u_camera.view)[3]);
+	vec3 phong_color = phong_shading(in_normal, in_frag_position, camera_position, light);
+
+	out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);
 }

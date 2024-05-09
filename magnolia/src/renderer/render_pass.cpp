@@ -55,16 +55,19 @@ namespace mag
         // Create descriptors layouts
         uniform_descriptors.resize(frame_count);
         image_descriptors.resize(frame_count);
+        light_descriptors.resize(frame_count);
 
         for (u64 i = 0; i < frame_count; i++)
         {
             uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs.get_reflection(), 0);
             image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 2);
+            light_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs.get_reflection(), 3);
         }
 
         // Descriptor layouts
         const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
-            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout};
+            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout,
+            light_descriptors[0].layout};
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
@@ -99,9 +102,23 @@ namespace mag
             }
         }
 
+        for (auto& buffer : light_buffers)
+        {
+            buffer.shutdown();
+        }
+
         if (!data_buffers.empty())
         {
             for (auto& descriptor : uniform_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
+        }
+
+        if (!light_buffers.empty())
+        {
+            for (auto& descriptor : light_descriptors)
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
@@ -215,6 +232,13 @@ namespace mag
         auto models = ecs.get_components<ModelComponent>();
         auto transforms = ecs.get_components<TransformComponent>();
 
+        // @TODO: hardcoded values
+        const LightData light = {.color_and_intensity = vec4(1.0f, 0.0f, 1.0f, 1.0f),
+                                 .position = vec3(0.0f, 10.0f, 0.0f)};
+
+        // Light
+        light_buffers[curr_frame_number].copy(&light, sizeof(LightData));
+
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
             // Camera
@@ -253,16 +277,27 @@ namespace mag
                                                            vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
         }
 
+        if (!light_buffers.empty())
+        {
+            descriptor_buffer_binding_infos.push_back({light_descriptors[curr_frame_number].buffer.get_device_address(),
+                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+        }
+
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
         const u32 buffer_indices = 0;
         const u32 image_indices = 1;
+        const u32 light_indices = 2;
         u64 buffer_offsets = 0;
 
         // Global matrices (set 0)
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
                                                                   0, buffer_indices, buffer_offsets);
+
+        // Lights (set 3)
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+                                                                  3, light_indices, buffer_offsets);
 
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
 
@@ -313,6 +348,32 @@ namespace mag
     }
 
     void StandardRenderPass::set_camera() { add_uniform_data(sizeof(CameraData)); }
+
+    void StandardRenderPass::add_light()
+    {
+        auto& context = get_context();
+        const u32 frame_count = context.get_frame_count();
+
+        // Create light buffers
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            Buffer buffer;
+            buffer.initialize(sizeof(LightData),
+                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                              VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+            light_buffers.push_back(buffer);
+
+            light_descriptors[i].buffer.initialize(
+                light_descriptors[i].size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+            light_descriptors[i].buffer.map_memory();
+
+            DescriptorBuilder::build(light_descriptors[i], {light_buffers[i]});
+        }
+    }
 
     void StandardRenderPass::add_uniform_data(const u64 buffer_size)
     {
