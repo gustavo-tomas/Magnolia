@@ -15,7 +15,7 @@ namespace mag
     {
         render_pass->set_camera();
 
-        const u32 loops = 10;
+        const u32 loops = 4;
         for (u32 i = 0; i < loops; i++)
         {
             for (u32 j = 0; j < loops; j++)
