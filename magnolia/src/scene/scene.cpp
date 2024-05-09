@@ -13,8 +13,7 @@ namespace mag
                     new StandardRenderPass({800, 600})),
           camera_controller(new EditorCameraController(*camera))
     {
-        get_render_pass().set_camera();
-        get_render_pass().add_light();  // @TODO: can only add one light
+        render_pass->set_camera();
 
         const u32 loops = 10;
         for (u32 i = 0; i < loops; i++)
@@ -34,6 +33,18 @@ namespace mag
                 LOG_INFO("Cube created");
             }
         }
+
+        // Light
+        Cube* cube = new Cube("cubeson");
+
+        auto light = ecs->create_entity();
+        ecs->add_component(light, new LightComponent());
+        ecs->add_component(light, new ModelComponent(cube->get_model()));
+        ecs->add_component(light, new TransformComponent(vec3(0, 30, 0)));
+
+        cubes.emplace_back(cube);
+        render_pass->add_light();  // @TODO: can only add one light
+        render_pass->add_model(cube->get_model());
     }
 
     void Scene::update(const f32 dt)

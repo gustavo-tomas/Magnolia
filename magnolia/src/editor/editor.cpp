@@ -12,7 +12,6 @@
 #include "core/logger.hpp"
 #include "imgui_internal.h"
 #include "nlohmann/json.hpp"
-#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -318,11 +317,12 @@ namespace mag
             ImGui::EndDragDropTarget();
         }
 
+        // @TODO: check if entity has a transform before rendering gizmo
         // Render gizmos for selected model
-        if (!disabled && selected_model_idx != std::numeric_limits<u64>().max())
+        if (!disabled && selected_entity_id != std::numeric_limits<u64>().max())
         {
             auto transforms = ecs.get_components<TransformComponent>();
-            auto &transform = transforms[selected_model_idx];
+            auto &transform = transforms[selected_entity_id];
 
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
@@ -367,28 +367,26 @@ namespace mag
     {
         ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 
-        auto models = ecs.get_components<ModelComponent>();
-        auto transform = ecs.get_components<TransformComponent>();
-
-        for (u64 i = 0; i < models.size(); i++)
+        auto entities = ecs.get_entities_ids();
+        for (const auto entity_id : entities)
         {
-            auto &model = models[i]->model;
+            const str node_name = str(ICON_FA_CUBE) + " Entity" + std::to_string(entity_id);
 
-            const str node_name = str(ICON_FA_CUBE) + " " + model.name;
-            if (ImGui::Selectable(node_name.c_str(), selected_model_idx == i))
+            if (ImGui::Selectable(node_name.c_str(), selected_entity_id == entity_id))
             {
-                selected_model_idx = i;
+                selected_entity_id = entity_id;
             }
         }
 
         ImGui::End();
 
-        // Only render properties if a model is selected
-        if (selected_model_idx != std::numeric_limits<u64>().max())
-            render_properties(window_flags, transform[selected_model_idx]);
+        // Properties tab
+        ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
 
-        else
-            render_properties(window_flags, nullptr);
+        // Only render properties if a model is selected
+        if (selected_entity_id != std::numeric_limits<u64>().max()) render_properties(ecs, selected_entity_id);
+
+        ImGui::End();
     }
 
     void Editor::render_settings(const ImGuiWindowFlags window_flags)
@@ -403,11 +401,13 @@ namespace mag
         ImGui::End();
     }
 
-    void Editor::render_properties(const ImGuiWindowFlags window_flags, TransformComponent *transform)
+    void Editor::render_properties(ECS &ecs, const u32 entity_id)
     {
-        ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
+        const char *format = "%.2f";
+        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 
-        if (transform != nullptr)
+        // Transform
+        if (auto transform = ecs.get_component<TransformComponent>(entity_id))
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -416,8 +416,6 @@ namespace mag
                 vec3 scale = transform->scale;
 
                 const f32 left_offset = 100.0f;
-                const char *format = "%.2f";
-                const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 
                 ImGui::Text("Translation");
                 ImGui::SameLine(left_offset);
@@ -445,7 +443,29 @@ namespace mag
             }
         }
 
-        ImGui::End();
+        // Light
+        if (auto light = ecs.get_component<LightComponent>(entity_id))
+        {
+            if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                auto light_intensity = light->intensity;
+
+                const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoAlpha;
+
+                const f32 left_offset = 100.0f;
+
+                ImGui::TextWrapped("Color");
+                ImGui::SameLine(left_offset);
+                ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
+
+                ImGui::Text("Intensity");
+                ImGui::SameLine(left_offset);
+                if (ImGui::InputFloat("##Intensity", &light_intensity, 1.0f, 10.0f, format, input_flags))
+                {
+                    light->intensity = light_intensity;
+                }
+            }
+        }
     }
 
     void Editor::on_event(Event &e)

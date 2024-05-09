@@ -229,15 +229,20 @@ namespace mag
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto models = ecs.get_components<ModelComponent>();
         auto transforms = ecs.get_components<TransformComponent>();
 
-        // @TODO: hardcoded values
-        const LightData light = {.color_and_intensity = vec4(1.0f, 0.0f, 1.0f, 1.0f),
-                                 .position = vec3(0.0f, 10.0f, 0.0f)};
+        auto entities = ecs.get_entities_ids();
+        for (const auto id : entities)
+        {
+            if (auto light_component = ecs.get_component<LightComponent>(id))
+            {
+                const LightData light = {.color_and_intensity = {light_component->color, light_component->intensity},
+                                         .position = transforms[id]->translation};
 
-        // Light
-        light_buffers[curr_frame_number].copy(&light, sizeof(LightData));
+                // Light
+                light_buffers[curr_frame_number].copy(&light, sizeof(LightData));
+            }
+        }
 
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
@@ -253,6 +258,9 @@ namespace mag
                 continue;
             }
 
+            // @TODO: this is very wrong. b - 1 assumes that every transform has a corresponding model.
+            // Because of that we have to create a model for the light, even if we intend to use a different
+            // shader to render it.
             // Models
             const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transforms[b - 1]);
 
@@ -302,6 +310,7 @@ namespace mag
         command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
 
         u64 tex_idx = 0;
+        auto models = ecs.get_components<ModelComponent>();
         for (u64 m = 0; m < models.size(); m++)
         {
             const auto& model = models[m]->model;
