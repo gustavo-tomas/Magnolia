@@ -11,12 +11,6 @@
             ]
         },
         {
-            "name": "In runtime mode",
-            "instructions": [
-                "Use WASD and CTRL/ESCAPE to navigate"
-            ]
-        },
-        {
             "name": "In editor mode",
             "instructions": [
                 "Drag and drop assets into the viewport to load them",
