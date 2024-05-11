@@ -28,7 +28,7 @@ namespace mag
             ~ECS() = default;
 
             // Return a new id (create a new entity)
-            u32 create_entity()
+            u32 create_entity(const str& name = {})
             {
                 ASSERT(!available_ids.empty(), "No available IDs left");
 
@@ -36,6 +36,15 @@ namespace mag
                 available_ids.erase(id);
 
                 entities[id] = Entity();
+
+                // Set a name
+                str entity_name = name;
+                if (entity_name.empty())
+                {
+                    entity_name = "Entity" + std::to_string(id);
+                }
+
+                add_component(id, new NameComponent(entity_name));
 
                 return id;
             }
@@ -109,6 +118,18 @@ namespace mag
 
                 return components;
             }
+
+            // Get all ids in use
+            std::vector<u32> get_entities_ids()
+            {
+                std::vector<u32> ids;
+                for (auto& [id, entity] : entities)
+                {
+                    ids.push_back(id);
+                }
+
+                return ids;
+            };
 
         private:
             // Entities IDs

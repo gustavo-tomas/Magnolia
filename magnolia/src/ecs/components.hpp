@@ -11,6 +11,13 @@ namespace mag
             virtual ~Component() = default;
     };
 
+    struct NameComponent : public Component
+    {
+            NameComponent(const str& name) : name(name){};
+
+            str name;
+    };
+
     struct TransformComponent : public Component
     {
             TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),
@@ -30,6 +37,14 @@ namespace mag
             ModelComponent(const Model& model) : model(model) {}
 
             const Model& model;
+    };
+
+    struct LightComponent : public Component
+    {
+            LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
+
+            vec3 color;
+            f32 intensity;
     };
 
     inline mat4 TransformComponent::get_transformation_matrix(const TransformComponent& transform)

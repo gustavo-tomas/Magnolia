@@ -36,6 +36,7 @@ namespace mag
 
             // @TODO: temp
             void add_model(const Model& model);
+            void add_light();
             void set_camera();
 
             Pass& get_pass();
@@ -76,9 +77,16 @@ namespace mag
                     mat4 model;  // 64 bytes (16 x 4)
             };
 
+            struct LightData
+            {
+                    vec4 color_and_intensity;
+                    vec3 position;
+            };
+
             std::vector<std::vector<Buffer>> data_buffers;
+            std::vector<Buffer> light_buffers;
             std::vector<Image> textures;
-            std::vector<Descriptor> uniform_descriptors, image_descriptors;
+            std::vector<Descriptor> uniform_descriptors, image_descriptors, light_descriptors;
             // @TODO: temporary
     };
 };  // namespace mag

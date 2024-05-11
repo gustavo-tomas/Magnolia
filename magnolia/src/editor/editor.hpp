@@ -42,7 +42,7 @@ namespace mag
             void render_viewport(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs);
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
             void render_settings(const ImGuiWindowFlags window_flags);
-            void render_properties(const ImGuiWindowFlags window_flags, TransformComponent* transform = nullptr);
+            void render_properties(ECS& ecs, const u32 entity_id);
 
             EventCallback event_callback;
 
@@ -57,7 +57,7 @@ namespace mag
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
             b8 disabled = false;
-            u64 selected_model_idx = std::numeric_limits<u64>().max();
+            u64 selected_entity_id = std::numeric_limits<u64>().max();
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };
 };  // namespace mag
