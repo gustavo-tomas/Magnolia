@@ -458,6 +458,13 @@ namespace mag
                     transform->translation = translation;
                 }
 
+                // Reset
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE "##Transform"))
+                {
+                    transform->translation = vec3(0);
+                }
+
                 ImGui::Text("Rotation");
                 ImGui::SameLine(left_offset);
 
@@ -466,12 +473,26 @@ namespace mag
                     transform->rotation = rotation;
                 }
 
+                // Reset
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE "##Scale"))
+                {
+                    transform->rotation = vec3(0);
+                }
+
                 ImGui::Text("Scale");
                 ImGui::SameLine(left_offset);
 
                 if (ImGui::InputFloat3("##Scale", value_ptr(scale), format, input_flags))
                 {
                     transform->scale = scale;
+                }
+
+                // Reset
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE "##Rotation"))
+                {
+                    transform->scale = vec3(1);
                 }
             }
         }
