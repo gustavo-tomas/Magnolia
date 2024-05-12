@@ -56,7 +56,7 @@ namespace mag
 
             std::vector<Pass> passes = {};
             Pipeline triangle_pipeline, grid_pipeline;
-            std::shared_ptr<Shader> triangle_vs, triangle_fs, grid_vs, grid_fs;
+            std::shared_ptr<Shader> triangle, grid;
             std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;
             f32 render_scale = 1.0;

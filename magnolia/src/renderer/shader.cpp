@@ -7,10 +7,25 @@
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderLoader::load(const str& file)
+    std::shared_ptr<Shader> ShaderLoader::load(const str& name, const str& vertex_file, const str& fragment_file)
     {
-        auto it = shaders.find(file);
+        auto it = shaders.find(name);
         if (it != shaders.end()) return it->second;
+
+        const auto vertex_module = load_module(vertex_file);
+        const auto fragment_module = load_module(fragment_file);
+
+        Shader* shader = new Shader({vertex_module, fragment_module});
+
+        LOG_SUCCESS("Loaded shader: {0}", name);
+        shaders[name] = std::shared_ptr<Shader>(shader);
+        return shaders[name];
+    }
+
+    std::shared_ptr<ShaderModule> ShaderLoader::load_module(const str& file)
+    {
+        auto it = shader_modules.find(file);
+        if (it != shader_modules.end()) return it->second;
 
         auto& context = get_context();
 
@@ -30,11 +45,11 @@ namespace mag
         SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
         VK_CHECK(VK_CAST(result));
 
-        Shader* shader = new Shader(file, module, spv_module);
+        ShaderModule* shader_module = new ShaderModule(file, module, spv_module);
 
-        LOG_SUCCESS("Loaded shader: {0}", file);
-        shaders[file] = std::shared_ptr<Shader>(shader);
-        return shaders[file];
+        LOG_INFO("Loaded shader module: {0}", file);
+        shader_modules[file] = std::shared_ptr<ShaderModule>(shader_module);
+        return shader_modules[file];
     }
 
     ShaderLoader::~ShaderLoader()
@@ -42,7 +57,7 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        for (const auto& shader_pair : shaders)
+        for (const auto& shader_pair : shader_modules)
         {
             const auto& shader = shader_pair.second;
 

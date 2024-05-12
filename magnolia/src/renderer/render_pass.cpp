@@ -49,21 +49,23 @@ namespace mag
 #endif
         if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
 
-        triangle_vs = shader_loader.load(shader_folder + "triangle.vert.spv");
-        triangle_fs = shader_loader.load(shader_folder + "triangle.frag.spv");
+        triangle =
+            shader_loader.load("triangle", shader_folder + "triangle.vert.spv", shader_folder + "triangle.frag.spv");
 
         // Dont forget to add vertex attributes
-        triangle_vs->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
-        triangle_vs->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
-        triangle_vs->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords), offsetof(Vertex, tex_coords));
+        triangle->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
+        triangle->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
+        triangle->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords), offsetof(Vertex, tex_coords));
 
-        grid_vs = shader_loader.load(shader_folder + "grid.vert.spv");
-        grid_fs = shader_loader.load(shader_folder + "grid.frag.spv");
+        grid = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
         // Create descriptors layouts
         uniform_descriptors.resize(frame_count);
         image_descriptors.resize(frame_count);
         light_descriptors.resize(frame_count);
+
+        auto triangle_vs = triangle->get_modules()[0];
+        auto triangle_fs = triangle->get_modules()[1];
 
         for (u64 i = 0; i < frame_count; i++)
         {
@@ -81,8 +83,7 @@ namespace mag
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
                                                                    depth_images[0].get_format());
 
-        triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {*triangle_vs, *triangle_fs},
-                                     draw_size);
+        triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, *triangle, draw_size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -93,7 +94,7 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {*grid_vs, *grid_fs}, draw_size,
+        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
                                  color_blend_attachment);
     }
 

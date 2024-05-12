@@ -13,7 +13,7 @@ namespace mag
         public:
             void initialize(
                 const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
-                const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const std::vector<Shader>& shaders,
+                const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
                 const vec2& size,
                 const vk::PipelineColorBlendAttachmentState& color_blend_attachment = default_color_blend_attachment());
 
