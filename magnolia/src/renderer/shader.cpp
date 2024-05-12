@@ -45,7 +45,7 @@ namespace mag
         spvReflectDestroyShaderModule(&spv_module);
     }
 
-    // @TODO: can this be automated with spv reflect?
+    // We can automate some of these steps with spv reflect but it is better to set this values manually
     void Shader::add_attribute(const vk::Format format, const u32 size, const u32 offset)
     {
         vk::VertexInputAttributeDescription attribute(location++, 0, format, offset);
