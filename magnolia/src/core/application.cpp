@@ -37,6 +37,10 @@ namespace mag
         texture_loader = std::make_unique<TextureLoader>();
         LOG_SUCCESS("TextureLoader initialized");
 
+        // Create the shader loader
+        shader_loader = std::make_unique<ShaderLoader>();
+        LOG_SUCCESS("ShaderLoader initialized");
+
         // Create the editor
         editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");

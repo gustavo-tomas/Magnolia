@@ -8,6 +8,7 @@
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
 #include "scene/scene.hpp"
 
 namespace mag
@@ -35,6 +36,7 @@ namespace mag
             Editor& get_editor() { return *editor; };
             ModelLoader& get_model_loader() { return *model_loader; };
             TextureLoader& get_texture_loader() { return *texture_loader; };
+            ShaderLoader& get_shader_loader() { return *shader_loader; };
             Scene& get_active_scene() { return *active_scene; };
 
         private:
@@ -46,6 +48,7 @@ namespace mag
             std::unique_ptr<Editor> editor;
             std::unique_ptr<ModelLoader> model_loader;
             std::unique_ptr<TextureLoader> texture_loader;
+            std::unique_ptr<ShaderLoader> shader_loader;
             std::unique_ptr<Scene> active_scene;
 
             b8 running;

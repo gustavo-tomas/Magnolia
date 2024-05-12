@@ -7,10 +7,12 @@
 
 namespace mag
 {
-    void Shader::initialize(const str& file)
+    std::shared_ptr<Shader> ShaderLoader::load(const str& file)
     {
+        auto it = shaders.find(file);
+        if (it != shaders.end()) return it->second;
+
         auto& context = get_context();
-        this->file = file;
 
         std::ifstream file_stream(file, std::ios::ate | std::ios::binary);
         ASSERT(file_stream.is_open(), "Failed to open file: " + file);
@@ -21,28 +23,32 @@ namespace mag
         file_stream.read(reinterpret_cast<char*>(buffer.data()), file_size);
         file_stream.close();
 
-        this->module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
+        const vk::ShaderModule module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
 
         // Generate reflection data for a shader
+        SpvReflectShaderModule spv_module = {};
         SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
         VK_CHECK(VK_CAST(result));
 
-        // Enumerate and extract shader's input variables
-        u32 var_count = 0;
-        result = spvReflectEnumerateInputVariables(&spv_module, &var_count, NULL);
-        VK_CHECK(VK_CAST(result));
+        Shader* shader = new Shader(file, module, spv_module);
 
-        SpvReflectInterfaceVariable** input_vars =
-            static_cast<SpvReflectInterfaceVariable**>(malloc(var_count * sizeof(SpvReflectInterfaceVariable*)));
-        result = spvReflectEnumerateInputVariables(&spv_module, &var_count, input_vars);
-        VK_CHECK(VK_CAST(result));
+        LOG_SUCCESS("Loaded shader: {0}", file);
+        shaders[file] = std::shared_ptr<Shader>(shader);
+        return shaders[file];
     }
 
-    void Shader::shutdown()
+    ShaderLoader::~ShaderLoader()
     {
         auto& context = get_context();
-        context.get_device().destroyShaderModule(module);
-        spvReflectDestroyShaderModule(&spv_module);
+        context.get_device().waitIdle();
+
+        for (const auto& shader_pair : shaders)
+        {
+            const auto& shader = shader_pair.second;
+
+            context.get_device().destroyShaderModule(shader->get_handle());
+            spvReflectDestroyShaderModule(const_cast<SpvReflectShaderModule*>(&shader->get_reflection()));
+        }
     }
 
     // We can automate some of these steps with spv reflect but it is better to set this values manually
