@@ -7,8 +7,8 @@ namespace mag
 {
     void Pipeline::initialize(const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
                               const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts,
-                              const std::vector<Shader>& shaders, const VertexInputDescription& vertex_description,
-                              const vec2& size, const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
+                              const std::vector<Shader>& shaders, const vec2& size,
+                              const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
     {
         auto& context = get_context();
 
@@ -21,11 +21,22 @@ namespace mag
             const vk::PipelineShaderStageCreateInfo create_info(
                 {}, static_cast<vk::ShaderStageFlagBits>(shader.get_reflection().shader_stage), shader.get_handle(),
                 "main");
+
             shader_stages.push_back(create_info);
         }
 
-        const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, vertex_description.bindings,
-                                                                                    vertex_description.attributes);
+        // Extract vertex input info from vertex shader
+        vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info;
+        for (const auto& shader : shaders)
+        {
+            const auto shader_stage = static_cast<vk::ShaderStageFlagBits>(shader.get_reflection().shader_stage);
+
+            if (shader_stage == vk::ShaderStageFlagBits::eVertex)
+            {
+                vertex_input_state_create_info.setVertexBindingDescriptions(shader.get_vertex_binding());
+                vertex_input_state_create_info.setVertexAttributeDescriptions(shader.get_vertex_attributes());
+            }
+        }
 
         const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
             {}, vk::PrimitiveTopology::eTriangleList, false);

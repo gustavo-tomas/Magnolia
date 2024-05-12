@@ -49,6 +49,11 @@ namespace mag
         triangle_vs.initialize(shader_folder + "triangle.vert.spv");
         triangle_fs.initialize(shader_folder + "triangle.frag.spv");
 
+        // Dont forget to add vertex attributes
+        triangle_vs.add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
+        triangle_vs.add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
+        triangle_vs.add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords), offsetof(Vertex, tex_coords));
+
         grid_vs.initialize(shader_folder + "grid.vert.spv");
         grid_fs.initialize(shader_folder + "grid.frag.spv");
 
@@ -74,7 +79,7 @@ namespace mag
                                                                    depth_images[0].get_format());
 
         triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {triangle_vs, triangle_fs},
-                                     Vertex::get_vertex_description(), draw_size);
+                                     draw_size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -85,7 +90,7 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {grid_vs, grid_fs}, {}, draw_size,
+        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, {grid_vs, grid_fs}, draw_size,
                                  color_blend_attachment);
     }
 

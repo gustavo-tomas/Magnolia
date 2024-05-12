@@ -44,4 +44,15 @@ namespace mag
         context.get_device().destroyShaderModule(module);
         spvReflectDestroyShaderModule(&spv_module);
     }
+
+    // @TODO: can this be automated with spv reflect?
+    void Shader::add_attribute(const vk::Format format, const u32 size, const u32 offset)
+    {
+        vk::VertexInputAttributeDescription attribute(location++, 0, format, offset);
+        attributes.push_back(attribute);
+
+        // Rewrite the binding when an attribute is added
+        stride += size;
+        binding = vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex);
+    }
 };  // namespace mag
