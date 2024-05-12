@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "renderer/command.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag
@@ -19,7 +20,8 @@ namespace mag
 
             ~Pipeline();
 
-            const vk::Pipeline& get_handle() const { return pipeline; };
+            void bind(const CommandBuffer& command_buffer);
+
             const vk::PipelineLayout& get_layout() const { return pipeline_layout; };
 
             static vk::PipelineColorBlendAttachmentState const default_color_blend_attachment()

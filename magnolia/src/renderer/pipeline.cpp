@@ -71,4 +71,9 @@ namespace mag
         context.get_device().destroyPipeline(pipeline);
         context.get_device().destroyPipelineLayout(pipeline_layout);
     }
+
+    void Pipeline::bind(const CommandBuffer& command_buffer)
+    {
+        command_buffer.get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+    }
 };  // namespace mag

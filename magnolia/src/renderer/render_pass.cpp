@@ -23,7 +23,6 @@ namespace mag
 
         // Set draw size before initializing images
         this->draw_size = {size, 1};
-        this->pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
         const u32 frame_count = get_context().get_frame_count();
@@ -301,6 +300,7 @@ namespace mag
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
+        const auto pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         const u32 buffer_indices = 0;
         const u32 image_indices = 1;
         const u32 light_indices = 2;
@@ -314,7 +314,7 @@ namespace mag
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
                                                                   3, light_indices, buffer_offsets);
 
-        command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline->get_handle());
+        triangle_pipeline->bind(command_buffer);
 
         u64 tex_idx = 0;
         auto models = ecs.get_components<ModelComponent>();
@@ -350,7 +350,7 @@ namespace mag
         }
 
         // Draw the grid
-        command_buffer.get_handle().bindPipeline(pipeline_bind_point, grid_pipeline->get_handle());
+        grid_pipeline->bind(command_buffer);
         command_buffer.draw(6, 1, 0, 0);
     }
 
