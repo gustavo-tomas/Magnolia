@@ -67,6 +67,10 @@ namespace mag
         auto triangle_vs = triangle->get_modules()[0];
         auto triangle_fs = triangle->get_modules()[1];
 
+        // @TODO: convert this to add uniforms in the shader?
+        // for example: add_uniform(name);
+        // the name of the uniform in the shader can be retrieved with spv reflect and then checked against the provided
+        // name in the add uniform method
         for (u64 i = 0; i < frame_count; i++)
         {
             uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs->get_reflection(), 0);
