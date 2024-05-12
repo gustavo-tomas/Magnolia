@@ -5,9 +5,9 @@
 
 namespace mag
 {
-    void Pipeline::initialize(const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
-                              const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
-                              const vec2& size, const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
+    Pipeline::Pipeline(const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
+                       const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
+                       const vec2& size, const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
     {
         auto& context = get_context();
 
@@ -65,7 +65,7 @@ namespace mag
         this->pipeline = result_value.value;
     }
 
-    void Pipeline::shutdown()
+    Pipeline::~Pipeline()
     {
         auto& context = get_context();
         context.get_device().destroyPipeline(pipeline);

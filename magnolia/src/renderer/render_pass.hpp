@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "camera/camera.hpp"
@@ -55,7 +56,7 @@ namespace mag
             void add_uniform_texture(const Model& model);
 
             std::vector<Pass> passes = {};
-            Pipeline triangle_pipeline, grid_pipeline;
+            std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
             std::shared_ptr<Shader> triangle, grid;
             std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;

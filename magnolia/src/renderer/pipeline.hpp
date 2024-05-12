@@ -11,13 +11,13 @@ namespace mag
     class Pipeline
     {
         public:
-            void initialize(
+            Pipeline(
                 const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
                 const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
                 const vec2& size,
                 const vk::PipelineColorBlendAttachmentState& color_blend_attachment = default_color_blend_attachment());
 
-            void shutdown();
+            ~Pipeline();
 
             const vk::Pipeline& get_handle() const { return pipeline; };
             const vk::PipelineLayout& get_layout() const { return pipeline_layout; };

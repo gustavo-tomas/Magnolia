@@ -83,7 +83,8 @@ namespace mag
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
                                                                    depth_images[0].get_format());
 
-        triangle_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, *triangle, draw_size);
+        triangle_pipeline =
+            std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *triangle, draw_size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -94,8 +95,8 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline.initialize(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
-                                 color_blend_attachment);
+        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
+                                                   color_blend_attachment);
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -157,9 +158,6 @@ namespace mag
         {
             image.shutdown();
         }
-
-        triangle_pipeline.shutdown();
-        grid_pipeline.shutdown();
     }
 
     void StandardRenderPass::initialize_images()
@@ -305,14 +303,14 @@ namespace mag
         u64 buffer_offsets = 0;
 
         // Global matrices (set 0)
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
                                                                   0, buffer_indices, buffer_offsets);
 
         // Lights (set 3)
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline.get_layout(),
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
                                                                   3, light_indices, buffer_offsets);
 
-        command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline.get_handle());
+        command_buffer.get_handle().bindPipeline(pipeline_bind_point, triangle_pipeline->get_handle());
 
         u64 tex_idx = 0;
         auto models = ecs.get_components<ModelComponent>();
@@ -323,7 +321,7 @@ namespace mag
             // Model matrices (set 1)
             buffer_offsets = (m + 1) * uniform_descriptors[curr_frame_number].size;
             command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-                pipeline_bind_point, triangle_pipeline.get_layout(), 1, buffer_indices, buffer_offsets);
+                pipeline_bind_point, triangle_pipeline->get_layout(), 1, buffer_indices, buffer_offsets);
 
             for (u64 i = 0; i < model.meshes.size(); i++)
             {
@@ -335,7 +333,7 @@ namespace mag
                 {
                     buffer_offsets = tex_idx * image_descriptors[curr_frame_number].size;
                     command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-                        pipeline_bind_point, triangle_pipeline.get_layout(), 2, image_indices, buffer_offsets);
+                        pipeline_bind_point, triangle_pipeline->get_layout(), 2, image_indices, buffer_offsets);
 
                     tex_idx++;
                 }
@@ -348,7 +346,7 @@ namespace mag
         }
 
         // Draw the grid
-        command_buffer.get_handle().bindPipeline(pipeline_bind_point, grid_pipeline.get_handle());
+        command_buffer.get_handle().bindPipeline(pipeline_bind_point, grid_pipeline->get_handle());
         command_buffer.draw(6, 1, 0, 0);
     }
 
