@@ -92,7 +92,8 @@ namespace mag
                 if (result != aiReturn::aiReturn_SUCCESS)
                 {
                     LOG_ERROR("Failed to retrieve texture with index {0}", i);
-                    texture = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+                    texture =
+                        get_application().get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
                 }
 
                 else
@@ -223,7 +224,8 @@ namespace mag
         mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
 
         // Create a diffuse texture
-        auto diffuse_texture = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        auto diffuse_texture =
+            get_application().get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
 
         mesh.textures.push_back(diffuse_texture);
     }
