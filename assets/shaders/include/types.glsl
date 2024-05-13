@@ -1,18 +1,18 @@
 // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
 
-// Camera buffer
-layout (set = 0, binding = 0) uniform CameraBuffer
+// Global buffer
+layout (set = 0, binding = 0) uniform GlobalBuffer
 {
     mat4 view;
     mat4 projection;
     vec2 near_far;
-} u_camera;
+} u_global;
 
-// Object buffer
-layout (set = 1, binding = 0) uniform ModelBuffer
+// Instance buffer
+layout (set = 1, binding = 0) uniform InstanceBuffer
 {
     mat4 model;
-} u_model;
+} u_instance;
 
 // Materials 
 layout (set = 2, binding = 0) uniform sampler2D u_diffuse_texture;
