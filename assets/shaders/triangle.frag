@@ -16,9 +16,9 @@ void main()
 
 	// Phong shading
 	Light light;
-	light.color = u_light.color_intensity.rgb;
-	light.intensity = u_light.color_intensity.a;
-	light.position = u_light.position;
+	light.color = u_global.point_light_color_and_intensity.rgb;
+	light.intensity = u_global.point_light_color_and_intensity.a;
+	light.position = u_global.point_light_position;
 
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);
 	vec3 phong_color = phong_shading(in_normal, in_frag_position, camera_position, light);

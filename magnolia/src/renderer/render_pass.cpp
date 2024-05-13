@@ -61,7 +61,6 @@ namespace mag
         // Create descriptors layouts
         uniform_descriptors.resize(frame_count);
         image_descriptors.resize(frame_count);
-        light_descriptors.resize(frame_count);
 
         auto triangle_vs = triangle->get_modules()[0];
         auto triangle_fs = triangle->get_modules()[1];
@@ -74,13 +73,11 @@ namespace mag
         {
             uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs->get_reflection(), 0);
             image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs->get_reflection(), 2);
-            light_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs->get_reflection(), 3);
         }
 
         // Descriptor layouts
         const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
-            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout,
-            light_descriptors[0].layout};
+            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout};
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
@@ -100,6 +97,9 @@ namespace mag
 
         grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
                                                    color_blend_attachment);
+
+        // Initialize global buffer
+        add_uniform_data(sizeof(GlobalData));
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -115,23 +115,9 @@ namespace mag
             }
         }
 
-        for (auto& buffer : light_buffers)
-        {
-            buffer.shutdown();
-        }
-
         if (!data_buffers.empty())
         {
             for (auto& descriptor : uniform_descriptors)
-            {
-                descriptor.buffer.unmap_memory();
-                descriptor.buffer.shutdown();
-            }
-        }
-
-        if (!light_buffers.empty())
-        {
-            for (auto& descriptor : light_descriptors)
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
@@ -237,16 +223,17 @@ namespace mag
 
         auto transforms = ecs.get_components<TransformComponent>();
 
+        // @TODO: oggffsfdafaskjfç - horrible
+        u32 light_id = 0;
+        const LightComponent* light_component = nullptr;
         auto entities = ecs.get_entities_ids();
         for (const auto id : entities)
         {
-            if (auto light_component = ecs.get_component<LightComponent>(id))
+            if (auto light = ecs.get_component<LightComponent>(id))
             {
-                const LightData light = {.color_and_intensity = {light_component->color, light_component->intensity},
-                                         .position = transforms[id]->translation};
-
-                // Light
-                light_buffers[curr_frame_number].copy(&light, sizeof(LightData));
+                light_id = id;
+                light_component = light;
+                break;
             }
         }
 
@@ -255,11 +242,18 @@ namespace mag
             // Camera
             if (b == 0)
             {
-                const CameraData camera_data = {.view = camera.get_view(),
-                                                .projection = camera.get_projection(),
-                                                .near_far = camera.get_near_far()};
+                // @TODO: only one light supported
+                const GlobalData global_data = {
+                    .view = camera.get_view(),
+                    .projection = camera.get_projection(),
+                    .near_far = camera.get_near_far(),
 
-                data_buffers[curr_frame_number][b].copy(&camera_data, data_buffers[curr_frame_number][b].get_size());
+                    .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = vec2(0),
+
+                    .point_light_color_and_intensity = {light_component->color, light_component->intensity},
+                    .point_light_position = transforms[light_id]->translation};
+
+                data_buffers[curr_frame_number][b].copy(&global_data, data_buffers[curr_frame_number][b].get_size());
 
                 continue;
             }
@@ -291,28 +285,17 @@ namespace mag
                                                            vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
         }
 
-        if (!light_buffers.empty())
-        {
-            descriptor_buffer_binding_infos.push_back({light_descriptors[curr_frame_number].buffer.get_device_address(),
-                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
-        }
-
         // Bind descriptor buffers and set offsets
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
 
         const auto pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
         const u32 buffer_indices = 0;
         const u32 image_indices = 1;
-        const u32 light_indices = 2;
         u64 buffer_offsets = 0;
 
         // Global matrices (set 0)
         command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
                                                                   0, buffer_indices, buffer_offsets);
-
-        // Lights (set 3)
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
-                                                                  3, light_indices, buffer_offsets);
 
         triangle_pipeline->bind(command_buffer);
 
@@ -361,34 +344,6 @@ namespace mag
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(),
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
-    }
-
-    void StandardRenderPass::set_camera() { add_uniform_data(sizeof(CameraData)); }
-
-    void StandardRenderPass::add_light()
-    {
-        auto& context = get_context();
-        const u32 frame_count = context.get_frame_count();
-
-        // Create light buffers
-        for (u32 i = 0; i < frame_count; i++)
-        {
-            Buffer buffer;
-            buffer.initialize(sizeof(LightData),
-                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                              VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            light_buffers.push_back(buffer);
-
-            light_descriptors[i].buffer.initialize(
-                light_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            light_descriptors[i].buffer.map_memory();
-
-            DescriptorBuilder::build(light_descriptors[i], {light_buffers[i]});
-        }
     }
 
     void StandardRenderPass::add_uniform_data(const u64 buffer_size)
@@ -475,7 +430,7 @@ namespace mag
 
     void StandardRenderPass::add_model(const Model& model)
     {
-        this->add_uniform_data(sizeof(ModelData));
+        this->add_uniform_data(sizeof(InstanceData));
         this->add_uniform_texture(model);
     }
 
