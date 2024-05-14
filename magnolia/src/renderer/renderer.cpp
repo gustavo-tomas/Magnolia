@@ -40,7 +40,7 @@ namespace mag
         // Present
 
         // @TODO: testing
-        static bool swap = false;
+        static b8 swap = false;
         if (window.is_key_pressed(SDLK_TAB)) swap = !swap;
 
         if (swap)
@@ -52,7 +52,7 @@ namespace mag
         else
         {
             const auto extent = editor.get_draw_size();
-            this->context->end_frame(editor.get_image(), {extent.x, extent.y, 1});
+            this->context->end_frame(editor.get_image(), {extent.x, extent.y, extent.z});
         }
         // @TODO: testing
     }

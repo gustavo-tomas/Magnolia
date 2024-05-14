@@ -39,10 +39,10 @@ namespace mag
             void add_model(const Model& model);
 
             Pass& get_pass() { return pass; };
-            const Image& get_target_image() const;
-            f32 get_render_scale() const { return render_scale; };
-            uvec3 get_draw_size() const { return draw_size; };
             vec4& get_clear_color() { return clear_color; };
+            const Image& get_target_image() const;
+            const uvec3& get_draw_size() const { return draw_size; };
+            f32 get_render_scale() const { return render_scale; };
 
             void set_render_scale(const f32 scale);
 

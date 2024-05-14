@@ -28,7 +28,7 @@ namespace mag
             void set_input_disabled(const b8 disable);
 
             const Image& get_image() const { return render_pass.get_draw_image(); };
-            uvec2 get_draw_size() const { return render_pass.get_draw_size(); };
+            const uvec3& get_draw_size() const { return render_pass.get_draw_size(); };
 
         private:
             void on_sdl_event(SDLEvent& e);
