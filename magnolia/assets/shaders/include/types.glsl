@@ -3,6 +3,14 @@
 // Constants
 const int MAX_NUMBER_OF_LIGHTS = 4;
 
+// Types
+struct Light
+{
+	vec3 color;
+	float intensity;
+	vec3 position;
+};
+
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
@@ -12,8 +20,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
     vec2 near_far;
 
     // Lights
-    vec4 point_light_color_and_intensity[MAX_NUMBER_OF_LIGHTS];
-    vec4 point_light_position[MAX_NUMBER_OF_LIGHTS];
+    Light point_lights[MAX_NUMBER_OF_LIGHTS];
 } u_global;
 
 // Instance buffer

@@ -219,8 +219,7 @@ namespace mag
         auto transforms = ecs.get_components<TransformComponent>();
 
         // @TODO: oggffsfdafaskjfç - horrible
-        vec4 color_and_intensities[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
-        vec4 positions[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
+        LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
 
         u32 l = 0;
         auto entities = ecs.get_entities_ids();
@@ -228,9 +227,7 @@ namespace mag
         {
             if (auto light = ecs.get_component<LightComponent>(id))
             {
-                color_and_intensities[l] = {light->color, light->intensity};
-                positions[l] = {transforms[id]->translation, 1.0};
-                l++;
+                point_lights[l++] = {light->color, light->intensity, transforms[id]->translation, 0};
             }
         }
 
@@ -245,13 +242,9 @@ namespace mag
 
                                           .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
 
-                                          .point_light_color_and_intensity = {},
-                                          .point_light_position = {}};
+                                          .point_lights = {}};
 
-                memcpy(global_data.point_light_color_and_intensity, color_and_intensities,
-                       sizeof(global_data.point_light_color_and_intensity));
-
-                memcpy(global_data.point_light_position, positions, sizeof(global_data.point_light_position));
+                memcpy(global_data.point_lights, point_lights, sizeof(global_data.point_lights));
 
                 data_buffers[curr_frame_number][b].copy(&global_data, data_buffers[curr_frame_number][b].get_size());
 

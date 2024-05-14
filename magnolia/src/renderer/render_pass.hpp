@@ -62,6 +62,14 @@ namespace mag
             vec4 clear_color = vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
             // @TODO: temporary
+            struct LightData
+            {
+                    vec3 color;     // 12 bytes (3 x 4)
+                    f32 intensity;  // 4 bytes  (1 x 4)
+                    vec3 position;  // 12 bytes (3 x 4)
+                    f32 padding;    // 4 bytes  (1 x 4)
+            };
+
             struct GlobalData
             {
                     // Camera
@@ -73,8 +81,7 @@ namespace mag
                     vec2 gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game;
 
                     // Light
-                    vec4 point_light_color_and_intensity[LightComponent::MAX_NUMBER_OF_LIGHTS];  // 16 bytes (4 x 4)
-                    vec4 point_light_position[LightComponent::MAX_NUMBER_OF_LIGHTS];             // 12 bytes (3 x 4)
+                    LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS];  // sizeof(Light)
             };
 
             struct InstanceData
