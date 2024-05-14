@@ -13,8 +13,6 @@ namespace mag
                     new StandardRenderPass({800, 600})),
           camera_controller(new EditorCameraController(*camera))
     {
-        render_pass->set_camera();
-
         const u32 loops = 4;
         for (u32 i = 0; i < loops; i++)
         {
@@ -43,7 +41,6 @@ namespace mag
         ecs->add_component(light, new TransformComponent(vec3(0, 30, 0)));
 
         cubes.emplace_back(cube);
-        render_pass->add_light();  // @TODO: can only add one light
         render_pass->add_model(cube->get_model());
     }
 

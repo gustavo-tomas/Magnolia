@@ -1,7 +1,7 @@
 #version 460
 
-#include "include/types.hglsl"
-#include "include/phong.hglsl"
+#include "include/types.glsl"
+#include "include/phong.glsl"
 
 layout (location = 0) in vec3 in_normal;
 layout (location = 1) in vec2 in_tex_coords;
@@ -16,11 +16,11 @@ void main()
 
 	// Phong shading
 	Light light;
-	light.color = u_light.color_intensity.rgb;
-	light.intensity = u_light.color_intensity.a;
-	light.position = u_light.position;
+	light.color = u_global.point_light_color_and_intensity.rgb;
+	light.intensity = u_global.point_light_color_and_intensity.a;
+	light.position = u_global.point_light_position;
 
-	vec3 camera_position = vec3(inverse(u_camera.view)[3]);
+	vec3 camera_position = vec3(inverse(u_global.view)[3]);
 	vec3 phong_color = phong_shading(in_normal, in_frag_position, camera_position, light);
 
 	out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);

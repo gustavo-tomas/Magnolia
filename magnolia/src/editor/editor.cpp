@@ -64,8 +64,8 @@ namespace mag
         icons_config.PixelSnapH = true;
         icons_config.GlyphMinAdvanceX = icon_font_size;
 
-        const str icon_path = str("assets/fonts/FontAwesome/") + FONT_ICON_FILE_NAME_FAS;
-        const str font_path = "assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
+        const str icon_path = str("magnolia/assets/fonts/FontAwesome/") + FONT_ICON_FILE_NAME_FAS;
+        const str font_path = "magnolia/assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
 
         io.Fonts->AddFontFromFileTTF(font_path.c_str(), font_size);
         io.Fonts->AddFontFromFileTTF(icon_path.c_str(), icon_font_size, &icons_config, icons_ranges);
@@ -91,7 +91,7 @@ namespace mag
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        asset_image = get_application().get_texture_loader().load("assets/images/DefaultAlbedoSeamless.png");
+        asset_image = get_application().get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
 
         asset_image_descriptor =
             ImGui_ImplVulkan_AddTexture(asset_image->get_sampler().get_handle(), asset_image->get_image_view(),
@@ -196,7 +196,7 @@ namespace mag
     {
         ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
-        const std::filesystem::path base_directory = std::filesystem::path("assets");
+        const std::filesystem::path base_directory = std::filesystem::path("magnolia/assets");
         static std::filesystem::path current_directory = base_directory;
 
         // Traverse directories
@@ -259,7 +259,7 @@ namespace mag
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
     {
         // Parse instructions from the json file
-        const str file_path = "assets/json/editor_instructions.json";
+        const str file_path = "magnolia/assets/json/editor_instructions.json";
         std::ifstream file(file_path);
 
         if (!file.is_open())

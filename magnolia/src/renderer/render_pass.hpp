@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "camera/camera.hpp"
@@ -36,8 +37,6 @@ namespace mag
 
             // @TODO: temp
             void add_model(const Model& model);
-            void add_light();
-            void set_camera();
 
             Pass& get_pass();
             const Image& get_target_image() const;
@@ -55,38 +54,38 @@ namespace mag
             void add_uniform_texture(const Model& model);
 
             std::vector<Pass> passes = {};
-            Pipeline triangle_pipeline, grid_pipeline;
-            Shader triangle_vs, triangle_fs, grid_vs, grid_fs;
+            std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
+            std::shared_ptr<Shader> triangle, grid;
             std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vec4 clear_color = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-            vk::PipelineBindPoint pipeline_bind_point;
             vk::Rect2D render_area;
 
             // @TODO: temporary
-            struct CameraData
+            struct GlobalData
             {
+                    // Camera
                     mat4 view;        // 64 bytes (16 x 4)
                     mat4 projection;  // 64 bytes (16 x 4)
                     vec2 near_far;    // 8  bytes (2  x 4)
+
+                    // Padding <:( - 8  bytes (2  x 4)
+                    vec2 gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game;
+
+                    // Light
+                    vec4 point_light_color_and_intensity;  // 16 bytes (4 x 4)
+                    vec3 point_light_position;             // 12 bytes (3 x 4)
             };
 
-            struct ModelData
+            struct InstanceData
             {
                     mat4 model;  // 64 bytes (16 x 4)
             };
 
-            struct LightData
-            {
-                    vec4 color_and_intensity;
-                    vec3 position;
-            };
-
             std::vector<std::vector<Buffer>> data_buffers;
-            std::vector<Buffer> light_buffers;
             std::vector<Image> textures;
-            std::vector<Descriptor> uniform_descriptors, image_descriptors, light_descriptors;
+            std::vector<Descriptor> uniform_descriptors, image_descriptors;
             // @TODO: temporary
     };
 };  // namespace mag

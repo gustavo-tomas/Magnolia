@@ -32,7 +32,7 @@ namespace mag
             stbi_image_free(pixels);
 
             // Return the default texture
-            it = textures.find("assets/images/DefaultAlbedoSeamless.png");
+            it = textures.find("magnolia/assets/images/DefaultAlbedoSeamless.png");
             if (it != textures.end())
             {
                 return it->second;

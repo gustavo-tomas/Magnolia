@@ -1,6 +1,6 @@
 #version 460
 
-#include "include/types.hglsl"
+#include "include/types.glsl"
 
 layout (location = 0) out vec2 out_near_far;
 layout (location = 1) out vec3 out_near_point;
@@ -24,12 +24,12 @@ vec3 unproject_point(float x, float y, float z, mat4 view, mat4 projection)
 void main() 
 {
     vec3 p = grid_plane[gl_VertexIndex].xyz;
-    out_near_point = unproject_point(p.x, p.y, 0.0, u_camera.view, u_camera.projection).xyz;
-    out_far_point = unproject_point(p.x, p.y, 1.0, u_camera.view, u_camera.projection).xyz;
+    out_near_point = unproject_point(p.x, p.y, 0.0, u_global.view, u_global.projection).xyz;
+    out_far_point = unproject_point(p.x, p.y, 1.0, u_global.view, u_global.projection).xyz;
     
-    out_view = u_camera.view;
-    out_projection = u_camera.projection;
-    out_near_far = u_camera.near_far;
+    out_view = u_global.view;
+    out_projection = u_global.projection;
+    out_near_far = u_global.near_far;
 
     gl_Position = vec4(p, 1.0); // using directly the clipped coordinates
 }

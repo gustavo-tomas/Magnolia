@@ -8,7 +8,7 @@
 
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
-#include "renderer/shader.hpp"
+#include "spirv_reflect.h"
 
 namespace mag
 {

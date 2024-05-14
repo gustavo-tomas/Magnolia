@@ -162,6 +162,8 @@ namespace mag
         descriptor.size = (descriptor.size + alignment - 1) & ~(alignment - 1);
 
         // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+        // @TODO: The binding can be non zero depending on the driver:
+        // https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/descriptor_buffer_basic
         descriptor.offset = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, 0);
 
         return descriptor;
