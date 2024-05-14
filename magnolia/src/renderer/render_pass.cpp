@@ -201,19 +201,18 @@ namespace mag
         pass.rendering_info =
             vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, &pass.depth_attachment, {});
 
-        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
-                                       vk::ImageLayout::eColorAttachmentOptimal);
-    }
-
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
-    {
-        const vk::Rect2D render_area = pass.rendering_info.renderArea;
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor = render_area;
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
+        command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
+                                       vk::ImageLayout::eColorAttachmentOptimal);
+    }
+
+    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
+    {
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
