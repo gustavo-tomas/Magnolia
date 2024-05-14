@@ -108,14 +108,6 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        for (auto& buffers : data_buffers)
-        {
-            for (auto& buffer : buffers)
-            {
-                buffer.shutdown();
-            }
-        }
-
         if (!data_buffers.empty())
         {
             for (auto& descriptor : uniform_descriptors)
@@ -131,6 +123,14 @@ namespace mag
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
+            }
+        }
+
+        for (auto& buffers : data_buffers)
+        {
+            for (auto& buffer : buffers)
+            {
+                buffer.shutdown();
             }
         }
 
