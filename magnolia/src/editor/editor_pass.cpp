@@ -30,6 +30,16 @@ namespace mag
             this->on_resize({context.get_surface_extent().width, context.get_surface_extent().height});
         }
 
+        // Create attachments
+        const vk::Rect2D render_area({}, {draw_size.x, draw_size.y});
+        const vk::ClearValue color_clear_value({0.0f, 0.0f, 0.0f, 1.0f});
+
+        pass.color_attachment = vk::RenderingAttachmentInfo(
+            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
+            {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear_value);
+
+        pass.rendering_info = vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, {}, {});
+
         command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
@@ -56,16 +66,6 @@ namespace mag
 
         // This is not ideal but gets the job done
         this->initialize_draw_image();
-
-        // Create attachments
-        const vk::Rect2D render_area({}, {draw_size.x, draw_size.y});
-        const vk::ClearValue color_clear_value({0.0f, 0.0f, 0.0f, 1.0f});
-
-        pass.color_attachment = vk::RenderingAttachmentInfo(
-            draw_image.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {},
-            {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore, color_clear_value);
-
-        pass.rendering_info = vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, {}, {});
     }
 
     void EditorRenderPass::initialize_draw_image()
