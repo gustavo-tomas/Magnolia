@@ -29,7 +29,6 @@ namespace mag
         draw_images.resize(frame_count);
         depth_images.resize(frame_count);
         resolve_images.resize(frame_count);
-        passes.resize(frame_count);
 
         this->initialize_images();
 
@@ -187,25 +186,22 @@ namespace mag
         const vk::ClearValue color_clear_value(vec_to_vk_clear_value(clear_color));
         const vk::ClearValue depth_clear_value(1.0f);
 
-        for (u64 i = 0; i < passes.size(); i++)
-        {
-            // @TODO: check attachments load/store ops
-            passes[i].color_attachment =
-                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
-                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
-                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
-                                            vk::AttachmentStoreOp::eStore, color_clear_value);
-
-            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
-                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                depth_clear_value);
-
-            passes[i].rendering_info =
-                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
-        }
-
         const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        // @TODO: check attachments load/store ops
+        pass.color_attachment = vk::RenderingAttachmentInfo(
+            draw_images[curr_frame_number].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+            vk::ResolveModeFlagBits::eAverage, resolve_images[curr_frame_number].get_image_view(),
+            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+            color_clear_value);
+
+        pass.depth_attachment = vk::RenderingAttachmentInfo(
+            depth_images[curr_frame_number].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
+            vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+            depth_clear_value);
+
+        pass.rendering_info =
+            vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, &pass.depth_attachment, {});
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
@@ -468,13 +464,6 @@ namespace mag
         // Dont forget to set editor viewport image
         get_application().get_editor().set_viewport_image(this->get_target_image());
     }
-
-    Pass& StandardRenderPass::get_pass()
-    {
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
-
-        return passes[curr_frame_number];
-    };
 
     const Image& StandardRenderPass::get_target_image() const
     {

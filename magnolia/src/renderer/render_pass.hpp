@@ -38,7 +38,7 @@ namespace mag
             // @TODO: temp
             void add_model(const Model& model);
 
-            Pass& get_pass();
+            Pass& get_pass() { return pass; };
             const Image& get_target_image() const;
             f32 get_render_scale() const { return render_scale; };
             uvec3 get_draw_size() const { return draw_size; };
@@ -53,7 +53,7 @@ namespace mag
             void add_uniform_data(const u64 buffer_size);
             void add_uniform_texture(const Model& model);
 
-            std::vector<Pass> passes = {};
+            Pass pass = {};
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
             std::shared_ptr<Shader> triangle, grid;
             std::vector<Image> draw_images, depth_images, resolve_images;
