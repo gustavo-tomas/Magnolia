@@ -61,6 +61,7 @@ namespace mag
         // Create descriptors layouts
         uniform_descriptors.resize(frame_count);
         image_descriptors.resize(frame_count);
+        data_buffers.resize(frame_count);
 
         auto triangle_vs = triangle->get_modules()[0];
         auto triangle_fs = triangle->get_modules()[1];
@@ -353,18 +354,13 @@ namespace mag
         const u32 frame_count = context.get_frame_count();
 
         // Delete old descriptor buffers
-        if (data_buffers.size() > 0)
+        if (!data_buffers.empty() && !data_buffers.begin()->empty())
         {
             for (auto& descriptor : uniform_descriptors)
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
             }
-        }
-
-        else
-        {
-            data_buffers.resize(frame_count);
         }
 
         // Create descriptor buffer that holds global data and model transform
@@ -395,7 +391,7 @@ namespace mag
         const u32 frame_count = context.get_frame_count();
 
         // Delete old descriptor buffers
-        if (textures.size() > 0)
+        if (!textures.empty())
         {
             for (auto& descriptor : image_descriptors)
             {
