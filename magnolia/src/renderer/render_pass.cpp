@@ -23,7 +23,6 @@ namespace mag
 
         // Set draw size before initializing images
         this->draw_size = {size, 1};
-        this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
         const u32 frame_count = get_context().get_frame_count();
         draw_images.resize(frame_count);
@@ -180,9 +179,8 @@ namespace mag
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
-        render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
-
         // Create attachments
+        const vk::Rect2D render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
         const vk::ClearValue color_clear_value(vec_to_vk_clear_value(clear_color));
         const vk::ClearValue depth_clear_value(1.0f);
 
@@ -209,8 +207,9 @@ namespace mag
 
     void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
     {
+        const vk::Rect2D render_area = pass.rendering_info.renderArea;
         const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
-        const vk::Rect2D scissor(render_area.offset, render_area.extent);
+        const vk::Rect2D scissor = render_area;
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
