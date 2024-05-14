@@ -43,17 +43,10 @@ namespace mag
         static b8 swap = false;
         if (window.is_key_pressed(SDLK_TAB)) swap = !swap;
 
-        if (swap)
-        {
-            const auto extent = render_pass.get_draw_size();
-            this->context->end_frame(render_pass.get_target_image(), {extent.x, extent.y, extent.z});
-        }
+        const auto& extent = swap ? render_pass.get_draw_size() : editor.get_draw_size();
+        const auto& image = swap ? render_pass.get_target_image() : editor.get_image();
 
-        else
-        {
-            const auto extent = editor.get_draw_size();
-            this->context->end_frame(editor.get_image(), {extent.x, extent.y, extent.z});
-        }
+        this->context->end_frame(image, {extent.x, extent.y, extent.z});
         // @TODO: testing
     }
 
