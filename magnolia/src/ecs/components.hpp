@@ -43,6 +43,9 @@ namespace mag
     {
             LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
 
+            // This should match the shaders max number of lights
+            static const u32 MAX_NUMBER_OF_LIGHTS = 4;
+
             vec3 color;
             f32 intensity;
     };

@@ -73,8 +73,8 @@ namespace mag
                     vec2 gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game;
 
                     // Light
-                    vec4 point_light_color_and_intensity;  // 16 bytes (4 x 4)
-                    vec3 point_light_position;             // 12 bytes (3 x 4)
+                    vec4 point_light_color_and_intensity[LightComponent::MAX_NUMBER_OF_LIGHTS];  // 16 bytes (4 x 4)
+                    vec4 point_light_position[LightComponent::MAX_NUMBER_OF_LIGHTS];             // 12 bytes (3 x 4)
             };
 
             struct InstanceData

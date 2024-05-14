@@ -219,34 +219,39 @@ namespace mag
         auto transforms = ecs.get_components<TransformComponent>();
 
         // @TODO: oggffsfdafaskjfç - horrible
-        u32 light_id = 0;
-        const LightComponent* light_component = nullptr;
+        vec4 color_and_intensities[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
+        vec4 positions[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
+
+        u32 l = 0;
         auto entities = ecs.get_entities_ids();
         for (const auto id : entities)
         {
             if (auto light = ecs.get_component<LightComponent>(id))
             {
-                light_id = id;
-                light_component = light;
-                break;
+                color_and_intensities[l] = {light->color, light->intensity};
+                positions[l] = {transforms[id]->translation, 1.0};
+                l++;
             }
         }
 
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
-            // Camera
+            // Global Data
             if (b == 0)
             {
-                // @TODO: only one light supported
-                const GlobalData global_data = {
-                    .view = camera.get_view(),
-                    .projection = camera.get_projection(),
-                    .near_far = camera.get_near_far(),
+                GlobalData global_data = {.view = camera.get_view(),
+                                          .projection = camera.get_projection(),
+                                          .near_far = camera.get_near_far(),
 
-                    .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = vec2(0),
+                                          .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
 
-                    .point_light_color_and_intensity = {light_component->color, light_component->intensity},
-                    .point_light_position = transforms[light_id]->translation};
+                                          .point_light_color_and_intensity = {},
+                                          .point_light_position = {}};
+
+                memcpy(global_data.point_light_color_and_intensity, color_and_intensities,
+                       sizeof(global_data.point_light_color_and_intensity));
+
+                memcpy(global_data.point_light_position, positions, sizeof(global_data.point_light_position));
 
                 data_buffers[curr_frame_number][b].copy(&global_data, data_buffers[curr_frame_number][b].get_size());
 
