@@ -103,6 +103,7 @@ def main():
 
     if command == "build":
       shaders(system)
+      lint(system)
       build(system, configuration)
     
     elif command == "run":

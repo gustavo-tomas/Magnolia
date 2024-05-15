@@ -54,7 +54,7 @@ namespace mag
 
         private:
             std::unique_ptr<EditorCameraController> camera_controller;
-            std::vector<std::unique_ptr<Cube>> cubes;
+            std::unique_ptr<Cube> cube;
             std::vector<str> models_queue;
     };
 };  // namespace mag

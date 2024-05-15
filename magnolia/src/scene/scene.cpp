@@ -11,7 +11,8 @@ namespace mag
         : BaseScene(new ECS(),
                     new Camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
                     new StandardRenderPass({800, 600})),
-          camera_controller(new EditorCameraController(*camera))
+          camera_controller(new EditorCameraController(*camera)),
+          cube(new Cube())
     {
         const u32 loops = 4;
         for (u32 i = 0; i < loops; i++)
@@ -19,13 +20,11 @@ namespace mag
             for (u32 j = 0; j < loops; j++)
             {
                 const str name = "Cube" + std::to_string(i) + std::to_string(j);
-                Cube* cube = new Cube(name);
 
                 auto cube_entity = ecs->create_entity(name);
                 ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
                 ecs->add_component(cube_entity, new ModelComponent(cube->get_model()));
 
-                cubes.emplace_back(cube);
                 render_pass->add_model(cube->get_model());
 
                 LOG_INFO("Cube created");
@@ -35,14 +34,11 @@ namespace mag
         // Light
         for (u32 i = 0; i < LightComponent::MAX_NUMBER_OF_LIGHTS; i++)
         {
-            Cube* cube = new Cube("cubeson");
-
             auto light = ecs->create_entity("Light");
             ecs->add_component(light, new LightComponent());
             ecs->add_component(light, new ModelComponent(cube->get_model()));
             ecs->add_component(light, new TransformComponent(vec3(i * 20, 30, 0)));
 
-            cubes.emplace_back(cube);
             render_pass->add_model(cube->get_model());
         }
     }
