@@ -14,14 +14,15 @@ void main()
 	vec4 object_color = texture(u_diffuse_texture, in_tex_coords);
 	if (object_color.a < 0.5) discard;
 
-	// Phong shading
-	Light light;
-	light.color = u_global.point_light_color_and_intensity.rgb;
-	light.intensity = u_global.point_light_color_and_intensity.a;
-	light.position = u_global.point_light_position;
-
+	// @TODO: this is pretty slow, but for now its ok
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);
-	vec3 phong_color = phong_shading(in_normal, in_frag_position, camera_position, light);
+
+	// Phong shading
+	vec3 phong_color = vec3(0);
+	for (int i = 0; i < MAX_NUMBER_OF_LIGHTS; i++)
+	{
+		phong_color += phong_shading(in_normal, in_frag_position, camera_position, u_global.point_lights[i]);
+	}
 
 	out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);
 }

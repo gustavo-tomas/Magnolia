@@ -23,13 +23,11 @@ namespace mag
 
         // Set draw size before initializing images
         this->draw_size = {size, 1};
-        this->render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
 
         const u32 frame_count = get_context().get_frame_count();
         draw_images.resize(frame_count);
         depth_images.resize(frame_count);
         resolve_images.resize(frame_count);
-        passes.resize(frame_count);
 
         this->initialize_images();
 
@@ -108,14 +106,6 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        for (auto& buffers : data_buffers)
-        {
-            for (auto& buffer : buffers)
-            {
-                buffer.shutdown();
-            }
-        }
-
         if (!data_buffers.empty())
         {
             for (auto& descriptor : uniform_descriptors)
@@ -131,6 +121,14 @@ namespace mag
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
+            }
+        }
+
+        for (auto& buffers : data_buffers)
+        {
+            for (auto& buffer : buffers)
+            {
+                buffer.shutdown();
             }
         }
 
@@ -181,31 +179,33 @@ namespace mag
 
     void StandardRenderPass::before_render(CommandBuffer& command_buffer)
     {
-        render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
-
         // Create attachments
+        const vk::Rect2D render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
         const vk::ClearValue color_clear_value(vec_to_vk_clear_value(clear_color));
         const vk::ClearValue depth_clear_value(1.0f);
 
-        for (u64 i = 0; i < passes.size(); i++)
-        {
-            // @TODO: check attachments load/store ops
-            passes[i].color_attachment =
-                vk::RenderingAttachmentInfo(draw_images[i].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
-                                            vk::ResolveModeFlagBits::eAverage, resolve_images[i].get_image_view(),
-                                            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear,
-                                            vk::AttachmentStoreOp::eStore, color_clear_value);
-
-            passes[i].depth_attachment = vk::RenderingAttachmentInfo(
-                depth_images[i].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
-                depth_clear_value);
-
-            passes[i].rendering_info =
-                vk::RenderingInfo({}, render_area, 1, {}, passes[i].color_attachment, &passes[i].depth_attachment, {});
-        }
-
         const u32 curr_frame_number = get_context().get_curr_frame_number();
+
+        // @TODO: check attachments load/store ops
+        pass.color_attachment = vk::RenderingAttachmentInfo(
+            draw_images[curr_frame_number].get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+            vk::ResolveModeFlagBits::eAverage, resolve_images[curr_frame_number].get_image_view(),
+            vk::ImageLayout::eColorAttachmentOptimal, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+            color_clear_value);
+
+        pass.depth_attachment = vk::RenderingAttachmentInfo(
+            depth_images[curr_frame_number].get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
+            vk::ResolveModeFlagBits::eNone, {}, {}, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+            depth_clear_value);
+
+        pass.rendering_info =
+            vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, &pass.depth_attachment, {});
+
+        const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
+        const vk::Rect2D scissor = render_area;
+
+        command_buffer.get_handle().setViewport(0, viewport);
+        command_buffer.get_handle().setScissor(0, scissor);
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
@@ -213,46 +213,34 @@ namespace mag
 
     void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
     {
-        const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
-        const vk::Rect2D scissor(render_area.offset, render_area.extent);
-
-        command_buffer.get_handle().setViewport(0, viewport);
-        command_buffer.get_handle().setScissor(0, scissor);
-
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto transforms = ecs.get_components<TransformComponent>();
+        auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
+        auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
 
-        // @TODO: oggffsfdafaskjfç - horrible
-        u32 light_id = 0;
-        const LightComponent* light_component = nullptr;
-        auto entities = ecs.get_entities_ids();
-        for (const auto id : entities)
+        LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
+
+        u32 l = 0;
+        for (const auto& [transform, model, light] : light_entities)
         {
-            if (auto light = ecs.get_component<LightComponent>(id))
-            {
-                light_id = id;
-                light_component = light;
-                break;
-            }
+            point_lights[l++] = {light->color, light->intensity, transform->translation, 0};
         }
 
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
         {
-            // Camera
+            // Global Data
             if (b == 0)
             {
-                // @TODO: only one light supported
-                const GlobalData global_data = {
-                    .view = camera.get_view(),
-                    .projection = camera.get_projection(),
-                    .near_far = camera.get_near_far(),
+                GlobalData global_data = {.view = camera.get_view(),
+                                          .projection = camera.get_projection(),
+                                          .near_far = camera.get_near_far(),
 
-                    .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = vec2(0),
+                                          .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
 
-                    .point_light_color_and_intensity = {light_component->color, light_component->intensity},
-                    .point_light_position = transforms[light_id]->translation};
+                                          .point_lights = {}};
+
+                memcpy(global_data.point_lights, point_lights, sizeof(global_data.point_lights));
 
                 data_buffers[curr_frame_number][b].copy(&global_data, data_buffers[curr_frame_number][b].get_size());
 
@@ -263,7 +251,8 @@ namespace mag
             // Because of that we have to create a model for the light, even if we intend to use a different
             // shader to render it.
             // Models
-            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transforms[b - 1]);
+            auto [transform, model] = model_entities[b - 1];
+            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transform);
 
             data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
                                                     data_buffers[curr_frame_number][b].get_size());
@@ -468,13 +457,6 @@ namespace mag
         // Dont forget to set editor viewport image
         get_application().get_editor().set_viewport_image(this->get_target_image());
     }
-
-    Pass& StandardRenderPass::get_pass()
-    {
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
-
-        return passes[curr_frame_number];
-    };
 
     const Image& StandardRenderPass::get_target_image() const
     {

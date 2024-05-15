@@ -16,7 +16,7 @@ namespace mag
 
             Pass& get_pass() { return pass; };
             const Image& get_draw_image() const { return draw_image; };
-            uvec3 get_draw_size() const { return draw_size; };
+            const uvec3& get_draw_size() const { return draw_size; };
 
             void on_resize(const uvec2& size);
 

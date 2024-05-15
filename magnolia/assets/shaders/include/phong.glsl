@@ -1,12 +1,5 @@
 // Phong shading model
 
-struct Light
-{
-	vec3 color;
-	float intensity;
-	vec3 position;
-};
-
 vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, Light light)
 {
 	vec3 normal = normalize(surface_normal);

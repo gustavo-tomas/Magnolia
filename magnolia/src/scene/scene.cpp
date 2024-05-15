@@ -33,15 +33,18 @@ namespace mag
         }
 
         // Light
-        Cube* cube = new Cube("cubeson");
+        for (u32 i = 0; i < LightComponent::MAX_NUMBER_OF_LIGHTS; i++)
+        {
+            Cube* cube = new Cube("cubeson");
 
-        auto light = ecs->create_entity("Light");
-        ecs->add_component(light, new LightComponent());
-        ecs->add_component(light, new ModelComponent(cube->get_model()));
-        ecs->add_component(light, new TransformComponent(vec3(0, 30, 0)));
+            auto light = ecs->create_entity("Light");
+            ecs->add_component(light, new LightComponent());
+            ecs->add_component(light, new ModelComponent(cube->get_model()));
+            ecs->add_component(light, new TransformComponent(vec3(i * 20, 30, 0)));
 
-        cubes.emplace_back(cube);
-        render_pass->add_model(cube->get_model());
+            cubes.emplace_back(cube);
+            render_pass->add_model(cube->get_model());
+        }
     }
 
     void Scene::update(const f32 dt)

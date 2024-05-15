@@ -38,11 +38,11 @@ namespace mag
             // @TODO: temp
             void add_model(const Model& model);
 
-            Pass& get_pass();
-            const Image& get_target_image() const;
-            f32 get_render_scale() const { return render_scale; };
-            uvec3 get_draw_size() const { return draw_size; };
+            Pass& get_pass() { return pass; };
             vec4& get_clear_color() { return clear_color; };
+            const Image& get_target_image() const;
+            const uvec3& get_draw_size() const { return draw_size; };
+            f32 get_render_scale() const { return render_scale; };
 
             void set_render_scale(const f32 scale);
 
@@ -53,16 +53,23 @@ namespace mag
             void add_uniform_data(const u64 buffer_size);
             void add_uniform_texture(const Model& model);
 
-            std::vector<Pass> passes = {};
+            Pass pass = {};
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
             std::shared_ptr<Shader> triangle, grid;
             std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vec4 clear_color = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-            vk::Rect2D render_area;
 
             // @TODO: temporary
+            struct LightData
+            {
+                    vec3 color;     // 12 bytes (3 x 4)
+                    f32 intensity;  // 4 bytes  (1 x 4)
+                    vec3 position;  // 12 bytes (3 x 4)
+                    f32 padding;    // 4 bytes  (1 x 4)
+            };
+
             struct GlobalData
             {
                     // Camera
@@ -74,8 +81,7 @@ namespace mag
                     vec2 gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game;
 
                     // Light
-                    vec4 point_light_color_and_intensity;  // 16 bytes (4 x 4)
-                    vec3 point_light_position;             // 12 bytes (3 x 4)
+                    LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS];  // sizeof(Light)
             };
 
             struct InstanceData
