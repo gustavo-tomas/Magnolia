@@ -17,6 +17,11 @@ namespace mag
     // @TODO: errors are just logs but might be better if they are assertions
     class ECS
     {
+#define ASSERT_TYPE(T) static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component")
+
+#define ASSERT_TYPES(Ts) \
+    static_assert((std::is_base_of<Component, Ts>::value && ...), "All types must be derived from Component")
+
         public:
             using Entity = std::vector<std::unique_ptr<Component>>;
 
@@ -53,7 +58,7 @@ namespace mag
             template <typename T>
             void add_component(const u32 entity_id, T* c)
             {
-                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+                ASSERT_TYPE(T);
 
                 // Check if entity exists
                 if (!entities.contains(entity_id))
@@ -77,7 +82,7 @@ namespace mag
             template <typename T>
             T* get_component(const u32 entity_id)
             {
-                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+                ASSERT_TYPE(T);
 
                 // Validate ID
                 auto entity = entities.find(entity_id);
@@ -104,7 +109,7 @@ namespace mag
             template <typename T>
             std::vector<T*> get_components()
             {
-                static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component");
+                ASSERT_TYPE(T);
 
                 std::vector<T*> components;
 
@@ -114,6 +119,56 @@ namespace mag
                     {
                         components.push_back(c);
                     }
+                }
+
+                return components;
+            }
+
+            // Get entities with specific components
+            template <typename... Ts>
+            std::vector<u32> get_entities_with_components()
+            {
+                ASSERT_TYPES(Ts);
+
+                std::vector<u32> ids;
+                std::vector<std::type_index> component_types = {typeid(Ts)...};
+
+                // Iterate over all entities
+                for (auto& [id, entity] : entities)
+                {
+                    b8 has_all_components = true;
+
+                    // Check if entity has all components
+                    for (auto& component_type : component_types)
+                    {
+                        if (component_map[component_type].find(id) == component_map[component_type].end())
+                        {
+                            has_all_components = false;
+                            break;
+                        }
+                    }
+
+                    if (has_all_components)
+                    {
+                        ids.push_back(id);
+                    }
+                }
+
+                return ids;
+            }
+
+            // Get components of entities with the specified components
+            template <typename... Ts>
+            std::vector<std::tuple<Ts*...>> get_components_of_entities()
+            {
+                ASSERT_TYPES(Ts);
+
+                std::vector<u32> entity_ids = get_entities_with_components<Ts...>();
+                std::vector<std::tuple<Ts*...>> components;
+
+                for (auto& id : entity_ids)
+                {
+                    components.push_back(std::make_tuple(get_component<Ts>(id)...));
                 }
 
                 return components;

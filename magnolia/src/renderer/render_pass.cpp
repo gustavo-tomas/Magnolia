@@ -216,19 +216,15 @@ namespace mag
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto transforms = ecs.get_components<TransformComponent>();
+        auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
+        auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
 
-        // @TODO: oggffsfdafaskjfç - horrible
         LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
 
         u32 l = 0;
-        auto entities = ecs.get_entities_ids();
-        for (const auto id : entities)
+        for (const auto& [transform, model, light] : light_entities)
         {
-            if (auto light = ecs.get_component<LightComponent>(id))
-            {
-                point_lights[l++] = {light->color, light->intensity, transforms[id]->translation, 0};
-            }
+            point_lights[l++] = {light->color, light->intensity, transform->translation, 0};
         }
 
         for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
@@ -255,7 +251,8 @@ namespace mag
             // Because of that we have to create a model for the light, even if we intend to use a different
             // shader to render it.
             // Models
-            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transforms[b - 1]);
+            auto [transform, model] = model_entities[b - 1];
+            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transform);
 
             data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
                                                     data_buffers[curr_frame_number][b].get_size());
