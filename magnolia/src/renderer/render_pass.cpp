@@ -8,7 +8,14 @@
 
 namespace mag
 {
-    // Conversion helper
+    // Descriptor Buffer Limits
+    // By limiting the number of models/textures we can initialize the descriptor buffers only once and simply rebuild
+    // get the descriptor sets again when we modify the uniform/texture data. @TODO: we may want to extend this approach
+    // and first check if the descriptor buffer supports the size and also make the limits configurable.
+    const u32 MAX_NUMBER_OF_MODELS = 1000;
+    const u32 MAX_NUMBER_OF_TEXTURES = 1000;
+
+    // Conversion helper @TODO: check for other conversions in the rest of the codebase and DRY your life away
     vk::ClearValue const vec_to_vk_clear_value(const vec4& v)
     {
         const vk::ClearValue vk_clear_value({v.r, v.g, v.b, v.a});
@@ -72,6 +79,20 @@ namespace mag
         {
             uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs->get_reflection(), 0);
             image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs->get_reflection(), 2);
+
+            uniform_descriptors[i].buffer.initialize(
+                MAX_NUMBER_OF_MODELS * uniform_descriptors[i].size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+            image_descriptors[i].buffer.initialize(
+                MAX_NUMBER_OF_TEXTURES * image_descriptors[i].size,
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
+                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+            uniform_descriptors[i].buffer.map_memory();
+            image_descriptors[i].buffer.map_memory();
         }
 
         // Descriptor layouts
@@ -342,32 +363,22 @@ namespace mag
 
         const u32 frame_count = context.get_frame_count();
 
-        // Delete old descriptor buffers
-        if (!data_buffers.empty() && !data_buffers.begin()->empty())
-        {
-            for (auto& descriptor : uniform_descriptors)
-            {
-                descriptor.buffer.unmap_memory();
-                descriptor.buffer.shutdown();
-            }
-        }
-
-        // Create descriptor buffer that holds global data and model transform
         for (u32 i = 0; i < frame_count; i++)
         {
+            // @TODO: This will prevent the model from being rendered but the ECS and other sections of the code are
+            // still responsible for checking valid data. Ideally the model should not even be loaded.
+            if (data_buffers[i].size() + 1 > MAX_NUMBER_OF_MODELS)
+            {
+                LOG_ERROR("Maximum number of models exceeded: {0}", MAX_NUMBER_OF_MODELS);
+                return;
+            }
+
             Buffer buffer;
             buffer.initialize(buffer_size,
                               VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                               VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
             data_buffers[i].push_back(buffer);
-
-            uniform_descriptors[i].buffer.initialize(
-                data_buffers[i].size() * uniform_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            uniform_descriptors[i].buffer.map_memory();
 
             DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
         }
@@ -378,16 +389,6 @@ namespace mag
         auto& context = get_context();
 
         const u32 frame_count = context.get_frame_count();
-
-        // Delete old descriptor buffers
-        if (!textures.empty())
-        {
-            for (auto& descriptor : image_descriptors)
-            {
-                descriptor.buffer.unmap_memory();
-                descriptor.buffer.shutdown();
-            }
-        }
 
         // Put all models textures in a single array
         for (auto& mesh : model.meshes)
@@ -401,13 +402,12 @@ namespace mag
         // Create descriptor buffer that holds texture data
         for (u32 i = 0; i < frame_count; i++)
         {
-            image_descriptors[i].buffer.initialize(
-                textures.size() * image_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            image_descriptors[i].buffer.map_memory();
+            // @TODO: same as the uniform descriptors
+            if (textures.size() + 1 > MAX_NUMBER_OF_TEXTURES)
+            {
+                LOG_ERROR("Maximum number of textures exceeded: {0}", MAX_NUMBER_OF_TEXTURES);
+                return;
+            }
 
             DescriptorBuilder::build(image_descriptors[i], textures);
         }
