@@ -334,6 +334,7 @@ namespace mag
                         pipeline_bind_point, triangle_pipeline->get_layout(), 2, image_indices, buffer_offsets);
 
                     tex_idx++;
+                    tex_idx = std::clamp<u64>(tex_idx, 0, MAX_NUMBER_OF_TEXTURES);
                 }
 
                 // Draw the mesh

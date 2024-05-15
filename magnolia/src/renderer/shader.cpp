@@ -66,14 +66,88 @@ namespace mag
         }
     }
 
+    Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules) : modules(modules)
+    {
+        // Gather all shader stages from the modules
+        for (const auto& module : modules)
+        {
+            stages |= static_cast<vk::ShaderStageFlagBits>(module->get_reflection().shader_stage);
+        }
+    };
+
     // We can automate some of these steps with spv reflect but it is better to set this values manually
     void Shader::add_attribute(const vk::Format format, const u32 size, const u32 offset)
     {
-        vk::VertexInputAttributeDescription attribute(location++, 0, format, offset);
+        const vk::VertexInputAttributeDescription attribute(location++, 0, format, offset);
         attributes.push_back(attribute);
 
         // Rewrite the binding when an attribute is added
         stride += size;
         binding = vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex);
+    }
+
+    void Shader::add_uniform(const str& name)
+    {
+        // Check all modules for the desired uniform
+        for (const auto& module : modules)
+        {
+            // Check for the binding with the same name
+            const auto& reflection = module->get_reflection();
+            for (u32 b = 0; b < reflection.descriptor_binding_count; b++)
+            {
+                const auto& binding = reflection.descriptor_bindings[b];
+                if (std::strcmp(binding.name, name.c_str()) == 0)
+                {
+                    add_binding(binding.set, binding, stages);
+                    build_layout(binding.set);
+                    return;
+                }
+            }
+        }
+
+        ASSERT(false, "No uniform with name: '" + name + "' was found in this shader");
+    }
+
+    void Shader::add_binding(const u32 set, const SpvReflectDescriptorBinding& descriptor_binding,
+                             const vk::ShaderStageFlags stage)
+    {
+        // Create the layout binding for the specified set
+        const u32 binding = descriptor_binding.binding;
+        const u32 count = descriptor_binding.count;
+        const auto type = static_cast<vk::DescriptorType>(descriptor_binding.descriptor_type);
+
+        const vk::DescriptorSetLayoutBinding layout_binding(binding, type, count, stage);
+        layout_bindings[set].push_back(layout_binding);
+    }
+
+    void Shader::build_layout(const u32 set)
+    {
+        auto& context = get_context();
+        auto& device = context.get_device();
+        auto& cache = context.get_descriptor_cache();
+
+        for (const auto& bindings : layout_bindings[set])
+        {
+            Descriptor descriptor;
+
+            // Build layout
+            const vk::DescriptorSetLayoutCreateInfo layout_info(
+                vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT, bindings);
+            descriptor.layout = cache.create_descriptor_layout(&layout_info);
+
+            auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
+
+            // Get set layout descriptor sizes and adjust them to satisfy alignment requirements.
+            const u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
+            descriptor.size = device.getDescriptorSetLayoutSizeEXT(descriptor.layout);
+            descriptor.size = (descriptor.size + alignment - 1) & ~(alignment - 1);
+
+            // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+            // @TODO: The binding can be non zero depending on the driver:
+            // https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/descriptor_buffer_basic
+            descriptor.offset = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, 0);
+
+            descriptors[set] = descriptor;
+        }
     }
 };  // namespace mag
