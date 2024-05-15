@@ -5,7 +5,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
-#include "renderer/descriptors.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
@@ -34,49 +33,27 @@ namespace mag
     class Shader
     {
         public:
-            Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules);
+            Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules) : modules(modules){};
             ~Shader() = default;
 
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);
-            void add_uniform(const str& name);
 
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
 
             const vk::VertexInputBindingDescription& get_vertex_binding() const { return binding; };
-
-            std::vector<vk::DescriptorSetLayout> get_layouts()
-            {
-                std::vector<vk::DescriptorSetLayout> layouts;
-                for (auto& [set, descriptor] : descriptors)
-                {
-                    layouts.push_back(descriptor.layout);
-                }
-
-                return layouts;
-            };
-
-            std::map<u32, Descriptor>& get_descriptors() { return descriptors; };
-
             const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const
             {
                 return attributes;
             };
 
         private:
-            void add_binding(const u32 set, const SpvReflectDescriptorBinding& descriptor_binding,
-                             const vk::ShaderStageFlags stage);
-            void build_layout(const u32 set);
-
-            std::vector<std::shared_ptr<ShaderModule>> modules = {};
+            std::vector<std::shared_ptr<ShaderModule>> modules;
             vk::VertexInputBindingDescription binding = {};
             std::vector<vk::VertexInputAttributeDescription> attributes = {};
-            std::map<u32, Descriptor> descriptors = {};
-            std::map<u32, std::vector<vk::DescriptorSetLayoutBinding>> layout_bindings = {};
 
             u32 location = 0;
             u32 stride = 0;
-            vk::ShaderStageFlags stages = {};
     };
 
     class ShaderLoader
