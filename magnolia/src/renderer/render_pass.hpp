@@ -50,8 +50,6 @@ namespace mag
 
         private:
             void initialize_images();
-            void add_uniform_data(const u64 buffer_size);
-            void add_uniform_texture(const Model& model);
 
             Pass pass = {};
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;

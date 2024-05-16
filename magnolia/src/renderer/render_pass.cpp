@@ -12,7 +12,9 @@ namespace mag
     // By limiting the number of models/textures we can initialize the descriptor buffers only once and simply rebuild
     // get the descriptor sets again when we modify the uniform/texture data. @TODO: we may want to extend this approach
     // and first check if the descriptor buffer supports the size and also make the limits configurable.
-    const u32 MAX_NUMBER_OF_MODELS = 1000;
+    const u32 MAX_NUMBER_OF_UNIFORMS = 1000;
+    const u32 MAX_NUMBER_OF_GLOBALS = 1;                                                 // Only one global buffer
+    const u32 MAX_NUMBER_OF_INSTANCES = MAX_NUMBER_OF_UNIFORMS - MAX_NUMBER_OF_GLOBALS;  // The rest is instance buffers
     const u32 MAX_NUMBER_OF_TEXTURES = 1000;
 
     // Conversion helper @TODO: check for other conversions in the rest of the codebase and DRY your life away
@@ -81,7 +83,7 @@ namespace mag
             image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs->get_reflection(), 2);
 
             uniform_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_MODELS * uniform_descriptors[i].size,
+                MAX_NUMBER_OF_UNIFORMS * uniform_descriptors[i].size,
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
                 VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
@@ -93,6 +95,21 @@ namespace mag
 
             uniform_descriptors[i].buffer.map_memory();
             image_descriptors[i].buffer.map_memory();
+
+            // We can also initialize the data buffers here
+            for (u64 b = 0; b < MAX_NUMBER_OF_UNIFORMS; b++)
+            {
+                const u64 buffer_size = b < MAX_NUMBER_OF_GLOBALS ? sizeof(GlobalData) : sizeof(InstanceData);
+
+                Buffer buffer;
+                buffer.initialize(buffer_size,
+                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                data_buffers[i].push_back(buffer);
+            }
+
+            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
         }
 
         // Descriptor layouts
@@ -117,9 +134,6 @@ namespace mag
 
         grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
                                                    color_blend_attachment);
-
-        // Initialize global buffer
-        add_uniform_data(sizeof(GlobalData));
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -248,35 +262,35 @@ namespace mag
             point_lights[l++] = {light->color, light->intensity, transform->translation, 0};
         }
 
-        for (u64 b = 0; b < data_buffers[curr_frame_number].size(); b++)
+        // Global Data
+        GlobalData global_data = {.view = camera.get_view(),
+                                  .projection = camera.get_projection(),
+                                  .near_far = camera.get_near_far(),
+
+                                  .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
+
+                                  .point_lights = {}};
+
+        memcpy(global_data.point_lights, point_lights, sizeof(global_data.point_lights));
+
+        data_buffers[curr_frame_number][0].copy(&global_data, sizeof(GlobalData));
+
+        if (model_entities.size() > MAX_NUMBER_OF_INSTANCES)
         {
-            // Global Data
-            if (b == 0)
-            {
-                GlobalData global_data = {.view = camera.get_view(),
-                                          .projection = camera.get_projection(),
-                                          .near_far = camera.get_near_far(),
+            LOG_ERROR("Maximum number of instances exceeded: {0}", MAX_NUMBER_OF_INSTANCES);
+            return;
+        }
 
-                                          .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
-
-                                          .point_lights = {}};
-
-                memcpy(global_data.point_lights, point_lights, sizeof(global_data.point_lights));
-
-                data_buffers[curr_frame_number][b].copy(&global_data, data_buffers[curr_frame_number][b].get_size());
-
-                continue;
-            }
-
+        // Instance Data
+        for (u64 b = 0; b < model_entities.size(); b++)
+        {
             // @TODO: this is very wrong. b - 1 assumes that every transform has a corresponding model.
             // Because of that we have to create a model for the light, even if we intend to use a different
             // shader to render it.
-            // Models
-            auto [transform, model] = model_entities[b - 1];
-            const mat4 model_matrix = TransformComponent::get_transformation_matrix(*transform);
+            auto [transform, model] = model_entities[b];
+            const InstanceData instance_data = {TransformComponent::get_transformation_matrix(*transform)};
 
-            data_buffers[curr_frame_number][b].copy(value_ptr(model_matrix),
-                                                    data_buffers[curr_frame_number][b].get_size());
+            data_buffers[curr_frame_number][b + MAX_NUMBER_OF_GLOBALS].copy(&instance_data, sizeof(InstanceData));
         }
 
         // The pipeline layout should be the same for both pipelines
@@ -357,34 +371,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::add_uniform_data(const u64 buffer_size)
-    {
-        auto& context = get_context();
-
-        const u32 frame_count = context.get_frame_count();
-
-        for (u32 i = 0; i < frame_count; i++)
-        {
-            // @TODO: This will prevent the model from being rendered but the ECS and other sections of the code are
-            // still responsible for checking valid data. Ideally the model should not even be loaded.
-            if (data_buffers[i].size() + 1 > MAX_NUMBER_OF_MODELS)
-            {
-                LOG_ERROR("Maximum number of models exceeded: {0}", MAX_NUMBER_OF_MODELS);
-                return;
-            }
-
-            Buffer buffer;
-            buffer.initialize(buffer_size,
-                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                              VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            data_buffers[i].push_back(buffer);
-
-            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
-        }
-    }
-
-    void StandardRenderPass::add_uniform_texture(const Model& model)
+    void StandardRenderPass::add_model(const Model& model)
     {
         auto& context = get_context();
 
@@ -411,12 +398,6 @@ namespace mag
 
             DescriptorBuilder::build(image_descriptors[i], textures);
         }
-    }
-
-    void StandardRenderPass::add_model(const Model& model)
-    {
-        this->add_uniform_data(sizeof(InstanceData));
-        this->add_uniform_texture(model);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)
