@@ -337,15 +337,15 @@ namespace mag
                 }
 
                 // Draw the mesh
-                command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer(), 0);
-                command_buffer.bind_index_buffer(mesh.ibo.get_buffer(), 0);
-                command_buffer.draw_indexed(VECSIZE(mesh.indices), 1, 0, 0, 0);
+                command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer());
+                command_buffer.bind_index_buffer(mesh.ibo.get_buffer());
+                command_buffer.draw_indexed(VECSIZE(mesh.indices));
             }
         }
 
         // Draw the grid
         grid_pipeline->bind(command_buffer);
-        command_buffer.draw(6, 1, 0, 0);
+        command_buffer.draw(6);
     }
 
     void StandardRenderPass::after_render(CommandBuffer& command_buffer)
