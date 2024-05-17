@@ -19,7 +19,7 @@ namespace mag
 
             void* map_memory();
             void unmap_memory();
-            void copy(const void* data, const u64 size_bytes);
+            void copy(const void* data, const u64 size_bytes, const u64 offset = 0);
 
             const vk::Buffer& get_buffer() const { return buffer; };
             const VmaAllocation& get_allocation() const { return allocation; };

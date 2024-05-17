@@ -36,10 +36,12 @@ namespace mag
 
     void Buffer::unmap_memory() { vmaUnmapMemory(get_context().get_allocator(), allocation); }
 
-    void Buffer::copy(const void* data, const u64 size_bytes)
+    void Buffer::copy(const void* data, const u64 size_bytes, const u64 offset)
     {
+        ASSERT(offset + size_bytes <= size, "Size limit exceeded");
+
         this->map_memory();
-        memcpy(mapped_region, data, size_bytes);
+        memcpy(static_cast<char*>(mapped_region) + offset, data, size_bytes);
         this->unmap_memory();
     }
 
