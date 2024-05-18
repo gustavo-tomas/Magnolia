@@ -195,7 +195,7 @@ namespace mag
         triangle_shader->bind();
         triangle_shader->set_offset_global(triangle_pipeline->get_layout());
 
-        triangle_pipeline->bind(command_buffer);
+        triangle_pipeline->bind();
 
         u64 tex_idx = 0;
         auto models = ecs.get_components<ModelComponent>();
@@ -221,8 +221,16 @@ namespace mag
             }
         }
 
+        // Set grid uniforms
+        grid_shader->set_uniform_global("view", value_ptr(camera.get_view()));
+        grid_shader->set_uniform_global("projection", value_ptr(camera.get_projection()));
+        grid_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
+
+        grid_shader->bind();
+        grid_shader->set_offset_global(grid_pipeline->get_layout());
+
         // Draw the grid
-        grid_pipeline->bind(command_buffer);
+        grid_pipeline->bind();
         command_buffer.draw(6);
     }
 

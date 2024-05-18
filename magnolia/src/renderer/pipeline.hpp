@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "renderer/command.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag
@@ -20,7 +19,7 @@ namespace mag
 
             ~Pipeline();
 
-            void bind(const CommandBuffer& command_buffer);
+            void bind();
 
             const vk::PipelineLayout& get_layout() const { return pipeline_layout; };
 
