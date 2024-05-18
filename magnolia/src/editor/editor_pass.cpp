@@ -9,7 +9,6 @@ namespace mag
     {
         this->draw_size = {size, 1};
         initialize_draw_image();
-        this->on_resize(size);
     }
 
     void EditorRenderPass::shutdown()
