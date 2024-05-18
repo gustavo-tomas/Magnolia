@@ -34,7 +34,7 @@ namespace mag
         // Light
         for (u32 i = 0; i < LightComponent::MAX_NUMBER_OF_LIGHTS; i++)
         {
-            auto light = ecs->create_entity("Light");
+            auto light = ecs->create_entity("Light" + std::to_string(i));
             ecs->add_component(light, new LightComponent());
             ecs->add_component(light, new ModelComponent(cube->get_model()));
             ecs->add_component(light, new TransformComponent(vec3(i * 20, 30, 0)));
