@@ -53,43 +53,10 @@ namespace mag
 
             Pass pass = {};
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
-            std::shared_ptr<Shader> triangle, grid;
+            std::shared_ptr<Shader> triangle_shader, grid_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vec4 clear_color = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-
-            // @TODO: temporary
-            struct LightData
-            {
-                    vec3 color;     // 12 bytes (3 x 4)
-                    f32 intensity;  // 4 bytes  (1 x 4)
-                    vec3 position;  // 12 bytes (3 x 4)
-                    f32 padding;    // 4 bytes  (1 x 4)
-            };
-
-            struct GlobalData
-            {
-                    // Camera
-                    mat4 view;        // 64 bytes (16 x 4)
-                    mat4 projection;  // 64 bytes (16 x 4)
-                    vec2 near_far;    // 8  bytes (2  x 4)
-
-                    // Padding <:( - 8  bytes (2  x 4)
-                    vec2 gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game;
-
-                    // Light
-                    LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS];  // sizeof(Light)
-            };
-
-            struct InstanceData
-            {
-                    mat4 model;  // 64 bytes (16 x 4)
-            };
-
-            std::vector<std::vector<Buffer>> data_buffers;
-            std::vector<Image> textures;
-            std::vector<Descriptor> uniform_descriptors, image_descriptors;
-            // @TODO: temporary
     };
 };  // namespace mag

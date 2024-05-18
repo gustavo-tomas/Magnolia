@@ -8,15 +8,6 @@
 
 namespace mag
 {
-    // Descriptor Buffer Limits
-    // By limiting the number of models/textures we can initialize the descriptor buffers only once and simply rebuild
-    // get the descriptor sets again when we modify the uniform/texture data. @TODO: we may want to extend this approach
-    // and first check if the descriptor buffer supports the size and also make the limits configurable.
-    const u32 MAX_NUMBER_OF_UNIFORMS = 1000;
-    const u32 MAX_NUMBER_OF_GLOBALS = 1;                                                 // Only one global buffer
-    const u32 MAX_NUMBER_OF_INSTANCES = MAX_NUMBER_OF_UNIFORMS - MAX_NUMBER_OF_GLOBALS;  // The rest is instance buffers
-    const u32 MAX_NUMBER_OF_TEXTURES = 1000;
-
     // Conversion helper @TODO: check for other conversions in the rest of the codebase and DRY your life away
     vk::ClearValue const vec_to_vk_clear_value(const vec4& v)
     {
@@ -40,9 +31,6 @@ namespace mag
 
         this->initialize_images();
 
-        // Create attachments and rendering info
-        this->on_resize(size);
-
         // Shaders
         const std::filesystem::path cwd = std::filesystem::current_path();
         const str last_folder = cwd.filename().string();
@@ -55,73 +43,24 @@ namespace mag
 #endif
         if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
 
-        triangle =
+        triangle_shader =
             shader_loader.load("triangle", shader_folder + "triangle.vert.spv", shader_folder + "triangle.frag.spv");
 
         // Dont forget to add vertex attributes
-        triangle->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
-        triangle->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
-        triangle->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords), offsetof(Vertex, tex_coords));
+        triangle_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position),
+                                       offsetof(Vertex, position));
+        triangle_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
+        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords),
+                                       offsetof(Vertex, tex_coords));
 
-        grid = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
-
-        // Create descriptors layouts
-        uniform_descriptors.resize(frame_count);
-        image_descriptors.resize(frame_count);
-        data_buffers.resize(frame_count);
-
-        auto triangle_vs = triangle->get_modules()[0];
-        auto triangle_fs = triangle->get_modules()[1];
-
-        // @TODO: convert this to add uniforms in the shader?
-        // for example: add_uniform(name);
-        // the name of the uniform in the shader can be retrieved with spv reflect and then checked against the provided
-        // name in the add uniform method
-        for (u64 i = 0; i < frame_count; i++)
-        {
-            uniform_descriptors[i] = DescriptorBuilder::build_layout(triangle_vs->get_reflection(), 0);
-            image_descriptors[i] = DescriptorBuilder::build_layout(triangle_fs->get_reflection(), 2);
-
-            uniform_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_UNIFORMS * uniform_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            image_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_TEXTURES * image_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            uniform_descriptors[i].buffer.map_memory();
-            image_descriptors[i].buffer.map_memory();
-
-            // We can also initialize the data buffers here
-            for (u64 b = 0; b < MAX_NUMBER_OF_UNIFORMS; b++)
-            {
-                const u64 buffer_size = b < MAX_NUMBER_OF_GLOBALS ? sizeof(GlobalData) : sizeof(InstanceData);
-
-                Buffer buffer;
-                buffer.initialize(buffer_size,
-                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-                data_buffers[i].push_back(buffer);
-            }
-
-            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
-        }
-
-        // Descriptor layouts
-        const std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
-            uniform_descriptors[0].layout, uniform_descriptors[0].layout, image_descriptors[0].layout};
+        grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
                                                                    depth_images[0].get_format());
 
-        triangle_pipeline =
-            std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *triangle, draw_size);
+        triangle_pipeline = std::make_unique<Pipeline>(
+            pipeline_create_info, triangle_shader->get_descriptor_set_layouts(), *triangle_shader, draw_size);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -132,40 +71,14 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptor_set_layouts, *grid, draw_size,
-                                                   color_blend_attachment);
+        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
+                                                   *grid_shader, draw_size, color_blend_attachment);
     }
 
     StandardRenderPass::~StandardRenderPass()
     {
         auto& context = get_context();
         context.get_device().waitIdle();
-
-        if (!data_buffers.empty())
-        {
-            for (auto& descriptor : uniform_descriptors)
-            {
-                descriptor.buffer.unmap_memory();
-                descriptor.buffer.shutdown();
-            }
-        }
-
-        if (!textures.empty())
-        {
-            for (auto& descriptor : image_descriptors)
-            {
-                descriptor.buffer.unmap_memory();
-                descriptor.buffer.shutdown();
-            }
-        }
-
-        for (auto& buffers : data_buffers)
-        {
-            for (auto& buffer : buffers)
-            {
-                buffer.shutdown();
-            }
-        }
 
         for (auto& image : draw_images)
         {
@@ -248,79 +161,34 @@ namespace mag
 
     void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
     {
-        auto& context = get_context();
-        const u32 curr_frame_number = context.get_curr_frame_number();
-
         auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
 
-        LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
-
         u32 l = 0;
+        LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
         for (const auto& [transform, model, light] : light_entities)
         {
-            point_lights[l++] = {light->color, light->intensity, transform->translation, 0};
+            point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
 
-        // Global Data
-        GlobalData global_data = {.view = camera.get_view(),
-                                  .projection = camera.get_projection(),
-                                  .near_far = camera.get_near_far(),
+        triangle_shader->set_uniform_global("view", value_ptr(camera.get_view()));
+        triangle_shader->set_uniform_global("projection", value_ptr(camera.get_projection()));
+        triangle_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
+        triangle_shader->set_uniform_global("point_lights", &point_lights);
 
-                                  .gamer_padding_dont_use_this_is_just_for_padding_gamer_gaming_game = {},
-
-                                  .point_lights = {}};
-
-        memcpy(global_data.point_lights, point_lights, sizeof(global_data.point_lights));
-
-        data_buffers[curr_frame_number][0].copy(&global_data, sizeof(GlobalData));
-
-        if (model_entities.size() > MAX_NUMBER_OF_INSTANCES)
-        {
-            LOG_ERROR("Maximum number of instances exceeded: {0}", MAX_NUMBER_OF_INSTANCES);
-            return;
-        }
-
-        // Instance Data
         for (u64 b = 0; b < model_entities.size(); b++)
         {
             // @TODO: this is very wrong. b - 1 assumes that every transform has a corresponding model.
             // Because of that we have to create a model for the light, even if we intend to use a different
             // shader to render it.
             auto [transform, model] = model_entities[b];
-            const InstanceData instance_data = {TransformComponent::get_transformation_matrix(*transform)};
 
-            data_buffers[curr_frame_number][b + MAX_NUMBER_OF_GLOBALS].copy(&instance_data, sizeof(InstanceData));
+            auto model_matrix = TransformComponent::get_transformation_matrix(*transform);
+            triangle_shader->set_uniform_instance("model", value_ptr(model_matrix), b);
         }
 
-        // The pipeline layout should be the same for both pipelines
-        std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
-
-        if (!data_buffers.empty())
-        {
-            descriptor_buffer_binding_infos.push_back(
-                {uniform_descriptors[curr_frame_number].buffer.get_device_address(),
-                 vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
-        }
-
-        if (!textures.empty())
-        {
-            descriptor_buffer_binding_infos.push_back({image_descriptors[curr_frame_number].buffer.get_device_address(),
-                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
-                                                           vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
-        }
-
-        // Bind descriptor buffers and set offsets
-        command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
-
-        const auto pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
-        const u32 buffer_indices = 0;
-        const u32 image_indices = 1;
-        u64 buffer_offsets = 0;
-
-        // Global matrices (set 0)
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, triangle_pipeline->get_layout(),
-                                                                  0, buffer_indices, buffer_offsets);
+        triangle_shader->bind();
+        triangle_shader->set_offset_global(triangle_pipeline->get_layout());
 
         triangle_pipeline->bind(command_buffer);
 
@@ -330,24 +198,15 @@ namespace mag
         {
             const auto& model = models[m]->model;
 
-            // Model matrices (set 1)
-            buffer_offsets = (m + 1) * uniform_descriptors[curr_frame_number].size;
-            command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-                pipeline_bind_point, triangle_pipeline->get_layout(), 1, buffer_indices, buffer_offsets);
+            triangle_shader->set_offset_instance(triangle_pipeline->get_layout(), m);
 
             for (u64 i = 0; i < model.meshes.size(); i++)
             {
                 const auto& mesh = model.meshes[i];
 
-                // @TODO: only one offset can be set
-                // Images (set 2)
                 if (!mesh.textures.empty())
                 {
-                    buffer_offsets = tex_idx * image_descriptors[curr_frame_number].size;
-                    command_buffer.get_handle().setDescriptorBufferOffsetsEXT(
-                        pipeline_bind_point, triangle_pipeline->get_layout(), 2, image_indices, buffer_offsets);
-
-                    tex_idx = std::clamp<u64>(tex_idx + 1, 0, MAX_NUMBER_OF_TEXTURES);
+                    triangle_shader->set_offset_material(triangle_pipeline->get_layout(), tex_idx++);
                 }
 
                 // Draw the mesh
@@ -371,34 +230,7 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::add_model(const Model& model)
-    {
-        auto& context = get_context();
-
-        const u32 frame_count = context.get_frame_count();
-
-        // Put all models textures in a single array
-        for (auto& mesh : model.meshes)
-        {
-            for (auto& texture : mesh.textures)
-            {
-                textures.push_back(*texture);
-            }
-        }
-
-        // Create descriptor buffer that holds texture data
-        for (u32 i = 0; i < frame_count; i++)
-        {
-            // @TODO: same as the uniform descriptors
-            if (textures.size() + 1 > MAX_NUMBER_OF_TEXTURES)
-            {
-                LOG_ERROR("Maximum number of textures exceeded: {0}", MAX_NUMBER_OF_TEXTURES);
-                return;
-            }
-
-            DescriptorBuilder::build(image_descriptors[i], textures);
-        }
-    }
+    void StandardRenderPass::add_model(const Model& model) { triangle_shader->add_model(model); }
 
     void StandardRenderPass::on_resize(const uvec2& size)
     {
