@@ -31,9 +31,9 @@ namespace mag
             StandardRenderPass(const uvec2& size);
             ~StandardRenderPass();
 
-            void before_render(CommandBuffer& command_buffer);
-            void render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs);
-            void after_render(CommandBuffer& command_buffer);
+            void before_render();
+            void render(const Camera& camera, ECS& ecs);
+            void after_render();
 
             // @TODO: temp
             void add_model(const Model& model);

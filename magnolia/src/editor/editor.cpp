@@ -136,8 +136,11 @@ namespace mag
         }
     }
 
-    void Editor::render(CommandBuffer &cmd, const Camera &camera, ECS &ecs)
+    void Editor::render(const Camera &camera, ECS &ecs)
     {
+        auto &context = get_context();
+        auto &cmd = context.get_curr_frame().command_buffer;
+
         // Transition the viewport image into their correct transfer layouts for imgui texture
         if (viewport_image)
         {
@@ -146,7 +149,7 @@ namespace mag
         }
 
         // @TODO: put this inside the render pass?
-        render_pass.before_render(cmd);
+        render_pass.before_render();
         cmd.begin_rendering(this->render_pass.get_pass());
 
         // Begin
@@ -182,7 +185,7 @@ namespace mag
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
 
         cmd.end_rendering();
-        render_pass.after_render(cmd);
+        render_pass.after_render();
 
         // Return the viewport image to their original layout
         if (viewport_image)

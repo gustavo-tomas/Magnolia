@@ -26,16 +26,16 @@ namespace mag
         this->context->begin_frame();
 
         // Draw calls
-        render_pass.before_render(curr_frame.command_buffer);
+        render_pass.before_render();
         curr_frame.command_buffer.begin_rendering(pass);
 
-        render_pass.render(curr_frame.command_buffer, camera, ecs);
+        render_pass.render(camera, ecs);
 
         curr_frame.command_buffer.end_rendering();
-        render_pass.after_render(curr_frame.command_buffer);
+        render_pass.after_render();
 
         // @TODO: maybe dont do this here
-        editor.render(curr_frame.command_buffer, camera, ecs);
+        editor.render(camera, ecs);
 
         // Present
 

@@ -20,9 +20,10 @@ namespace mag
         draw_image.shutdown();
     }
 
-    void EditorRenderPass::before_render(CommandBuffer& command_buffer)
+    void EditorRenderPass::before_render()
     {
         auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
 
         // Safety check
         if (draw_size.x != context.get_surface_extent().width || draw_size.y != context.get_surface_extent().height)
@@ -46,8 +47,11 @@ namespace mag
 
     // Rendering is done during the update
 
-    void EditorRenderPass::after_render(CommandBuffer& command_buffer)
+    void EditorRenderPass::after_render()
     {
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+
         // Transition the draw image and the swapchain image into their correct transfer layouts
         command_buffer.transfer_layout(draw_image.get_image(), vk::ImageLayout::eColorAttachmentOptimal,
                                        vk::ImageLayout::eTransferSrcOptimal);

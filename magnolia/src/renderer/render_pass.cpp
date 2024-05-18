@@ -125,14 +125,16 @@ namespace mag
         }
     }
 
-    void StandardRenderPass::before_render(CommandBuffer& command_buffer)
+    void StandardRenderPass::before_render()
     {
         // Create attachments
         const vk::Rect2D render_area = vk::Rect2D({}, {draw_size.x, draw_size.y});
         const vk::ClearValue color_clear_value(vec_to_vk_clear_value(clear_color));
         const vk::ClearValue depth_clear_value(1.0f);
 
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
 
         // @TODO: check attachments load/store ops
         pass.color_attachment = vk::RenderingAttachmentInfo(
@@ -159,8 +161,11 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal);
     }
 
-    void StandardRenderPass::render(CommandBuffer& command_buffer, const Camera& camera, ECS& ecs)
+    void StandardRenderPass::render(const Camera& camera, ECS& ecs)
     {
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+
         auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
 
@@ -221,10 +226,12 @@ namespace mag
         command_buffer.draw(6);
     }
 
-    void StandardRenderPass::after_render(CommandBuffer& command_buffer)
+    void StandardRenderPass::after_render()
     {
         // Transition the draw image and the swapchain image into their correct transfer layouts
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(),
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
