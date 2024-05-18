@@ -7,7 +7,7 @@ namespace mag
 {
     Pipeline::Pipeline(const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
                        const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
-                       const vec2& size, const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
+                       const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
     {
         auto& context = get_context();
 
@@ -33,9 +33,6 @@ namespace mag
         const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
             {}, vk::PrimitiveTopology::eTriangleList, false);
 
-        const vk::Viewport viewport(0.0f, 0.0f, size.x, size.y, 0.0f, 1.0f);
-        const vk::Rect2D scissor({}, {static_cast<u32>(size.x), static_cast<u32>(size.y)});
-
         const vk::PipelineRasterizationStateCreateInfo rasterization_state_create_info(
             {}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone, vk::FrontFace::eClockwise, false,
             0.0f, 0.0f, 0.0f, 1.0f);
@@ -45,6 +42,9 @@ namespace mag
 
         const vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info(
             {}, true, true, vk::CompareOp::eLessOrEqual, {}, {}, {}, {}, 0.0f, 1.0f);
+
+        const vk::Viewport viewport(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+        const vk::Rect2D scissor({}, {1, 1});
 
         const vk::PipelineViewportStateCreateInfo viewport_state({}, viewport, scissor);
 

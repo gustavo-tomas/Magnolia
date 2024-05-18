@@ -59,8 +59,8 @@ namespace mag
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
                                                                    depth_images[0].get_format());
 
-        triangle_pipeline = std::make_unique<Pipeline>(
-            pipeline_create_info, triangle_shader->get_descriptor_set_layouts(), *triangle_shader, draw_size);
+        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info,
+                                                       triangle_shader->get_descriptor_set_layouts(), *triangle_shader);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -72,7 +72,7 @@ namespace mag
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
         grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
-                                                   *grid_shader, draw_size, color_blend_attachment);
+                                                   *grid_shader, color_blend_attachment);
     }
 
     StandardRenderPass::~StandardRenderPass()
