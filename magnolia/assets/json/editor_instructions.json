@@ -4,10 +4,9 @@
         {
             "name": "In any mode",
             "instructions": [
-                "Press ESC to enter fullscreen mode",
+                "Press ESC to enter fullscreen view",
                 "Press TAB to alternate between editor and scene views",
-                "Press KEY_DOWN/KEY_UP to scale image resolution",
-                "Click PLAY to switch between runtime and editor mode"
+                "Press KEY_DOWN/KEY_UP to scale image resolution"
             ]
         },
         {
