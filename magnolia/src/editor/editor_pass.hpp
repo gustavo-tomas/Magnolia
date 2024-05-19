@@ -11,8 +11,8 @@ namespace mag
             void initialize(const uvec2& size);
             void shutdown();
 
-            void before_render(CommandBuffer& command_buffer);
-            void after_render(CommandBuffer& command_buffer);
+            void before_render();
+            void after_render();
 
             Pass& get_pass() { return pass; };
             const Image& get_draw_image() const { return draw_image; };

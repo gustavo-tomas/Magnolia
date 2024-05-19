@@ -21,7 +21,7 @@ namespace mag
             ~Editor();
 
             void update();
-            void render(CommandBuffer& cmd, const Camera& camera, ECS& ecs);
+            void render(const Camera& camera, ECS& ecs);
             void on_event(Event& e);
 
             void set_viewport_image(const Image& image);
