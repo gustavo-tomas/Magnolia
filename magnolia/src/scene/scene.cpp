@@ -9,19 +9,20 @@ namespace mag
 {
     Scene::Scene()
         : BaseScene(new ECS(),
-                    new Camera({-100.0f, 5.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
+                    new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
                     new StandardRenderPass({800, 600})),
           camera_controller(new EditorCameraController(*camera)),
           cube(new Cube())
     {
-        const u32 loops = 4;
-        for (u32 i = 0; i < loops; i++)
+        const i32 loops = 5;
+        u32 count = 0;
+        for (i32 i = -loops / 2; i <= loops / 2; i++)
         {
-            for (u32 j = 0; j < loops; j++)
+            for (i32 j = -loops / 2; j <= loops / 2; j++)
             {
-                const str name = "Cube" + std::to_string(i) + std::to_string(j);
+                const str name = "Cube" + std::to_string(count++);
 
-                auto cube_entity = ecs->create_entity(name);
+                const auto cube_entity = ecs->create_entity(name);
                 ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
                 ecs->add_component(cube_entity, new ModelComponent(cube->get_model()));
 
@@ -32,12 +33,15 @@ namespace mag
         }
 
         // Light
-        for (u32 i = 0; i < LightComponent::MAX_NUMBER_OF_LIGHTS; i++)
+        for (i32 i = 0; i < static_cast<i32>(LightComponent::MAX_NUMBER_OF_LIGHTS); i++)
         {
-            auto light = ecs->create_entity("Light" + std::to_string(i));
-            ecs->add_component(light, new LightComponent());
+            const auto light = ecs->create_entity("Light" + std::to_string(i));
+            const vec3 color = vec3(1);
+            const f32 intensity = 100;
+
+            ecs->add_component(light, new LightComponent(color, intensity));
             ecs->add_component(light, new ModelComponent(cube->get_model()));
-            ecs->add_component(light, new TransformComponent(vec3(i * 20, 30, 0)));
+            ecs->add_component(light, new TransformComponent(vec3(500 - (500 * i), 100, 0)));
 
             render_pass->add_model(cube->get_model());
         }
