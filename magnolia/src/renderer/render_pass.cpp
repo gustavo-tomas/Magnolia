@@ -198,16 +198,15 @@ namespace mag
         triangle_pipeline->bind();
 
         u64 tex_idx = 0;
-        auto models = ecs.get_components<ModelComponent>();
-        for (u64 m = 0; m < models.size(); m++)
+        for (u64 m = 0; m < model_entities.size(); m++)
         {
-            const auto& model = models[m]->model;
+            const auto& model = std::get<1>(model_entities[m]);
 
             triangle_shader->set_offset_instance(triangle_pipeline->get_layout(), m);
 
-            for (u64 i = 0; i < model.meshes.size(); i++)
+            for (u64 i = 0; i < model->model.meshes.size(); i++)
             {
-                const auto& mesh = model.meshes[i];
+                const auto& mesh = model->model.meshes[i];
 
                 if (!mesh.textures.empty())
                 {
