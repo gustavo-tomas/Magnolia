@@ -2,6 +2,7 @@
 
 // !TODO: use caching for render passes and pipelines!
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -59,6 +60,6 @@ namespace mag
             static Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
 
             static void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
-            static void build(const Descriptor& descriptor, const std::vector<Image>& images);
+            static void build(const Descriptor& descriptor, const std::vector<std::shared_ptr<Image>>& images);
     };
 };  // namespace mag

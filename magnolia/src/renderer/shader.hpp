@@ -67,7 +67,10 @@ namespace mag
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
 
-            const vk::VertexInputBindingDescription& get_vertex_binding() const { return vertex_binding; };
+            const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const
+            {
+                return vertex_bindings;
+            };
 
             const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const
             {
@@ -91,7 +94,7 @@ namespace mag
             };
 
             std::vector<std::shared_ptr<ShaderModule>> modules;
-            vk::VertexInputBindingDescription vertex_binding = {};
+            std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
 
             u32 location = 0;
@@ -99,8 +102,9 @@ namespace mag
             std::map<str, UBO> uniforms_map;
 
             // @TODO: refactor
+            b8 uniform_inited = {}, image_inited = {};
             std::vector<std::vector<Buffer>> data_buffers;
-            std::vector<Image> textures;
+            std::vector<std::shared_ptr<Image>> textures;
             std::vector<Descriptor> uniform_descriptors, image_descriptors;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
             // @TODO: refactor

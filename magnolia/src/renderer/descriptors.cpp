@@ -192,7 +192,7 @@ namespace mag
         }
     }
 
-    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Image>& images)
+    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<std::shared_ptr<Image>>& images)
     {
         auto& context = get_context();
         auto& device = context.get_device();
@@ -203,7 +203,8 @@ namespace mag
 
         for (u64 i = 0; i < images.size(); i++)
         {
-            const vk::DescriptorImageInfo image_info(images[i].get_sampler().get_handle(), images[i].get_image_view());
+            const vk::DescriptorImageInfo image_info(images[i]->get_sampler().get_handle(),
+                                                     images[i]->get_image_view());
 
             const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler, {&image_info});
 

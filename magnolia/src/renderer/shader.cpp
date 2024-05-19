@@ -98,7 +98,7 @@ namespace mag
 
     Shader::~Shader()
     {
-        if (!data_buffers.empty())
+        if (uniform_inited)
         {
             for (auto& descriptor : uniform_descriptors)
             {
@@ -107,7 +107,7 @@ namespace mag
             }
         }
 
-        if (!textures.empty())
+        if (image_inited)
         {
             for (auto& descriptor : image_descriptors)
             {
@@ -139,6 +139,8 @@ namespace mag
             // @TODO: hardcoded values
             if (modules[0]->get_reflection().descriptor_set_count > 0)
             {
+                uniform_inited = true;
+
                 uniform_descriptors[i] = DescriptorBuilder::build_layout(modules[0]->get_reflection(), 0);
 
                 uniform_descriptors[i].buffer.initialize(
@@ -157,6 +159,8 @@ namespace mag
 
             if (modules[1]->get_reflection().descriptor_set_count > 2)
             {
+                image_inited = true;
+
                 image_descriptors[i] = DescriptorBuilder::build_layout(modules[1]->get_reflection(), 2);
 
                 image_descriptors[i].buffer.initialize(
@@ -199,7 +203,9 @@ namespace mag
 
         // Rewrite the binding when an attribute is added
         stride += size;
-        vertex_binding = vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex);
+
+        vertex_bindings.clear();
+        vertex_bindings.push_back(vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex));
     }
 
     void Shader::set_uniform(const str& scope, const str& name, const void* data, const u32 buffer_index)
@@ -243,14 +249,14 @@ namespace mag
         // The pipeline layout should be the same for both pipelines
         std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
 
-        if (!data_buffers.empty())
+        if (uniform_inited)
         {
             descriptor_buffer_binding_infos.push_back(
                 {uniform_descriptors[curr_frame_number].buffer.get_device_address(),
                  vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
         }
 
-        if (!textures.empty())
+        if (image_inited)
         {
             descriptor_buffer_binding_infos.push_back({image_descriptors[curr_frame_number].buffer.get_device_address(),
                                                        vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
@@ -304,7 +310,7 @@ namespace mag
         {
             for (auto& texture : mesh.textures)
             {
-                textures.push_back(*texture);
+                textures.emplace_back(texture);
             }
         }
 

@@ -27,7 +27,7 @@ namespace mag
         }
 
         // Extract vertex input info from vertex shader
-        const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, shader.get_vertex_binding(),
+        const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, shader.get_vertex_bindings(),
                                                                                     shader.get_vertex_attributes());
 
         const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
