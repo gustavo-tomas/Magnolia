@@ -38,15 +38,14 @@ namespace mag
             // @TODO: temp
             void add_model(const Model& model);
 
+            void set_render_scale(const f32 scale);
+            void on_resize(const uvec2& size);
+
             Pass& get_pass() { return pass; };
             vec4& get_clear_color() { return clear_color; };
             const Image& get_target_image() const;
             const uvec3& get_draw_size() const { return draw_size; };
             f32 get_render_scale() const { return render_scale; };
-
-            void set_render_scale(const f32 scale);
-
-            void on_resize(const uvec2& size);
 
         private:
             void initialize_images();
@@ -55,6 +54,7 @@ namespace mag
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
             std::shared_ptr<Shader> triangle_shader, grid_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
+
             uvec3 draw_size;
             f32 render_scale = 1.0;
             vec4 clear_color = vec4(0.1f, 0.1f, 0.1f, 1.0f);
