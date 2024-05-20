@@ -86,6 +86,12 @@ namespace mag
 
             const u32 texture_count = ai_material->GetTextureCount(aiTextureType_DIFFUSE);
             const str directory = file.substr(0, file.find_last_of('/'));
+
+            if (texture_count > 1)
+            {
+                LOG_ERROR("Only one texture for each mesh is supported");
+            }
+
             for (u32 i = 0; i < texture_count; i++)
             {
                 aiString ai_mat_name;
@@ -94,21 +100,23 @@ namespace mag
                 if (result != aiReturn::aiReturn_SUCCESS)
                 {
                     LOG_ERROR("Failed to retrieve texture with index {0}", i);
-                    material->diffuse_texture =
-                        app.get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
+                    continue;
                 }
 
-                else
-                {
-                    const str texture_path = directory + "/" + ai_mat_name.C_Str();
-                    material->diffuse_texture = app.get_texture_loader().load(texture_path);
-                    LOG_INFO("Loaded texture: {0}", texture_path);
-                }
+                const str texture_path = directory + "/" + ai_mat_name.C_Str();
+                material->diffuse_texture = app.get_texture_loader().load(texture_path);
+                material->name = ai_material->GetName().C_Str();
 
-                if (texture_count > 1)
-                {
-                    LOG_ERROR("Only one texture for each mesh is supported");
-                }
+                LOG_INFO("Loaded texture: {0}", texture_path);
+            }
+
+            // Load default textures if none are found
+            if (material->diffuse_texture == nullptr)
+            {
+                material->diffuse_texture =
+                    app.get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
+
+                material->name = "Default";
             }
 
             // Buffers
@@ -119,7 +127,7 @@ namespace mag
             ibo.initialize(indices.data(), indices.size() * sizeof(u32));
 
             auto& material_loader = app.get_material_loader();
-            auto mat = material_loader.load(ai_material->GetName().C_Str(), material);
+            auto mat = material_loader.load(material);
 
             Mesh new_mesh = {name, vbo, ibo, vertices, indices, mat};
             model->meshes.push_back(new_mesh);
@@ -237,8 +245,9 @@ namespace mag
         // Create a diffuse texture
         Material* material = new Material();
         material->diffuse_texture = texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png");
+        material->name = "Default";
 
-        mesh.material = material_loader.load("default", material);
+        mesh.material = material_loader.load(material);
     }
 
     Cube::~Cube()

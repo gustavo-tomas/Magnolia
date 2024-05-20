@@ -43,6 +43,7 @@ namespace mag
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
             void render_settings(const ImGuiWindowFlags window_flags);
             void render_properties(ECS& ecs, const u32 entity_id);
+            void render_materials(const ModelComponent& model_component);
 
             EventCallback event_callback;
 
