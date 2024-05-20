@@ -1,6 +1,6 @@
 #pragma once
 
-// !TODO: use caching for render passes and pipelines!
+// @TODO: imagine how good this will look once i refactor it
 
 #include <memory>
 #include <unordered_map>
@@ -61,5 +61,42 @@ namespace mag
 
             static void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
             static void build(const Descriptor& descriptor, const std::vector<std::shared_ptr<Image>>& images);
+    };
+
+    // DescriptorCache
+    // -----------------------------------------------------------------------------------------------------------------
+    class Model;
+    class Shader;
+    class DescriptorCache
+    {
+        public:
+            DescriptorCache() = default;
+            ~DescriptorCache();
+
+            void build_descriptors_from_shader(const Shader& shader);
+            void bind();
+            void add_image_descriptors_for_model(const Model& model);
+
+            void set_offset_global(const vk::PipelineLayout& pipeline_layout);
+            void set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance);
+            void set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index);
+
+            // @TODO: idk
+            std::vector<std::vector<Buffer>>& get_data_buffers() { return data_buffers; };
+
+            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const
+            {
+                return descriptor_set_layouts;
+            };
+
+        private:
+            void set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
+                                              const u32 buffer_indices, const u64 buffer_offsets);
+
+            b8 uniform_inited = {}, image_inited = {};
+            std::vector<std::vector<Buffer>> data_buffers;
+            std::vector<std::shared_ptr<Image>> textures;
+            std::vector<Descriptor> uniform_descriptors, image_descriptors;
+            std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
     };
 };  // namespace mag

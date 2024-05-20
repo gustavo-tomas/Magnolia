@@ -20,6 +20,7 @@ namespace mag
     {
         auto& app = get_application();
         auto& shader_loader = app.get_shader_loader();
+        auto& descriptors = get_context().get_descriptor_cache();
 
         // Set draw size before initializing images
         this->draw_size = {size, 1};
@@ -55,12 +56,15 @@ namespace mag
 
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
+        // Descriptors
+        descriptors.build_descriptors_from_shader(*triangle_shader);
+
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
                                                                    depth_images[0].get_format());
 
-        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info,
-                                                       triangle_shader->get_descriptor_set_layouts(), *triangle_shader);
+        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
+                                                       *triangle_shader);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -71,7 +75,7 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
+        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
                                                    *grid_shader, color_blend_attachment);
     }
 
@@ -165,6 +169,7 @@ namespace mag
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
+        auto& descriptors = context.get_descriptor_cache();
 
         auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
@@ -192,8 +197,8 @@ namespace mag
             triangle_shader->set_uniform_instance("model", value_ptr(model_matrix), b);
         }
 
-        triangle_shader->bind();
-        triangle_shader->set_offset_global(triangle_pipeline->get_layout());
+        descriptors.bind();
+        descriptors.set_offset_global(triangle_pipeline->get_layout());
 
         triangle_pipeline->bind();
 
@@ -202,7 +207,7 @@ namespace mag
         {
             const auto& model = std::get<1>(model_entities[m]);
 
-            triangle_shader->set_offset_instance(triangle_pipeline->get_layout(), m);
+            descriptors.set_offset_instance(triangle_pipeline->get_layout(), m);
 
             for (u64 i = 0; i < model->model.meshes.size(); i++)
             {
@@ -210,7 +215,7 @@ namespace mag
 
                 if (!mesh.textures.empty())
                 {
-                    triangle_shader->set_offset_material(triangle_pipeline->get_layout(), tex_idx++);
+                    descriptors.set_offset_material(triangle_pipeline->get_layout(), tex_idx++);
                 }
 
                 // Draw the mesh
@@ -220,15 +225,10 @@ namespace mag
             }
         }
 
-        // Set grid uniforms
-        grid_shader->set_uniform_global("view", value_ptr(camera.get_view()));
-        grid_shader->set_uniform_global("projection", value_ptr(camera.get_projection()));
-        grid_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
-
-        grid_shader->bind();
-        grid_shader->set_offset_global(grid_pipeline->get_layout());
-
         // Draw the grid
+        descriptors.bind();
+        descriptors.set_offset_global(grid_pipeline->get_layout());
+
         grid_pipeline->bind();
         command_buffer.draw(6);
     }
@@ -244,7 +244,12 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::add_model(const Model& model) { triangle_shader->add_model(model); }
+    void StandardRenderPass::add_model(const Model& model)
+    {
+        auto& descriptors = get_context().get_descriptor_cache();
+
+        descriptors.add_image_descriptors_for_model(model);
+    }
 
     void StandardRenderPass::on_resize(const uvec2& size)
     {

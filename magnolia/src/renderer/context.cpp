@@ -322,16 +322,19 @@ namespace mag
         this->frame_provider.initialize(frame_count);
 
         // Descriptors
-        descriptor_cache.initialize();
+        descriptor_layout_cache.initialize();
+        descriptor_cache = std::make_unique<DescriptorCache>();
     }
 
     Context::~Context()
     {
         this->device.waitIdle();
 
+        this->descriptor_cache.reset();
+
         vmaDestroyAllocator(this->allocator);
 
-        this->descriptor_cache.shutdown();
+        this->descriptor_layout_cache.shutdown();
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);

@@ -5,6 +5,8 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
+#include "renderer/model.hpp"
+#include "renderer/shader.hpp"
 
 namespace mag
 {
@@ -124,7 +126,7 @@ namespace mag
 
         auto& context = get_context();
         auto& device = context.get_device();
-        auto& cache = context.get_descriptor_cache();
+        auto& cache = context.get_descriptor_layout_cache();
 
         Descriptor descriptor;
 
@@ -213,5 +215,205 @@ namespace mag
             device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize,
                                     descriptor_buffer_data + offset);
         }
+    }
+
+    // Descriptor Buffer Limits
+    // By limiting the number of models/textures we can initialize the descriptor buffers only once and simply rebuild
+    // get the descriptor sets again when we modify the uniform/texture data. @TODO: we may want to extend this approach
+    // and first check if the descriptor buffer supports the size and also make the limits configurable.
+    const u32 MAX_NUMBER_OF_GLOBALS = 1;      // Only one global buffer
+    const u32 MAX_NUMBER_OF_INSTANCES = 999;  // The rest is instance buffers
+    const u32 MAX_NUMBER_OF_UNIFORMS = MAX_NUMBER_OF_GLOBALS + MAX_NUMBER_OF_INSTANCES;
+    const u32 MAX_NUMBER_OF_TEXTURES = 1000;
+
+    // DescriptorCache
+    // -----------------------------------------------------------------------------------------------------------------
+    void DescriptorCache::build_descriptors_from_shader(const Shader& shader)
+    {
+        const u32 frame_count = get_context().get_frame_count();
+
+        uniform_descriptors.resize(frame_count);
+        image_descriptors.resize(frame_count);
+        data_buffers.resize(frame_count);
+
+        auto vertex_module = shader.get_modules()[0];
+        auto fragment_module = shader.get_modules()[1];
+        auto uniforms = shader.get_uniforms();
+
+        // Create descriptors
+        for (u64 i = 0; i < frame_count; i++)
+        {
+            // @TODO: hardcoded values
+            if (vertex_module->get_reflection().descriptor_set_count > 0)
+            {
+                uniform_inited = true;
+
+                uniform_descriptors[i] = DescriptorBuilder::build_layout(vertex_module->get_reflection(), 0);
+
+                uniform_descriptors[i].buffer.initialize(
+                    MAX_NUMBER_OF_UNIFORMS * uniform_descriptors[i].size,
+                    VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                    VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                uniform_descriptors[i].buffer.map_memory();
+
+                if (i == 0)  // Only insert once
+                {
+                    descriptor_set_layouts.push_back(uniform_descriptors[i].layout);  // Global
+                    descriptor_set_layouts.push_back(uniform_descriptors[i].layout);  // Instance
+                }
+            }
+
+            if (fragment_module->get_reflection().descriptor_set_count > 2)
+            {
+                image_inited = true;
+
+                image_descriptors[i] = DescriptorBuilder::build_layout(fragment_module->get_reflection(), 2);
+
+                image_descriptors[i].buffer.initialize(
+                    MAX_NUMBER_OF_TEXTURES * image_descriptors[i].size,
+                    VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
+                        VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                    VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                image_descriptors[i].buffer.map_memory();
+
+                if (i == 0)  // Only insert once
+                {
+                    descriptor_set_layouts.push_back(image_descriptors[i].layout);  // Textures
+                }
+            }
+
+            // We can also initialize the data buffers here
+            for (u64 b = 0; b < MAX_NUMBER_OF_UNIFORMS; b++)
+            {
+                const u64 buffer_size =
+                    b < MAX_NUMBER_OF_GLOBALS ? uniforms["u_global"].data.size() : uniforms["u_instance"].data.size();
+
+                Buffer buffer;
+                buffer.initialize(buffer_size,
+                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                data_buffers[i].push_back(buffer);
+            }
+
+            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
+        }
+    }
+
+    DescriptorCache::~DescriptorCache()
+    {
+        if (uniform_inited)
+        {
+            for (auto& descriptor : uniform_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
+        }
+
+        if (image_inited)
+        {
+            for (auto& descriptor : image_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
+        }
+
+        for (auto& buffers : data_buffers)
+        {
+            for (auto& buffer : buffers)
+            {
+                buffer.shutdown();
+            }
+        }
+    }
+
+    void DescriptorCache::bind()
+    {
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
+
+        if (uniform_inited)
+        {
+            descriptor_buffer_binding_infos.push_back(
+                {uniform_descriptors[curr_frame_number].buffer.get_device_address(),
+                 vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
+        }
+
+        if (image_inited)
+        {
+            descriptor_buffer_binding_infos.push_back({image_descriptors[curr_frame_number].buffer.get_device_address(),
+                                                       vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
+                                                           vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
+        }
+
+        // Bind descriptor buffers and set offsets
+        command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
+    }
+
+    void DescriptorCache::add_image_descriptors_for_model(const Model& model)
+    {
+        auto& context = get_context();
+
+        const u32 frame_count = context.get_frame_count();
+
+        // Put all models textures in a single array
+        for (auto& mesh : model.meshes)
+        {
+            for (auto& texture : mesh.textures)
+            {
+                textures.emplace_back(texture);
+            }
+        }
+
+        // Create descriptor buffer that holds texture data
+        for (u32 i = 0; i < frame_count; i++)
+        {
+            if (textures.size() + 1 > MAX_NUMBER_OF_TEXTURES)
+            {
+                LOG_ERROR("Maximum number of textures exceeded: {0}", MAX_NUMBER_OF_TEXTURES);
+                return;
+            }
+
+            DescriptorBuilder::build(image_descriptors[i], textures);
+        }
+    }
+
+    void DescriptorCache::set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
+                                                       const u32 buffer_indices, const u64 buffer_offsets)
+    {
+        auto& command_buffer = get_context().get_curr_frame().command_buffer;
+
+        const auto pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
+
+        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, pipeline_layout, first_set,
+                                                                  buffer_indices, buffer_offsets);
+    }
+
+    void DescriptorCache::set_offset_global(const vk::PipelineLayout& pipeline_layout)
+    {
+        set_descriptor_buffer_offset(pipeline_layout, 0, 0, 0);
+    }
+
+    void DescriptorCache::set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance)
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+        const u64 buffer_offsets = (instance + 1) * uniform_descriptors[curr_frame_number].size;
+
+        set_descriptor_buffer_offset(pipeline_layout, 1, 0, buffer_offsets);
+    }
+
+    void DescriptorCache::set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index)
+    {
+        const u32 curr_frame_number = get_context().get_curr_frame_number();
+        const u64 buffer_offsets = index * image_descriptors[curr_frame_number].size;
+
+        set_descriptor_buffer_offset(pipeline_layout, 2, 1, buffer_offsets);
     }
 };  // namespace mag
