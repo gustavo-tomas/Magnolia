@@ -65,7 +65,7 @@ namespace mag
 
     // DescriptorCache
     // -----------------------------------------------------------------------------------------------------------------
-    class Model;
+    struct Model;
     class Shader;
     class DescriptorCache
     {
