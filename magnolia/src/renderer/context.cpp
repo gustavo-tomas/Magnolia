@@ -3,6 +3,18 @@
 #include "core/logger.hpp"
 #include "core/types.hpp"
 
+// Use to trace VMA allocations
+#ifdef MAG_DEBUG_TRACE
+    #define VMA_DEBUG_LOG_FORMAT(format, ...) \
+        do                                    \
+        {                                     \
+            printf((format), __VA_ARGS__);    \
+            printf("\n");                     \
+        } while (false)
+
+    #define VMA_DEBUG_LOG(str) VMA_DEBUG_LOG_FORMAT("%s", (str))
+#endif
+
 #define VMA_IMPLEMENTATION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wall"
@@ -10,6 +22,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include "vk_mem_alloc.h"
 #pragma GCC diagnostic pop
 
