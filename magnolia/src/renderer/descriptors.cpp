@@ -366,7 +366,7 @@ namespace mag
         // Put all models textures in a single array
         for (auto& mesh : model.meshes)
         {
-            for (auto& texture : mesh.textures)
+            if (auto texture = mesh.material->diffuse_texture)
             {
                 textures.emplace_back(texture);
             }

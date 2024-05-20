@@ -213,7 +213,7 @@ namespace mag
             {
                 const auto& mesh = model->model.meshes[i];
 
-                if (!mesh.textures.empty())
+                if (mesh.material && mesh.material->diffuse_texture)
                 {
                     descriptors.set_offset_material(triangle_pipeline->get_layout(), tex_idx++);
                 }

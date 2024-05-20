@@ -6,6 +6,7 @@
 #include "core/window.hpp"
 #include "editor/editor.hpp"
 #include "renderer/image.hpp"
+#include "renderer/material.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
@@ -25,7 +26,7 @@ namespace mag
     {
         public:
             explicit Application(const ApplicationOptions& options);
-            virtual ~Application();
+            virtual ~Application() = default;
 
             void run();
             void on_event(Event& e);
@@ -37,6 +38,7 @@ namespace mag
             ModelLoader& get_model_loader() { return *model_loader; };
             TextureLoader& get_texture_loader() { return *texture_loader; };
             ShaderLoader& get_shader_loader() { return *shader_loader; };
+            MaterialLoader& get_material_loader() { return *material_loader; };
             Scene& get_active_scene() { return *active_scene; };
 
         private:
@@ -48,6 +50,7 @@ namespace mag
             std::unique_ptr<Editor> editor;
             std::unique_ptr<ModelLoader> model_loader;
             std::unique_ptr<TextureLoader> texture_loader;
+            std::unique_ptr<MaterialLoader> material_loader;
             std::unique_ptr<ShaderLoader> shader_loader;
             std::unique_ptr<Scene> active_scene;
 

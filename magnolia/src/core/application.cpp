@@ -41,14 +41,16 @@ namespace mag
         shader_loader = std::make_unique<ShaderLoader>();
         LOG_SUCCESS("ShaderLoader initialized");
 
+        // Create the material loader
+        material_loader = std::make_unique<MaterialLoader>();
+        LOG_SUCCESS("MaterialLoader initialized");
+
         // Create the editor
         editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");
 
         running = true;
     }
-
-    Application::~Application() {}
 
     void Application::run()
     {
