@@ -10,9 +10,9 @@
 
 namespace mag
 {
-    ModelLoader::ModelLoader() { importer = std::make_unique<Assimp::Importer>(); }
+    ModelManager::ModelManager() { importer = std::make_unique<Assimp::Importer>(); }
 
-    ModelLoader::~ModelLoader()
+    ModelManager::~ModelManager()
     {
         // @TODO: idk about this
         get_context().get_device().waitIdle();
@@ -28,7 +28,7 @@ namespace mag
         }
     }
 
-    std::shared_ptr<Model> ModelLoader::load(const str& file)
+    std::shared_ptr<Model> ModelManager::load(const str& file)
     {
         auto it = models.find(file);
         if (it != models.end()) return it->second;
@@ -138,7 +138,7 @@ namespace mag
         return models[file];
     }
 
-    b8 ModelLoader::is_extension_supported(const str& extension_with_dot)
+    b8 ModelManager::is_extension_supported(const str& extension_with_dot)
     {
         return importer->IsExtensionSupported(extension_with_dot);
     }

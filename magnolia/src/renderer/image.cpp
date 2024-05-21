@@ -7,7 +7,7 @@
 
 namespace mag
 {
-    TextureLoader::~TextureLoader()
+    TextureManager::~TextureManager()
     {
         for (const auto& texture_pair : textures)
         {
@@ -16,7 +16,7 @@ namespace mag
         }
     }
 
-    std::shared_ptr<Image> TextureLoader::load(const str& file)
+    std::shared_ptr<Image> TextureManager::load(const str& file)
     {
         auto it = textures.find(file);
         if (it != textures.end()) return it->second;

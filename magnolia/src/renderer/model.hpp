@@ -33,11 +33,11 @@ namespace mag
             str name;
     };
 
-    class ModelLoader
+    class ModelManager
     {
         public:
-            ModelLoader();
-            ~ModelLoader();
+            ModelManager();
+            ~ModelManager();
 
             std::shared_ptr<Model> load(const str& file);
             b8 is_extension_supported(const str& extension_with_dot);

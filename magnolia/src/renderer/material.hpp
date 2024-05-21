@@ -12,7 +12,7 @@ namespace mag
             str name = "";  // @TODO: meh
     };
 
-    class MaterialLoader
+    class MaterialManager
     {
         public:
             // std::shared_ptr<Material> load(const str& file); // @TODO: make a material file one day

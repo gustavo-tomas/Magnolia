@@ -30,19 +30,19 @@ namespace mag
         LOG_SUCCESS("Renderer initialized");
 
         // Create the model loader
-        model_loader = std::make_unique<ModelLoader>();
+        model_loader = std::make_unique<ModelManager>();
         LOG_SUCCESS("ModelLoader initialized");
 
         // Create the texture loader
-        texture_loader = std::make_unique<TextureLoader>();
+        texture_loader = std::make_unique<TextureManager>();
         LOG_SUCCESS("TextureLoader initialized");
 
         // Create the shader loader
-        shader_loader = std::make_unique<ShaderLoader>();
+        shader_loader = std::make_unique<ShaderManager>();
         LOG_SUCCESS("ShaderLoader initialized");
 
         // Create the material loader
-        material_loader = std::make_unique<MaterialLoader>();
+        material_loader = std::make_unique<MaterialManager>();
         LOG_SUCCESS("MaterialLoader initialized");
 
         // Create the editor

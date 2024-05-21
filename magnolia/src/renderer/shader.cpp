@@ -7,7 +7,7 @@
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderLoader::load(const str& name, const str& vertex_file, const str& fragment_file)
+    std::shared_ptr<Shader> ShaderManager::load(const str& name, const str& vertex_file, const str& fragment_file)
     {
         auto it = shaders.find(name);
         if (it != shaders.end()) return it->second;
@@ -22,7 +22,7 @@ namespace mag
         return shaders[name];
     }
 
-    std::shared_ptr<ShaderModule> ShaderLoader::load_module(const str& file)
+    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file)
     {
         auto it = shader_modules.find(file);
         if (it != shader_modules.end()) return it->second;
@@ -52,7 +52,7 @@ namespace mag
         return shader_modules[file];
     }
 
-    ShaderLoader::~ShaderLoader()
+    ShaderManager::~ShaderManager()
     {
         auto& context = get_context();
         context.get_device().waitIdle();

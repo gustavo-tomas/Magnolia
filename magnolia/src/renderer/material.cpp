@@ -5,7 +5,7 @@
 namespace mag
 {
     // std::shared_ptr<Material> load(const str& file); // @TODO: make a material file one day
-    std::shared_ptr<Material> MaterialLoader::load(Material* material)
+    std::shared_ptr<Material> MaterialManager::load(Material* material)
     {
         auto it = materials.find(material->name);
 
@@ -26,7 +26,7 @@ namespace mag
     };
 
     // @TODO: return a default material if name not found?
-    std::shared_ptr<Material> MaterialLoader::get(const str& name)
+    std::shared_ptr<Material> MaterialManager::get(const str& name)
     {
         auto it = materials.find(name);
         ASSERT(it != materials.end(), "Material '" + name + "' not found");

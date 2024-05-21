@@ -35,10 +35,10 @@ namespace mag
 
             Window& get_window() { return *window; };
             Editor& get_editor() { return *editor; };
-            ModelLoader& get_model_loader() { return *model_loader; };
-            TextureLoader& get_texture_loader() { return *texture_loader; };
-            ShaderLoader& get_shader_loader() { return *shader_loader; };
-            MaterialLoader& get_material_loader() { return *material_loader; };
+            ModelManager& get_model_loader() { return *model_loader; };
+            TextureManager& get_texture_loader() { return *texture_loader; };
+            ShaderManager& get_shader_loader() { return *shader_loader; };
+            MaterialManager& get_material_loader() { return *material_loader; };
             Scene& get_active_scene() { return *active_scene; };
 
         private:
@@ -48,10 +48,10 @@ namespace mag
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
             std::unique_ptr<Editor> editor;
-            std::unique_ptr<ModelLoader> model_loader;
-            std::unique_ptr<TextureLoader> texture_loader;
-            std::unique_ptr<MaterialLoader> material_loader;
-            std::unique_ptr<ShaderLoader> shader_loader;
+            std::unique_ptr<ModelManager> model_loader;
+            std::unique_ptr<TextureManager> texture_loader;
+            std::unique_ptr<MaterialManager> material_loader;
+            std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<Scene> active_scene;
 
             b8 running;
