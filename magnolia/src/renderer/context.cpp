@@ -191,10 +191,10 @@ namespace mag
         physical_device.getProperties2(&physical_device_properties);
 
         // @TODO: harcoded to max samples
-        // @TODO: stencil buffer might bite
         const auto properties = this->physical_device_properties.properties;
-        const auto counts =
-            properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+        const auto counts = properties.limits.framebufferColorSampleCounts &
+                            properties.limits.framebufferDepthSampleCounts &
+                            properties.limits.framebufferStencilSampleCounts;
 
         this->msaa_samples = (counts & vk::SampleCountFlagBits::e64)   ? vk::SampleCountFlagBits::e64
                              : (counts & vk::SampleCountFlagBits::e32) ? vk::SampleCountFlagBits::e32
@@ -322,16 +322,19 @@ namespace mag
         this->frame_provider.initialize(frame_count);
 
         // Descriptors
-        descriptor_cache.initialize();
+        descriptor_layout_cache.initialize();
+        descriptor_cache = std::make_unique<DescriptorCache>();
     }
 
     Context::~Context()
     {
         this->device.waitIdle();
 
+        this->descriptor_cache.reset();
+
         vmaDestroyAllocator(this->allocator);
 
-        this->descriptor_cache.shutdown();
+        this->descriptor_layout_cache.shutdown();
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);

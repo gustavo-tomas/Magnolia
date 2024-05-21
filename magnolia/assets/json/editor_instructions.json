@@ -16,7 +16,7 @@
                 "Select a model in the Scene tab to view its properties",
                 "Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model",
                 "Press MOUSE_WHEEL and move the mouse to look around",
-                "Press LEFT_SHIFT and move the mouse to move the camera"
+                "Press LEFT_SHIFT + MOUSE_WHEEL and move the mouse to move the camera"
             ]
         }
     ]

@@ -34,6 +34,12 @@ namespace mag
 
     void EditorCameraController::on_event(Event& e)
     {
+        // Only dispatch if viewport is active
+        if (!get_application().get_editor().is_viewport_window_active())
+        {
+            return;
+        }
+
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorCameraController::on_mouse_move));
         dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorCameraController::on_mouse_scroll));
@@ -45,15 +51,8 @@ namespace mag
 
         const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
-        // Rotate
-        if (window.is_button_down(SDL_BUTTON_MIDDLE))
-        {
-            const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
-            this->camera.set_rotation(new_rot);
-        }
-
         // Translate
-        else if (window.is_key_down(SDLK_LSHIFT))
+        if (window.is_key_down(SDLK_LSHIFT) && window.is_button_down(SDL_BUTTON_MIDDLE))
         {
             const vec3 side = this->camera.get_side();
             const vec3 up = this->camera.get_up();
@@ -63,6 +62,13 @@ namespace mag
             camera_position += side * static_cast<f32>(-mouse_dir.x) * 0.25f;
 
             this->camera.set_position(camera_position);
+        }
+
+        // Rotate
+        else if (window.is_button_down(SDL_BUTTON_MIDDLE))
+        {
+            const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
+            this->camera.set_rotation(new_rot);
         }
     }
 

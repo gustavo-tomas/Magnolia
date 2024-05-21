@@ -361,6 +361,8 @@ namespace mag
             }
         }
 
+        viewport_window_active = ImGui::IsWindowFocused();
+
         ImGui::End();
 
         ImGui::PopStyleVar();
@@ -419,8 +421,24 @@ namespace mag
         // Properties tab
         ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
 
-        // Only render properties if a model is selected
-        if (selected_entity_id != std::numeric_limits<u64>().max()) render_properties(ecs, selected_entity_id);
+        // Only render properties if an entity is selected
+        if (selected_entity_id != std::numeric_limits<u64>().max())
+        {
+            render_properties(ecs, selected_entity_id);
+        }
+
+        ImGui::End();
+
+        // Materials tab
+        ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials");
+
+        if (selected_entity_id != std::numeric_limits<u64>().max())
+        {
+            if (auto model = ecs.get_component<ModelComponent>(selected_entity_id))
+            {
+                render_materials(*model);
+            }
+        }
 
         ImGui::End();
     }
@@ -522,6 +540,27 @@ namespace mag
                     light->intensity = light_intensity;
                 }
             }
+        }
+    }
+
+    void Editor::render_materials(const ModelComponent &model_component)
+    {
+        b8 has_material = false;
+
+        auto &model = model_component.model;
+        for (u32 i = 0; i < model.meshes.size(); i++)
+        {
+            auto &mesh = model.meshes[i];
+            if (!mesh.material->name.empty())
+            {
+                ImGui::Text("Slot %u: %s", i, mesh.material->name.c_str());
+                has_material = true;
+            }
+        }
+
+        if (!has_material)
+        {
+            ImGui::Text("No material");
         }
     }
 

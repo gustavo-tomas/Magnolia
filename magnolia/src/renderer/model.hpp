@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "renderer/buffers.hpp"
-#include "renderer/image.hpp"
+#include "renderer/material.hpp"
 
 namespace mag
 {
@@ -24,7 +24,7 @@ namespace mag
             IndexBuffer ibo;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
-            std::vector<std::shared_ptr<Image>> textures;
+            std::shared_ptr<Material> material;
     };
 
     struct Model
@@ -33,11 +33,11 @@ namespace mag
             str name;
     };
 
-    class ModelLoader
+    class ModelManager
     {
         public:
-            ModelLoader();
-            ~ModelLoader();
+            ModelManager();
+            ~ModelManager();
 
             std::shared_ptr<Model> load(const str& file);
             b8 is_extension_supported(const str& extension_with_dot);

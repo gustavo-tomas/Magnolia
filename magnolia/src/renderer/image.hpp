@@ -34,11 +34,11 @@ namespace mag
             u32 mip_levels;
     };
 
-    class TextureLoader
+    class TextureManager
     {
         public:
-            TextureLoader() = default;
-            ~TextureLoader();
+            TextureManager() = default;
+            ~TextureManager();
 
             std::shared_ptr<Image> load(const str& file);
 

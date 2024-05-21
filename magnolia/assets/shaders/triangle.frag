@@ -12,7 +12,6 @@ layout (location = 0) out vec4 out_frag_color;
 void main()
 {
 	vec4 object_color = texture(u_diffuse_texture, in_tex_coords);
-	if (object_color.a < 0.5) discard;
 
 	// @TODO: this is pretty slow, but for now its ok
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);
@@ -25,4 +24,5 @@ void main()
 	}
 
 	out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);
+	if (out_frag_color.a < 0.5) discard; // Discard transparent fragments
 }
