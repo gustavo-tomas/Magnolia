@@ -40,6 +40,22 @@ namespace mag
         extensions.resize(count);
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, extensions.data()),
                "Failed to get extensions: " + str(SDL_GetError()));
+
+        // Set application icon
+        const str file = "magnolia/assets/images/application_icon.bmp";
+
+        SDL_Surface* icon = SDL_LoadBMP(file.c_str());
+
+        if (!icon)
+        {
+            LOG_ERROR("Failed to load application icon: {0}", str(SDL_GetError()));
+        }
+
+        else
+        {
+            SDL_SetWindowIcon(handle, icon);
+            SDL_FreeSurface(icon);
+        }
     }
 
     Window::~Window()
