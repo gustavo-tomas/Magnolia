@@ -191,10 +191,10 @@ namespace mag
         physical_device.getProperties2(&physical_device_properties);
 
         // @TODO: harcoded to max samples
-        // @TODO: stencil buffer might bite
         const auto properties = this->physical_device_properties.properties;
-        const auto counts =
-            properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+        const auto counts = properties.limits.framebufferColorSampleCounts &
+                            properties.limits.framebufferDepthSampleCounts &
+                            properties.limits.framebufferStencilSampleCounts;
 
         this->msaa_samples = (counts & vk::SampleCountFlagBits::e64)   ? vk::SampleCountFlagBits::e64
                              : (counts & vk::SampleCountFlagBits::e32) ? vk::SampleCountFlagBits::e32
