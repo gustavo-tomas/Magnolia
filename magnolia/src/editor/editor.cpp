@@ -361,6 +361,8 @@ namespace mag
             }
         }
 
+        viewport_window_active = ImGui::IsWindowFocused();
+
         ImGui::End();
 
         ImGui::PopStyleVar();

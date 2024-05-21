@@ -27,6 +27,9 @@ namespace mag
             void set_viewport_image(const Image& image);
             void set_input_disabled(const b8 disable);
 
+            // @TODO: this can be extended to query by window name if needed
+            const b8& is_viewport_window_active() const { return viewport_window_active; };
+
             const Image& get_image() const { return render_pass.get_draw_image(); };
             const uvec3& get_draw_size() const { return render_pass.get_draw_size(); };
 
@@ -58,6 +61,7 @@ namespace mag
             uvec2 viewport_size = {1, 1};
             b8 resize_needed = false;
             b8 disabled = false;
+            b8 viewport_window_active = false;
             u64 selected_entity_id = std::numeric_limits<u64>().max();
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };

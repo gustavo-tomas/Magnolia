@@ -34,6 +34,12 @@ namespace mag
 
     void EditorCameraController::on_event(Event& e)
     {
+        // Only dispatch if viewport is active
+        if (!get_application().get_editor().is_viewport_window_active())
+        {
+            return;
+        }
+
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorCameraController::on_mouse_move));
         dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorCameraController::on_mouse_scroll));
