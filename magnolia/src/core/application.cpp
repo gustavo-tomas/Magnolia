@@ -54,8 +54,8 @@ namespace mag
 
     void Application::run()
     {
-        u64 curr_time = 0, last_time = 0, frame_counter = 0;
-        f64 time_counter = 0.0, dt = 0.0;
+        u64 curr_time = 0, last_time = 0;
+        f64 dt = 0.0;
 
         while (running)
         {
@@ -63,14 +63,6 @@ namespace mag
             curr_time = window->get_time();
             dt = curr_time - last_time;
             last_time = curr_time;
-
-            frame_counter++;
-            time_counter += dt;
-            if (time_counter >= 1000.0)
-            {
-                LOG_INFO("CPU: {0:.3f} ms/frame - {1} fps", 1000.0 / static_cast<f64>(frame_counter), frame_counter);
-                frame_counter = time_counter = 0;
-            }
 
             window->update();
 

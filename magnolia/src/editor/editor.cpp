@@ -173,6 +173,7 @@ namespace mag
         render_content_browser(window_flags);
         render_scene(window_flags, ecs);
         render_settings(window_flags);
+        render_status();
 
         ImGui::EndDisabled();
 
@@ -562,6 +563,20 @@ namespace mag
         {
             ImGui::Text("No material");
         }
+    }
+
+    void Editor::render_status()
+    {
+        ImGui::Begin(ICON_FA_INFO " Status");
+
+        // Display frame rate
+        const auto &io = ImGui::GetIO();
+        const f32 frame_rate = io.Framerate;
+        const f32 frame_duration = 1000.0f / frame_rate;
+
+        ImGui::Text("CPU: %.3f ms/frame - %lf fps", frame_duration, frame_rate);
+
+        ImGui::End();
     }
 
     void Editor::on_event(Event &e)
