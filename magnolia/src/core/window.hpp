@@ -44,7 +44,7 @@ namespace mag
 
             b8 is_key_pressed(const Key key);
             b8 is_key_down(const Key key);
-            b8 is_button_down(const u8 button);
+            b8 is_button_down(const Button button);
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
             b8 is_fullscreen() const;
@@ -67,7 +67,7 @@ namespace mag
 
             std::unordered_map<Key, b8> key_state;
             std::unordered_map<Key, u32> key_update;
-            std::unordered_map<u8, b8> button_state;
-            std::unordered_map<u8, u32> button_update;
+            std::unordered_map<Button, b8> button_state;
+            std::unordered_map<Button, u32> button_update;
     };
 };  // namespace mag

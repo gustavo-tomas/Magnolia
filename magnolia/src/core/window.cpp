@@ -73,7 +73,7 @@ namespace mag
         while (SDL_PollEvent(&e) != 0)
         {
             const Key key = static_cast<Key>(e.key.keysym.sym);
-            const u8 button = e.button.button;
+            const Button button = static_cast<Button>(e.button.button);
 
             switch (e.type)
             {
@@ -168,7 +168,7 @@ namespace mag
 
     b8 Window::is_key_down(const Key key) { return key_state[key]; }
 
-    b8 Window::is_button_down(const u8 button) { return button_state[button]; }
+    b8 Window::is_button_down(const Button button) { return button_state[button]; }
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 

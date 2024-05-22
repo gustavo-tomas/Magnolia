@@ -52,7 +52,7 @@ namespace mag
         const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
         // Translate
-        if (window.is_key_down(Key::Lshift) && window.is_button_down(SDL_BUTTON_MIDDLE))
+        if (window.is_key_down(Key::Lshift) && window.is_button_down(Button::Middle))
         {
             const vec3 side = this->camera.get_side();
             const vec3 up = this->camera.get_up();
@@ -65,7 +65,7 @@ namespace mag
         }
 
         // Rotate
-        else if (window.is_button_down(SDL_BUTTON_MIDDLE))
+        else if (window.is_button_down(Button::Middle))
         {
             const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
             this->camera.set_rotation(new_rot);

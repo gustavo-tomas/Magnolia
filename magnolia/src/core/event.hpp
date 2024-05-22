@@ -119,11 +119,11 @@ namespace mag
 
     struct MousePressEvent : public Event
     {
-            MousePressEvent(const u8 button) : button(button) {}
+            MousePressEvent(const Button button) : button(button) {}
 
             EVENT_CLASS_TYPE(MousePress);
 
-            u8 button;
+            Button button;
     };
 
     // @TODO: ooffff
