@@ -72,8 +72,8 @@ namespace mag
 
         while (SDL_PollEvent(&e) != 0)
         {
-            const SDL_Keycode key = e.key.keysym.sym;
-            const u8 button = e.button.button;
+            const Key key = static_cast<Key>(e.key.keysym.sym);
+            const Button button = static_cast<Button>(e.button.button);
 
             switch (e.type)
             {
@@ -164,11 +164,11 @@ namespace mag
 
     void Window::sleep(const u32 ms) { SDL_Delay(ms); }
 
-    b8 Window::is_key_pressed(const SDL_Keycode key) { return key_state[key] && (key_update[key] == update_counter); }
+    b8 Window::is_key_pressed(const Key key) { return key_state[key] && (key_update[key] == update_counter); }
 
-    b8 Window::is_key_down(const SDL_Keycode key) { return key_state[key]; }
+    b8 Window::is_key_down(const Key key) { return key_state[key]; }
 
-    b8 Window::is_button_down(const u8 button) { return button_state[button]; }
+    b8 Window::is_button_down(const Button button) { return button_state[button]; }
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 

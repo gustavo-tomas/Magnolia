@@ -130,7 +130,7 @@ namespace mag
         }
 
         // Alternate between Fullscreen and Windowed
-        if (window.is_key_pressed(SDLK_ESCAPE))
+        if (window.is_key_pressed(Key::Escape))
         {
             window.set_fullscreen(!window.is_fullscreen());
         }
@@ -584,18 +584,21 @@ namespace mag
         switch (e.key)
         {
             // Move
-            case SDLK_g:
+            case Key::g:
                 gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
                 break;
 
             // Rotate
-            case SDLK_r:
+            case Key::r:
                 gizmo_operation = ImGuizmo::OPERATION::ROTATE;
                 break;
 
             // Scale
-            case SDLK_s:
+            case Key::s:
                 gizmo_operation = ImGuizmo::OPERATION::SCALE;
+                break;
+
+            default:
                 break;
         }
     }

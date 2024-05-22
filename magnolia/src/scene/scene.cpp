@@ -62,10 +62,10 @@ namespace mag
         camera_controller->update(dt);
 
         // @TODO: testing
-        if (window.is_key_down(SDLK_UP))
+        if (window.is_key_down(Key::Up))
             render_pass->set_render_scale(render_pass->get_render_scale() + 0.15f * dt);
 
-        else if (window.is_key_down(SDLK_DOWN))
+        else if (window.is_key_down(Key::Down))
             render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
         // @TODO: testing
 

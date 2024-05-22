@@ -41,7 +41,7 @@ namespace mag
 
         // @TODO: testing
         static b8 swap = false;
-        if (window.is_key_pressed(SDLK_TAB)) swap = !swap;
+        if (window.is_key_pressed(Key::Tab)) swap = !swap;
 
         const auto& extent = swap ? render_pass.get_draw_size() : editor.get_draw_size();
         const auto& image = swap ? render_pass.get_target_image() : editor.get_image();

@@ -11,12 +11,12 @@ namespace mag
         const f32 velocity = 350.0f;
 
         auto& window = get_application().get_window();
-        if (window.is_key_down(SDLK_a)) direction.x -= 1.0f;
-        if (window.is_key_down(SDLK_d)) direction.x += 1.0f;
-        if (window.is_key_down(SDLK_w)) direction.z -= 1.0f;
-        if (window.is_key_down(SDLK_s)) direction.z += 1.0f;
-        if (window.is_key_down(SDLK_SPACE)) direction.y += 1.0f;
-        if (window.is_key_down(SDLK_LCTRL)) direction.y -= 1.0f;
+        if (window.is_key_down(Key::a)) direction.x -= 1.0f;
+        if (window.is_key_down(Key::d)) direction.x += 1.0f;
+        if (window.is_key_down(Key::w)) direction.z -= 1.0f;
+        if (window.is_key_down(Key::s)) direction.z += 1.0f;
+        if (window.is_key_down(Key::Space)) direction.y += 1.0f;
+        if (window.is_key_down(Key::Lctrl)) direction.y -= 1.0f;
 
         // Prevent nan values
         if (length(direction) > 0.0f) direction = normalize(direction) * dt;
@@ -52,7 +52,7 @@ namespace mag
         const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
         // Translate
-        if (window.is_key_down(SDLK_LSHIFT) && window.is_button_down(SDL_BUTTON_MIDDLE))
+        if (window.is_key_down(Key::Lshift) && window.is_button_down(Button::Middle))
         {
             const vec3 side = this->camera.get_side();
             const vec3 up = this->camera.get_up();
@@ -65,7 +65,7 @@ namespace mag
         }
 
         // Rotate
-        else if (window.is_button_down(SDL_BUTTON_MIDDLE))
+        else if (window.is_button_down(Button::Middle))
         {
             const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, mouse_dir.x, 0.0f) / 10.0f);
             this->camera.set_rotation(new_rot);
