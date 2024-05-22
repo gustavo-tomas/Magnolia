@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/event.hpp"
+#include "core/keys.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -41,8 +42,8 @@ namespace mag
             void set_resizable(const b8 resizable);
             void set_fullscreen(const b8 fullscreen);
 
-            b8 is_key_pressed(const SDL_Keycode key);
-            b8 is_key_down(const SDL_Keycode key);
+            b8 is_key_pressed(const Key key);
+            b8 is_key_down(const Key key);
             b8 is_button_down(const u8 button);
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
@@ -64,8 +65,8 @@ namespace mag
             b8 ignore_mouse_motion_events = {};
             std::vector<const char*> extensions;
 
-            std::unordered_map<SDL_Keycode, b8> key_state;
-            std::unordered_map<SDL_Keycode, u32> key_update;
+            std::unordered_map<Key, b8> key_state;
+            std::unordered_map<Key, u32> key_update;
             std::unordered_map<u8, b8> button_state;
             std::unordered_map<u8, u32> button_update;
     };

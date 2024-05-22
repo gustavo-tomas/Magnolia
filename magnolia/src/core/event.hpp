@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "SDL_events.h"
+#include "core/keys.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -77,20 +78,20 @@ namespace mag
 
     struct KeyPressEvent : public Event
     {
-            KeyPressEvent(const u32 key) : key(key) {}
+            KeyPressEvent(const Key key) : key(key) {}
 
             EVENT_CLASS_TYPE(KeyPress);
 
-            u32 key;
+            Key key;
     };
 
     struct KeyReleaseEvent : public Event
     {
-            KeyReleaseEvent(const u32 key) : key(key) {}
+            KeyReleaseEvent(const Key key) : key(key) {}
 
             EVENT_CLASS_TYPE(KeyRelease);
 
-            u32 key;
+            Key key;
     };
 
     struct MouseMoveEvent : public Event
