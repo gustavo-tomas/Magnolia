@@ -574,7 +574,11 @@ namespace mag
         const f32 frame_rate = io.Framerate;
         const f32 frame_duration = 1000.0f / frame_rate;
 
+        const auto &context = get_context();
+        const Timestamp &timestamp = context.get_timestamp();
+
         ImGui::Text("CPU: %.3f ms/frame - %lf fps", frame_duration, frame_rate);
+        ImGui::Text("GPU: %.3f ms/frame", timestamp.end - timestamp.begin);
 
         ImGui::End();
     }

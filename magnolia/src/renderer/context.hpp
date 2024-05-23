@@ -23,6 +23,12 @@ namespace mag
             str engine_name = "Magnolia";
     };
 
+    struct Timestamp
+    {
+            f64 begin = 0;
+            f64 end = 0;
+    };
+
     class Context
     {
         public:
@@ -34,6 +40,10 @@ namespace mag
             void begin_frame();
             b8 end_frame(const Image& image, const vk::Extent3D& extent);
             void submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function);
+
+            void begin_timestamp();
+            void end_timestamp();
+            void calculate_timestamp();
 
             const vk::Instance& get_instance() const { return this->instance; };
             const vk::Device& get_device() const { return this->device; };
@@ -49,6 +59,7 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
+            const Timestamp& get_timestamp() const { return this->timestamp; };
             const u32& get_curr_frame_number() const { return this->frame_provider.get_current_frame_number(); };
 
             const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
@@ -84,6 +95,7 @@ namespace mag
             vk::CommandPool command_pool;
             vk::Fence upload_fence;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
+            vk::QueryPool query_pool;
             vk::SampleCountFlagBits msaa_samples;
 
             std::vector<vk::Image> swapchain_images;
@@ -93,6 +105,10 @@ namespace mag
             u32 queue_family_index = {};
             u32 present_image_count = {};
             u32 frame_count = {};
+            const u32 query_count = 2;
+            b8 is_query_supported = {};
+            f32 timestamp_period = {};
+            Timestamp timestamp = {};
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};

@@ -190,6 +190,9 @@ namespace mag
         physical_device_properties.pNext = &descriptor_buffer_properties;
         physical_device.getProperties2(&physical_device_properties);
 
+        // Query support
+        is_query_supported = physical_device_properties.properties.limits.timestampComputeAndGraphics;
+
         // @TODO: harcoded to max samples
         const auto properties = this->physical_device_properties.properties;
         const auto counts = properties.limits.framebufferColorSampleCounts &
@@ -321,6 +324,19 @@ namespace mag
 
         this->frame_provider.initialize(frame_count);
 
+        // Query pool
+        if (is_query_supported)
+        {
+            vk::QueryPoolCreateInfo query_pool_info({}, vk::QueryType::eTimestamp, query_count);
+            query_pool = device.createQueryPool(query_pool_info);
+            timestamp_period = properties.limits.timestampPeriod;
+        }
+
+        else
+        {
+            LOG_WARNING("Timestamp query is not suppported on this device");
+        }
+
         // Descriptors
         descriptor_layout_cache.initialize();
         descriptor_cache = std::make_unique<DescriptorCache>();
@@ -339,6 +355,7 @@ namespace mag
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);
 
+        this->device.destroyQueryPool(query_pool);
         this->device.destroyFence(this->upload_fence);
         this->device.destroyCommandPool(this->command_pool);
         this->device.destroySwapchainKHR(this->swapchain);
@@ -415,6 +432,52 @@ namespace mag
         VK_CHECK(this->device.waitForFences(this->upload_fence, true, MAG_TIMEOUT));
         this->device.resetFences(this->upload_fence);
         this->device.resetCommandPool(command_pool);
+    }
+
+    void Context::begin_timestamp()
+    {
+        if (!is_query_supported) return;
+
+        auto& command_buffer = get_curr_frame().command_buffer;
+
+        command_buffer.get_handle().resetQueryPool(query_pool, 0, query_count);
+        command_buffer.get_handle().writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, query_pool, 0);
+    }
+
+    void Context::end_timestamp()
+    {
+        if (!is_query_supported) return;
+
+        auto& command_buffer = get_curr_frame().command_buffer;
+
+        command_buffer.get_handle().writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, query_pool, 1);
+    }
+
+    void Context::calculate_timestamp()
+    {
+        if (!is_query_supported) return;
+
+        device.waitIdle();
+
+        // We need to query using u64 and then convert to float
+        struct T2
+        {
+                u64 begin = 0;
+                u64 end = 0;
+        };
+
+        auto result =
+            device.getQueryPoolResult<T2>(query_pool, 0, query_count, sizeof(u64), vk::QueryResultFlagBits::e64);
+
+        if (result.result != vk::Result::eSuccess)
+        {
+            LOG_ERROR("Failed to get query pool result: {0}", vk::to_string(result.result));
+            return;
+        }
+
+        // Convert to ms
+        timestamp = {static_cast<f64>(result.value.begin) * timestamp_period * 1e-6,
+                     static_cast<f64>(result.value.end) * timestamp_period * 1e-6};
     }
 
     vk::Format Context::get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
