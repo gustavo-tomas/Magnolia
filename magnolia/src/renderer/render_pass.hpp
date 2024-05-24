@@ -36,7 +36,7 @@ namespace mag
             void after_render();
 
             // @TODO: temp
-            void add_model(const Model& model);
+            void add_model(Model& model);
 
             void set_render_scale(const f32 scale);
             void on_resize(const uvec2& size);

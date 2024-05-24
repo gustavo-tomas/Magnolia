@@ -546,19 +546,15 @@ namespace mag
 
     void Editor::render_materials(const ModelComponent &model_component)
     {
-        b8 has_material = false;
-
         auto &model = model_component.model;
-        for (u32 i = 0; i < model.meshes.size(); i++)
+
+        for (u32 i = 0; i < model.materials.size(); i++)
         {
-            auto &mesh = model.meshes[i];
-            if (!mesh.material->name.empty())
-            {
-                ImGui::Text("Slot %u: %s", i, mesh.material->name.c_str());
-                has_material = true;
-            }
+            const auto &material = model.materials[i];
+            ImGui::Text("Slot %u: %s", i, material->name.c_str());
         }
 
+        const b8 has_material = !model.materials.empty();
         if (!has_material)
         {
             ImGui::Text("No material");

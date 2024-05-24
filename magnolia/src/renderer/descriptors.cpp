@@ -364,9 +364,9 @@ namespace mag
         const u32 frame_count = context.get_frame_count();
 
         // Put all models textures in a single array
-        for (auto& mesh : model.meshes)
+        for (auto& material : model.materials)
         {
-            if (auto texture = mesh.material->diffuse_texture)
+            if (auto texture = material->diffuse_texture)
             {
                 textures.emplace_back(texture);
             }

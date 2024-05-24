@@ -14,7 +14,7 @@ namespace mag
           camera_controller(new EditorCameraController(*camera)),
           cube(new Cube())
     {
-        const auto& cube_model = cube->get_model();
+        auto& cube_model = cube->get_model();
         const auto& light_model =
             get_application().get_model_loader().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assimp/scene.h>
+
 #include <assimp/Importer.hpp>
 #include <map>
 #include <memory>
@@ -19,18 +21,25 @@ namespace mag
 
     struct Mesh
     {
-            str name;
-            VertexBuffer vbo;
-            IndexBuffer ibo;
-            std::vector<Vertex> vertices;
-            std::vector<u32> indices;
-            std::shared_ptr<Material> material;
+            u32 base_vertex;
+            u32 base_index;
+            u32 index_count;
+            u32 material_index;
     };
 
     struct Model
     {
-            std::vector<Mesh> meshes;
             str name;
+            std::vector<Mesh> meshes;
+
+            std::vector<std::shared_ptr<Material>> materials;
+            std::vector<Vertex> vertices;
+            std::vector<u32> indices;
+
+            VertexBuffer vbo;
+            IndexBuffer ibo;
+
+            u32 descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
     };
 
     class ModelManager
@@ -43,6 +52,9 @@ namespace mag
             b8 is_extension_supported(const str& extension_with_dot);
 
         private:
+            void initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model);
+            void initialize_materials(const aiScene* ai_scene, const str& file, Model* model);
+
             std::unique_ptr<Assimp::Importer> importer;
             std::map<str, std::shared_ptr<Model>> models;
     };
