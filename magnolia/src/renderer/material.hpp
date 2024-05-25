@@ -15,6 +15,9 @@ namespace mag
     class MaterialManager
     {
         public:
+            MaterialManager();
+            ~MaterialManager() = default;
+
             // std::shared_ptr<Material> load(const str& file); // @TODO: make a material file one day
             std::shared_ptr<Material> load(Material* material);
 

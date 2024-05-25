@@ -9,12 +9,12 @@ namespace mag
 {
     Scene::Scene()
         : BaseScene(new ECS(),
-                    new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 0.1f, 10000.0f),
+                    new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 1.0f, 10000.0f),
                     new StandardRenderPass({800, 600})),
           camera_controller(new EditorCameraController(*camera)),
           cube(new Cube())
     {
-        const auto& cube_model = cube->get_model();
+        auto& cube_model = cube->get_model();
         const auto& light_model =
             get_application().get_model_loader().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 

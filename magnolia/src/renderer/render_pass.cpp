@@ -202,26 +202,26 @@ namespace mag
 
         triangle_pipeline->bind();
 
-        u64 tex_idx = 0;
         for (u64 m = 0; m < model_entities.size(); m++)
         {
-            const auto& model = std::get<1>(model_entities[m]);
+            const auto& model = std::get<1>(model_entities[m])->model;
 
             descriptors.set_offset_instance(triangle_pipeline->get_layout(), m);
 
-            for (u64 i = 0; i < model->model.meshes.size(); i++)
-            {
-                const auto& mesh = model->model.meshes[i];
+            // Bind buffers
+            command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
+            command_buffer.bind_index_buffer(model.ibo.get_buffer());
 
-                if (mesh.material && mesh.material->diffuse_texture)
-                {
-                    descriptors.set_offset_material(triangle_pipeline->get_layout(), tex_idx++);
-                }
+            for (u64 i = 0; i < model.meshes.size(); i++)
+            {
+                const auto& mesh = model.meshes[i];
+
+                // Set the material
+                descriptors.set_offset_material(triangle_pipeline->get_layout(),
+                                                mesh.material_index + model.descriptor_offset);
 
                 // Draw the mesh
-                command_buffer.bind_vertex_buffer(mesh.vbo.get_buffer());
-                command_buffer.bind_index_buffer(mesh.ibo.get_buffer());
-                command_buffer.draw_indexed(VECSIZE(mesh.indices));
+                command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex);
             }
         }
 
@@ -244,10 +244,11 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::add_model(const Model& model)
+    void StandardRenderPass::add_model(Model& model)
     {
         auto& descriptors = get_context().get_descriptor_cache();
 
+        model.descriptor_offset = descriptors.get_textures().size();
         descriptors.add_image_descriptors_for_model(model);
     }
 

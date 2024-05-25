@@ -31,3 +31,6 @@
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/gustavo-tomas/json.git
+[submodule "libs/meshoptimizer"]
+	path = libs/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer.git

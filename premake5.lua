@@ -43,7 +43,8 @@ project "magnolia"
         "libs/stb",
         "libs/spirv_reflect",
         "libs/font_awesome",
-        "libs/json/single_include"
+        "libs/json/single_include",
+        "libs/meshoptimizer/src"
     }
 
     defines
@@ -53,7 +54,7 @@ project "magnolia"
 
     links
     {
-        "fmt", "imgui", "imguizmo", "assimp"
+        "fmt", "imgui", "imguizmo", "assimp", "meshoptimizer"
     }
 
     libdirs
@@ -132,7 +133,8 @@ project "sprout"
         "libs/stb",
         "libs/spirv_reflect",
         "libs/font_awesome",
-        "libs/json/single_include"
+        "libs/json/single_include",
+        "libs/meshoptimizer/src"
     }
 
     libdirs
@@ -142,7 +144,7 @@ project "sprout"
 
     links
     {
-        "magnolia", "fmt", "imgui", "imguizmo", "assimp"
+        "magnolia", "fmt", "imgui", "imguizmo", "assimp", "meshoptimizer"
     }
 
     filter "system:linux"
@@ -384,5 +386,22 @@ project "assimp"
             os.execute("cp build/linux/assimp/bin/libassimp.so build/linux/magnolia/libassimp.so")
             os.execute("cp build/linux/assimp/bin/libassimp.so.5 build/linux/magnolia/libassimp.so.5")
             os.execute("cp build/linux/assimp/bin/libassimp.so.5.3.0 build/linux/magnolia/libassimp.so.5.3.0")
+        end
+    end
+
+-- meshoptimizer -------------------------------------------------------------------------------------------------------
+project "meshoptimizer"
+    kind "none"
+    
+    if os.host() == "windows" then
+        os.execute("echo @TODO WINDOWS MESHOPTIMIZER")
+
+    elseif os.host() == "linux" then
+        if exists("build/linux/lib/libmeshoptimizer.a") then
+            os.execute("echo Skipping meshoptimizer compilation...")
+        else
+            os.execute("mkdir -p build/linux/meshoptimizer")
+            os.execute("cd build/linux/meshoptimizer && cmake -S ../../../libs/meshoptimizer -B . && make -j" .. number_of_cores())
+            os.execute("cp build/linux/meshoptimizer/libmeshoptimizer.a build/linux/lib/libmeshoptimizer.a")
         end
     end

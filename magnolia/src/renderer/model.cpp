@@ -1,7 +1,7 @@
 #include "renderer/model.hpp"
 
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
+#include <meshoptimizer.h>
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
@@ -20,11 +20,8 @@ namespace mag
         for (const auto& model_pair : models)
         {
             const auto& model = model_pair.second;
-            for (auto& mesh : model->meshes)
-            {
-                mesh.ibo.shutdown();
-                mesh.vbo.shutdown();
-            }
+            model->vbo.shutdown();
+            model->ibo.shutdown();
         }
     }
 
@@ -33,8 +30,8 @@ namespace mag
         auto it = models.find(file);
         if (it != models.end()) return it->second;
 
-        const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices |
-                          aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_FlipUVs;
+        const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_GenNormals |
+                          aiProcess_CalcTangentSpace | aiProcess_FlipUVs;
 
         const aiScene* scene = importer->ReadFile(file, flags);
         ASSERT(scene && scene->mRootNode && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Failed to load model");
@@ -42,100 +39,152 @@ namespace mag
 
         Model* model = new Model();
         model->name = scene->GetShortFilename(file.c_str());
-
-        auto& app = get_application();
+        model->meshes.resize(scene->mNumMeshes);
 
         for (u32 m = 0; m < scene->mNumMeshes; m++)
         {
             const aiMesh* mesh = scene->mMeshes[m];
-            ASSERT(mesh->HasFaces(), "Mesh has no faces");
-            ASSERT(mesh->HasPositions(), "Mesh has no position");
-            ASSERT(mesh->HasNormals(), "Mesh has no normals");
-            ASSERT(mesh->HasTangentsAndBitangents(), "Mesh has no tangents/bitangents");
+            initialize_mesh(m, mesh, model);
+        }
 
-            std::vector<Vertex> vertices;
-            std::vector<u32> indices;
-            const str name = mesh->mName.C_Str();
+        model->vbo.initialize(model->vertices.data(), model->vertices.size() * sizeof(Vertex));
+        model->ibo.initialize(model->indices.data(), model->indices.size() * sizeof(u32));
 
-            // Vertices/Indices
-            for (u32 f = 0; f < mesh->mNumFaces; f++)
-            {
-                const aiFace& face = mesh->mFaces[f];
-                ASSERT(face.mNumIndices == 3, "Face is not a triangle");
+        initialize_materials(scene, file, model);
 
-                Vertex vertex = {};
-                for (u32 i = 0; i < face.mNumIndices; i++)
-                {
-                    const u32 idx = face.mIndices[i];
+        LOG_SUCCESS("Loaded model: {0}", file);
+        models[file] = std::shared_ptr<Model>(model);
+        return models[file];
+    }
 
-                    vertex.position = vec3(mesh->mVertices[idx].x, mesh->mVertices[idx].y, mesh->mVertices[idx].z);
-                    vertex.normal = vec3(mesh->mNormals[idx].x, mesh->mNormals[idx].y, mesh->mNormals[idx].z);
-                    vertex.tex_coords = vec2(mesh->mTextureCoords[0][idx].x, mesh->mTextureCoords[0][idx].y);
-                    // vertex.tangent = vec3(mesh->mTangents[idx].x, mesh->mTangents[idx].y, mesh->mTangents[idx].z);
-                    // vertex.bitangent =
-                    //     vec3(mesh->mBitangents[idx].x, mesh->mBitangents[idx].y, mesh->mBitangents[idx].z);
+    void ModelManager::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model)
+    {
+        ASSERT(ai_mesh->HasFaces(), "Mesh has no faces");
+        ASSERT(ai_mesh->HasPositions(), "Mesh has no position");
+        ASSERT(ai_mesh->HasNormals(), "Mesh has no normals");
+        ASSERT(ai_mesh->HasTangentsAndBitangents(), "Mesh has no tangents/bitangents");
 
-                    vertices.push_back(vertex);
-                    indices.push_back(VECSIZE(indices));  // !TODO: this is not efficient
-                }
-            }
+        model->meshes[mesh_idx].base_index = model->indices.size();
+        model->meshes[mesh_idx].base_vertex = model->vertices.size();
+        model->meshes[mesh_idx].index_count = ai_mesh->mNumFaces * 3;
+        model->meshes[mesh_idx].material_index = ai_mesh->mMaterialIndex;
 
-            // Material
-            const aiMaterial* ai_material = scene->mMaterials[mesh->mMaterialIndex];
-            Material* material = new Material();
+        std::vector<u32> indices(ai_mesh->mNumFaces * 3);
+
+        // Indices
+        for (u32 i = 0; i < ai_mesh->mNumFaces; i++)
+        {
+            const auto& face = ai_mesh->mFaces[i];
+            ASSERT(face.mNumIndices == 3, "Face is not a triangle");
+
+            indices[i * 3 + 0] = face.mIndices[0];
+            indices[i * 3 + 1] = face.mIndices[1];
+            indices[i * 3 + 2] = face.mIndices[2];
+        }
+
+        std::vector<Vertex> vertices(indices.size());
+
+        // Vertices - load with duplicates. The optimization step will create a better vertex/index buffer.
+        for (u32 i = 0; i < indices.size(); i++)
+        {
+            Vertex vertex = {};
+
+            const u32 idx = indices[i];
+            vertex.position = vec3(ai_mesh->mVertices[idx].x, ai_mesh->mVertices[idx].y, ai_mesh->mVertices[idx].z);
+            vertex.normal = vec3(ai_mesh->mNormals[idx].x, ai_mesh->mNormals[idx].y, ai_mesh->mNormals[idx].z);
+            vertex.tex_coords = vec2(ai_mesh->mTextureCoords[0][idx].x, ai_mesh->mTextureCoords[0][idx].y);
+
+            vertices[i] = vertex;
+        }
+
+        // Optimize
+        optimize_mesh(vertices, indices, model);
+    }
+
+    void ModelManager::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model)
+    {
+        const u32 vertex_count = vertices.size();
+        const u32 index_count = indices.size();
+
+        std::vector<u32> remap(index_count);
+        const u64 optimized_vertex_count =
+            meshopt_generateVertexRemap(remap.data(), NULL, index_count, vertices.data(), vertex_count, sizeof(Vertex));
+
+        std::vector<Vertex> optimized_vertices(optimized_vertex_count);
+        std::vector<u32> optimized_indices(index_count);
+
+        // Remove duplicates
+        meshopt_remapIndexBuffer(optimized_indices.data(), NULL, index_count, remap.data());
+        meshopt_remapVertexBuffer(optimized_vertices.data(), vertices.data(), vertex_count, sizeof(Vertex),
+                                  remap.data());
+
+        // Improve vertex locality
+        meshopt_optimizeVertexCache(optimized_indices.data(), optimized_indices.data(), index_count,
+                                    optimized_vertex_count);
+
+        // Reduce pixel overdraw
+        meshopt_optimizeOverdraw(optimized_indices.data(), optimized_indices.data(), index_count,
+                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex), 1.05f);
+
+        // Optimize vertex buffer access
+        meshopt_optimizeVertexFetch(optimized_vertices.data(), optimized_indices.data(), index_count,
+                                    optimized_vertices.data(), optimized_vertex_count, sizeof(Vertex));
+
+        // Insert result into array
+        model->vertices.insert(model->vertices.end(), optimized_vertices.begin(), optimized_vertices.end());
+        model->indices.insert(model->indices.end(), optimized_indices.begin(), optimized_indices.end());
+    }
+
+    void ModelManager::initialize_materials(const aiScene* ai_scene, const str& file, Model* model)
+    {
+        auto& app = get_application();
+        auto& material_loader = app.get_material_loader();
+
+        model->materials.resize(ai_scene->mNumMaterials);
+
+        for (u32 i = 0; i < ai_scene->mNumMaterials; i++)
+        {
+            const aiMaterial* ai_material = ai_scene->mMaterials[i];
 
             const u32 texture_count = ai_material->GetTextureCount(aiTextureType_DIFFUSE);
             const str directory = file.substr(0, file.find_last_of('/'));
+            const str material_name = ai_material->GetName().C_Str();
 
             if (texture_count > 1)
             {
                 LOG_ERROR("Only one texture for each mesh is supported");
             }
 
-            for (u32 i = 0; i < texture_count; i++)
+            // Load the texture
+            if (texture_count > 0)
             {
                 aiString ai_mat_name;
-                auto result = ai_material->GetTexture(aiTextureType_DIFFUSE, i, &ai_mat_name);
+                auto result = ai_material->GetTexture(aiTextureType_DIFFUSE, 0, &ai_mat_name);
 
                 if (result != aiReturn::aiReturn_SUCCESS)
                 {
-                    LOG_ERROR("Failed to retrieve texture with index {0}", i);
+                    LOG_ERROR("Failed to retrieve texture with index {0}", 0);
                     continue;
                 }
 
+                Material* material = new Material();
+
                 const str texture_path = directory + "/" + ai_mat_name.C_Str();
                 material->diffuse_texture = app.get_texture_loader().load(texture_path);
-                material->name = ai_material->GetName().C_Str();
+                material->name = material_name;
 
                 LOG_INFO("Loaded texture: {0}", texture_path);
+
+                model->materials[i] = material_loader.load(material);
             }
 
-            // Load default textures if none are found
-            if (material->diffuse_texture == nullptr)
+            // No textures, use default
+            else
             {
-                material->diffuse_texture =
-                    app.get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
-
-                material->name = "Default";
+                LOG_WARNING("Material '{0}' has no textures, using default", material_name);
+                model->materials[i] = app.get_material_loader().get("Default");
             }
-
-            // Buffers
-            VertexBuffer vbo;
-            IndexBuffer ibo;
-
-            vbo.initialize(vertices.data(), vertices.size() * sizeof(Vertex));
-            ibo.initialize(indices.data(), indices.size() * sizeof(u32));
-
-            auto& material_loader = app.get_material_loader();
-            auto mat = material_loader.load(material);
-
-            Mesh new_mesh = {name, vbo, ibo, vertices, indices, mat};
-            model->meshes.push_back(new_mesh);
         }
-
-        LOG_SUCCESS("Loaded model: {0}", file);
-        models[file] = std::shared_ptr<Model>(model);
-        return models[file];
     }
 
     b8 ModelManager::is_extension_supported(const str& extension_with_dot)
@@ -147,114 +196,112 @@ namespace mag
     {
         model.name = name;
         model.meshes.resize(1);
+        model.meshes[0].base_index = 0;
+        model.meshes[0].base_vertex = 0;
+        model.meshes[0].material_index = 0;
 
-        auto& mesh = model.meshes[0];
-        mesh.name = name;
-        mesh.vertices.resize(24);
+        model.vertices.resize(24);
 
         // Positions for each vertex
-        mesh.vertices[0].position = {-1.0f, -1.0f, 1.0f};  // Front bottom-left
-        mesh.vertices[1].position = {1.0f, -1.0f, 1.0f};   // Front bottom-right
-        mesh.vertices[2].position = {1.0f, 1.0f, 1.0f};    // Front top-right
-        mesh.vertices[3].position = {-1.0f, 1.0f, 1.0f};   // Front top-left
+        model.vertices[0].position = {-1.0f, -1.0f, 1.0f};  // Front bottom-left
+        model.vertices[1].position = {1.0f, -1.0f, 1.0f};   // Front bottom-right
+        model.vertices[2].position = {1.0f, 1.0f, 1.0f};    // Front top-right
+        model.vertices[3].position = {-1.0f, 1.0f, 1.0f};   // Front top-left
 
-        mesh.vertices[4].position = {-1.0f, -1.0f, -1.0f};  // Back bottom-left
-        mesh.vertices[5].position = {1.0f, -1.0f, -1.0f};   // Back bottom-right
-        mesh.vertices[6].position = {1.0f, 1.0f, -1.0f};    // Back top-right
-        mesh.vertices[7].position = {-1.0f, 1.0f, -1.0f};   // Back top-left
+        model.vertices[4].position = {-1.0f, -1.0f, -1.0f};  // Back bottom-left
+        model.vertices[5].position = {1.0f, -1.0f, -1.0f};   // Back bottom-right
+        model.vertices[6].position = {1.0f, 1.0f, -1.0f};    // Back top-right
+        model.vertices[7].position = {-1.0f, 1.0f, -1.0f};   // Back top-left
 
-        mesh.vertices[8].position = {-1.0f, -1.0f, 1.0f};   // Left bottom-front
-        mesh.vertices[9].position = {-1.0f, -1.0f, -1.0f};  // Left bottom-back
-        mesh.vertices[10].position = {-1.0f, 1.0f, -1.0f};  // Left top-back
-        mesh.vertices[11].position = {-1.0f, 1.0f, 1.0f};   // Left top-front
+        model.vertices[8].position = {-1.0f, -1.0f, 1.0f};   // Left bottom-front
+        model.vertices[9].position = {-1.0f, -1.0f, -1.0f};  // Left bottom-back
+        model.vertices[10].position = {-1.0f, 1.0f, -1.0f};  // Left top-back
+        model.vertices[11].position = {-1.0f, 1.0f, 1.0f};   // Left top-front
 
-        mesh.vertices[12].position = {1.0f, -1.0f, 1.0f};   // Right bottom-front
-        mesh.vertices[13].position = {1.0f, -1.0f, -1.0f};  // Right bottom-back
-        mesh.vertices[14].position = {1.0f, 1.0f, -1.0f};   // Right top-back
-        mesh.vertices[15].position = {1.0f, 1.0f, 1.0f};    // Right top-front
+        model.vertices[12].position = {1.0f, -1.0f, 1.0f};   // Right bottom-front
+        model.vertices[13].position = {1.0f, -1.0f, -1.0f};  // Right bottom-back
+        model.vertices[14].position = {1.0f, 1.0f, -1.0f};   // Right top-back
+        model.vertices[15].position = {1.0f, 1.0f, 1.0f};    // Right top-front
 
-        mesh.vertices[16].position = {-1.0f, 1.0f, 1.0f};   // Top front-left
-        mesh.vertices[17].position = {1.0f, 1.0f, 1.0f};    // Top front-right
-        mesh.vertices[18].position = {1.0f, 1.0f, -1.0f};   // Top back-right
-        mesh.vertices[19].position = {-1.0f, 1.0f, -1.0f};  // Top back-left
+        model.vertices[16].position = {-1.0f, 1.0f, 1.0f};   // Top front-left
+        model.vertices[17].position = {1.0f, 1.0f, 1.0f};    // Top front-right
+        model.vertices[18].position = {1.0f, 1.0f, -1.0f};   // Top back-right
+        model.vertices[19].position = {-1.0f, 1.0f, -1.0f};  // Top back-left
 
-        mesh.vertices[20].position = {-1.0f, -1.0f, 1.0f};   // Bottom front-left
-        mesh.vertices[21].position = {1.0f, -1.0f, 1.0f};    // Bottom front-right
-        mesh.vertices[22].position = {1.0f, -1.0f, -1.0f};   // Bottom back-right
-        mesh.vertices[23].position = {-1.0f, -1.0f, -1.0f};  // Bottom back-left
+        model.vertices[20].position = {-1.0f, -1.0f, 1.0f};   // Bottom front-left
+        model.vertices[21].position = {1.0f, -1.0f, 1.0f};    // Bottom front-right
+        model.vertices[22].position = {1.0f, -1.0f, -1.0f};   // Bottom back-right
+        model.vertices[23].position = {-1.0f, -1.0f, -1.0f};  // Bottom back-left
 
-        for (auto& vertex : mesh.vertices) vertex.normal = normalize(vertex.position);
+        for (auto& vertex : model.vertices) vertex.normal = normalize(vertex.position);
 
         // Front face
-        mesh.vertices[0].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[1].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[2].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[3].tex_coords = {0.0f, 1.0f};
+        model.vertices[0].tex_coords = {0.0f, 0.0f};
+        model.vertices[1].tex_coords = {1.0f, 0.0f};
+        model.vertices[2].tex_coords = {1.0f, 1.0f};
+        model.vertices[3].tex_coords = {0.0f, 1.0f};
 
         // Back face
-        mesh.vertices[4].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[5].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[6].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[7].tex_coords = {0.0f, 1.0f};
+        model.vertices[4].tex_coords = {0.0f, 0.0f};
+        model.vertices[5].tex_coords = {1.0f, 0.0f};
+        model.vertices[6].tex_coords = {1.0f, 1.0f};
+        model.vertices[7].tex_coords = {0.0f, 1.0f};
 
         // Left face
-        mesh.vertices[8].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[9].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[10].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[11].tex_coords = {0.0f, 1.0f};
+        model.vertices[8].tex_coords = {0.0f, 0.0f};
+        model.vertices[9].tex_coords = {1.0f, 0.0f};
+        model.vertices[10].tex_coords = {1.0f, 1.0f};
+        model.vertices[11].tex_coords = {0.0f, 1.0f};
 
         // Right face
-        mesh.vertices[12].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[13].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[14].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[15].tex_coords = {0.0f, 1.0f};
+        model.vertices[12].tex_coords = {0.0f, 0.0f};
+        model.vertices[13].tex_coords = {1.0f, 0.0f};
+        model.vertices[14].tex_coords = {1.0f, 1.0f};
+        model.vertices[15].tex_coords = {0.0f, 1.0f};
 
         // Top face
-        mesh.vertices[16].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[17].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[18].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[19].tex_coords = {0.0f, 1.0f};
+        model.vertices[16].tex_coords = {0.0f, 0.0f};
+        model.vertices[17].tex_coords = {1.0f, 0.0f};
+        model.vertices[18].tex_coords = {1.0f, 1.0f};
+        model.vertices[19].tex_coords = {0.0f, 1.0f};
 
         // Bottom face
-        mesh.vertices[20].tex_coords = {0.0f, 0.0f};
-        mesh.vertices[21].tex_coords = {1.0f, 0.0f};
-        mesh.vertices[22].tex_coords = {1.0f, 1.0f};
-        mesh.vertices[23].tex_coords = {0.0f, 1.0f};
+        model.vertices[20].tex_coords = {0.0f, 0.0f};
+        model.vertices[21].tex_coords = {1.0f, 0.0f};
+        model.vertices[22].tex_coords = {1.0f, 1.0f};
+        model.vertices[23].tex_coords = {0.0f, 1.0f};
 
         // Indices for the cube
-        mesh.indices = {// Front face
-                        0, 1, 2, 2, 3, 0,
-                        // Back face
-                        4, 5, 6, 6, 7, 4,
-                        // Left face
-                        8, 9, 10, 10, 11, 8,
-                        // Right face
-                        12, 13, 14, 14, 15, 12,
-                        // Top face
-                        16, 17, 18, 18, 19, 16,
-                        // Bottom face
-                        20, 21, 22, 22, 23, 20};
+        model.indices = {// Front face
+                         0, 1, 2, 2, 3, 0,
+                         // Back face
+                         4, 5, 6, 6, 7, 4,
+                         // Left face
+                         8, 9, 10, 10, 11, 8,
+                         // Right face
+                         12, 13, 14, 14, 15, 12,
+                         // Top face
+                         16, 17, 18, 18, 19, 16,
+                         // Bottom face
+                         20, 21, 22, 22, 23, 20};
 
-        mesh.vbo.initialize(mesh.vertices.data(), VECSIZE(mesh.vertices) * sizeof(Vertex));
-        mesh.ibo.initialize(mesh.indices.data(), VECSIZE(mesh.indices) * sizeof(u32));
+        model.meshes[0].index_count = VECSIZE(model.indices);
+
+        model.vbo.initialize(model.vertices.data(), VECSIZE(model.vertices) * sizeof(Vertex));
+        model.ibo.initialize(model.indices.data(), VECSIZE(model.indices) * sizeof(u32));
 
         auto& app = get_application();
         auto& material_loader = app.get_material_loader();
-        auto& texture_loader = app.get_texture_loader();
 
-        // Create a diffuse texture
-        Material* material = new Material();
-        material->diffuse_texture = texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png");
-        material->name = "Default";
-
-        mesh.material = material_loader.load(material);
+        // Use the default material
+        model.materials.push_back(material_loader.get("Default"));
     }
 
     Cube::~Cube()
     {
         get_context().get_device().waitIdle();
 
-        model.meshes[0].vbo.shutdown();
-        model.meshes[0].ibo.shutdown();
+        model.vbo.shutdown();
+        model.ibo.shutdown();
     }
 };  // namespace mag

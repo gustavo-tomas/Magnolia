@@ -89,6 +89,8 @@ namespace mag
                 return descriptor_set_layouts;
             };
 
+            const std::vector<std::shared_ptr<Image>>& get_textures() const { return textures; };
+
         private:
             void set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
                                               const u32 buffer_indices, const u64 buffer_offsets);
