@@ -54,6 +54,7 @@ namespace mag
         private:
             void initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model);
             void initialize_materials(const aiScene* ai_scene, const str& file, Model* model);
+            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model);
 
             std::unique_ptr<Assimp::Importer> importer;
             std::map<str, std::shared_ptr<Model>> models;

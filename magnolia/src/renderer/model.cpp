@@ -1,6 +1,7 @@
 #include "renderer/model.hpp"
 
 #include <assimp/postprocess.h>
+#include <meshoptimizer.h>
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
@@ -29,8 +30,8 @@ namespace mag
         auto it = models.find(file);
         if (it != models.end()) return it->second;
 
-        const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices |
-                          aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_FlipUVs;
+        const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_GenNormals |
+                          aiProcess_CalcTangentSpace | aiProcess_FlipUVs;
 
         const aiScene* scene = importer->ReadFile(file, flags);
         ASSERT(scene && scene->mRootNode && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Failed to load model");
@@ -68,17 +69,7 @@ namespace mag
         model->meshes[mesh_idx].index_count = ai_mesh->mNumFaces * 3;
         model->meshes[mesh_idx].material_index = ai_mesh->mMaterialIndex;
 
-        // Vertices
-        for (u32 i = 0; i < ai_mesh->mNumVertices; i++)
-        {
-            Vertex vertex = {};
-
-            vertex.position = vec3(ai_mesh->mVertices[i].x, ai_mesh->mVertices[i].y, ai_mesh->mVertices[i].z);
-            vertex.normal = vec3(ai_mesh->mNormals[i].x, ai_mesh->mNormals[i].y, ai_mesh->mNormals[i].z);
-            vertex.tex_coords = vec2(ai_mesh->mTextureCoords[0][i].x, ai_mesh->mTextureCoords[0][i].y);
-
-            model->vertices.push_back(vertex);
-        }
+        std::vector<u32> indices(ai_mesh->mNumFaces * 3);
 
         // Indices
         for (u32 i = 0; i < ai_mesh->mNumFaces; i++)
@@ -86,12 +77,62 @@ namespace mag
             const auto& face = ai_mesh->mFaces[i];
             ASSERT(face.mNumIndices == 3, "Face is not a triangle");
 
-            for (u32 j = 0; j < face.mNumIndices; j++)
-            {
-                const auto& idx = face.mIndices[j];
-                model->indices.push_back(idx);
-            }
+            indices[i * 3 + 0] = face.mIndices[0];
+            indices[i * 3 + 1] = face.mIndices[1];
+            indices[i * 3 + 2] = face.mIndices[2];
         }
+
+        std::vector<Vertex> vertices(indices.size());
+
+        // Vertices - load with duplicates. The optimization step will create a better vertex/index buffer.
+        for (u32 i = 0; i < indices.size(); i++)
+        {
+            Vertex vertex = {};
+
+            const u32 idx = indices[i];
+            vertex.position = vec3(ai_mesh->mVertices[idx].x, ai_mesh->mVertices[idx].y, ai_mesh->mVertices[idx].z);
+            vertex.normal = vec3(ai_mesh->mNormals[idx].x, ai_mesh->mNormals[idx].y, ai_mesh->mNormals[idx].z);
+            vertex.tex_coords = vec2(ai_mesh->mTextureCoords[0][idx].x, ai_mesh->mTextureCoords[0][idx].y);
+
+            vertices[i] = vertex;
+        }
+
+        // Optimize
+        optimize_mesh(vertices, indices, model);
+    }
+
+    void ModelManager::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model)
+    {
+        const u32 vertex_count = vertices.size();
+        const u32 index_count = indices.size();
+
+        std::vector<u32> remap(index_count);
+        const u64 optimized_vertex_count =
+            meshopt_generateVertexRemap(remap.data(), NULL, index_count, vertices.data(), vertex_count, sizeof(Vertex));
+
+        std::vector<Vertex> optimized_vertices(optimized_vertex_count);
+        std::vector<u32> optimized_indices(index_count);
+
+        // Remove duplicates
+        meshopt_remapIndexBuffer(optimized_indices.data(), NULL, index_count, remap.data());
+        meshopt_remapVertexBuffer(optimized_vertices.data(), vertices.data(), vertex_count, sizeof(Vertex),
+                                  remap.data());
+
+        // Improve vertex locality
+        meshopt_optimizeVertexCache(optimized_indices.data(), optimized_indices.data(), index_count,
+                                    optimized_vertex_count);
+
+        // Reduce pixel overdraw
+        meshopt_optimizeOverdraw(optimized_indices.data(), optimized_indices.data(), index_count,
+                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex), 1.05f);
+
+        // Optimize vertex buffer access
+        meshopt_optimizeVertexFetch(optimized_vertices.data(), optimized_indices.data(), index_count,
+                                    optimized_vertices.data(), optimized_vertex_count, sizeof(Vertex));
+
+        // Insert result into array
+        model->vertices.insert(model->vertices.end(), optimized_vertices.begin(), optimized_vertices.end());
+        model->indices.insert(model->indices.end(), optimized_indices.begin(), optimized_indices.end());
     }
 
     void ModelManager::initialize_materials(const aiScene* ai_scene, const str& file, Model* model)
@@ -110,11 +151,15 @@ namespace mag
             const u32 texture_count = ai_material->GetTextureCount(aiTextureType_DIFFUSE);
             const str directory = file.substr(0, file.find_last_of('/'));
 
+            // @TODO: texture count can be 0
+            // @TODO: improve texture loading
+
             if (texture_count > 1)
             {
                 LOG_ERROR("Only one texture for each mesh is supported");
             }
 
+            str texture_path;
             for (u32 j = 0; j < texture_count; j++)
             {
                 aiString ai_mat_name;
@@ -126,7 +171,7 @@ namespace mag
                     continue;
                 }
 
-                const str texture_path = directory + "/" + ai_mat_name.C_Str();
+                texture_path = directory + "/" + ai_mat_name.C_Str();
                 material->diffuse_texture = app.get_texture_loader().load(texture_path);
                 material->name = ai_material->GetName().C_Str();
 
@@ -136,6 +181,8 @@ namespace mag
             // Load default textures if none are found
             if (material->diffuse_texture == nullptr)
             {
+                LOG_ERROR("Failed to load texture '{0}', using default", texture_path);
+
                 material->diffuse_texture =
                     app.get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
 
