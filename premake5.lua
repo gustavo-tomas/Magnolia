@@ -394,18 +394,7 @@ project "meshoptimizer"
     kind "none"
     
     if os.host() == "windows" then
-        if exists("build/windows/lib/libSDL2.a") and exists("build/windows/lib/libSDL2main.a") and exists("build/windows/lib/libSDL2.dll.a") and exists("build/windows/magnolia/SDL2.dll") then
-            os.execute("echo Skipping SDL2 compilation...")
-        else
-            os.execute("mkdir build\\windows\\magnolia 2>NUL")
-            os.execute("mkdir build\\windows\\sdl 2>NUL")
-            os.execute("cd build\\windows\\sdl && cmake -G \"MinGW Makefiles\" -S ../../../libs/sdl -B . && make -j" .. os.getenv("NUMBER_OF_PROCESSORS"))
-            os.execute("mkdir build\\windows\\lib 2>NUL")
-            os.execute("copy build\\windows\\sdl\\libSDL2.a build\\windows\\lib\\libSDL2.a")
-            os.execute("copy build\\windows\\sdl\\libSDL2main.a build\\windows\\lib\\libSDL2main.a")
-            os.execute("copy build\\windows\\sdl\\libSDL2.dll.a build\\windows\\lib\\libSDL2.dll.a")
-            os.execute("copy build\\windows\\sdl\\SDL2.dll build\\windows\\magnolia\\SDL2.dll")
-        end
+        os.execute("echo @TODO WINDOWS MESHOPTIMIZER")
 
     elseif os.host() == "linux" then
         if exists("build/linux/lib/libmeshoptimizer.a") then
