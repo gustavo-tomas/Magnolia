@@ -146,50 +146,44 @@ namespace mag
         {
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
 
-            Material* material = new Material();
-
             const u32 texture_count = ai_material->GetTextureCount(aiTextureType_DIFFUSE);
             const str directory = file.substr(0, file.find_last_of('/'));
-
-            // @TODO: texture count can be 0
-            // @TODO: improve texture loading
+            const str material_name = ai_material->GetName().C_Str();
 
             if (texture_count > 1)
             {
                 LOG_ERROR("Only one texture for each mesh is supported");
             }
 
-            str texture_path;
-            for (u32 j = 0; j < texture_count; j++)
+            // Load the texture
+            if (texture_count > 0)
             {
                 aiString ai_mat_name;
-                auto result = ai_material->GetTexture(aiTextureType_DIFFUSE, j, &ai_mat_name);
+                auto result = ai_material->GetTexture(aiTextureType_DIFFUSE, 0, &ai_mat_name);
 
                 if (result != aiReturn::aiReturn_SUCCESS)
                 {
-                    LOG_ERROR("Failed to retrieve texture with index {0}", j);
+                    LOG_ERROR("Failed to retrieve texture with index {0}", 0);
                     continue;
                 }
 
-                texture_path = directory + "/" + ai_mat_name.C_Str();
+                Material* material = new Material();
+
+                const str texture_path = directory + "/" + ai_mat_name.C_Str();
                 material->diffuse_texture = app.get_texture_loader().load(texture_path);
-                material->name = ai_material->GetName().C_Str();
+                material->name = material_name;
 
                 LOG_INFO("Loaded texture: {0}", texture_path);
+
+                model->materials[i] = material_loader.load(material);
             }
 
-            // Load default textures if none are found
-            if (material->diffuse_texture == nullptr)
+            // No textures, use default
+            else
             {
-                LOG_ERROR("Failed to load texture '{0}', using default", texture_path);
-
-                material->diffuse_texture =
-                    app.get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
-
-                material->name = "Default";
+                LOG_WARNING("Material '{0}' has no textures, using default", material_name);
+                model->materials[i] = app.get_material_loader().get("Default");
             }
-
-            model->materials[i] = material_loader.load(material);
         }
     }
 
@@ -298,14 +292,9 @@ namespace mag
 
         auto& app = get_application();
         auto& material_loader = app.get_material_loader();
-        auto& texture_loader = app.get_texture_loader();
 
-        // Create a diffuse texture
-        Material* material = new Material();
-        material->diffuse_texture = texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png");
-        material->name = "Default";
-
-        model.materials.push_back(material_loader.load(material));
+        // Use the default material
+        model.materials.push_back(material_loader.get("Default"));
     }
 
     Cube::~Cube()
