@@ -1,10 +1,9 @@
 #include "renderer/model.hpp"
 
-#include <assimp/postprocess.h>
-#include <meshoptimizer.h>
-
+#include "assimp/postprocess.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "meshoptimizer.h"
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
 

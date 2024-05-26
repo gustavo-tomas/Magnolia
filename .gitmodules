@@ -34,3 +34,6 @@
 [submodule "libs/meshoptimizer"]
 	path = libs/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
+[submodule "libs/icon_font_cpp"]
+	path = libs/icon_font_cpp
+	url = https://github.com/juliettef/IconFontCppHeaders.git
