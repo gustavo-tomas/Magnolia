@@ -1,12 +1,11 @@
 #pragma once
 
-#include <assimp/scene.h>
-
-#include <assimp/Importer.hpp>
 #include <map>
 #include <memory>
 #include <vector>
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
 #include "renderer/buffers.hpp"
 #include "renderer/material.hpp"
 

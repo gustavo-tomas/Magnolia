@@ -4,12 +4,12 @@
 #include <fstream>
 #include <memory>
 
-#include "IconsFontAwesome5.h"
 #include "ImGuizmo.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "icon_font_cpp/IconsFontAwesome5.h"
 #include "imgui_internal.h"
 #include "nlohmann/json.hpp"
 
