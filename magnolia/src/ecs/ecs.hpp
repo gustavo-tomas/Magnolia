@@ -54,6 +54,30 @@ namespace mag
                 return id;
             }
 
+            void add_entity_to_deletion_queue(const u32 entity_id)
+            {
+                // Check if entity exists
+                if (!entities.contains(entity_id))
+                {
+                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
+                    return;
+                }
+
+                // Enqueue entity
+                deletion_queue.push_back(entity_id);
+            }
+
+            void update()
+            {
+                // Delete enqueued entities
+                for (const auto& entity : deletion_queue)
+                {
+                    erase_entity(entity);
+                }
+
+                deletion_queue.clear();
+            }
+
             // Add a component to the entity
             template <typename T>
             void add_component(const u32 entity_id, T* c)
@@ -184,9 +208,31 @@ namespace mag
                 }
 
                 return ids;
-            };
+            }
 
         private:
+            void erase_entity(const u32 entity_id)
+            {
+                // Check if entity exists
+                if (!entities.contains(entity_id))
+                {
+                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
+                    return;
+                }
+
+                // Erase the entity
+                entities.erase(entity_id);
+
+                // Remove the entity from the component map
+                for (auto& [component_type, entity_set] : component_map)
+                {
+                    entity_set.erase(entity_id);
+                }
+
+                // Free the ID for future use
+                available_ids.insert(entity_id);
+            }
+
             // Entities IDs
             std::set<u32> available_ids;
 
@@ -195,5 +241,8 @@ namespace mag
 
             // Map from component type to entities that have it
             std::map<std::type_index, std::set<u32>> component_map;
+
+            // Entities that will be erased during update
+            std::vector<u32> deletion_queue;
     };
 };  // namespace mag

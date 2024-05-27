@@ -59,6 +59,8 @@ namespace mag
         auto& model_loader = app.get_model_loader();
         auto& window = app.get_window();
 
+        ecs->update();
+
         camera_controller->update(dt);
 
         // @TODO: testing
