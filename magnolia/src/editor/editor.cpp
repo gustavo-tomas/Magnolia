@@ -9,7 +9,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
-#include "icon_font_cpp/IconsFontAwesome5.h"
+#include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui_internal.h"
 #include "nlohmann/json.hpp"
 
@@ -58,13 +58,13 @@ namespace mag
         const f32 icon_font_size = font_size * 2.0f / 3.0f;
 
         // Merge in icons from Font Awesome
-        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+        const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
         ImFontConfig icons_config;
         icons_config.MergeMode = true;
         icons_config.PixelSnapH = true;
         icons_config.GlyphMinAdvanceX = icon_font_size;
 
-        const str icon_path = str("magnolia/assets/fonts/FontAwesome/") + FONT_ICON_FILE_NAME_FAS;
+        const str icon_path = "magnolia/assets/fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS;
         const str font_path = "magnolia/assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
 
         io.Fonts->AddFontFromFileTTF(font_path.c_str(), font_size);
@@ -206,7 +206,7 @@ namespace mag
         // Traverse directories
         if (current_directory != std::filesystem::path(base_directory))
         {
-            if (ImGui::Button(ICON_FA_ARROW_LEFT))
+            if (ImGui::Button(ICON_FA_CHEVRON_LEFT))
             {
                 current_directory = current_directory.parent_path();
             }
@@ -254,8 +254,8 @@ namespace mag
 
         ImGui::Columns(1);
 
-        ImGui::SliderFloat("Thumbnail Size", &thumbnail_size, 16, 512);
-        ImGui::SliderFloat("Padding", &padding, 0, 32);
+        // ImGui::SliderFloat("Thumbnail Size", &thumbnail_size, 16, 512);
+        // ImGui::SliderFloat("Padding", &padding, 0, 32);
 
         ImGui::End();
     }
@@ -277,7 +277,7 @@ namespace mag
 
         // Read the instructions
         const str window_name = data["window_name"];
-        ImGui::Begin((str(ICON_FA_INFO_CIRCLE) + " " + window_name).c_str(), NULL, window_flags);
+        ImGui::Begin((str(ICON_FA_CIRCLE_INFO) + " " + window_name).c_str(), NULL, window_flags);
 
         for (const auto &section : data["sections"])
         {
@@ -287,7 +287,7 @@ namespace mag
             for (const auto &instruction : section["instructions"])
             {
                 const str instruction_name = instruction;
-                ImGui::TextWrapped("%s", (str(ICON_FA_ARROW_ALT_CIRCLE_RIGHT) + " " + instruction_name).c_str());
+                ImGui::TextWrapped("%s", (str(ICON_FA_CIRCLE_ARROW_RIGHT) + " " + instruction_name).c_str());
             }
         }
 
@@ -420,7 +420,7 @@ namespace mag
         ImGui::End();
 
         // Properties tab
-        ImGui::Begin(ICON_FA_LIST_ALT " Properties", NULL, window_flags);
+        ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
 
         // Only render properties if an entity is selected
         if (selected_entity_id != std::numeric_limits<u64>().max())
@@ -446,7 +446,7 @@ namespace mag
 
     void Editor::render_settings(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin(ICON_FA_PAINT_BRUSH " Settings", NULL, window_flags);
+        ImGui::Begin(ICON_FA_PAINTBRUSH " Settings", NULL, window_flags);
 
         ImGui::SeparatorText("Scene Settings");
         auto &clear_color = get_application().get_active_scene().get_render_pass().get_clear_color();
