@@ -163,6 +163,8 @@ namespace mag
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(), vk::ImageLayout::eUndefined,
                                        vk::ImageLayout::eColorAttachmentOptimal);
+
+        pass.statistics = {};
     }
 
     void StandardRenderPass::render(const Camera& camera, ECS& ecs)
@@ -222,6 +224,10 @@ namespace mag
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex);
+
+                // @NOTE: not accurate but gives a good estimate
+                pass.statistics.rendered_triangles += mesh.index_count;
+                pass.statistics.draw_calls++;
             }
         }
 

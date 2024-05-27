@@ -29,6 +29,13 @@ namespace mag
             f64 end = 0;
     };
 
+    // @TODO: i dont think this should be here
+    struct Statistics
+    {
+            u32 rendered_triangles = 0;
+            u32 draw_calls = 0;
+    };
+
     class Context
     {
         public:

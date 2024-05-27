@@ -23,6 +23,8 @@ namespace mag
             vk::RenderingInfo rendering_info;
             vk::RenderingAttachmentInfo color_attachment;
             vk::RenderingAttachmentInfo depth_attachment;
+
+            Statistics statistics = {};
     };
 
     class StandardRenderPass

@@ -24,6 +24,8 @@ namespace mag
         StandardRenderPass& render_pass = scene.get_render_pass();
         Pass& pass = render_pass.get_pass();
 
+        statistics = {};
+
         this->context->begin_frame();
         this->context->begin_timestamp();  // Performance query
 
@@ -37,6 +39,9 @@ namespace mag
         render_pass.after_render();
 
         context->end_timestamp();
+
+        statistics.draw_calls += pass.statistics.draw_calls;
+        statistics.rendered_triangles += pass.statistics.rendered_triangles;
 
         // @TODO: maybe dont do this here
         editor.render(camera, ecs);

@@ -34,6 +34,7 @@ namespace mag
             void set_active_scene(Scene* scene) { active_scene = std::unique_ptr<Scene>(scene); };
 
             Window& get_window() { return *window; };
+            Renderer& get_renderer() { return *renderer; };
             Editor& get_editor() { return *editor; };
             ModelManager& get_model_loader() { return *model_loader; };
             TextureManager& get_texture_loader() { return *texture_loader; };
