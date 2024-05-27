@@ -63,7 +63,7 @@ namespace mag
             b8 resize_needed = false;
             b8 disabled = false;
             b8 viewport_window_active = false;
-            u64 selected_entity_id = std::numeric_limits<u64>().max();
+            u64 selected_entity_id = INVALID_ID;
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };
 };  // namespace mag

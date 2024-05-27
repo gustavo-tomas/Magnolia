@@ -323,7 +323,7 @@ namespace mag
 
         // @TODO: check if entity has a transform before rendering gizmo
         // Render gizmos for selected model
-        if (!disabled && selected_entity_id != std::numeric_limits<u64>().max())
+        if (!disabled && selected_entity_id != INVALID_ID)
         {
             auto transforms = ecs.get_components<TransformComponent>();
             auto &transform = transforms[selected_entity_id];
@@ -423,7 +423,7 @@ namespace mag
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
 
         // Only render properties if an entity is selected
-        if (selected_entity_id != std::numeric_limits<u64>().max())
+        if (selected_entity_id != INVALID_ID)
         {
             render_properties(ecs, selected_entity_id);
         }
@@ -433,7 +433,7 @@ namespace mag
         // Materials tab
         ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials");
 
-        if (selected_entity_id != std::numeric_limits<u64>().max())
+        if (selected_entity_id != INVALID_ID)
         {
             if (auto model = ecs.get_component<ModelComponent>(selected_entity_id))
             {
