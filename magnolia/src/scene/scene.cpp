@@ -16,7 +16,7 @@ namespace mag
     {
         auto& cube_model = cube->get_model();
         const auto& light_model =
-            get_application().get_model_loader().load("magnolia/assets/models/lightbulb/lightbulb.glb");
+            get_application().get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
         const i32 loops = 5;
         u32 count = 0;
@@ -56,7 +56,7 @@ namespace mag
     void Scene::update(const f32 dt)
     {
         auto& app = get_application();
-        auto& model_loader = app.get_model_loader();
+        auto& model_loader = app.get_model_manager();
         auto& window = app.get_window();
 
         ecs->update();
@@ -97,7 +97,7 @@ namespace mag
 
     void Scene::add_model(const str& path)
     {
-        auto& model_loader = get_application().get_model_loader();
+        auto& model_loader = get_application().get_model_manager();
 
         // First check if the path exists
         if (!std::filesystem::exists(path))

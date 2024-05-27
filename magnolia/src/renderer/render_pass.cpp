@@ -19,7 +19,7 @@ namespace mag
     StandardRenderPass::StandardRenderPass(const uvec2& size)
     {
         auto& app = get_application();
-        auto& shader_loader = app.get_shader_loader();
+        auto& shader_loader = app.get_shader_manager();
         auto& descriptors = get_context().get_descriptor_cache();
 
         // Set draw size before initializing images

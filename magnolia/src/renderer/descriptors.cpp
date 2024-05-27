@@ -98,7 +98,7 @@ namespace mag
         using std::hash;
         using std::size_t;
 
-        // !TODO: double check this algorithm
+        // @TODO: double check this algorithm
         size_t result = hash<size_t>()(bindings.size());
         for (const vk::DescriptorSetLayoutBinding& b : bindings)
         {

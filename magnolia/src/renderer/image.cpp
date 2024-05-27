@@ -42,7 +42,7 @@ namespace mag
             ASSERT(false, "Default albedo texture has not been loaded");
         }
 
-        const u64 image_size = tex_width * tex_height * 4;  // !TODO: hardcoded
+        const u64 image_size = tex_width * tex_height * 4;  // @TODO: hardcoded
         vk::Format image_format = vk::Format::eR8G8B8A8Srgb;
 
         Buffer staging_buffer;

@@ -8,7 +8,7 @@ namespace mag
     MaterialManager::MaterialManager()
     {
         auto& app = get_application();
-        auto& texture_loader = app.get_texture_loader();
+        auto& texture_loader = app.get_texture_manager();
 
         // Create a default material
         Material* default_material = new Material();

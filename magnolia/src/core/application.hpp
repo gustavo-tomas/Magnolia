@@ -36,10 +36,10 @@ namespace mag
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
             Editor& get_editor() { return *editor; };
-            ModelManager& get_model_loader() { return *model_loader; };
-            TextureManager& get_texture_loader() { return *texture_loader; };
-            ShaderManager& get_shader_loader() { return *shader_loader; };
-            MaterialManager& get_material_loader() { return *material_loader; };
+            ModelManager& get_model_manager() { return *model_loader; };
+            TextureManager& get_texture_manager() { return *texture_loader; };
+            ShaderManager& get_shader_manager() { return *shader_loader; };
+            MaterialManager& get_material_manager() { return *material_loader; };
             Scene& get_active_scene() { return *active_scene; };
 
         private:

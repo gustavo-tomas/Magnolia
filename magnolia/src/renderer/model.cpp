@@ -137,7 +137,7 @@ namespace mag
     void ModelManager::initialize_materials(const aiScene* ai_scene, const str& file, Model* model)
     {
         auto& app = get_application();
-        auto& material_loader = app.get_material_loader();
+        auto& material_loader = app.get_material_manager();
 
         model->materials.resize(ai_scene->mNumMaterials);
 
@@ -169,7 +169,7 @@ namespace mag
                 Material* material = new Material();
 
                 const str texture_path = directory + "/" + ai_mat_name.C_Str();
-                material->diffuse_texture = app.get_texture_loader().load(texture_path);
+                material->diffuse_texture = app.get_texture_manager().load(texture_path);
                 material->name = material_name;
 
                 LOG_INFO("Loaded texture: {0}", texture_path);
@@ -181,7 +181,7 @@ namespace mag
             else
             {
                 LOG_WARNING("Material '{0}' has no textures, using default", material_name);
-                model->materials[i] = app.get_material_loader().get("Default");
+                model->materials[i] = app.get_material_manager().get("Default");
             }
         }
     }
@@ -290,7 +290,7 @@ namespace mag
         model.ibo.initialize(model.indices.data(), VECSIZE(model.indices) * sizeof(u32));
 
         auto& app = get_application();
-        auto& material_loader = app.get_material_loader();
+        auto& material_loader = app.get_material_manager();
 
         // Use the default material
         model.materials.push_back(material_loader.get("Default"));

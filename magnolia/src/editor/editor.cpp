@@ -91,7 +91,7 @@ namespace mag
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        asset_image = get_application().get_texture_loader().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
+        asset_image = get_application().get_texture_manager().load("magnolia/assets/images/DefaultAlbedoSeamless.png");
 
         asset_image_descriptor =
             ImGui_ImplVulkan_AddTexture(asset_image->get_sampler().get_handle(), asset_image->get_image_view(),
