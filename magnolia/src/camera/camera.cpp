@@ -1,5 +1,7 @@
 #include "camera/camera.hpp"
 
+#include "core/types.hpp"
+
 namespace mag
 {
     Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
@@ -41,7 +43,14 @@ namespace mag
 
     void Camera::set_rotation(const vec3& rotation)
     {
-        this->rotation = rotation;
+        // Constrain rotation between [-180, 180)
+        for (u32 i = 0; i < 3; i++)
+        {
+            this->rotation[i] = fmod(rotation[i] + 180.0f, 360.0f);
+            if (this->rotation[i] < 0.0f) this->rotation[i] += 360.0f;
+            this->rotation[i] -= 180.0f;
+        }
+
         calculate_view();
     }
 
