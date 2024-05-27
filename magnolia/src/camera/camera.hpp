@@ -17,6 +17,7 @@ namespace mag
             void set_rotation(const vec3& rotation);
             void set_aspect_ratio(const vec2& size);
             void set_fov(const f32 fov);
+            void set_near_far(const vec2& near_far);
 
             const f32& get_fov() const { return fov; };
             const mat4& get_view() const { return view; };

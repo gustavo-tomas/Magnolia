@@ -57,4 +57,10 @@ namespace mag
         calculate_projection();
     }
 
+    void Camera::set_near_far(const vec2& near_far)
+    {
+        this->near = near_far.x;
+        this->far = near_far.y;
+        calculate_projection();
+    }
 };  // namespace mag
