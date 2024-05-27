@@ -136,7 +136,7 @@ namespace mag
         }
     }
 
-    void Editor::render(const Camera &camera, ECS &ecs)
+    void Editor::render(Camera &camera, ECS &ecs)
     {
         auto &context = get_context();
         auto &cmd = context.get_curr_frame().command_buffer;
@@ -173,7 +173,8 @@ namespace mag
         render_content_browser(window_flags);
         render_scene(window_flags, ecs);
         render_settings(window_flags);
-        render_status();
+        render_camera_properties(window_flags, camera);
+        render_status(window_flags);
 
         ImGui::EndDisabled();
 
@@ -431,7 +432,7 @@ namespace mag
         ImGui::End();
 
         // Materials tab
-        ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials");
+        ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials", NULL, window_flags);
 
         if (selected_entity_id != INVALID_ID)
         {
@@ -561,9 +562,57 @@ namespace mag
         }
     }
 
-    void Editor::render_status()
+    void Editor::render_camera_properties(const ImGuiWindowFlags window_flags, Camera &camera)
     {
-        ImGui::Begin(ICON_FA_INFO " Status");
+        ImGui::Begin(ICON_FA_CAMERA " Camera", NULL, window_flags);
+
+        const char *format = "%.2f";
+        const f32 left_offset = 100.0f;
+        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+        vec3 translation = camera.get_position();
+        vec3 rotation = camera.get_rotation();
+        vec2 near_far = camera.get_near_far();
+        f32 fov = camera.get_fov();
+
+        ImGui::Text("Translation");
+        ImGui::SameLine(left_offset);
+
+        if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
+        {
+            camera.set_position(translation);
+        }
+
+        ImGui::Text("Rotation");
+        ImGui::SameLine(left_offset);
+
+        if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
+        {
+            camera.set_rotation(rotation);
+        }
+
+        ImGui::Text("FOV");
+        ImGui::SameLine(left_offset);
+
+        if (ImGui::InputFloat("##FOV", &fov, 0, 0, format, input_flags))
+        {
+            camera.set_fov(fov);
+        }
+
+        ImGui::Text("Near/Far");
+        ImGui::SameLine(left_offset);
+
+        if (ImGui::InputFloat2("##NearFar", value_ptr(near_far), format, input_flags))
+        {
+            camera.set_near_far(near_far);
+        }
+
+        ImGui::End();
+    }
+
+    void Editor::render_status(const ImGuiWindowFlags window_flags)
+    {
+        ImGui::Begin(ICON_FA_INFO " Status", NULL, window_flags);
 
         // Display frame rate
         const auto &io = ImGui::GetIO();

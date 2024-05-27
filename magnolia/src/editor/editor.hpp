@@ -21,7 +21,7 @@ namespace mag
             ~Editor();
 
             void update();
-            void render(const Camera& camera, ECS& ecs);
+            void render(Camera& camera, ECS& ecs);
             void on_event(Event& e);
 
             void set_viewport_image(const Image& image);
@@ -47,7 +47,11 @@ namespace mag
             void render_settings(const ImGuiWindowFlags window_flags);
             void render_properties(ECS& ecs, const u32 entity_id);
             void render_materials(const ModelComponent& model_component);
-            void render_status();
+
+            // @TODO: this is temporary-ish. The camera will (should?) be an ECS component.
+            void render_camera_properties(const ImGuiWindowFlags window_flags, Camera& camera);
+
+            void render_status(const ImGuiWindowFlags window_flags);
 
             EventCallback event_callback;
 
