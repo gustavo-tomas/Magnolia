@@ -58,12 +58,7 @@ namespace mag
 
             void add_entity_to_deletion_queue(const u32 entity_id)
             {
-                // Check if entity exists
-                if (!entities.contains(entity_id))
-                {
-                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
-                    return;
-                }
+                if (!entity_exists(entity_id)) return;
 
                 // Enqueue entity
                 deletion_queue.push_back(entity_id);
@@ -86,12 +81,7 @@ namespace mag
             {
                 ASSERT_TYPE(T);
 
-                // Check if entity exists
-                if (!entities.contains(entity_id))
-                {
-                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
-                    return;
-                }
+                if (!entity_exists(entity_id)) return;
 
                 // Check if component already exists
                 if (get_component<T>(entity_id) != nullptr)
@@ -110,16 +100,12 @@ namespace mag
             {
                 ASSERT_TYPE(T);
 
-                // Validate ID
-                auto entity = entities.find(entity_id);
-                if (entity == entities.end())
-                {
-                    LOG_ERROR("No entity with ID: {0}", entity_id);
-                    return nullptr;
-                }
+                if (!entity_exists(entity_id)) return nullptr;
+
+                auto& entity = entities[entity_id];
 
                 // Search for the component
-                for (auto& c : entity->second)
+                for (auto& c : entity)
                 {
                     if (auto derived = dynamic_cast<T*>(c.get()))
                     {
@@ -213,6 +199,17 @@ namespace mag
             }
 
         private:
+            b8 entity_exists(const u32 id) const
+            {
+                if (!entities.contains(id))
+                {
+                    LOG_ERROR("Entity with ID: {0} does not exist", id);
+                    return false;
+                }
+
+                return true;
+            }
+
             void erase_entity(const u32 entity_id)
             {
                 // Check if entity exists
