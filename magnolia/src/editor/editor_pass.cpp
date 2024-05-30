@@ -63,8 +63,8 @@ namespace mag
 
         draw_image.shutdown();
 
-        draw_size.x = min(size.x, context.get_surface_extent().width);
-        draw_size.y = min(size.y, context.get_surface_extent().height);
+        draw_size.x = size.x;
+        draw_size.y = size.y;
         draw_size.z = 1;
 
         // This is not ideal but gets the job done
