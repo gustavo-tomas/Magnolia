@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/type_conversions.hpp"
 
 namespace mag
 {
@@ -25,9 +26,10 @@ namespace mag
         auto& command_buffer = context.get_curr_frame().command_buffer;
 
         // Safety check
-        if (draw_size.x != context.get_surface_extent().width || draw_size.y != context.get_surface_extent().height)
+        const vec2 surface_extent = vk_extent_to_vec(context.get_surface_extent());
+        if (draw_size.x != surface_extent.x || draw_size.y != surface_extent.y)
         {
-            this->on_resize({context.get_surface_extent().width, context.get_surface_extent().height});
+            this->on_resize(surface_extent);
         }
 
         // Create attachments
@@ -63,9 +65,7 @@ namespace mag
 
         draw_image.shutdown();
 
-        draw_size.x = size.x;
-        draw_size.y = size.y;
-        draw_size.z = 1;
+        draw_size = {size, 1};
 
         // This is not ideal but gets the job done
         this->initialize_draw_image();

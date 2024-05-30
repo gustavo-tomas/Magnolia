@@ -5,17 +5,10 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/type_conversions.hpp"
 
 namespace mag
 {
-    // Conversion helper @TODO: check for other conversions in the rest of the codebase and DRY your life away
-    vk::ClearValue const vec_to_vk_clear_value(const vec4& v)
-    {
-        const vk::ClearValue vk_clear_value({v.r, v.g, v.b, v.a});
-
-        return vk_clear_value;
-    }
-
     StandardRenderPass::StandardRenderPass(const uvec2& size)
     {
         auto& app = get_application();
@@ -263,9 +256,7 @@ namespace mag
         auto& context = get_context();
         context.get_device().waitIdle();
 
-        draw_size.x = size.x * render_scale;
-        draw_size.y = size.y * render_scale;
-        draw_size.z = 1;
+        draw_size = {size.x * render_scale, size.y * render_scale, 1};
 
         for (auto& image : draw_images)
         {
@@ -290,7 +281,7 @@ namespace mag
         auto& context = get_context();
 
         this->render_scale = clamp(scale, 0.01f, 1.0f);
-        this->on_resize({context.get_surface_extent().width, context.get_surface_extent().height});
+        this->on_resize(vk_extent_to_vec(context.get_surface_extent()));
         LOG_INFO("Render scale: {0:.2f}", render_scale);
 
         // Dont forget to set editor viewport image
