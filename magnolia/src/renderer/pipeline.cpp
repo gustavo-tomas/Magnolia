@@ -34,8 +34,8 @@ namespace mag
             {}, vk::PrimitiveTopology::eTriangleList, false);
 
         const vk::PipelineRasterizationStateCreateInfo rasterization_state_create_info(
-            {}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eNone, vk::FrontFace::eClockwise, false,
-            0.0f, 0.0f, 0.0f, 1.0f);
+            {}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise,
+            false, 0.0f, 0.0f, 0.0f, 1.0f);
 
         const vk::PipelineMultisampleStateCreateInfo multisampling_state_create_info({}, context.get_msaa_samples(),
                                                                                      false, 1.0f);

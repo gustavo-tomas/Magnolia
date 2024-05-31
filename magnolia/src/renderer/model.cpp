@@ -274,15 +274,15 @@ namespace mag
         model.indices = {// Front face
                          0, 1, 2, 2, 3, 0,
                          // Back face
-                         4, 5, 6, 6, 7, 4,
+                         6, 5, 4, 7, 6, 4,
                          // Left face
-                         8, 9, 10, 10, 11, 8,
+                         10, 9, 8, 11, 10, 8,
                          // Right face
                          12, 13, 14, 14, 15, 12,
                          // Top face
                          16, 17, 18, 18, 19, 16,
                          // Bottom face
-                         20, 21, 22, 22, 23, 20};
+                         22, 21, 20, 23, 22, 20};
 
         model.meshes[0].index_count = VECSIZE(model.indices);
 
