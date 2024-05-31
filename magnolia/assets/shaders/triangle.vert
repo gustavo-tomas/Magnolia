@@ -14,6 +14,8 @@ void main()
 {
 	gl_Position = u_global.projection * u_global.view * u_instance.model * vec4(in_position, 1.0);
 	out_frag_position = vec3(u_instance.model * vec4(in_position, 1.0));
-	out_normal = mat3(transpose(inverse(u_instance.model))) * in_normal;
 	out_tex_coords = in_tex_coords;
+	
+	// @TODO: this is pretty slow, but for now its ok
+	out_normal = normalize(mat3(transpose(inverse(u_instance.model))) * in_normal);
 }
