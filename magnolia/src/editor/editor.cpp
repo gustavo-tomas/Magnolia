@@ -452,7 +452,8 @@ namespace mag
         ImGui::SeparatorText("Scene Settings");
         auto &clear_color = get_application().get_active_scene().get_render_pass().get_clear_color();
 
-        ImGui::ColorEdit4("Background Color", value_ptr(clear_color));
+        const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel;
+        ImGui::ColorEdit4("Background Color", value_ptr(clear_color), flags);
 
         ImGui::End();
     }

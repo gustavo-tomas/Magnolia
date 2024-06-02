@@ -1,4 +1,5 @@
 // Phong shading model
+// https://learnopengl.com/Lighting/Basic-Lighting
 
 vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, Light light)
 {

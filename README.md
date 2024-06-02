@@ -28,3 +28,4 @@ python3 build.py debug
 - [[FontAwesome](https://github.com/FortAwesome/Font-Awesome/)] Icon fonts
 - [[IconFontCppHeaders](https://github.com/juliettef/IconFontCppHeaders)] Font awesome for C++
 - [[OGLDEV](https://www.youtube.com/watch?v=9HO1dl0zcxg)] Mesh optimizations using meshoptimizer
+- [[LearnOpenGL](https://learnopengl.com/Lighting/Basic-Lighting)] Lighting and basic computer graphics concepts

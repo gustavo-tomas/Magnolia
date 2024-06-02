@@ -1,7 +1,11 @@
 // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
 
 // Constants
-const int MAX_NUMBER_OF_LIGHTS = 4;
+const uint MAX_NUMBER_OF_LIGHTS = 4;
+const uint NUMBER_OF_MATERIAL_TEXTURES = 4;
+
+const uint MATERIAL_ALBEDO = 0;
+// const uint MATERIAL_NORMAL = 1;
 
 // Types
 struct Light
@@ -30,5 +34,4 @@ layout (set = 1, binding = 0) uniform InstanceBuffer
 } u_instance;
 
 // Materials 
-layout (set = 2, binding = 0) uniform sampler2D u_diffuse_texture;
-layout (set = 2, binding = 1) uniform sampler2D u_normal_texture;
+layout (set = 2, binding = 0) uniform sampler2D u_material_textures[NUMBER_OF_MATERIAL_TEXTURES];
