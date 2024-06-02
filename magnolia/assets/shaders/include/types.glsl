@@ -31,4 +31,4 @@ layout (set = 1, binding = 0) uniform InstanceBuffer
 
 // Materials 
 layout (set = 2, binding = 0) uniform sampler2D u_albedo_texture;
-layout (set = 2, binding = 1) uniform sampler2D u_material_texture;
+layout (set = 3, binding = 0) uniform sampler2D u_normal_texture;
