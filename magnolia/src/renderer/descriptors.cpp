@@ -163,10 +163,12 @@ namespace mag
         descriptor.size = device.getDescriptorSetLayoutSizeEXT(descriptor.layout);
         descriptor.size = (descriptor.size + alignment - 1) & ~(alignment - 1);
 
-        // Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
-        // @TODO: The binding can be non zero depending on the driver:
-        // https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/descriptor_buffer_basic
-        descriptor.offset = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, 0);
+        // 3. Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+        descriptor.offsets.resize(bindings.size());
+        for (u32 b = 0; b < bindings.size(); b++)
+        {
+            descriptor.offsets[b] = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, b);
+        }
 
         return descriptor;
     }
@@ -187,7 +189,8 @@ namespace mag
 
             const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
 
-            const u64 offset = i ? i * descriptor.size + descriptor.offset : 0;
+            // @TODO: hardcoded offset
+            const u64 offset = i ? i * descriptor.size + descriptor.offsets[0] : 0;
 
             device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
                                     descriptor_buffer_data + offset);
@@ -210,7 +213,8 @@ namespace mag
 
             const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler, {&image_info});
 
-            const u64 offset = i * descriptor.size + descriptor.offset;
+            // @TODO: hardcoded offset
+            const u64 offset = i * descriptor.size + descriptor.offsets[0];
 
             device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize,
                                     descriptor_buffer_data + offset);

@@ -11,7 +11,7 @@ layout (location = 0) out vec4 out_frag_color;
 
 void main()
 {
-	vec4 object_color = texture(u_material_textures[MATERIAL_ALBEDO], in_tex_coords);
+	vec4 object_color = texture(u_albedo_texture, in_tex_coords);
 
 	// @TODO: this is pretty slow, but for now its ok
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);

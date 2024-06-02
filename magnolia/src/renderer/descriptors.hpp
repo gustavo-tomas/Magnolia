@@ -49,7 +49,7 @@ namespace mag
             vk::DescriptorSetLayout layout = {};
             Buffer buffer;
             u64 size;
-            u64 offset;
+            std::vector<u64> offsets;
     };
 
     // DescriptorBuilder
