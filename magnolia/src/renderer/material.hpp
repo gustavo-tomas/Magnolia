@@ -8,8 +8,12 @@ namespace mag
 {
     struct Material
     {
-            std::shared_ptr<Image> diffuse_texture = {};
+            std::vector<std::shared_ptr<Image>> textures;
             str name = "";  // @TODO: meh
+
+            // Helpers
+            static const u32 DEFAULT_ALBEDO_TEXTURE = 0;
+            static const u32 DEFAULT_NORMAL_TEXTURE = 1;
     };
 
     class MaterialManager
@@ -20,8 +24,8 @@ namespace mag
 
             // std::shared_ptr<Material> load(const str& file); // @TODO: make a material file one day
             std::shared_ptr<Material> load(Material* material);
+            b8 exists(const str& name) const;
 
-            // @TODO: return a default material if name not found?
             std::shared_ptr<Material> get(const str& name);
 
         private:

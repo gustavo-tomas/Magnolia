@@ -16,7 +16,7 @@ namespace mag
         }
     }
 
-    std::shared_ptr<Image> TextureManager::load(const str& file)
+    std::shared_ptr<Image> TextureManager::load(const str& file, const TextureType type)
     {
         auto it = textures.find(file);
         if (it != textures.end()) return it->second;
@@ -60,7 +60,7 @@ namespace mag
         image->initialize(image_extent, image_format,
                           vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                               vk::ImageUsageFlagBits::eTransferDst,
-                          vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1);
+                          vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, type);
 
         context.submit_commands_immediate(
             [&](CommandBuffer cmd)
@@ -139,10 +139,11 @@ namespace mag
 
     void Image::initialize(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
                            const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                           const vk::SampleCountFlagBits msaa_samples)
+                           const vk::SampleCountFlagBits msaa_samples, const TextureType type)
     {
         auto& context = get_context();
 
+        this->type = type;
         this->format = format;
         this->extent = extent;
         this->mip_levels = mip_levels;

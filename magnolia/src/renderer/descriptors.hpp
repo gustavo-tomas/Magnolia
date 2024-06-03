@@ -15,6 +15,7 @@ namespace mag
 {
     class Context;
     class Image;
+    enum class TextureType;
 
     // DescriptorLayoutCache
     // -----------------------------------------------------------------------------------------------------------------
@@ -79,7 +80,8 @@ namespace mag
 
             void set_offset_global(const vk::PipelineLayout& pipeline_layout);
             void set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance);
-            void set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index);
+            void set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index,
+                                     const TextureType texture_type);
 
             // @TODO: idk
             std::vector<std::vector<Buffer>>& get_data_buffers() { return data_buffers; };
@@ -89,7 +91,8 @@ namespace mag
                 return descriptor_set_layouts;
             };
 
-            const std::vector<std::shared_ptr<Image>>& get_textures() const { return textures; };
+            const std::vector<std::shared_ptr<Image>>& get_albedo_textures() const { return albedo_textures; };
+            const std::vector<std::shared_ptr<Image>>& get_normal_textures() const { return normal_textures; };
 
         private:
             void set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
@@ -97,8 +100,8 @@ namespace mag
 
             b8 uniform_inited = {}, image_inited = {};
             std::vector<std::vector<Buffer>> data_buffers;
-            std::vector<std::shared_ptr<Image>> textures;
-            std::vector<Descriptor> uniform_descriptors, image_descriptors;
+            std::vector<std::shared_ptr<Image>> albedo_textures, normal_textures;
+            std::vector<Descriptor> uniform_descriptors, albedo_image_descriptors, normal_image_descriptors;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
     };
 };  // namespace mag

@@ -11,8 +11,8 @@ layout (location = 0) out vec4 out_frag_color;
 
 void main()
 {
-	// vec4 object_color = texture(u_albedo_texture, in_tex_coords);
-	vec4 object_color = texture(u_normal_texture, in_tex_coords);
+	vec4 object_color = texture(u_albedo_texture, in_tex_coords);
+	vec4 object_normal = texture(u_normal_texture, in_tex_coords);
 
 	// @TODO: this is pretty slow, but for now its ok
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);
@@ -24,6 +24,24 @@ void main()
 		phong_color += phong_shading(in_normal, in_frag_position, camera_position, u_global.point_lights[i]);
 	}
 
-	out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);
-	if (out_frag_color.a < 0.5) discard; // Discard transparent fragments
+	if (u_global.texture_output == 0)
+	{
+		out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);
+		if (out_frag_color.a < 0.5) discard; // Discard transparent fragments
+	}
+
+	else if (u_global.texture_output == 1)
+	{
+		out_frag_color = vec4(object_color.rgb, object_color.a);
+	}
+
+	else if (u_global.texture_output == 2)
+	{
+		out_frag_color = vec4(object_normal.rgb, 1.0);
+	}
+
+	else
+	{
+		out_frag_color = vec4(phong_color, 1.0);
+	}
 }

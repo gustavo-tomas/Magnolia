@@ -12,8 +12,14 @@ namespace mag
 
         // Create a default material
         Material* default_material = new Material();
-        default_material->diffuse_texture = texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png");
+
         default_material->name = "Default";
+
+        default_material->textures.push_back(
+            texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png", TextureType::Albedo));
+
+        default_material->textures.push_back(
+            texture_loader.load("magnolia/assets/images/DefaultNormal.png", TextureType::Normal));
 
         load(default_material);
     }
@@ -37,6 +43,8 @@ namespace mag
             return mat;
         }
     }
+
+    b8 MaterialManager::exists(const str& name) const { return materials.contains(name); }
 
     // @TODO: return a default material if name not found?
     std::shared_ptr<Material> MaterialManager::get(const str& name)
