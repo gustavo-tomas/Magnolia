@@ -186,6 +186,7 @@ namespace mag
         triangle_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
         triangle_shader->set_uniform_global("point_lights", &point_lights);
         triangle_shader->set_uniform_global("texture_output", &editor.get_texture_output());
+        triangle_shader->set_uniform_global("normal_output", &editor.get_normal_output());
 
         for (u64 b = 0; b < model_entities.size(); b++)
         {

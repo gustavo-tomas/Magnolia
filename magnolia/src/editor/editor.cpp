@@ -463,6 +463,10 @@ namespace mag
         ImGui::RadioButton("Show Normal Output", reinterpret_cast<i32 *>(&texture_output), 2);
         ImGui::RadioButton("Show Lighting Output", reinterpret_cast<i32 *>(&texture_output), 3);
 
+        ImGui::Text("Normals");
+        ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);
+        ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
+
         ImGui::End();
     }
 

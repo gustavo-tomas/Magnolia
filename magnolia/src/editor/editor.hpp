@@ -31,6 +31,7 @@ namespace mag
             const b8& is_viewport_window_active() const { return viewport_window_active; };
 
             u32& get_texture_output() { return texture_output; };
+            u32& get_normal_output() { return normal_output; };
             const Image& get_image() const { return render_pass.get_draw_image(); };
             const uvec3& get_draw_size() const { return render_pass.get_draw_size(); };
 
@@ -68,7 +69,7 @@ namespace mag
             b8 resize_needed = false;
             b8 disabled = false;
             b8 viewport_window_active = false;
-            u32 texture_output = 0;
+            u32 texture_output = 0, normal_output = 0;
             u64 selected_entity_id = INVALID_ID;
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };

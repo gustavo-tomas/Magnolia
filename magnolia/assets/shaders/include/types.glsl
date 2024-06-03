@@ -24,6 +24,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 
     // Debug
     uint texture_output;
+    uint normal_output;
 } u_global;
 
 // Instance buffer
