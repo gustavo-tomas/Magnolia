@@ -32,5 +32,8 @@ void main()
 	vec3 B = cross(N, T);
 	mat3 TBN = mat3(T, B, N);
 
+	// Check if the TBN is in a right-handed coordinate system
+	if (dot(cross(N, T), B) < 0.0) T = T * -1.0;
+
 	out_tbn = TBN;
 }
