@@ -5,6 +5,7 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/image.hpp"
 #include "renderer/type_conversions.hpp"
 
 namespace mag
@@ -46,6 +47,9 @@ namespace mag
         triangle_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
         triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords),
                                        offsetof(Vertex, tex_coords));
+        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tangent), offsetof(Vertex, tangent));
+        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::bitangent),
+                                       offsetof(Vertex, bitangent));
 
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
@@ -165,6 +169,7 @@ namespace mag
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& descriptors = context.get_descriptor_cache();
+        auto& editor = get_application().get_editor();
 
         auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
@@ -180,6 +185,8 @@ namespace mag
         triangle_shader->set_uniform_global("projection", value_ptr(camera.get_projection()));
         triangle_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
         triangle_shader->set_uniform_global("point_lights", &point_lights);
+        triangle_shader->set_uniform_global("texture_output", &editor.get_texture_output());
+        triangle_shader->set_uniform_global("normal_output", &editor.get_normal_output());
 
         for (u64 b = 0; b < model_entities.size(); b++)
         {
@@ -213,7 +220,12 @@ namespace mag
 
                 // Set the material
                 descriptors.set_offset_material(triangle_pipeline->get_layout(),
-                                                mesh.material_index + model.descriptor_offset);
+                                                mesh.material_index + model.albedo_descriptor_offset,
+                                                TextureType::Albedo);
+
+                descriptors.set_offset_material(triangle_pipeline->get_layout(),
+                                                mesh.material_index + model.normal_descriptor_offset,
+                                                TextureType::Normal);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex);
@@ -247,7 +259,8 @@ namespace mag
     {
         auto& descriptors = get_context().get_descriptor_cache();
 
-        model.descriptor_offset = descriptors.get_textures().size();
+        model.albedo_descriptor_offset = descriptors.get_albedo_textures().size();
+        model.normal_descriptor_offset = descriptors.get_normal_textures().size();
         descriptors.add_image_descriptors_for_model(model);
     }
 

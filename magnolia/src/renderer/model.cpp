@@ -89,9 +89,11 @@ namespace mag
             Vertex vertex = {};
 
             const u32 idx = indices[i];
-            vertex.position = vec3(ai_mesh->mVertices[idx].x, ai_mesh->mVertices[idx].y, ai_mesh->mVertices[idx].z);
-            vertex.normal = vec3(ai_mesh->mNormals[idx].x, ai_mesh->mNormals[idx].y, ai_mesh->mNormals[idx].z);
-            vertex.tex_coords = vec2(ai_mesh->mTextureCoords[0][idx].x, ai_mesh->mTextureCoords[0][idx].y);
+            vertex.position = {ai_mesh->mVertices[idx].x, ai_mesh->mVertices[idx].y, ai_mesh->mVertices[idx].z};
+            vertex.normal = {ai_mesh->mNormals[idx].x, ai_mesh->mNormals[idx].y, ai_mesh->mNormals[idx].z};
+            vertex.tex_coords = {ai_mesh->mTextureCoords[0][idx].x, ai_mesh->mTextureCoords[0][idx].y};
+            vertex.tangent = {ai_mesh->mTangents[idx].x, ai_mesh->mTangents[idx].y, ai_mesh->mTangents[idx].z};
+            vertex.bitangent = {ai_mesh->mBitangents[idx].x, ai_mesh->mBitangents[idx].y, ai_mesh->mBitangents[idx].z};
 
             vertices[i] = vertex;
         }
@@ -137,53 +139,94 @@ namespace mag
     void ModelManager::initialize_materials(const aiScene* ai_scene, const str& file, Model* model)
     {
         auto& app = get_application();
-        auto& material_loader = app.get_material_manager();
+        auto& material_manager = app.get_material_manager();
+
+        const str directory = file.substr(0, file.find_last_of('/'));
 
         model->materials.resize(ai_scene->mNumMaterials);
 
         for (u32 i = 0; i < ai_scene->mNumMaterials; i++)
         {
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
-
-            const u32 texture_count = ai_material->GetTextureCount(aiTextureType_DIFFUSE);
-            const str directory = file.substr(0, file.find_last_of('/'));
             const str material_name = ai_material->GetName().C_Str();
 
-            if (texture_count > 1)
+            if (material_manager.exists(material_name))
             {
-                LOG_ERROR("Only one texture for each mesh is supported");
+                model->materials[i] = material_manager.get(material_name);
+                continue;
             }
 
-            // Load the texture
-            if (texture_count > 0)
-            {
-                aiString ai_mat_name;
-                auto result = ai_material->GetTexture(aiTextureType_DIFFUSE, 0, &ai_mat_name);
+            Material* material = new Material();
 
-                if (result != aiReturn::aiReturn_SUCCESS)
-                {
-                    LOG_ERROR("Failed to retrieve texture with index {0}", 0);
-                    continue;
-                }
+            material->name = ai_material->GetName().C_Str();
+            material->textures.push_back(load_texture(ai_material, aiTextureType_DIFFUSE, directory));
+            material->textures.push_back(load_texture(ai_material, aiTextureType_NORMALS, directory));
 
-                Material* material = new Material();
-
-                const str texture_path = directory + "/" + ai_mat_name.C_Str();
-                material->diffuse_texture = app.get_texture_manager().load(texture_path);
-                material->name = material_name;
-
-                LOG_INFO("Loaded texture: {0}", texture_path);
-
-                model->materials[i] = material_loader.load(material);
-            }
-
-            // No textures, use default
-            else
-            {
-                LOG_WARNING("Material '{0}' has no textures, using default", material_name);
-                model->materials[i] = app.get_material_manager().get("Default");
-            }
+            model->materials[i] = material_manager.load(material);
         }
+    }
+
+    std::shared_ptr<Image> ModelManager::load_texture(const aiMaterial* ai_material, aiTextureType ai_type,
+                                                      const str& directory)
+    {
+        auto& app = get_application();
+        auto& material_manager = app.get_material_manager();
+        auto& texture_manager = app.get_texture_manager();
+
+        const TextureType type = TextureType(ai_type);
+        const str material_name = ai_material->GetName().C_Str();
+
+        // For some reason, assimp may identify normal textures as height textures
+        u32 texture_count = ai_material->GetTextureCount(ai_type);
+        if (ai_type == aiTextureType_NORMALS && texture_count == 0)
+        {
+            ai_type = aiTextureType_HEIGHT;
+            texture_count = ai_material->GetTextureCount(ai_type);
+        }
+
+        std::shared_ptr<Image> texture;
+        switch (type)
+        {
+            case TextureType::Albedo:
+                texture = material_manager.get("Default")->textures[Material::DEFAULT_ALBEDO_TEXTURE];
+                break;
+
+            case TextureType::Normal:
+                texture = material_manager.get("Default")->textures[Material::DEFAULT_NORMAL_TEXTURE];
+                break;
+
+            default:
+                break;
+        }
+
+        if (texture_count > 1)
+        {
+            LOG_ERROR("Only one texture for each mesh is supported");
+        }
+
+        // Load the texture
+        if (texture_count > 0)
+        {
+            aiString ai_mat_name;
+            auto result = ai_material->GetTexture(ai_type, 0, &ai_mat_name);
+
+            if (result != aiReturn::aiReturn_SUCCESS)
+            {
+                LOG_ERROR("Failed to retrieve texture with index {0}, using default", 0);
+                return texture;
+            }
+
+            const str texture_path = directory + "/" + ai_mat_name.C_Str();
+            texture = texture_manager.load(texture_path, type);
+
+            LOG_INFO("Loaded texture: {0}", texture_path);
+            return texture;
+        }
+
+        // No textures, use default
+        LOG_WARNING("Material '{0}' has no texture of type '{1}', using default", material_name,
+                    std::to_string(ai_type));
+        return texture;
     }
 
     b8 ModelManager::is_extension_supported(const str& extension_with_dot)
@@ -270,6 +313,35 @@ namespace mag
         model.vertices[22].tex_coords = {1.0f, 1.0f};
         model.vertices[23].tex_coords = {0.0f, 1.0f};
 
+        // Tangents and Bitangents
+        for (u32 i = 0; i < model.vertices.size(); i += 3)
+        {
+            Vertex& v0 = model.vertices[i];
+            Vertex& v1 = model.vertices[i + 1];
+            Vertex& v2 = model.vertices[i + 2];
+
+            const vec3 edge_1 = v1.position - v0.position;
+            const vec3 edge_2 = v2.position - v0.position;
+
+            const vec2 delta_uv1 = v1.tex_coords - v0.tex_coords;
+            const vec2 delta_uv2 = v2.tex_coords - v0.tex_coords;
+
+            const f32 f = 1.0f / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
+
+            vec3 tangent;
+            tangent.x = f * (delta_uv2.y * edge_1.x - delta_uv1.y * edge_2.x);
+            tangent.y = f * (delta_uv2.y * edge_1.y - delta_uv1.y * edge_2.y);
+            tangent.z = f * (delta_uv2.y * edge_1.z - delta_uv1.y * edge_2.z);
+
+            vec3 bitangent;
+            bitangent.x = f * (-delta_uv2.x * edge_1.x + delta_uv1.x * edge_2.x);
+            bitangent.y = f * (-delta_uv2.x * edge_1.y + delta_uv1.x * edge_2.y);
+            bitangent.z = f * (-delta_uv2.x * edge_1.z + delta_uv1.x * edge_2.z);
+
+            v0.tangent = v1.tangent = v2.tangent = normalize(tangent);
+            v0.bitangent = v1.bitangent = v2.bitangent = normalize(bitangent);
+        }
+
         // Indices for the cube
         model.indices = {// Front face
                          0, 1, 2, 2, 3, 0,
@@ -290,10 +362,10 @@ namespace mag
         model.ibo.initialize(model.indices.data(), VECSIZE(model.indices) * sizeof(u32));
 
         auto& app = get_application();
-        auto& material_loader = app.get_material_manager();
+        auto& material_manager = app.get_material_manager();
 
         // Use the default material
-        model.materials.push_back(material_loader.get("Default"));
+        model.materials.push_back(material_manager.get("Default"));
     }
 
     Cube::~Cube()

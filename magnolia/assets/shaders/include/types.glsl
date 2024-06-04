@@ -2,10 +2,6 @@
 
 // Constants
 const uint MAX_NUMBER_OF_LIGHTS = 4;
-const uint NUMBER_OF_MATERIAL_TEXTURES = 4;
-
-const uint MATERIAL_ALBEDO = 0;
-// const uint MATERIAL_NORMAL = 1;
 
 // Types
 struct Light
@@ -25,6 +21,10 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 
     // Lights
     Light point_lights[MAX_NUMBER_OF_LIGHTS];
+
+    // Debug
+    uint texture_output;
+    uint normal_output;
 } u_global;
 
 // Instance buffer
@@ -34,4 +34,5 @@ layout (set = 1, binding = 0) uniform InstanceBuffer
 } u_instance;
 
 // Materials 
-layout (set = 2, binding = 0) uniform sampler2D u_material_textures[NUMBER_OF_MATERIAL_TEXTURES];
+layout (set = 2, binding = 0) uniform sampler2D u_albedo_texture;
+layout (set = 3, binding = 0) uniform sampler2D u_normal_texture;
