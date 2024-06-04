@@ -1,7 +1,7 @@
 // Conversions, common calculations, etc
 
 // https://gist.github.com/Reedbeta/e8d3817e3f64bba7104b8fafd62906df
-vec3 sRGBToLinear(vec3 rgb)
+vec3 srgb_to_linear(vec3 rgb)
 {
     // See https://gamedev.stackexchange.com/questions/92015/optimized-linear-to-srgb-glsl
     return mix(pow((rgb + 0.055) * (1.0 / 1.055), vec3(2.4)),
@@ -9,7 +9,7 @@ vec3 sRGBToLinear(vec3 rgb)
                lessThanEqual(rgb, vec3(0.04045)));
 }
 
-vec3 LinearToSRGB(vec3 rgb)
+vec3 linear_to_srgb(vec3 rgb)
 {
     // See https://gamedev.stackexchange.com/questions/92015/optimized-linear-to-srgb-glsl
     return mix(1.055 * pow(rgb, vec3(1.0 / 2.4)) - 0.055,
@@ -18,7 +18,7 @@ vec3 LinearToSRGB(vec3 rgb)
 }
 
 // Calculate tangent normals from a normal map
-vec3 calculate_normal_from_map(vec3 texture_normal, vec3 vertex_normal, vec3 frag_position, vec2 tex_coords)
+vec3 calculate_normals_from_normal_map(vec3 texture_normal, vec3 vertex_normal, vec3 frag_position, vec2 tex_coords)
 {
     vec3 tangent_normal = texture_normal * 2.0 - 1.0;
 

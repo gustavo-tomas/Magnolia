@@ -17,7 +17,7 @@ void main()
 	vec4 object_normal = texture(u_normal_texture, in_tex_coords);
 
 	// Convert from linear to srgb
-	object_normal.rgb = LinearToSRGB(object_normal.rgb);
+	object_normal.rgb = linear_to_srgb(object_normal.rgb);
 
 	// @TODO: this is pretty slow, but for now its ok
 	vec3 camera_position = vec3(inverse(u_global.view)[3]);
@@ -31,7 +31,7 @@ void main()
 
 	else
 	{
-		normal = calculate_normal_from_map(object_normal.rgb, in_normal, in_frag_position, in_tex_coords);
+		normal = calculate_normals_from_normal_map(object_normal.rgb, in_normal, in_frag_position, in_tex_coords);
 
 		// @TODO: normal calculation generate some artifacts
 		// normal = normalize(object_normal.rgb * 2.0 - 1.0);
