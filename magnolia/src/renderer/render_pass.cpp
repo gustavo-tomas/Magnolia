@@ -261,6 +261,11 @@ namespace mag
 
         model.albedo_descriptor_offset = descriptors.get_albedo_textures().size();
         model.normal_descriptor_offset = descriptors.get_normal_textures().size();
+
+        // Safety check
+        ASSERT(model.albedo_descriptor_offset == model.normal_descriptor_offset,
+               "Albedo/Normal Descriptor offset mismatch. Check if model textures are loaded correctly.");
+
         descriptors.add_image_descriptors_for_model(model);
     }
 

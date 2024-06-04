@@ -207,8 +207,8 @@ namespace mag
         // Load the texture
         if (texture_count > 0)
         {
-            aiString ai_mat_name;
-            auto result = ai_material->GetTexture(ai_type, 0, &ai_mat_name);
+            aiString ai_tex_path;
+            auto result = ai_material->GetTexture(ai_type, 0, &ai_tex_path);
 
             if (result != aiReturn::aiReturn_SUCCESS)
             {
@@ -216,7 +216,8 @@ namespace mag
                 return texture;
             }
 
-            const str texture_path = directory + "/" + ai_mat_name.C_Str();
+            LOG_INFO("TEX: {0}", ai_tex_path.C_Str());
+            const str texture_path = directory + "/" + ai_tex_path.C_Str();
             texture = texture_manager.load(texture_path, type);
 
             LOG_INFO("Loaded texture: {0}", texture_path);
