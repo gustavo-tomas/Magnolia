@@ -58,7 +58,7 @@ namespace mag
             void initialize_materials(const aiScene* ai_scene, const str& file, Model* model);
             void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model);
 
-            std::shared_ptr<Image> load_texture(const aiMaterial* ai_material, const aiTextureType type,
+            std::shared_ptr<Image> load_texture(const aiMaterial* ai_material, aiTextureType ai_type,
                                                 const str& directory);
 
             std::unique_ptr<Assimp::Importer> importer;

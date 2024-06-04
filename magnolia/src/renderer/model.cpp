@@ -166,18 +166,26 @@ namespace mag
         }
     }
 
-    std::shared_ptr<Image> ModelManager::load_texture(const aiMaterial* ai_material, const aiTextureType type,
+    std::shared_ptr<Image> ModelManager::load_texture(const aiMaterial* ai_material, aiTextureType ai_type,
                                                       const str& directory)
     {
         auto& app = get_application();
         auto& material_manager = app.get_material_manager();
         auto& texture_manager = app.get_texture_manager();
 
-        const u32 texture_count = ai_material->GetTextureCount(type);
+        const TextureType type = TextureType(ai_type);
         const str material_name = ai_material->GetName().C_Str();
 
+        // For some reason, assimp may identify normal textures as height textures
+        u32 texture_count = ai_material->GetTextureCount(ai_type);
+        if (ai_type == aiTextureType_NORMALS && texture_count == 0)
+        {
+            ai_type = aiTextureType_HEIGHT;
+            texture_count = ai_material->GetTextureCount(ai_type);
+        }
+
         std::shared_ptr<Image> texture;
-        switch (TextureType(type))
+        switch (type)
         {
             case TextureType::Albedo:
                 texture = material_manager.get("Default")->textures[Material::DEFAULT_ALBEDO_TEXTURE];
@@ -200,7 +208,7 @@ namespace mag
         if (texture_count > 0)
         {
             aiString ai_mat_name;
-            auto result = ai_material->GetTexture(type, 0, &ai_mat_name);
+            auto result = ai_material->GetTexture(ai_type, 0, &ai_mat_name);
 
             if (result != aiReturn::aiReturn_SUCCESS)
             {
@@ -209,14 +217,15 @@ namespace mag
             }
 
             const str texture_path = directory + "/" + ai_mat_name.C_Str();
-            texture = texture_manager.load(texture_path, TextureType(type));
+            texture = texture_manager.load(texture_path, type);
 
             LOG_INFO("Loaded texture: {0}", texture_path);
             return texture;
         }
 
         // No textures, use default
-        LOG_WARNING("Material '{0}' has no texture of type '{1}', using default", material_name, std::to_string(type));
+        LOG_WARNING("Material '{0}' has no texture of type '{1}', using default", material_name,
+                    std::to_string(ai_type));
         return texture;
     }
 
