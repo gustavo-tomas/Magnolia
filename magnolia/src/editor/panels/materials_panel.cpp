@@ -18,7 +18,14 @@ namespace mag
             for (u32 i = 0; i < model.materials.size(); i++)
             {
                 const auto &material = model.materials[i];
-                ImGui::Text("Slot %u: %s", i, material->name.c_str());
+                const str slot_str = "Slot " + std::to_string(i) + ": " + material->name.c_str();
+                ImGui::SeparatorText(slot_str.c_str());
+
+                ImGui::Text("Textures");
+                for (const auto &texture : material->textures)
+                {
+                    ImGui::TextWrapped("%s", texture->get_name().c_str());
+                }
             }
 
             const b8 has_material = !model.materials.empty();
