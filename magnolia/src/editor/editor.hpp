@@ -1,12 +1,12 @@
 #pragma once
 
-#include <memory>
-
 // clang-format off
 
+#include <memory>
 #include "core/event.hpp"
 #include "editor/editor_pass.hpp"
 #include "ecs/ecs.hpp"
+#include "editor/panels/content_browser.hpp"
 #include "imgui.h"
 #include "ImGuizmo.h"
 
@@ -14,6 +14,9 @@
 
 namespace mag
 {
+    // ImGui drag and drop types
+    inline const char* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
+
     class Editor
     {
         public:
@@ -42,7 +45,6 @@ namespace mag
 
             void set_style();
 
-            void render_content_browser(const ImGuiWindowFlags window_flags);
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_viewport(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs);
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
@@ -57,12 +59,13 @@ namespace mag
 
             EventCallback event_callback;
 
+            std::unique_ptr<ContentBrowserPanel> content_browser_panel;
+
             EditorRenderPass render_pass;
             ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
-            vk::DescriptorSet viewport_image_descriptor = {}, asset_image_descriptor = {};
+            vk::DescriptorSet viewport_image_descriptor = {};
 
-            std::shared_ptr<Image> asset_image;
             const Image* viewport_image = {};
 
             uvec2 viewport_size = {1, 1};
