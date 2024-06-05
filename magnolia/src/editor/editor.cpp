@@ -87,7 +87,7 @@ namespace mag
         viewport_panel = std::make_unique<ViewportPanel>();
         info_panel = std::make_unique<InfoPanel>();
         scene_panel = std::make_unique<ScenePanel>();
-        material_panel = std::make_unique<MaterialPanel>();
+        material_panel = std::make_unique<MaterialsPanel>();
     }
 
     Editor::~Editor()

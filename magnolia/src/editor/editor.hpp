@@ -7,7 +7,7 @@
 #include "editor/editor_pass.hpp"
 #include "editor/panels/content_browser_panel.hpp"
 #include "editor/panels/info_panel.hpp"
-#include "editor/panels/material_panel.hpp"
+#include "editor/panels/materials_panel.hpp"
 #include "editor/panels/scene_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
 #include "imgui.h"
@@ -59,7 +59,7 @@ namespace mag
             std::unique_ptr<ViewportPanel> viewport_panel;
             std::unique_ptr<InfoPanel> info_panel;
             std::unique_ptr<ScenePanel> scene_panel;
-            std::unique_ptr<MaterialPanel> material_panel;
+            std::unique_ptr<MaterialsPanel> material_panel;
 
             EditorRenderPass render_pass;
             vk::DescriptorPool descriptor_pool;
