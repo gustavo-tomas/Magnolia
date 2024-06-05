@@ -188,11 +188,11 @@ namespace mag
         switch (type)
         {
             case TextureType::Albedo:
-                texture = material_manager.get("Default")->textures[Material::DEFAULT_ALBEDO_TEXTURE];
+                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::DEFAULT_ALBEDO_TEXTURE];
                 break;
 
             case TextureType::Normal:
-                texture = material_manager.get("Default")->textures[Material::DEFAULT_NORMAL_TEXTURE];
+                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::DEFAULT_NORMAL_TEXTURE];
                 break;
 
             default:
@@ -366,7 +366,7 @@ namespace mag
         auto& material_manager = app.get_material_manager();
 
         // Use the default material
-        model.materials.push_back(material_manager.get("Default"));
+        model.materials.push_back(material_manager.get(DEFAULT_MATERIAL_NAME));
     }
 
     Cube::~Cube()

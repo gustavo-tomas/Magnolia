@@ -13,7 +13,7 @@ namespace mag
         // Create a default material
         Material* default_material = new Material();
 
-        default_material->name = "Default";
+        default_material->name = DEFAULT_MATERIAL_NAME;
 
         default_material->textures.push_back(
             texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png", TextureType::Albedo));
@@ -54,7 +54,7 @@ namespace mag
         if (it == materials.end())
         {
             LOG_ERROR("Material '{0}' not found, using default", name);
-            return materials["Default"];
+            return materials[DEFAULT_MATERIAL_NAME];
         }
 
         return it->second;

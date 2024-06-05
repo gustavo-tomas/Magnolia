@@ -6,6 +6,8 @@
 
 namespace mag
 {
+#define DEFAULT_MATERIAL_NAME "MagDefaultMaterial"
+
     struct Material
     {
             std::vector<std::shared_ptr<Image>> textures;
