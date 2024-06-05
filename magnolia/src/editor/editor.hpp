@@ -58,7 +58,6 @@ namespace mag
             std::unique_ptr<ViewportPanel> viewport_panel;
 
             EditorRenderPass render_pass;
-            ImDrawData* draw_data;
             vk::DescriptorPool descriptor_pool;
 
             b8 disabled = false;
