@@ -159,7 +159,7 @@ namespace mag
         content_browser_panel->render(window_flags);
         scene_panel->render(window_flags, ecs, selected_entity_id);
         material_panel->render(window_flags, ecs, selected_entity_id);
-        render_scene(window_flags, ecs);
+        properties_panel->render(window_flags, ecs, selected_entity_id);
         render_settings(window_flags);
         render_camera_properties(window_flags, camera);
         render_status(window_flags);
@@ -178,20 +178,6 @@ namespace mag
         render_pass.after_render();
 
         viewport_panel->after_render();
-    }
-
-    void Editor::render_scene(const ImGuiWindowFlags window_flags, ECS &ecs)
-    {
-        // Properties tab
-        ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
-
-        // Only render properties if an entity is selected
-        if (selected_entity_id != INVALID_ID)
-        {
-            render_properties(ecs, selected_entity_id);
-        }
-
-        ImGui::End();
     }
 
     void Editor::render_settings(const ImGuiWindowFlags window_flags)
@@ -215,94 +201,6 @@ namespace mag
         ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
 
         ImGui::End();
-    }
-
-    void Editor::render_properties(ECS &ecs, const u32 entity_id)
-    {
-        const char *format = "%.2f";
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
-        // Transform
-        if (auto transform = ecs.get_component<TransformComponent>(entity_id))
-        {
-            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                vec3 translation = transform->translation;
-                vec3 rotation = transform->rotation;
-                vec3 scale = transform->scale;
-
-                const f32 left_offset = 100.0f;
-
-                ImGui::Text("Translation");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
-                {
-                    transform->translation = translation;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Transform"))
-                {
-                    transform->translation = vec3(0);
-                }
-
-                ImGui::Text("Rotation");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
-                {
-                    transform->rotation = rotation;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Scale"))
-                {
-                    transform->rotation = vec3(0);
-                }
-
-                ImGui::Text("Scale");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Scale", value_ptr(scale), format, input_flags))
-                {
-                    transform->scale = scale;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Rotation"))
-                {
-                    transform->scale = vec3(1);
-                }
-            }
-        }
-
-        // Light
-        if (auto light = ecs.get_component<LightComponent>(entity_id))
-        {
-            if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto light_intensity = light->intensity;
-
-                const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoAlpha;
-
-                const f32 left_offset = 100.0f;
-
-                ImGui::TextWrapped("Color");
-                ImGui::SameLine(left_offset);
-                ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
-
-                ImGui::Text("Intensity");
-                ImGui::SameLine(left_offset);
-                if (ImGui::InputFloat("##Intensity", &light_intensity, 1.0f, 10.0f, format, input_flags))
-                {
-                    light->intensity = light_intensity;
-                }
-            }
-        }
     }
 
     void Editor::render_camera_properties(const ImGuiWindowFlags window_flags, Camera &camera)

@@ -8,6 +8,7 @@
 #include "editor/panels/content_browser_panel.hpp"
 #include "editor/panels/info_panel.hpp"
 #include "editor/panels/materials_panel.hpp"
+#include "editor/panels/properties_panel.hpp"
 #include "editor/panels/scene_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
 #include "imgui.h"
@@ -44,9 +45,7 @@ namespace mag
             void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
 
-            void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
             void render_settings(const ImGuiWindowFlags window_flags);
-            void render_properties(ECS& ecs, const u32 entity_id);
 
             // @TODO: this is temporary-ish. The camera will (should?) be an ECS component.
             void render_camera_properties(const ImGuiWindowFlags window_flags, Camera& camera);
@@ -60,6 +59,7 @@ namespace mag
             std::unique_ptr<InfoPanel> info_panel;
             std::unique_ptr<ScenePanel> scene_panel;
             std::unique_ptr<MaterialsPanel> material_panel;
+            std::unique_ptr<PropertiesPanel> properties_panel;
 
             EditorRenderPass render_pass;
             vk::DescriptorPool descriptor_pool;
