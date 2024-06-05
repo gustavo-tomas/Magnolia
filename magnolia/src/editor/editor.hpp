@@ -41,8 +41,6 @@ namespace mag
             void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
 
-            void set_style();
-
             void render_panel(const ImGuiWindowFlags window_flags);
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
             void render_settings(const ImGuiWindowFlags window_flags);
