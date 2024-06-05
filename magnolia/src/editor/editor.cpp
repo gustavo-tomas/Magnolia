@@ -87,6 +87,7 @@ namespace mag
         viewport_panel = std::make_unique<ViewportPanel>();
         info_panel = std::make_unique<InfoPanel>();
         scene_panel = std::make_unique<ScenePanel>();
+        material_panel = std::make_unique<MaterialPanel>();
     }
 
     Editor::~Editor()
@@ -157,6 +158,7 @@ namespace mag
         info_panel->render(window_flags);
         content_browser_panel->render(window_flags);
         scene_panel->render(window_flags, ecs, selected_entity_id);
+        material_panel->render(window_flags, ecs, selected_entity_id);
         render_scene(window_flags, ecs);
         render_settings(window_flags);
         render_camera_properties(window_flags, camera);
@@ -187,19 +189,6 @@ namespace mag
         if (selected_entity_id != INVALID_ID)
         {
             render_properties(ecs, selected_entity_id);
-        }
-
-        ImGui::End();
-
-        // Materials tab
-        ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials", NULL, window_flags);
-
-        if (selected_entity_id != INVALID_ID)
-        {
-            if (auto model = ecs.get_component<ModelComponent>(selected_entity_id))
-            {
-                render_materials(*model);
-            }
         }
 
         ImGui::End();
@@ -313,23 +302,6 @@ namespace mag
                     light->intensity = light_intensity;
                 }
             }
-        }
-    }
-
-    void Editor::render_materials(const ModelComponent &model_component)
-    {
-        auto &model = model_component.model;
-
-        for (u32 i = 0; i < model.materials.size(); i++)
-        {
-            const auto &material = model.materials[i];
-            ImGui::Text("Slot %u: %s", i, material->name.c_str());
-        }
-
-        const b8 has_material = !model.materials.empty();
-        if (!has_material)
-        {
-            ImGui::Text("No material");
         }
     }
 
