@@ -61,7 +61,7 @@ namespace mag
         image->initialize(image_extent, image_format,
                           vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                               vk::ImageUsageFlagBits::eTransferDst,
-                          vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, type);
+                          vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, type, file);
 
         context.submit_commands_immediate(
             [&](CommandBuffer cmd)
@@ -140,10 +140,11 @@ namespace mag
 
     void Image::initialize(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
                            const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                           const vk::SampleCountFlagBits msaa_samples, const TextureType type)
+                           const vk::SampleCountFlagBits msaa_samples, const TextureType type, const str& name)
     {
         auto& context = get_context();
 
+        this->name = name;
         this->type = type;
         this->format = format;
         this->extent = extent;
