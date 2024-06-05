@@ -1,6 +1,7 @@
 #include "editor/panels/properties_panel.hpp"
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -69,6 +70,17 @@ namespace mag
                 {
                     transform->scale = vec3(1);
                 }
+            }
+        }
+
+        // Model
+        if (auto model_c = ecs.get_component<ModelComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                auto &model = model_c->model;
+
+                ImGui::TextWrapped("Name: %s", model.name.c_str());
             }
         }
 
