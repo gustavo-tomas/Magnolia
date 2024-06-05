@@ -1,4 +1,4 @@
-#include "editor/panels/content_browser.hpp"
+#include "editor/panels/content_browser_panel.hpp"
 
 #include <filesystem>
 

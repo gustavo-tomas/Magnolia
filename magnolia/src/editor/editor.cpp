@@ -8,7 +8,6 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
-#include "editor/panels/content_browser.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"

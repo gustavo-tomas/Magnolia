@@ -6,7 +6,7 @@
 #include "core/event.hpp"
 #include "editor/editor_pass.hpp"
 #include "ecs/ecs.hpp"
-#include "editor/panels/content_browser.hpp"
+#include "editor/panels/content_browser_panel.hpp"
 #include "imgui.h"
 #include "ImGuizmo.h"
 
