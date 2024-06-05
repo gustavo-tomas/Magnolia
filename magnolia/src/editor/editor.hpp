@@ -6,6 +6,7 @@
 #include "ecs/ecs.hpp"
 #include "editor/editor_pass.hpp"
 #include "editor/panels/content_browser_panel.hpp"
+#include "editor/panels/info_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
 #include "imgui.h"
 
@@ -41,7 +42,6 @@ namespace mag
             void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
 
-            void render_panel(const ImGuiWindowFlags window_flags);
             void render_scene(const ImGuiWindowFlags window_flags, ECS& ecs);
             void render_settings(const ImGuiWindowFlags window_flags);
             void render_properties(ECS& ecs, const u32 entity_id);
@@ -56,6 +56,7 @@ namespace mag
 
             std::unique_ptr<ContentBrowserPanel> content_browser_panel;
             std::unique_ptr<ViewportPanel> viewport_panel;
+            std::unique_ptr<InfoPanel> info_panel;
 
             EditorRenderPass render_pass;
             vk::DescriptorPool descriptor_pool;

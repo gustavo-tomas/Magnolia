@@ -1,23 +1,18 @@
 #include "editor/editor.hpp"
 
-#include <fstream>
 #include <memory>
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
-#include "core/logger.hpp"
 #include "editor/editor_style.hpp"
 #include "editor/panels/viewport_panel.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "nlohmann/json.hpp"
 
 namespace mag
 {
-    using json = nlohmann::json;
-
     Editor::Editor(const EventCallback &event_callback) : event_callback(event_callback)
     {
         auto &context = get_context();
@@ -91,6 +86,7 @@ namespace mag
 
         content_browser_panel = std::make_unique<ContentBrowserPanel>();
         viewport_panel = std::make_unique<ViewportPanel>();
+        info_panel = std::make_unique<InfoPanel>();
     }
 
     Editor::~Editor()
@@ -158,7 +154,7 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
-        render_panel(window_flags);
+        info_panel->render(window_flags);
         content_browser_panel->render(window_flags);
         render_scene(window_flags, ecs);
         render_settings(window_flags);
@@ -179,40 +175,6 @@ namespace mag
         render_pass.after_render();
 
         viewport_panel->after_render();
-    }
-
-    void Editor::render_panel(const ImGuiWindowFlags window_flags)
-    {
-        // Parse instructions from the json file
-        const str file_path = "magnolia/assets/json/editor_instructions.json";
-        std::ifstream file(file_path);
-
-        if (!file.is_open())
-        {
-            LOG_ERROR("Failed to open editor instructions from json file: {0}", file_path);
-            return;
-        }
-
-        // Parse the file
-        const json data = json::parse(file);
-
-        // Read the instructions
-        const str window_name = data["window_name"];
-        ImGui::Begin((str(ICON_FA_CIRCLE_INFO) + " " + window_name).c_str(), NULL, window_flags);
-
-        for (const auto &section : data["sections"])
-        {
-            const str section_name = section["name"];
-            ImGui::SeparatorText(section_name.c_str());
-
-            for (const auto &instruction : section["instructions"])
-            {
-                const str instruction_name = instruction;
-                ImGui::TextWrapped("%s", (str(ICON_FA_CIRCLE_ARROW_RIGHT) + " " + instruction_name).c_str());
-            }
-        }
-
-        ImGui::End();
     }
 
     void Editor::render_scene(const ImGuiWindowFlags window_flags, ECS &ecs)
