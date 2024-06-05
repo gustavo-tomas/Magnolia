@@ -25,4 +25,11 @@ namespace mag
 
         return v;
     }
+
+    inline math::vec3 const vk_extent_to_vec(const vk::Extent3D& extent)
+    {
+        const math::vec3 v(extent.width, extent.height, extent.depth);
+
+        return v;
+    }
 };  // namespace mag
