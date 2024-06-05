@@ -3,11 +3,11 @@
 #include <fstream>
 #include <memory>
 
-#include "ImGuizmo.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "editor/panels/viewport_panel.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -89,6 +89,7 @@ namespace mag
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
         content_browser_panel = std::make_unique<ContentBrowserPanel>();
+        viewport_panel = std::make_unique<ViewportPanel>();
     }
 
     Editor::~Editor()
@@ -111,15 +112,14 @@ namespace mag
         auto &scene = get_application().get_active_scene();
 
         // Emit event back to the application
-        if (resize_needed)
+        if (viewport_panel->is_resize_needed())
         {
+            const auto viewport_size = viewport_panel->get_viewport_size();
             auto event = ViewportResizeEvent(viewport_size.x, viewport_size.y);
             event_callback(event);
 
             // By now the scene should be updated
             set_viewport_image(scene.get_render_pass().get_target_image());
-
-            resize_needed = false;
         }
 
         // Alternate between Fullscreen and Windowed
@@ -134,12 +134,7 @@ namespace mag
         auto &context = get_context();
         auto &cmd = context.get_curr_frame().command_buffer;
 
-        // Transition the viewport image into their correct transfer layouts for imgui texture
-        if (viewport_image)
-        {
-            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
-                                vk::ImageLayout::eShaderReadOnlyOptimal);
-        }
+        viewport_panel->before_render();
 
         // @TODO: put this inside the render pass?
         render_pass.before_render();
@@ -173,7 +168,7 @@ namespace mag
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        render_viewport(window_flags, camera, ecs);
+        viewport_panel->render(window_flags, camera, ecs, selected_entity_id);
 
         // End
         ImGui::Render();
@@ -182,12 +177,7 @@ namespace mag
         cmd.end_rendering();
         render_pass.after_render();
 
-        // Return the viewport image to their original layout
-        if (viewport_image)
-        {
-            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
-                                vk::ImageLayout::eTransferSrcOptimal);
-        }
+        viewport_panel->after_render();
     }
 
     void Editor::render_panel(const ImGuiWindowFlags window_flags)
@@ -222,81 +212,6 @@ namespace mag
         }
 
         ImGui::End();
-    }
-
-    void Editor::render_viewport(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs)
-    {
-        // Remove padding for the viewport
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-        ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
-
-        const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
-
-        if (current_viewport_size != viewport_size) resize_needed = true;
-
-        viewport_size = current_viewport_size;
-
-        ImGui::SetNextItemAllowOverlap();
-        ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
-
-        // Load models if any was draged over the viewport
-        if (ImGui::BeginDragDropTarget())
-        {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
-            {
-                const char *path = static_cast<const char *>(payload->Data);
-                get_application().get_active_scene().add_model(path);
-            }
-            ImGui::EndDragDropTarget();
-        }
-
-        // @TODO: check if entity has a transform before rendering gizmo
-        // Render gizmos for selected model
-        if (!disabled && selected_entity_id != INVALID_ID)
-        {
-            auto transforms = ecs.get_components<TransformComponent>();
-            auto &transform = transforms[selected_entity_id];
-
-            mat4 view = camera.get_view();
-            const mat4 &proj = camera.get_projection();
-
-            // Convert from LH to RH coordinates (flip Y)
-            const mat4 scale_matrix = scale(mat4(1.0f), vec3(1, -1, 1));
-            view = scale_matrix * view;
-
-            auto viewport_min_region = ImGui::GetWindowContentRegionMin();
-            auto viewport_max_region = ImGui::GetWindowContentRegionMax();
-            auto viewport_offset = ImGui::GetWindowPos();
-
-            vec2 viewport_bounds[2] = {
-                {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y},
-                {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y}};
-
-            ImGuizmo::SetDrawlist();
-            ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
-                              viewport_bounds[1].y - viewport_bounds[0].y);
-
-            mat4 transform_matrix = TransformComponent::get_transformation_matrix(*transform);
-
-            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
-                                     value_ptr(transform_matrix)))
-            {
-                const b8 result = math::decompose_simple(transform_matrix, transform->scale, transform->rotation,
-                                                         transform->translation);
-
-                if (!result)
-                {
-                    LOG_ERROR("Failed to decompose transformation matrix");
-                }
-            }
-        }
-
-        viewport_window_active = ImGui::IsWindowFocused();
-
-        ImGui::End();
-
-        ImGui::PopStyleVar();
     }
 
     void Editor::render_scene(const ImGuiWindowFlags window_flags, ECS &ecs)
@@ -577,53 +492,19 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
-        dispatcher.dispatch<KeyPressEvent>(BIND_FN(Editor::on_key_press));
+
+        viewport_panel->on_event(e);
     }
 
     void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
 
     void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
 
-    void Editor::on_key_press(KeyPressEvent &e)
-    {
-        if (disabled) return;
-
-        // These are basically the same keybinds as blender
-        switch (e.key)
-        {
-            // Move
-            case Key::g:
-                gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
-                break;
-
-            // Rotate
-            case Key::r:
-                gizmo_operation = ImGuizmo::OPERATION::ROTATE;
-                break;
-
-            // Scale
-            case Key::s:
-                gizmo_operation = ImGuizmo::OPERATION::SCALE;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    void Editor::set_viewport_image(const Image &viewport_image)
-    {
-        // Dont forget to delete old descriptor
-        if (viewport_image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
-
-        viewport_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        this->viewport_image = std::addressof(viewport_image);
-    }
+    void Editor::set_viewport_image(const Image &viewport_image) { viewport_panel->set_viewport_image(viewport_image); }
 
     void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
+
+    b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
 
     void Editor::set_style()
     {
