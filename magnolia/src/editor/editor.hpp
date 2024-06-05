@@ -11,9 +11,9 @@
 #include "editor/panels/materials_panel.hpp"
 #include "editor/panels/properties_panel.hpp"
 #include "editor/panels/scene_panel.hpp"
+#include "editor/panels/settings_panel.hpp"
 #include "editor/panels/status_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
-#include "imgui.h"
 
 namespace mag
 {
@@ -36,8 +36,8 @@ namespace mag
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
-            u32& get_texture_output() { return texture_output; };
-            u32& get_normal_output() { return normal_output; };
+            u32& get_texture_output() { return settings_panel->get_texture_output(); };
+            u32& get_normal_output() { return settings_panel->get_normal_output(); };
             const Image& get_image() const { return render_pass.get_draw_image(); };
             const uvec3& get_draw_size() const { return render_pass.get_draw_size(); };
 
@@ -47,9 +47,9 @@ namespace mag
             void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
 
-            void render_settings(const ImGuiWindowFlags window_flags);
-
             EventCallback event_callback;
+            EditorRenderPass render_pass;
+            vk::DescriptorPool descriptor_pool;
 
             std::unique_ptr<ContentBrowserPanel> content_browser_panel;
             std::unique_ptr<ViewportPanel> viewport_panel;
@@ -59,12 +59,9 @@ namespace mag
             std::unique_ptr<PropertiesPanel> properties_panel;
             std::unique_ptr<StatusPanel> status_panel;
             std::unique_ptr<CameraPanel> camera_panel;
-
-            EditorRenderPass render_pass;
-            vk::DescriptorPool descriptor_pool;
+            std::unique_ptr<SettingsPanel> settings_panel;
 
             b8 disabled = false;
-            u32 texture_output = 0, normal_output = 0;
             u64 selected_entity_id = INVALID_ID;
     };
 };  // namespace mag
