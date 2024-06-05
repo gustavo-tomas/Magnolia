@@ -62,6 +62,5 @@ namespace mag
             std::unique_ptr<SettingsPanel> settings_panel;
 
             b8 disabled = false;
-            u64 selected_entity_id = INVALID_ID;
     };
 };  // namespace mag

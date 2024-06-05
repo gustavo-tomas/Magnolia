@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs, u64& selected_entity_id)
+    void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs)
     {
         ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 

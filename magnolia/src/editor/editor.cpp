@@ -156,9 +156,11 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
+        scene_panel->render(window_flags, ecs);
+        const u64 selected_entity_id = scene_panel->get_selected_entity_id();
+
         info_panel->render(window_flags);
         content_browser_panel->render(window_flags);
-        scene_panel->render(window_flags, ecs, selected_entity_id);
         material_panel->render(window_flags, ecs, selected_entity_id);
         properties_panel->render(window_flags, ecs, selected_entity_id);
         settings_panel->render(window_flags);
