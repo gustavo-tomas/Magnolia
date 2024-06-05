@@ -88,6 +88,7 @@ namespace mag
         info_panel = std::make_unique<InfoPanel>();
         scene_panel = std::make_unique<ScenePanel>();
         material_panel = std::make_unique<MaterialsPanel>();
+        status_panel = std::make_unique<StatusPanel>();
     }
 
     Editor::~Editor()
@@ -162,7 +163,7 @@ namespace mag
         properties_panel->render(window_flags, ecs, selected_entity_id);
         render_settings(window_flags);
         render_camera_properties(window_flags, camera);
-        render_status(window_flags);
+        status_panel->render(window_flags);
 
         ImGui::EndDisabled();
 
@@ -247,28 +248,6 @@ namespace mag
         {
             camera.set_near_far(near_far);
         }
-
-        ImGui::End();
-    }
-
-    void Editor::render_status(const ImGuiWindowFlags window_flags)
-    {
-        ImGui::Begin(ICON_FA_INFO " Status", NULL, window_flags);
-
-        // Display frame rate
-        const auto &io = ImGui::GetIO();
-        const f32 frame_rate = io.Framerate;
-        const f32 frame_duration = 1000.0f / frame_rate;
-
-        auto &app = get_application();
-        const auto &context = get_context();
-        const Timestamp &timestamp = context.get_timestamp();
-        const Statistics &statistics = app.get_renderer().get_statistics();
-
-        ImGui::Text("CPU: %.3f ms/frame - %lf fps", frame_duration, frame_rate);
-        ImGui::Text("GPU: %.3f ms/frame", timestamp.end - timestamp.begin);
-        ImGui::Text("Triangles: %u", statistics.rendered_triangles);
-        ImGui::Text("Draw Calls: %u", statistics.draw_calls);
 
         ImGui::End();
     }
