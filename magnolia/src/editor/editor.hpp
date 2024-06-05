@@ -5,6 +5,7 @@
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
 #include "editor/editor_pass.hpp"
+#include "editor/panels/camera_panel.hpp"
 #include "editor/panels/content_browser_panel.hpp"
 #include "editor/panels/info_panel.hpp"
 #include "editor/panels/materials_panel.hpp"
@@ -48,9 +49,6 @@ namespace mag
 
             void render_settings(const ImGuiWindowFlags window_flags);
 
-            // @TODO: this is temporary-ish. The camera will (should?) be an ECS component.
-            void render_camera_properties(const ImGuiWindowFlags window_flags, Camera& camera);
-
             EventCallback event_callback;
 
             std::unique_ptr<ContentBrowserPanel> content_browser_panel;
@@ -60,6 +58,7 @@ namespace mag
             std::unique_ptr<MaterialsPanel> material_panel;
             std::unique_ptr<PropertiesPanel> properties_panel;
             std::unique_ptr<StatusPanel> status_panel;
+            std::unique_ptr<CameraPanel> camera_panel;
 
             EditorRenderPass render_pass;
             vk::DescriptorPool descriptor_pool;

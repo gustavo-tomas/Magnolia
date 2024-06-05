@@ -1,13 +1,10 @@
 #include "editor/editor.hpp"
 
-#include <memory>
-
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor/editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "imgui.h"
 #include "imgui_internal.h"
 
 namespace mag
@@ -89,6 +86,7 @@ namespace mag
         scene_panel = std::make_unique<ScenePanel>();
         material_panel = std::make_unique<MaterialsPanel>();
         status_panel = std::make_unique<StatusPanel>();
+        camera_panel = std::make_unique<CameraPanel>();
     }
 
     Editor::~Editor()
@@ -162,7 +160,7 @@ namespace mag
         material_panel->render(window_flags, ecs, selected_entity_id);
         properties_panel->render(window_flags, ecs, selected_entity_id);
         render_settings(window_flags);
-        render_camera_properties(window_flags, camera);
+        camera_panel->render(window_flags, camera);
         status_panel->render(window_flags);
 
         ImGui::EndDisabled();
@@ -200,54 +198,6 @@ namespace mag
         ImGui::Text("Normals");
         ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);
         ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
-
-        ImGui::End();
-    }
-
-    void Editor::render_camera_properties(const ImGuiWindowFlags window_flags, Camera &camera)
-    {
-        ImGui::Begin(ICON_FA_CAMERA " Camera", NULL, window_flags);
-
-        const char *format = "%.2f";
-        const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
-        vec3 translation = camera.get_position();
-        vec3 rotation = camera.get_rotation();
-        vec2 near_far = camera.get_near_far();
-        f32 fov = camera.get_fov();
-
-        ImGui::Text("Translation");
-        ImGui::SameLine(left_offset);
-
-        if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
-        {
-            camera.set_position(translation);
-        }
-
-        ImGui::Text("Rotation");
-        ImGui::SameLine(left_offset);
-
-        if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
-        {
-            camera.set_rotation(rotation);
-        }
-
-        ImGui::Text("FOV");
-        ImGui::SameLine(left_offset);
-
-        if (ImGui::InputFloat("##FOV", &fov, 0, 0, format, input_flags))
-        {
-            camera.set_fov(fov);
-        }
-
-        ImGui::Text("Near/Far");
-        ImGui::SameLine(left_offset);
-
-        if (ImGui::InputFloat2("##NearFar", value_ptr(near_far), format, input_flags))
-        {
-            camera.set_near_far(near_far);
-        }
 
         ImGui::End();
     }
