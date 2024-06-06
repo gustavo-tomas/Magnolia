@@ -15,11 +15,11 @@ namespace mag
 
         default_material->name = DEFAULT_MATERIAL_NAME;
 
-        default_material->textures.push_back(
-            texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png", TextureType::Albedo));
+        default_material->textures[Material::TextureSlot::Albedo] =
+            texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png", TextureType::Albedo);
 
-        default_material->textures.push_back(
-            texture_loader.load("magnolia/assets/images/DefaultNormal.png", TextureType::Normal));
+        default_material->textures[Material::TextureSlot::Normal] =
+            texture_loader.load("magnolia/assets/images/DefaultNormal.png", TextureType::Normal);
 
         load(default_material);
     }

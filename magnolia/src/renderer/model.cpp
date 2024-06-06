@@ -159,8 +159,12 @@ namespace mag
             Material* material = new Material();
 
             material->name = ai_material->GetName().C_Str();
-            material->textures.push_back(load_texture(ai_material, aiTextureType_DIFFUSE, directory));
-            material->textures.push_back(load_texture(ai_material, aiTextureType_NORMALS, directory));
+
+            material->textures[Material::TextureSlot::Albedo] =
+                load_texture(ai_material, aiTextureType_DIFFUSE, directory);
+
+            material->textures[Material::TextureSlot::Normal] =
+                load_texture(ai_material, aiTextureType_NORMALS, directory);
 
             model->materials[i] = material_manager.load(material);
         }
@@ -188,11 +192,11 @@ namespace mag
         switch (type)
         {
             case TextureType::Albedo:
-                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::DEFAULT_ALBEDO_TEXTURE];
+                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Albedo];
                 break;
 
             case TextureType::Normal:
-                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::DEFAULT_NORMAL_TEXTURE];
+                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Normal];
                 break;
 
             default:

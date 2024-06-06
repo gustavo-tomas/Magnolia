@@ -6,16 +6,20 @@
 
 namespace mag
 {
-#define DEFAULT_MATERIAL_NAME "MagDefaultMaterial"
+#define DEFAULT_MATERIAL_NAME "_MagDefaultMaterial"
 
     struct Material
     {
-            std::vector<std::shared_ptr<Image>> textures;
-            str name = "";  // @TODO: meh
+            enum TextureSlot
+            {
+                Albedo = 0,
+                Normal,
 
-            // Helpers
-            static const u32 DEFAULT_ALBEDO_TEXTURE = 0;
-            static const u32 DEFAULT_NORMAL_TEXTURE = 1;
+                TextureCount
+            };
+
+            std::shared_ptr<Image> textures[TextureSlot::TextureCount];
+            str name = "";
     };
 
     class MaterialManager
