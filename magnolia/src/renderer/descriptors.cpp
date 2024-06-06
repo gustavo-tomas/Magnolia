@@ -241,7 +241,9 @@ namespace mag
         uniform_descriptors.resize(frame_count);
         albedo_image_descriptors.resize(frame_count);
         normal_image_descriptors.resize(frame_count);
+        shader_uniform_descriptors.resize(frame_count);
         data_buffers.resize(frame_count);
+        shader_data_buffers.resize(frame_count);
 
         auto vertex_module = shader.get_modules()[0];
         auto fragment_module = shader.get_modules()[1];
@@ -263,6 +265,16 @@ namespace mag
                     VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
                 uniform_descriptors[i].buffer.map_memory();
+
+                // Shader
+                shader_uniform_descriptors[i] = DescriptorBuilder::build_layout(vertex_module->get_reflection(), 4);
+
+                shader_uniform_descriptors[i].buffer.initialize(
+                    shader_uniform_descriptors[i].size,
+                    VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                    VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                shader_uniform_descriptors[i].buffer.map_memory();
 
                 if (i == 0)  // Only insert once
                 {
@@ -299,8 +311,9 @@ namespace mag
 
                 if (i == 0)  // Only insert once
                 {
-                    descriptor_set_layouts.push_back(albedo_image_descriptors[i].layout);  // Albedo textures
-                    descriptor_set_layouts.push_back(normal_image_descriptors[i].layout);  // Normal textures
+                    descriptor_set_layouts.push_back(albedo_image_descriptors[i].layout);    // Albedo textures
+                    descriptor_set_layouts.push_back(normal_image_descriptors[i].layout);    // Normal textures
+                    descriptor_set_layouts.push_back(shader_uniform_descriptors[i].layout);  // Shader
                 }
             }
 
@@ -318,7 +331,19 @@ namespace mag
                 data_buffers[i].push_back(buffer);
             }
 
+            {
+                const u64 buffer_size = uniforms["u_shader"].data.size();
+
+                Buffer buffer;
+                buffer.initialize(buffer_size,
+                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                shader_data_buffers[i].push_back(buffer);
+            }
+
             DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
+            DescriptorBuilder::build(shader_uniform_descriptors[i], shader_data_buffers[i]);
         }
     }
 
@@ -327,6 +352,12 @@ namespace mag
         if (uniform_inited)
         {
             for (auto& descriptor : uniform_descriptors)
+            {
+                descriptor.buffer.unmap_memory();
+                descriptor.buffer.shutdown();
+            }
+
+            for (auto& descriptor : shader_uniform_descriptors)
             {
                 descriptor.buffer.unmap_memory();
                 descriptor.buffer.shutdown();
@@ -349,6 +380,14 @@ namespace mag
         }
 
         for (auto& buffers : data_buffers)
+        {
+            for (auto& buffer : buffers)
+            {
+                buffer.shutdown();
+            }
+        }
+
+        for (auto& buffers : shader_data_buffers)
         {
             for (auto& buffer : buffers)
             {
@@ -383,6 +422,13 @@ namespace mag
                 {normal_image_descriptors[curr_frame_number].buffer.get_device_address(),
                  vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
                      vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
+        }
+
+        if (uniform_inited)
+        {
+            descriptor_buffer_binding_infos.push_back(
+                {shader_uniform_descriptors[curr_frame_number].buffer.get_device_address(),
+                 vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
         }
 
         // Bind descriptor buffers and set offsets
@@ -473,5 +519,10 @@ namespace mag
             default:
                 break;
         }
+    }
+
+    void DescriptorCache::set_offset_shader(const vk::PipelineLayout& pipeline_layout)
+    {
+        set_descriptor_buffer_offset(pipeline_layout, 4, 3, 0);
     }
 };  // namespace mag

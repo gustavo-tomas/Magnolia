@@ -82,9 +82,11 @@ namespace mag
             void set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance);
             void set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index,
                                      const TextureType texture_type);
+            void set_offset_shader(const vk::PipelineLayout& pipeline_layout);
 
             // @TODO: idk
             std::vector<std::vector<Buffer>>& get_data_buffers() { return data_buffers; };
+            std::vector<std::vector<Buffer>>& get_shader_data_buffers() { return shader_data_buffers; };
 
             const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const
             {
@@ -99,9 +101,10 @@ namespace mag
                                               const u32 buffer_indices, const u64 buffer_offsets);
 
             b8 uniform_inited = {}, image_inited = {};
-            std::vector<std::vector<Buffer>> data_buffers;
+            std::vector<std::vector<Buffer>> data_buffers, shader_data_buffers;
             std::vector<std::shared_ptr<Image>> albedo_textures, normal_textures;
-            std::vector<Descriptor> uniform_descriptors, albedo_image_descriptors, normal_image_descriptors;
+            std::vector<Descriptor> uniform_descriptors, shader_uniform_descriptors, albedo_image_descriptors,
+                normal_image_descriptors;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
     };
 };  // namespace mag
