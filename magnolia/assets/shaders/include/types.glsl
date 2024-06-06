@@ -1,5 +1,7 @@
 // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
 
+// @TODO: for now we assume this file is included in every shader module.
+
 // Constants
 const uint MAX_NUMBER_OF_LIGHTS = 4;
 

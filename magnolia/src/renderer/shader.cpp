@@ -124,8 +124,8 @@ namespace mag
 
         if (scope == "u_shader")
         {
-            descriptor_cache.get_shader_data_buffers()[curr_frame_number][buffer_index].copy(uniform.data.data(),
-                                                                                             uniform.data.size());
+            descriptor_cache.get_shader_data_buffers()[curr_frame_number].copy(uniform.data.data(),
+                                                                               uniform.data.size());
         }
 
         else
