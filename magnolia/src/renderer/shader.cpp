@@ -121,8 +121,18 @@ namespace mag
         }
 
         memcpy(uniform.data.data() + offset, data, size);
-        descriptor_cache.get_data_buffers()[curr_frame_number][buffer_index].copy(uniform.data.data(),
-                                                                                  uniform.data.size());
+
+        if (scope == "u_shader")
+        {
+            descriptor_cache.get_shader_data_buffers()[curr_frame_number].copy(uniform.data.data(),
+                                                                               uniform.data.size());
+        }
+
+        else
+        {
+            descriptor_cache.get_data_buffers()[curr_frame_number][buffer_index].copy(uniform.data.data(),
+                                                                                      uniform.data.size());
+        }
     }
 
     void Shader::set_uniform_global(const str& name, const void* data) { set_uniform("u_global", name, data, 0); }
@@ -132,4 +142,6 @@ namespace mag
         // @TODO: hardcoded number of global uniforms (1)
         set_uniform("u_instance", name, data, instance + 1);
     }
+
+    void Shader::set_uniform_shader(const str& name, const void* data) { set_uniform("u_shader", name, data, 0); }
 };  // namespace mag

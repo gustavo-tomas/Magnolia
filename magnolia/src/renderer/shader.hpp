@@ -57,6 +57,7 @@ namespace mag
 
             void set_uniform_global(const str& name, const void* data);
             void set_uniform_instance(const str& name, const void* data, const u32 instance);
+            void set_uniform_shader(const str& name, const void* data);
 
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
