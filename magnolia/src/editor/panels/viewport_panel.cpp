@@ -58,8 +58,7 @@ namespace mag
         // Render gizmos for selected model
         if (!editor.is_disabled() && selected_entity_id != INVALID_ID)
         {
-            auto transforms = ecs.get_components<TransformComponent>();
-            auto &transform = transforms[selected_entity_id];
+            auto *transform = ecs.get_component<TransformComponent>(selected_entity_id);
 
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
