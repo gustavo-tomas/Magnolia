@@ -17,7 +17,7 @@ namespace mag
         public:
             void before_render();
             void render(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs,
-                        const u64 selected_entity_id);
+                        const u32 selected_entity_id);
             void after_render();
 
             void on_event(Event& e);

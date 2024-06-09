@@ -10,9 +10,9 @@ namespace mag
         public:
             void render(const ImGuiWindowFlags window_flags, ECS& ecs);
 
-            u64 get_selected_entity_id() const { return selected_entity_id; };
+            u32 get_selected_entity_id() const { return selected_entity_id; };
 
         private:
-            u64 selected_entity_id = INVALID_ID;
+            u32 selected_entity_id = INVALID_ID;
     };
 };  // namespace mag

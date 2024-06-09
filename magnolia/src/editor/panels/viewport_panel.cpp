@@ -21,7 +21,7 @@ namespace mag
     }
 
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
-                               const u64 selected_entity_id)
+                               const u32 selected_entity_id)
     {
         auto &editor = get_application().get_editor();
 

@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u64 selected_entity_id)
+    void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         const char *format = "%.2f";
         const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;

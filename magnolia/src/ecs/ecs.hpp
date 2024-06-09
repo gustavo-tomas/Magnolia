@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -22,7 +23,7 @@ namespace mag
 #define ASSERT_TYPES(Ts) \
     static_assert((std::is_base_of<Component, Ts>::value && ...), "All types must be derived from Component")
 
-#define INVALID_ID 1e18
+#define INVALID_ID 1e9
 
         public:
             using Entity = std::vector<std::unique_ptr<Component>>;

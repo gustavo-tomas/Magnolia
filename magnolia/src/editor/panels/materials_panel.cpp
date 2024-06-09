@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    void MaterialsPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u64 selected_entity_id)
+    void MaterialsPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials", NULL, window_flags);
 
