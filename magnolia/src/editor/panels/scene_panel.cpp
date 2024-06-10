@@ -30,6 +30,20 @@ namespace mag
                 selected_entity_id = entity_id;
             }
 
+            // Pop up menu on right click
+            if (selected_entity_id == entity_id && ImGui::BeginPopupContextWindow())
+            {
+                if (ImGui::MenuItem("Delete"))
+                {
+                    auto& scene = get_application().get_active_scene();
+                    scene.remove_model(entity_id);
+
+                    if (selected_entity_id == entity_id) selected_entity_id = INVALID_ID;
+                }
+
+                ImGui::EndPopup();
+            }
+
             if (node_open)
             {
                 if (ecs.get_component<TransformComponent>(entity_id))
@@ -48,14 +62,6 @@ namespace mag
                 {
                     const str component_name = str(ICON_FA_LIGHTBULB) + " Light";
                     ImGui::Text("%s", component_name.c_str());
-                }
-
-                if (ImGui::Button("Delete"))
-                {
-                    auto& scene = get_application().get_active_scene();
-                    scene.remove_model(entity_id);
-
-                    if (selected_entity_id == entity_id) selected_entity_id = INVALID_ID;
                 }
 
                 ImGui::TreePop();
