@@ -401,9 +401,19 @@ namespace mag
         command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
     }
 
-    void DescriptorCache::add_image_descriptors_for_model(const Model& model)
+    void DescriptorCache::add_image_descriptors_for_model(ECS& ecs, const u32 id)
     {
         auto& context = get_context();
+        auto& descriptors = context.get_descriptor_cache();
+        auto* model_c = ecs.get_component<ModelComponent>(id);
+        auto& model = model_c->model;
+
+        model_c->albedo_descriptor_offset = descriptors.get_albedo_textures().size();
+        model_c->normal_descriptor_offset = descriptors.get_normal_textures().size();
+
+        // Safety check
+        ASSERT(model_c->albedo_descriptor_offset == model_c->normal_descriptor_offset,
+               "Albedo/Normal Descriptor offset mismatch. Check if model textures are loaded correctly.");
 
         const u32 frame_count = context.get_frame_count();
 
@@ -434,6 +444,55 @@ namespace mag
             }
 
             // Create descriptor buffer that holds texture data
+            for (u32 i = 0; i < frame_count; i++)
+            {
+                DescriptorBuilder::build(albedo_image_descriptors[i], albedo_textures);
+                DescriptorBuilder::build(normal_image_descriptors[i], normal_textures);
+            }
+        }
+    }
+
+    void DescriptorCache::remove_image_descriptors_for_model(ECS& ecs, const u32 id)
+    {
+        auto models = ecs.get_components<ModelComponent>();
+
+        auto* model_to_be_removed = ecs.get_component<ModelComponent>(id);
+        if (!model_to_be_removed) return;
+
+        // We are assuming the model has textures of each type
+        const u32 texture_count = model_to_be_removed->model.materials.size() * Material::TextureCount;
+        const u32 albedo_descriptor_offset = model_to_be_removed->albedo_descriptor_offset;
+        const u32 normal_descriptor_offset = model_to_be_removed->normal_descriptor_offset;
+
+        // @TODO: This is very dumb but idk what else to do
+        for (auto* model_c : models)
+        {
+            if (model_c->albedo_descriptor_offset > albedo_descriptor_offset)
+            {
+                model_c->albedo_descriptor_offset -= texture_count / Material::TextureCount;
+            }
+
+            if (model_c->normal_descriptor_offset > normal_descriptor_offset)
+            {
+                model_c->normal_descriptor_offset -= texture_count / Material::TextureCount;
+            }
+        }
+
+        // Rebuild the image descriptors
+        {
+            auto first = albedo_textures.begin() + albedo_descriptor_offset;
+            auto last = albedo_textures.begin() + albedo_descriptor_offset + texture_count / Material::TextureCount;
+            albedo_textures.erase(first, last);
+        }
+
+        {
+            auto first = normal_textures.begin() + normal_descriptor_offset;
+            auto last = normal_textures.begin() + normal_descriptor_offset + texture_count / Material::TextureCount;
+            normal_textures.erase(first, last);
+        }
+
+        {
+            const u32 frame_count = get_context().get_frame_count();
             for (u32 i = 0; i < frame_count; i++)
             {
                 DescriptorBuilder::build(albedo_image_descriptors[i], albedo_textures);

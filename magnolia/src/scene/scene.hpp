@@ -51,6 +51,7 @@ namespace mag
             virtual void on_event(Event& e) override;
 
             void add_model(const str& path);
+            void remove_model(const u32 id);
 
         private:
             std::unique_ptr<EditorCameraController> camera_controller;

@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "ecs/ecs.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"
 
@@ -76,7 +77,8 @@ namespace mag
 
             void build_descriptors_from_shader(const Shader& shader);
             void bind();
-            void add_image_descriptors_for_model(const Model& model);
+            void add_image_descriptors_for_model(ECS& ecs, const u32 id);
+            void remove_image_descriptors_for_model(ECS& ecs, const u32 id);
 
             void set_offset_global(const vk::PipelineLayout& pipeline_layout);
             void set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance);

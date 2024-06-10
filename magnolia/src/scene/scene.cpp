@@ -30,7 +30,7 @@ namespace mag
                 ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
                 ecs->add_component(cube_entity, new ModelComponent(cube_model));
 
-                render_pass->add_model(cube_model);
+                render_pass->add_model(*ecs, cube_entity);
 
                 LOG_INFO("Cube created");
             }
@@ -47,7 +47,7 @@ namespace mag
             ecs->add_component(light, new ModelComponent(*light_model));
             ecs->add_component(light, new TransformComponent(vec3(500 - (500 * i), 100, 0), vec3(0), vec3(10)));
 
-            render_pass->add_model(*light_model);
+            render_pass->add_model(*ecs, light);
 
             LOG_INFO("Light created");
         }
@@ -81,7 +81,7 @@ namespace mag
             ecs->add_component(entity, new TransformComponent());
             ecs->add_component(entity, new ModelComponent(*model));
 
-            render_pass->add_model(*model);
+            render_pass->add_model(*ecs, entity);
 
             models_queue.erase(models_queue.begin());
         }
@@ -124,5 +124,12 @@ namespace mag
 
         // Finally enqueue the model
         models_queue.push_back(path);
+    }
+
+    void Scene::remove_model(const u32 id)
+    {
+        ecs->add_entity_to_deletion_queue(id);
+
+        render_pass->remove_model(*ecs, id);
     }
 };  // namespace mag

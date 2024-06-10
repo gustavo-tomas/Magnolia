@@ -207,7 +207,8 @@ namespace mag
 
         for (u64 m = 0; m < model_entities.size(); m++)
         {
-            const auto& model = std::get<1>(model_entities[m])->model;
+            auto* model_c = std::get<1>(model_entities[m]);
+            const auto& model = model_c->model;
 
             descriptors.set_offset_instance(triangle_pipeline->get_layout(), m);
 
@@ -221,11 +222,11 @@ namespace mag
 
                 // Set the material
                 descriptors.set_offset_material(triangle_pipeline->get_layout(),
-                                                mesh.material_index + model.albedo_descriptor_offset,
+                                                mesh.material_index + model_c->albedo_descriptor_offset,
                                                 TextureType::Albedo);
 
                 descriptors.set_offset_material(triangle_pipeline->get_layout(),
-                                                mesh.material_index + model.normal_descriptor_offset,
+                                                mesh.material_index + model_c->normal_descriptor_offset,
                                                 TextureType::Normal);
 
                 // Draw the mesh
@@ -256,18 +257,18 @@ namespace mag
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
     }
 
-    void StandardRenderPass::add_model(Model& model)
+    void StandardRenderPass::add_model(ECS& ecs, const u32 id)
     {
         auto& descriptors = get_context().get_descriptor_cache();
 
-        model.albedo_descriptor_offset = descriptors.get_albedo_textures().size();
-        model.normal_descriptor_offset = descriptors.get_normal_textures().size();
+        descriptors.add_image_descriptors_for_model(ecs, id);
+    }
 
-        // Safety check
-        ASSERT(model.albedo_descriptor_offset == model.normal_descriptor_offset,
-               "Albedo/Normal Descriptor offset mismatch. Check if model textures are loaded correctly.");
+    void StandardRenderPass::remove_model(ECS& ecs, const u32 id)
+    {
+        auto& descriptors = get_context().get_descriptor_cache();
 
-        descriptors.add_image_descriptors_for_model(model);
+        descriptors.remove_image_descriptors_for_model(ecs, id);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)

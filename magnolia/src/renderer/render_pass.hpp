@@ -7,7 +7,6 @@
 #include "ecs/ecs.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/image.hpp"
-#include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
 
 // @TODO: review this whole chicanery
@@ -38,7 +37,8 @@ namespace mag
             void after_render();
 
             // @TODO: temp
-            void add_model(Model& model);
+            void add_model(ECS& ecs, const u32 id);
+            void remove_model(ECS& ecs, const u32 id);
 
             void set_render_scale(const f32 scale);
             void on_resize(const uvec2& size);

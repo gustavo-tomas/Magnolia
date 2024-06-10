@@ -37,6 +37,9 @@ namespace mag
             ModelComponent(const Model& model) : model(model) {}
 
             const Model& model;
+
+            u32 albedo_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
+            u32 normal_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
     };
 
     struct LightComponent : public Component

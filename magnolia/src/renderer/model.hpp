@@ -39,9 +39,6 @@ namespace mag
 
             VertexBuffer vbo;
             IndexBuffer ibo;
-
-            u32 albedo_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
-            u32 normal_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
     };
 
     class ModelManager
