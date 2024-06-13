@@ -4,7 +4,7 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
-#include "ecs/components.hpp"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -37,7 +37,8 @@ namespace mag
                                                const f32 mass);
 
             void update(const f32 dt);
-            void render();
+
+            const std::unique_ptr<Line>& get_line_list() const;
 
         private:
             btDefaultCollisionConfiguration* collision_configuration;
@@ -56,15 +57,12 @@ namespace mag
     class PhysicsDebugDraw : public btIDebugDraw
     {
         public:
-            virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
-            {
-                (void)from;
-                (void)to;
-                (void)color;
+            void create_lines();
+            void reset_lines();
 
-                return;
-            }
+            const std::unique_ptr<Line>& get_line_list() const { return line_list; };
 
+            virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
             virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
                                           int lifeTime, const btVector3& color) override
             {
@@ -87,5 +85,9 @@ namespace mag
 
             virtual void setDebugMode(int debugMode) override { (void)debugMode; }  // @TODO: finish debug mode
             virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
+
+        private:
+            std::unique_ptr<Line> line_list;
+            std::vector<vec3> starts, ends, colors;
     };
 };  // namespace mag

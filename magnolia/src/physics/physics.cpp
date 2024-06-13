@@ -118,7 +118,30 @@ namespace mag
 
             *transform = bt_transform_to_mag_transform(trans, transform->scale);
         }
+
+        // 'Draw' the debug lines before sending to the renderer
+        physics_debug_draw->reset_lines();
+        dynamics_world->debugDrawWorld();
+        physics_debug_draw->create_lines();
     }
 
-    void PhysicsEngine::render() { dynamics_world->debugDrawWorld(); }
+    const std::unique_ptr<Line>& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
+
+    void PhysicsDebugDraw::reset_lines()
+    {
+        starts.clear();
+        ends.clear();
+        colors.clear();
+        line_list.reset();
+    }
+
+    void PhysicsDebugDraw::create_lines() { line_list = std::make_unique<Line>("DebugLines", starts, ends, colors); }
+
+    void PhysicsDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
+    {
+        // We dont actually draw in this method, only keep a record of the lines.
+        starts.push_back(bt_vec_to_mag_vec(from));
+        ends.push_back(bt_vec_to_mag_vec(to));
+        colors.push_back(bt_vec_to_mag_vec(color));
+    }
 };  // namespace mag
