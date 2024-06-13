@@ -39,4 +39,11 @@ namespace mag
 
         return bt_vec;
     }
+
+    inline vec3 const bt_vec_to_mag_vec(const btVector3& bt_vec)
+    {
+        vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
+
+        return v;
+    }
 };  // namespace mag
