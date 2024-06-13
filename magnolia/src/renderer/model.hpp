@@ -74,4 +74,18 @@ namespace mag
         private:
             Model model;
     };
+
+    class Line
+    {
+        public:
+            Line(const str& name, const std::vector<vec3>& starts, const std::vector<vec3>& ends,
+                 const std::vector<vec3>& colors);
+            ~Line();
+
+            Model& get_model() { return model; };
+
+        private:
+            Model model;
+    };
+    // @TODO: testing
 };  // namespace mag
