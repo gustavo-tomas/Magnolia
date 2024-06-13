@@ -7,6 +7,8 @@ namespace mag
 {
     Pipeline::Pipeline(const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
                        const std::vector<vk::DescriptorSetLayout>& descriptor_set_layouts, const Shader& shader,
+                       const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info,
+                       const vk::PipelineRasterizationStateCreateInfo rasterization_state,
                        const vk::PipelineColorBlendAttachmentState& color_blend_attachment)
     {
         auto& context = get_context();
@@ -30,13 +32,6 @@ namespace mag
         const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, shader.get_vertex_bindings(),
                                                                                     shader.get_vertex_attributes());
 
-        const vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info(
-            {}, vk::PrimitiveTopology::eTriangleList, false);
-
-        const vk::PipelineRasterizationStateCreateInfo rasterization_state_create_info(
-            {}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise,
-            false, 0.0f, 0.0f, 0.0f, 1.0f);
-
         const vk::PipelineMultisampleStateCreateInfo multisampling_state_create_info({}, context.get_msaa_samples(),
                                                                                      false, 1.0f);
 
@@ -55,9 +50,9 @@ namespace mag
 
         const vk::GraphicsPipelineCreateInfo pipeline_create_info(
             vk::PipelineCreateFlagBits::eDescriptorBufferEXT, shader_stages, &vertex_input_state_create_info,
-            &input_assembly_create_info, {}, &viewport_state, &rasterization_state_create_info,
-            &multisampling_state_create_info, &depth_stencil_create_info, &color_blending, &dynamic_state,
-            pipeline_layout, {}, {}, {}, {}, &pipeline_rendering_create_info);
+            &input_assembly_create_info, {}, &viewport_state, &rasterization_state, &multisampling_state_create_info,
+            &depth_stencil_create_info, &color_blending, &dynamic_state, pipeline_layout, {}, {}, {}, {},
+            &pipeline_rendering_create_info);
 
         const auto result_value = context.get_device().createGraphicsPipeline({}, pipeline_create_info);
         VK_CHECK(result_value.result);

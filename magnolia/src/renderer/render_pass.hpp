@@ -53,8 +53,8 @@ namespace mag
             void initialize_images();
 
             Pass pass = {};
-            std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline;
-            std::shared_ptr<Shader> triangle_shader, grid_shader;
+            std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline, line_pipeline;
+            std::shared_ptr<Shader> triangle_shader, grid_shader, color_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
 
             uvec3 draw_size;
