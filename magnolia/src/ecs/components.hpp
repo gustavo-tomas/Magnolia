@@ -42,6 +42,24 @@ namespace mag
             u32 normal_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
     };
 
+    // Basically a wrapper for bullet physics
+    struct BulletCollisionShape;
+    struct CollisionShapeComponent : public Component
+    {
+            CollisionShapeComponent(BulletCollisionShape* shape) : shape(shape) {}
+
+            BulletCollisionShape* shape;
+    };
+
+    // Basically a wrapper for bullet physics
+    struct BulletRigidBody;
+    struct RigidBodyComponent : public Component
+    {
+            RigidBodyComponent(BulletRigidBody* rigid_body) : rigid_body(rigid_body) {}
+
+            BulletRigidBody* rigid_body;
+    };
+
     struct LightComponent : public Component
     {
             LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
