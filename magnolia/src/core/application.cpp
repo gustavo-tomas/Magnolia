@@ -49,6 +49,10 @@ namespace mag
         editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");
 
+        // Create the physics engine
+        physics_engine = std::make_unique<PhysicsEngine>();
+        LOG_SUCCESS("Physics initialized");
+
         running = true;
     }
 
@@ -72,6 +76,8 @@ namespace mag
                 window->sleep(50);
                 continue;
             }
+
+            physics_engine->update(dt);
 
             active_scene->update(dt);
 

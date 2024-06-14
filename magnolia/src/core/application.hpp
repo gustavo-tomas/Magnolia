@@ -5,6 +5,7 @@
 #include "core/event.hpp"
 #include "core/window.hpp"
 #include "editor/editor.hpp"
+#include "physics/physics.hpp"
 #include "renderer/image.hpp"
 #include "renderer/material.hpp"
 #include "renderer/model.hpp"
@@ -40,6 +41,7 @@ namespace mag
             TextureManager& get_texture_manager() { return *texture_loader; };
             ShaderManager& get_shader_manager() { return *shader_loader; };
             MaterialManager& get_material_manager() { return *material_loader; };
+            PhysicsEngine& get_physics_engine() { return *physics_engine; };
             BaseScene& get_active_scene() { return *active_scene; };
 
         private:
@@ -53,6 +55,7 @@ namespace mag
             std::unique_ptr<TextureManager> texture_loader;
             std::unique_ptr<MaterialManager> material_loader;
             std::unique_ptr<ShaderManager> shader_loader;
+            std::unique_ptr<PhysicsEngine> physics_engine;
             std::unique_ptr<BaseScene> active_scene;
 
             b8 running;

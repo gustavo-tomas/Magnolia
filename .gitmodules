@@ -37,3 +37,6 @@
 [submodule "libs/icon_font_cpp"]
 	path = libs/icon_font_cpp
 	url = https://github.com/juliettef/IconFontCppHeaders.git
+[submodule "libs/bullet"]
+	path = libs/bullet
+	url = https://github.com/bulletphysics/bullet3.git

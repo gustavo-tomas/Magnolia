@@ -51,14 +51,23 @@ namespace mag
         triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::bitangent),
                                        offsetof(Vertex, bitangent));
 
+        color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
+
+        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
+        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
+        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords),
+                                    offsetof(Vertex, tex_coords));
+        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tangent), offsetof(Vertex, tangent));
+        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::bitangent), offsetof(Vertex, bitangent));
+
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
         // Descriptors
         descriptors.build_descriptors_from_shader(*triangle_shader);
 
         // Pipelines
-        const vk::PipelineRenderingCreateInfo pipeline_create_info({}, draw_images[0].get_format(),
-                                                                   depth_images[0].get_format());
+        const vk::PipelineRenderingCreateInfo pipeline_create_info =
+            vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
 
         triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
                                                        *triangle_shader);
@@ -73,7 +82,19 @@ namespace mag
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
         grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
-                                                   *grid_shader, color_blend_attachment);
+                                                   *grid_shader, Pipeline::default_input_assembly(),
+                                                   Pipeline::default_rasterization_state(), color_blend_attachment);
+
+        // Draw lines for physics debug
+        vk::PipelineInputAssemblyStateCreateInfo input_assembly = Pipeline::default_input_assembly();
+        input_assembly.setTopology(vk::PrimitiveTopology::eLineList);
+
+        vk::PipelineRasterizationStateCreateInfo rasterization_state = Pipeline::default_rasterization_state();
+        rasterization_state.setPolygonMode(vk::PolygonMode::eLine);
+        rasterization_state.setCullMode(vk::CullModeFlagBits::eNone);
+
+        line_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
+                                                   *color_shader, input_assembly, rasterization_state);
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -238,12 +259,27 @@ namespace mag
             }
         }
 
-        // Draw the grid
-        descriptors.bind();
-        descriptors.set_offset_global(grid_pipeline->get_layout());
+        // Draw debug lines for physics
+        {
+            auto& line_list = get_application().get_physics_engine().get_line_list();
 
-        grid_pipeline->bind();
-        command_buffer.draw(6);
+            descriptors.set_offset_global(line_pipeline->get_layout());
+
+            const auto& model = line_list->get_model();
+
+            line_pipeline->bind();
+
+            command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
+            command_buffer.draw(model.vertices.size());
+        }
+
+        // Draw the grid
+        {
+            descriptors.set_offset_global(grid_pipeline->get_layout());
+
+            grid_pipeline->bind();
+            command_buffer.draw(6);
+        }
     }
 
     void StandardRenderPass::after_render()
