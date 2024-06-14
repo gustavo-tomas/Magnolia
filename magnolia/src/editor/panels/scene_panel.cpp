@@ -33,6 +33,21 @@ namespace mag
             // Pop up menu on right click
             if (selected_entity_id == entity_id && ImGui::BeginPopupContextWindow())
             {
+                if (!ecs.get_component<TransformComponent>(selected_entity_id) &&
+                    ImGui::MenuItem("Add Transform Component"))
+                {
+                    ecs.add_component(selected_entity_id, new TransformComponent());
+                }
+
+                auto number_of_lights = ecs.get_components<LightComponent>().size();
+                if (!ecs.get_component<LightComponent>(selected_entity_id) &&
+                    number_of_lights < LightComponent::MAX_NUMBER_OF_LIGHTS && ImGui::MenuItem("Add Light Component"))
+                {
+                    ecs.add_component(selected_entity_id, new LightComponent());
+                }
+
+                ImGui::Separator();
+
                 if (ImGui::MenuItem("Delete"))
                 {
                     auto& scene = get_application().get_active_scene();
