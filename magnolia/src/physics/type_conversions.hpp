@@ -12,7 +12,9 @@ namespace mag
         bt_transform.setIdentity();
         bt_transform.setOrigin(btVector3(t.translation.x, t.translation.y, t.translation.z));
 
-        btQuaternion q(radians(t.rotation.y), radians(t.rotation.x), radians(t.rotation.z));
+        const quat mag_q(radians(t.rotation));
+        const btQuaternion q(mag_q.x, mag_q.y, mag_q.z, mag_q.w);
+
         bt_transform.setRotation(q);
 
         return bt_transform;
@@ -35,14 +37,14 @@ namespace mag
 
     inline btVector3 const mag_vec_to_bt_vec(const vec3& v)
     {
-        btVector3 bt_vec(v.x, v.y, v.z);
+        const btVector3 bt_vec(v.x, v.y, v.z);
 
         return bt_vec;
     }
 
     inline vec3 const bt_vec_to_mag_vec(const btVector3& bt_vec)
     {
-        vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
+        const vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
 
         return v;
     }
