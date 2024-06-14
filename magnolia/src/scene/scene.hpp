@@ -9,6 +9,12 @@
 
 namespace mag
 {
+    enum class SceneState
+    {
+        Editor,
+        Runtime
+    };
+
     class BaseScene
     {
         public:
@@ -24,8 +30,13 @@ namespace mag
                 dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(BaseScene::on_viewport_resize));
             };
 
+            virtual void start_runtime() = 0;
+            virtual void stop_runtime() = 0;
+
             virtual void add_model(const str& path) = 0;
             virtual void remove_model(const u32 id) = 0;
+
+            virtual SceneState get_scene_state() const = 0;
 
             ECS& get_ecs() { return *ecs; };
             Camera& get_camera() { return *camera; };
@@ -50,15 +61,26 @@ namespace mag
         public:
             Scene();
 
+            virtual void start_runtime() override;
+            virtual void stop_runtime() override;
+
             virtual void update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
             virtual void add_model(const str& path) override;
             virtual void remove_model(const u32 id) override;
 
+            virtual SceneState get_scene_state() const override { return current_state; };
+
         private:
+            void update_runtime(const f32 dt);
+            void update_editor(const f32 dt);
+
+            std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<EditorCameraController> camera_controller;
             std::unique_ptr<Cube> cube;
             std::vector<str> models_queue;
+
+            SceneState current_state = SceneState::Editor;
     };
 };  // namespace mag
