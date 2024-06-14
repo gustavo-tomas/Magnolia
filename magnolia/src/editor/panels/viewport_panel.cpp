@@ -30,6 +30,26 @@ namespace mag
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
+        // @TODO: make a prettier button
+        // Play/Pause simulation
+        {
+            if (ImGui::Button("Play/Pause"))
+            {
+                auto &app = get_application();
+                auto &scene = app.get_active_scene();
+
+                if (scene.get_scene_state() == SceneState::Editor)
+                {
+                    app.get_active_scene().start_runtime();
+                }
+
+                else
+                {
+                    app.get_active_scene().stop_runtime();
+                }
+            }
+        }
+
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
         if (current_viewport_size != viewport_size)

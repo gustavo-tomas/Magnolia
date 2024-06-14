@@ -13,10 +13,11 @@
             "name": "In editor mode",
             "instructions": [
                 "Drag and drop assets into the viewport to load them",
-                "Select a model in the Scene tab to view its properties",
+                "Select an entity in the Scene tab to view its properties",
                 "Use the gizmos to Translate (G), Rotate (R) or Scale (S) the selected model",
                 "Press MOUSE_WHEEL and move the mouse to look around",
-                "Press LEFT_SHIFT + MOUSE_WHEEL and move the mouse to move the camera"
+                "Press LEFT_SHIFT + MOUSE_WHEEL and move the mouse to move the camera",
+                "With an entity selected, press RIGHT_MOUSE to open a context menu"
             ]
         }
     ]

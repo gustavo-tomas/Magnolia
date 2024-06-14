@@ -83,6 +83,36 @@ namespace mag
 
     void Scene::update(const f32 dt)
     {
+        switch (current_state)
+        {
+            case SceneState::Editor:
+                update_editor(dt);
+                break;
+
+            case SceneState::Runtime:
+                update_runtime(dt);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void Scene::start_runtime()
+    {
+        // Copy ECS
+        runtime_ecs = std::make_unique<ECS>(*ecs);
+        current_state = SceneState::Runtime;
+    }
+
+    void Scene::stop_runtime()
+    {
+        runtime_ecs.reset();
+        current_state = SceneState::Editor;
+    }
+
+    void Scene::update_editor(const f32 dt)
+    {
         auto& app = get_application();
         auto& model_loader = app.get_model_manager();
         auto& window = app.get_window();
@@ -113,6 +143,13 @@ namespace mag
 
             models_queue.erase(models_queue.begin());
         }
+    }
+
+    void Scene::update_runtime(const f32 dt)
+    {
+        ecs->update();
+
+        camera_controller->update(dt);
     }
 
     void Scene::on_event(Event& e)
