@@ -13,7 +13,7 @@ namespace mag
             Renderer(Window& window);
             ~Renderer();
 
-            void update(Scene& scene, Editor& editor);
+            void update(BaseScene& scene, Editor& editor);
 
             void on_resize(const uvec2& size);
 

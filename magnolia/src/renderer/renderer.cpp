@@ -15,7 +15,7 @@ namespace mag
 
     Renderer::~Renderer() { this->context->get_device().waitIdle(); }
 
-    void Renderer::update(Scene& scene, Editor& editor)
+    void Renderer::update(BaseScene& scene, Editor& editor)
     {
         Frame& curr_frame = context->get_curr_frame();
         CommandBuffer& command_buffer = curr_frame.command_buffer;

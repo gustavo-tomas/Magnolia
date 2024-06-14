@@ -24,6 +24,9 @@ namespace mag
                 dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(BaseScene::on_viewport_resize));
             };
 
+            virtual void add_model(const str& path) = 0;
+            virtual void remove_model(const u32 id) = 0;
+
             ECS& get_ecs() { return *ecs; };
             Camera& get_camera() { return *camera; };
             StandardRenderPass& get_render_pass() { return *render_pass; };
@@ -50,8 +53,8 @@ namespace mag
             virtual void update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
-            void add_model(const str& path);
-            void remove_model(const u32 id);
+            virtual void add_model(const str& path) override;
+            virtual void remove_model(const u32 id) override;
 
         private:
             std::unique_ptr<EditorCameraController> camera_controller;
