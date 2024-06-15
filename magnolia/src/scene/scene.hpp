@@ -76,7 +76,6 @@ namespace mag
             void update_runtime(const f32 dt);
             void update_editor(const f32 dt);
 
-            std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<EditorCameraController> camera_controller;
             std::unique_ptr<Cube> cube;
             std::vector<str> models_queue;

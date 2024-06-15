@@ -98,18 +98,9 @@ namespace mag
         }
     }
 
-    void Scene::start_runtime()
-    {
-        // Copy ECS
-        runtime_ecs = std::make_unique<ECS>(*ecs);
-        current_state = SceneState::Runtime;
-    }
+    void Scene::start_runtime() { current_state = SceneState::Runtime; }
 
-    void Scene::stop_runtime()
-    {
-        runtime_ecs.reset();
-        current_state = SceneState::Editor;
-    }
+    void Scene::stop_runtime() { current_state = SceneState::Editor; }
 
     void Scene::update_editor(const f32 dt)
     {

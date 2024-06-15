@@ -94,29 +94,34 @@ namespace mag
     {
         (void)dt;  // @TODO: figure out where dt goes
 
-        auto& ecs = get_application().get_active_scene().get_ecs();
+        auto& app = get_application();
+        auto& scene = app.get_active_scene();
+        auto& ecs = scene.get_ecs();
         auto objects = ecs.get_components_of_entities<TransformComponent, RigidBodyComponent>();
 
-        dynamics_world->stepSimulation(1.0f / 60.0f, 10);
-
-        for (i32 i = objects.size() - 1; i >= 0; i--)
+        if (scene.get_scene_state() == SceneState::Runtime)
         {
-            auto [transform, rigid_body_c] = objects[i];
-            auto body = rigid_body_c->rigid_body->rigid_body;
+            dynamics_world->stepSimulation(1.0f / 60.0f, 10);
 
-            btTransform trans;
-
-            if (body && body->getMotionState())
+            for (i32 i = objects.size() - 1; i >= 0; i--)
             {
-                body->getMotionState()->getWorldTransform(trans);
-            }
+                auto [transform, rigid_body_c] = objects[i];
+                auto body = rigid_body_c->rigid_body->rigid_body;
 
-            else
-            {
-                trans = body->getWorldTransform();
-            }
+                btTransform trans;
 
-            *transform = bt_transform_to_mag_transform(trans, transform->scale);
+                if (body && body->getMotionState())
+                {
+                    body->getMotionState()->getWorldTransform(trans);
+                }
+
+                else
+                {
+                    trans = body->getWorldTransform();
+                }
+
+                *transform = bt_transform_to_mag_transform(trans, transform->scale);
+            }
         }
 
         // 'Draw' the debug lines before sending to the renderer
