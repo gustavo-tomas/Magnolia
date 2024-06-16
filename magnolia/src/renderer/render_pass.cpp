@@ -216,7 +216,7 @@ namespace mag
             // shader to render it.
             auto [transform, model] = model_entities[b];
 
-            auto model_matrix = TransformComponent::get_transformation_matrix(*transform);
+            auto model_matrix = transform->get_transformation_matrix();
             triangle_shader->set_uniform_instance("model", value_ptr(model_matrix), b);
         }
 

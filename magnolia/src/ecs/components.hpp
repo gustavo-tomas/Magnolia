@@ -34,9 +34,14 @@ namespace mag
 
             CLONE(TransformComponent);
 
-            static mat4 get_transformation_matrix(const TransformComponent& transform);
-
             vec3 translation, rotation, scale;
+
+            mat4 get_transformation_matrix() const
+            {
+                const mat4 rotation_mat = math::toMat4(quat(math::radians(rotation)));
+
+                return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
+            }
     };
 
     // @TODO: i didnt turn Model into a component because then the ModelLoader would be loading components directly
@@ -88,19 +93,4 @@ namespace mag
             vec3 color;
             f32 intensity;
     };
-
-    inline mat4 TransformComponent::get_transformation_matrix(const TransformComponent& transform)
-    {
-        const quat pitch = angleAxis(radians(transform.rotation.x), vec3(1.0f, 0.0f, 0.0f));
-        const quat yaw = angleAxis(radians(transform.rotation.y), vec3(0.0f, 1.0f, 0.0f));
-        const quat roll = angleAxis(radians(transform.rotation.z), vec3(0.0f, 0.0f, 1.0f));
-
-        const mat4 rotation_matrix = toMat4(roll) * toMat4(yaw) * toMat4(pitch);
-        const mat4 translation_matrix = translate(mat4(1.0f), transform.translation);
-        const mat4 scale_matrix = math::scale(mat4(1.0f), transform.scale);
-
-        const mat4 model_matrix = translation_matrix * rotation_matrix * scale_matrix;
-
-        return model_matrix;
-    }
 };  // namespace mag

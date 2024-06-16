@@ -99,7 +99,7 @@ namespace mag
             ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
                               viewport_bounds[1].y - viewport_bounds[0].y);
 
-            mat4 transform_matrix = TransformComponent::get_transformation_matrix(*transform);
+            mat4 transform_matrix = transform->get_transformation_matrix();
 
             if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
