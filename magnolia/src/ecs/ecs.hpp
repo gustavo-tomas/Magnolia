@@ -248,7 +248,7 @@ namespace mag
                     Entity new_entity;
                     for (const auto& comp : entity)
                     {
-                        new_entity.emplace_back(new Component(*comp));
+                        new_entity.emplace_back(comp->clone());
                     }
                     new_entities[id] = std::move(new_entity);
                 }
