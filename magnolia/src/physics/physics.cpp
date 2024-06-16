@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    PhysicsEngine::PhysicsEngine()
+    PhysicsEngine::PhysicsEngine() : physics_debug_draw(new PhysicsDebugDraw())
     {
         collision_configuration = new btDefaultCollisionConfiguration();
 
@@ -19,8 +19,6 @@ namespace mag
             new btDiscreteDynamicsWorld(dispatcher, overlapping_pair_cache, solver, collision_configuration);
 
         dynamics_world->setGravity(btVector3(0, -10, 0));
-
-        physics_debug_draw = std::make_unique<PhysicsDebugDraw>();
 
         dynamics_world->setDebugDrawer(physics_debug_draw.get());
     }
