@@ -56,9 +56,6 @@ namespace mag
         delete overlapping_pair_cache;
         delete dispatcher;
         delete collision_configuration;
-
-        for (auto collision_shape : collision_shapes) delete collision_shape;
-        for (auto rigid_body : rigid_bodies) delete rigid_body;
     }
 
     BulletCollisionShape* PhysicsEngine::create_collision_shape(const vec3& box_half_extents)

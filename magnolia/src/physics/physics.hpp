@@ -47,9 +47,6 @@ namespace mag
             btSequentialImpulseConstraintSolver* solver;
             btDiscreteDynamicsWorld* dynamics_world;
 
-            std::vector<BulletCollisionShape*> collision_shapes;
-            std::vector<BulletRigidBody*> rigid_bodies;
-
             PhysicsDebugDraw* physics_debug_draw;
     };
 

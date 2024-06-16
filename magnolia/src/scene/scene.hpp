@@ -38,7 +38,7 @@ namespace mag
 
             virtual SceneState get_scene_state() const = 0;
 
-            ECS& get_ecs() { return *ecs; };
+            virtual ECS& get_ecs() { return *ecs; };
             Camera& get_camera() { return *camera; };
             StandardRenderPass& get_render_pass() { return *render_pass; };
 
@@ -71,11 +71,20 @@ namespace mag
             virtual void remove_model(const u32 id) override;
 
             virtual SceneState get_scene_state() const override { return current_state; };
+            virtual ECS& get_ecs() override
+            {
+                if (current_state == SceneState::Editor)
+                    return *ecs;
+
+                else
+                    return *runtime_ecs;
+            };
 
         private:
             void update_runtime(const f32 dt);
             void update_editor(const f32 dt);
 
+            std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<EditorCameraController> camera_controller;
             std::unique_ptr<Cube> cube;
             std::vector<str> models_queue;

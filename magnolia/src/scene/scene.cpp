@@ -98,9 +98,17 @@ namespace mag
         }
     }
 
-    void Scene::start_runtime() { current_state = SceneState::Runtime; }
+    void Scene::start_runtime()
+    {
+        runtime_ecs = std::make_unique<ECS>(*ecs);
+        current_state = SceneState::Runtime;
+    }
 
-    void Scene::stop_runtime() { current_state = SceneState::Editor; }
+    void Scene::stop_runtime()
+    {
+        runtime_ecs.reset();
+        current_state = SceneState::Editor;
+    }
 
     void Scene::update_editor(const f32 dt)
     {
@@ -138,7 +146,7 @@ namespace mag
 
     void Scene::update_runtime(const f32 dt)
     {
-        ecs->update();
+        runtime_ecs->update();
 
         camera_controller->update(dt);
     }
