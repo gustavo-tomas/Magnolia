@@ -19,6 +19,7 @@ namespace mag
             void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
                                 RigidBodyComponent& rigid_body);
 
+            void start_simulation();
             void update(const f32 dt);
 
             const std::unique_ptr<Line>& get_line_list() const;
@@ -30,7 +31,7 @@ namespace mag
             btSequentialImpulseConstraintSolver* solver;
             btDiscreteDynamicsWorld* dynamics_world;
 
-            PhysicsDebugDraw* physics_debug_draw;
+            std::unique_ptr<PhysicsDebugDraw> physics_debug_draw;
     };
 
     // @TODO: finish debug draw

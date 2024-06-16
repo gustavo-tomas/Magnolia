@@ -20,16 +20,14 @@ namespace mag
 
         dynamics_world->setGravity(btVector3(0, -10, 0));
 
-        physics_debug_draw = new PhysicsDebugDraw();
+        physics_debug_draw = std::make_unique<PhysicsDebugDraw>();
 
-        dynamics_world->setDebugDrawer(physics_debug_draw);
+        dynamics_world->setDebugDrawer(physics_debug_draw.get());
     }
 
     PhysicsEngine::~PhysicsEngine()
     {
         // Cleanup in the reverse order of creation/initialization
-
-        delete physics_debug_draw;
 
         for (i32 i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
         {
