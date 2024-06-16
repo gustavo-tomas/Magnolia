@@ -15,7 +15,7 @@ namespace mag
           cube(new Cube())
     {
         auto& app = get_application();
-        auto& physics = app.get_physics_engine();
+        auto& physics_engine = app.get_physics_engine();
 
         const auto& cube_model = cube->get_model();
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
@@ -35,14 +35,15 @@ namespace mag
                 const vec3 pos = vec3(i * 30, 100, j * 30);
 
                 auto* transform = new TransformComponent(pos, rot, scale);
-                auto collision_shape = physics.create_collision_shape(transform->scale);
-                auto rigid_body = physics.create_rigid_body(*collision_shape, *transform, 1.0f);
+                auto* rigid_body = new RigidBodyComponent(1.0f);
+                auto* collider = new BoxColliderComponent(transform->scale);
 
                 ecs->add_component(cube_entity, transform);
                 ecs->add_component(cube_entity, new ModelComponent(cube_model));
-                ecs->add_component(cube_entity, new CollisionShapeComponent(collision_shape));
-                ecs->add_component(cube_entity, new RigidBodyComponent(rigid_body));
+                ecs->add_component(cube_entity, collider);
+                ecs->add_component(cube_entity, rigid_body);
 
+                physics_engine.add_rigid_body(*transform, *collider, *rigid_body);
                 render_pass->add_model(*ecs, cube_entity);
 
                 LOG_INFO("Cube created");
@@ -54,14 +55,16 @@ namespace mag
             const auto floor_entity = ecs->create_entity("Floor");
 
             const vec3 pos = vec3(0, -10, 0);
-            auto* transform = new TransformComponent(pos);
 
-            auto collision_shape = physics.create_collision_shape(vec3(150, 10, 150));
-            auto rigid_body = physics.create_rigid_body(*collision_shape, *transform, 0.0f);
+            auto* transform = new TransformComponent(pos);
+            auto* rigid_body = new RigidBodyComponent(0.0f);
+            auto* collider = new BoxColliderComponent(vec3(150, 10, 150));
 
             ecs->add_component(floor_entity, transform);
-            ecs->add_component(floor_entity, new CollisionShapeComponent(collision_shape));
-            ecs->add_component(floor_entity, new RigidBodyComponent(rigid_body));
+            ecs->add_component(floor_entity, collider);
+            ecs->add_component(floor_entity, rigid_body);
+
+            physics_engine.add_rigid_body(*transform, *collider, *rigid_body);
         }
 
         // Light

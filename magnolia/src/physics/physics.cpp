@@ -58,33 +58,25 @@ namespace mag
         delete collision_configuration;
     }
 
-    BulletCollisionShape* PhysicsEngine::create_collision_shape(const vec3& box_half_extents)
+    void PhysicsEngine::add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
+                                       RigidBodyComponent& rigid_body)
     {
-        auto* bt_shape = new btBoxShape(mag_vec_to_bt_vec(box_half_extents));
-        BulletCollisionShape* collision_shape = new BulletCollisionShape(bt_shape);
+        auto* shape = new btBoxShape(mag_vec_to_bt_vec(collider.dimensions));
 
-        return collision_shape;
-    }
-
-    BulletRigidBody* PhysicsEngine::create_rigid_body(const BulletCollisionShape& shape,
-                                                      const TransformComponent& transform, const f32 mass)
-    {
         // Rigidbody is dynamic if and only if mass is non zero, otherwise static
-        b8 is_dynamic = mass != 0.0f;
-
         btVector3 local_inertia(0, 0, 0);
-        if (is_dynamic) shape.shape->calculateLocalInertia(mass, local_inertia);
+        if (rigid_body.is_dynamic()) shape->calculateLocalInertia(rigid_body.mass, local_inertia);
 
         btDefaultMotionState* motion_state = new btDefaultMotionState(mag_transform_to_bt_transform(transform));
 
-        btRigidBody::btRigidBodyConstructionInfo rb_info(mass, motion_state, shape.shape, local_inertia);
+        btRigidBody::btRigidBodyConstructionInfo rb_info(rigid_body.mass, motion_state, shape, local_inertia);
 
         btRigidBody* bt_rigid_body = new btRigidBody(rb_info);
 
         dynamics_world->addRigidBody(bt_rigid_body);
 
-        BulletRigidBody* rigid_body = new BulletRigidBody(bt_rigid_body, mass);
-        return rigid_body;
+        collider.internal = shape;
+        rigid_body.internal = bt_rigid_body;
     }
 
     void PhysicsEngine::update(const f32 dt)
@@ -103,7 +95,7 @@ namespace mag
             for (i32 i = objects.size() - 1; i >= 0; i--)
             {
                 auto [transform, rigid_body_c] = objects[i];
-                auto body = rigid_body_c->rigid_body->rigid_body;
+                auto* body = static_cast<btRigidBody*>(rigid_body_c->internal);
 
                 btTransform trans;
 

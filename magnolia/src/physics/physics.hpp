@@ -8,21 +8,6 @@
 
 namespace mag
 {
-    struct BulletCollisionShape
-    {
-            BulletCollisionShape(btCollisionShape* shape) : shape(shape) {}
-
-            btCollisionShape* shape;
-    };
-
-    struct BulletRigidBody
-    {
-            BulletRigidBody(btRigidBody* rigid_body, const f32 mass) : rigid_body(rigid_body), mass(mass) {}
-
-            btRigidBody* rigid_body;
-            f32 mass;
-    };
-
     class PhysicsDebugDraw;
 
     class PhysicsEngine
@@ -31,10 +16,8 @@ namespace mag
             PhysicsEngine();
             ~PhysicsEngine();
 
-            BulletCollisionShape* create_collision_shape(const vec3& box_half_extents);
-
-            BulletRigidBody* create_rigid_body(const BulletCollisionShape& shape, const TransformComponent& transform,
-                                               const f32 mass);
+            void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
+                                RigidBodyComponent& rigid_body);
 
             void update(const f32 dt);
 
