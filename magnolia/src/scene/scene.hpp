@@ -90,5 +90,6 @@ namespace mag
             std::vector<str> models_queue;
 
             SceneState current_state = SceneState::Editor;
+            b8 state_swap_requested = false;
     };
 };  // namespace mag

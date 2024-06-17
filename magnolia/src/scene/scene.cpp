@@ -15,7 +15,6 @@ namespace mag
           cube(new Cube())
     {
         auto& app = get_application();
-        auto& physics_engine = app.get_physics_engine();
 
         const auto& cube_model = cube->get_model();
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
@@ -43,7 +42,6 @@ namespace mag
                 ecs->add_component(cube_entity, collider);
                 ecs->add_component(cube_entity, rigid_body);
 
-                physics_engine.add_rigid_body(*transform, *collider, *rigid_body);
                 render_pass->add_model(*ecs, cube_entity);
 
                 LOG_INFO("Cube created");
@@ -63,8 +61,6 @@ namespace mag
             ecs->add_component(floor_entity, transform);
             ecs->add_component(floor_entity, collider);
             ecs->add_component(floor_entity, rigid_body);
-
-            physics_engine.add_rigid_body(*transform, *collider, *rigid_body);
         }
 
         // Light
@@ -86,6 +82,30 @@ namespace mag
 
     void Scene::update(const f32 dt)
     {
+        if (state_swap_requested)
+        {
+            auto& app = get_application();
+            auto& physics_engine = app.get_physics_engine();
+
+            if (current_state == SceneState::Editor)
+            {
+                runtime_ecs = std::make_unique<ECS>(*ecs);
+                current_state = SceneState::Runtime;
+
+                physics_engine.on_simulation_start();
+            }
+
+            else
+            {
+                runtime_ecs.reset();
+                current_state = SceneState::Editor;
+
+                physics_engine.on_simulation_start();
+            }
+
+            state_swap_requested = false;
+        }
+
         switch (current_state)
         {
             case SceneState::Editor:
@@ -101,17 +121,9 @@ namespace mag
         }
     }
 
-    void Scene::start_runtime()
-    {
-        runtime_ecs = std::make_unique<ECS>(*ecs);
-        current_state = SceneState::Runtime;
-    }
+    void Scene::start_runtime() { state_swap_requested = true; }
 
-    void Scene::stop_runtime()
-    {
-        runtime_ecs.reset();
-        current_state = SceneState::Editor;
-    }
+    void Scene::stop_runtime() { state_swap_requested = true; }
 
     void Scene::update_editor(const f32 dt)
     {

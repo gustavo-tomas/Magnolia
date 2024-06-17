@@ -17,20 +17,22 @@ namespace mag
             PhysicsEngine();
             ~PhysicsEngine();
 
-            void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
-                                RigidBodyComponent& rigid_body);
+            void on_simulation_start();
+            void on_simulation_end();
 
-            void start_simulation();
             void update(const f32 dt);
 
             const DebugLineList& get_line_list() const;
 
         private:
-            btDefaultCollisionConfiguration* collision_configuration;
-            btCollisionDispatcher* dispatcher;
-            btBroadphaseInterface* overlapping_pair_cache;
-            btSequentialImpulseConstraintSolver* solver;
-            btDiscreteDynamicsWorld* dynamics_world;
+            void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
+                                RigidBodyComponent& rigid_body);
+
+            btDefaultCollisionConfiguration* collision_configuration = nullptr;
+            btCollisionDispatcher* dispatcher = nullptr;
+            btBroadphaseInterface* overlapping_pair_cache = nullptr;
+            btSequentialImpulseConstraintSolver* solver = nullptr;
+            btDiscreteDynamicsWorld* dynamics_world = nullptr;
 
             std::unique_ptr<PhysicsDebugDraw> physics_debug_draw;
     };

@@ -5,8 +5,14 @@
 
 namespace mag
 {
-    PhysicsEngine::PhysicsEngine() : physics_debug_draw(new PhysicsDebugDraw())
+    PhysicsEngine::PhysicsEngine() : physics_debug_draw(new PhysicsDebugDraw()) {}
+
+    PhysicsEngine::~PhysicsEngine() { on_simulation_end(); }
+
+    void PhysicsEngine::on_simulation_start()
     {
+        if (dynamics_world) on_simulation_end();
+
         collision_configuration = new btDefaultCollisionConfiguration();
 
         dispatcher = new btCollisionDispatcher(collision_configuration);
@@ -21,11 +27,20 @@ namespace mag
         dynamics_world->setGravity(btVector3(0, -10, 0));
 
         dynamics_world->setDebugDrawer(physics_debug_draw.get());
+
+        auto& ecs = get_application().get_active_scene().get_ecs();
+        auto objects = ecs.get_components_of_entities<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
+        for (auto& [transform, collider, rigid_body] : objects)
+        {
+            add_rigid_body(*transform, *collider, *rigid_body);
+        }
     }
 
-    PhysicsEngine::~PhysicsEngine()
+    void PhysicsEngine::on_simulation_end()
     {
         // Cleanup in the reverse order of creation/initialization
+
+        if (!dynamics_world) return;
 
         for (i32 i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
         {
@@ -84,6 +99,10 @@ namespace mag
         auto& ecs = scene.get_ecs();
         auto objects = ecs.get_components_of_entities<TransformComponent, RigidBodyComponent>();
 
+        physics_debug_draw->reset_lines();
+
+        if (!dynamics_world) return;
+
         if (scene.get_scene_state() == SceneState::Runtime)
         {
             dynamics_world->stepSimulation(1.0f / 60.0f, 10);
@@ -110,7 +129,6 @@ namespace mag
         }
 
         // 'Draw' the debug lines before sending to the renderer
-        physics_debug_draw->reset_lines();
         dynamics_world->debugDrawWorld();
     }
 
