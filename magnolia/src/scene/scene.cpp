@@ -128,7 +128,6 @@ namespace mag
     void Scene::update_editor(const f32 dt)
     {
         auto& app = get_application();
-        auto& model_loader = app.get_model_manager();
         auto& window = app.get_window();
 
         ecs->update();
@@ -142,21 +141,6 @@ namespace mag
         else if (window.is_key_down(Key::Down))
             render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
         // @TODO: testing
-
-        // Load enqueued models
-        while (!models_queue.empty())
-        {
-            const str& model_path = models_queue.front();
-            const auto model = model_loader.load(model_path);
-
-            auto entity = ecs->create_entity();
-            ecs->add_component(entity, new TransformComponent());
-            ecs->add_component(entity, new ModelComponent(*model));
-
-            render_pass->add_model(*ecs, entity);
-
-            models_queue.erase(models_queue.begin());
-        }
     }
 
     void Scene::update_runtime(const f32 dt)
@@ -201,8 +185,14 @@ namespace mag
             return;
         }
 
-        // Finally enqueue the model
-        models_queue.push_back(path);
+        // Finally load the model
+        const auto model = model_loader.load(path);
+
+        const auto entity = ecs->create_entity();
+        ecs->add_component(entity, new TransformComponent());
+        ecs->add_component(entity, new ModelComponent(*model));
+
+        render_pass->add_model(*ecs, entity);
     }
 
     void Scene::remove_model(const u32 id)
