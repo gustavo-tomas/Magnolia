@@ -1,5 +1,7 @@
 #include "editor/panels/viewport_panel.hpp"
 
+#include <filesystem>
+
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor/editor.hpp"
@@ -23,7 +25,10 @@ namespace mag
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
                                const u32 selected_entity_id)
     {
-        auto &editor = get_application().get_editor();
+        auto &app = get_application();
+        auto &editor = app.get_editor();
+        auto &model_manager = app.get_model_manager();
+        auto &scene = app.get_active_scene();
 
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -35,9 +40,6 @@ namespace mag
         {
             if (ImGui::Button("Play/Pause"))
             {
-                auto &app = get_application();
-                auto &scene = app.get_active_scene();
-
                 if (scene.get_scene_state() == SceneState::Editor)
                 {
                     app.get_active_scene().start_runtime();
@@ -69,7 +71,32 @@ namespace mag
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
             {
                 const char *path = static_cast<const char *>(payload->Data);
-                get_application().get_active_scene().add_model(path);
+                const std::filesystem::path file_path(path);
+                const str extension = file_path.extension().c_str();
+
+                // First check if the path exists
+                if (!std::filesystem::exists(path))
+                {
+                    LOG_ERROR("File not found: {0}", path);
+                }
+
+                // Then check if its a directory
+                else if (std::filesystem::is_directory(path))
+                {
+                    LOG_ERROR("Path is a directory: {0}", path);
+                }
+
+                // Then check if this extension is supported
+                else if (!model_manager.is_extension_supported(extension))
+                {
+                    LOG_ERROR("Extension not supported: {0}", extension);
+                }
+
+                // Finally load the model
+                else
+                {
+                    scene.add_model(path);
+                }
             }
             ImGui::EndDragDropTarget();
         }

@@ -1,7 +1,5 @@
 #include "scene/scene.hpp"
 
-#include <filesystem>
-
 #include "core/application.hpp"
 #include "core/logger.hpp"
 
@@ -160,33 +158,10 @@ namespace mag
 
     void Scene::add_model(const str& path)
     {
-        auto& model_loader = get_application().get_model_manager();
+        auto& app = get_application();
+        auto& model_manager = app.get_model_manager();
 
-        // First check if the path exists
-        if (!std::filesystem::exists(path))
-        {
-            LOG_ERROR("File not found: {0}", path);
-            return;
-        }
-
-        // Then check if its a directory
-        if (std::filesystem::is_directory(path))
-        {
-            LOG_ERROR("Path is a directory: {0}", path);
-            return;
-        }
-
-        // Then check if assimp supports this extension
-        const std::filesystem::path file_path(path);
-        const str extension = file_path.extension().c_str();
-        if (!model_loader.is_extension_supported(extension))
-        {
-            LOG_ERROR("Extension not supported: {0}", extension);
-            return;
-        }
-
-        // Finally load the model
-        const auto model = model_loader.load(path);
+        const auto model = model_manager.load(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());
