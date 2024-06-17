@@ -30,7 +30,7 @@ namespace mag
 
         auto& ecs = get_application().get_active_scene().get_ecs();
         auto objects = ecs.get_components_of_entities<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
-        for (auto& [transform, collider, rigid_body] : objects)
+        for (auto [transform, collider, rigid_body] : objects)
         {
             add_rigid_body(*transform, *collider, *rigid_body);
         }
@@ -97,8 +97,6 @@ namespace mag
         auto& ecs = scene.get_ecs();
         auto objects = ecs.get_components_of_entities<TransformComponent, RigidBodyComponent>();
 
-        physics_debug_draw->reset_lines();
-
         if (!dynamics_world) return;
 
         if (scene.get_scene_state() == SceneState::Runtime)
@@ -110,14 +108,14 @@ namespace mag
                 auto [transform, rigid_body_c] = objects[i];
                 auto* body = static_cast<btRigidBody*>(rigid_body_c->internal);
 
-                btTransform trans;
+                btTransform trans(btQuaternion(0, 0, 0, 0));
 
                 if (body && body->getMotionState())
                 {
                     body->getMotionState()->getWorldTransform(trans);
                 }
 
-                else
+                else if (body)
                 {
                     trans = body->getWorldTransform();
                 }
@@ -127,6 +125,7 @@ namespace mag
         }
 
         // 'Draw' the debug lines before sending to the renderer
+        physics_debug_draw->reset_lines();
         dynamics_world->debugDrawWorld();
     }
 

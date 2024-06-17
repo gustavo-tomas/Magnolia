@@ -32,7 +32,7 @@ namespace mag
             void run();
             void on_event(Event& e);
 
-            void set_active_scene(BaseScene* scene) { active_scene = std::unique_ptr<BaseScene>(scene); };
+            void set_active_scene(BaseScene* scene);
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
