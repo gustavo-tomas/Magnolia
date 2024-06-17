@@ -47,9 +47,9 @@ namespace mag
 
     u64 Buffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
 
-    // VertexBuffer
+    // GPUBuffer
     // -----------------------------------------------------------------------------------------------------------------
-    void VertexBuffer::initialize(const void* vertices, const u64 size_bytes)
+    void GPUBuffer::initialize(const void* data, const u64 size_bytes, const VkBufferUsageFlags usage)
     {
         auto& context = get_context();
 
@@ -58,16 +58,24 @@ namespace mag
         staging_buffer.initialize(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-        staging_buffer.copy(vertices, size_bytes);
+        staging_buffer.copy(data, size_bytes);
 
-        gpu_buffer.initialize(size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                              VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
+        buffer.initialize(size_bytes, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
 
         // Copy data from the staging buffer to the gpu buffer
         context.submit_commands_immediate([=, this](CommandBuffer cmd)
-                                          { cmd.copy_buffer(staging_buffer, gpu_buffer, size_bytes, 0, 0); });
+                                          { cmd.copy_buffer(staging_buffer, buffer, size_bytes, 0, 0); });
 
         staging_buffer.shutdown();
+    }
+
+    void GPUBuffer::shutdown() { buffer.shutdown(); }
+
+    // VertexBuffer
+    // -----------------------------------------------------------------------------------------------------------------
+    void VertexBuffer::initialize(const void* vertices, const u64 size_bytes)
+    {
+        gpu_buffer.initialize(vertices, size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     }
 
     void VertexBuffer::shutdown() { gpu_buffer.shutdown(); }
@@ -76,23 +84,7 @@ namespace mag
     // -----------------------------------------------------------------------------------------------------------------
     void IndexBuffer::initialize(const void* indices, const u64 size_bytes)
     {
-        auto& context = get_context();
-
-        // Create staging buffer to send data to the gpu
-        Buffer staging_buffer;
-        staging_buffer.initialize(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-                                  VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-        staging_buffer.copy(indices, size_bytes);
-
-        gpu_buffer.initialize(size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                              VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
-
-        // Copy data from the staging buffer to the gpu buffer
-        context.submit_commands_immediate([=, this](CommandBuffer cmd)
-                                          { cmd.copy_buffer(staging_buffer, gpu_buffer, size_bytes, 0, 0); });
-
-        staging_buffer.shutdown();
+        gpu_buffer.initialize(indices, size_bytes, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
 
     void IndexBuffer::shutdown() { gpu_buffer.shutdown(); }

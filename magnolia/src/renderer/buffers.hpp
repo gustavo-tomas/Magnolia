@@ -35,17 +35,28 @@ namespace mag
             u64 size = {};
     };
 
-    // @TODO: DRY
+    class GPUBuffer
+    {
+        public:
+            void initialize(const void* data, const u64 size_bytes, const VkBufferUsageFlags usage);
+            void shutdown();
+
+            const Buffer& get_buffer() const { return buffer; };
+
+        private:
+            Buffer buffer;
+    };
+
     class VertexBuffer
     {
         public:
             void initialize(const void* vertices, const u64 size_bytes);
             void shutdown();
 
-            const Buffer& get_buffer() const { return gpu_buffer; };
+            const Buffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 
         private:
-            Buffer gpu_buffer;
+            GPUBuffer gpu_buffer;
     };
 
     class IndexBuffer
@@ -54,9 +65,9 @@ namespace mag
             void initialize(const void* indices, const u64 size_bytes);
             void shutdown();
 
-            const Buffer& get_buffer() const { return gpu_buffer; };
+            const Buffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 
         private:
-            Buffer gpu_buffer;
+            GPUBuffer gpu_buffer;
     };
 };  // namespace mag
