@@ -90,6 +90,7 @@ namespace mag
         rigid_body.internal = bt_rigid_body;
     }
 
+    // @TODO: the lines are not synced to the transforms. Hopefully this can be fixed after the application refactor.
     void PhysicsEngine::update(const f32 dt)
     {
         auto& app = get_application();
