@@ -99,7 +99,7 @@ namespace mag
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
-            vk::CommandPool command_pool;
+            vk::CommandPool command_pool, immediate_command_pool;
             vk::Fence upload_fence;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::QueryPool query_pool;

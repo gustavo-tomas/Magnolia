@@ -306,12 +306,13 @@ namespace mag
         this->upload_fence = device.createFence({});
 
         // Command pool
-        vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-                                                    queue_family_index);
+        const vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                                                          queue_family_index);
         this->command_pool = device.createCommandPool(command_pool_info);
+        this->immediate_command_pool = device.createCommandPool(command_pool_info);
 
         // Command buffer
-        this->submit_command_buffer.initialize(this->command_pool, vk::CommandBufferLevel::ePrimary);
+        this->submit_command_buffer.initialize(this->immediate_command_pool, vk::CommandBufferLevel::ePrimary);
 
         // Allocator
         VmaAllocatorCreateInfo allocator_create_info = {};
@@ -359,6 +360,7 @@ namespace mag
         this->device.destroyQueryPool(query_pool);
         this->device.destroyFence(this->upload_fence);
         this->device.destroyCommandPool(this->command_pool);
+        this->device.destroyCommandPool(this->immediate_command_pool);
         this->device.destroySwapchainKHR(this->swapchain);
         this->device.destroy();
 
@@ -432,7 +434,7 @@ namespace mag
         this->graphics_queue.submit(submit, this->upload_fence);
         VK_CHECK(this->device.waitForFences(this->upload_fence, true, MAG_TIMEOUT));
         this->device.resetFences(this->upload_fence);
-        this->device.resetCommandPool(command_pool);
+        this->device.resetCommandPool(this->immediate_command_pool);
     }
 
     void Context::begin_timestamp()
