@@ -1,6 +1,5 @@
 #pragma once
 
-#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -31,6 +30,14 @@ namespace mag
             ECS(const u32 max_entity_id = 10'000)
             {
                 for (u32 id = 0; id <= max_entity_id; id++) available_ids.insert(id);
+            }
+
+            ECS(const ECS& other)
+            {
+                available_ids = other.available_ids;
+                entities = copy_entities(other.entities);
+                component_map = other.component_map;
+                deletion_queue = other.deletion_queue;
             }
 
             ~ECS() = default;
@@ -231,6 +238,22 @@ namespace mag
 
                 // Free the ID for future use
                 available_ids.insert(entity_id);
+            }
+
+            std::map<u32, Entity> copy_entities(const std::map<u32, Entity>& source)
+            {
+                std::map<u32, Entity> new_entities;
+                for (const auto& [id, entity] : source)
+                {
+                    Entity new_entity;
+                    for (const auto& comp : entity)
+                    {
+                        new_entity.emplace_back(comp->clone());
+                    }
+                    new_entities[id] = std::move(new_entity);
+                }
+
+                return new_entities;
             }
 
             // Entities IDs

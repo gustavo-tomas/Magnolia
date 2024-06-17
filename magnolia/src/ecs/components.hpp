@@ -1,19 +1,27 @@
 #pragma once
 
+#include <memory>
+
 #include "core/types.hpp"
 
 namespace mag
 {
     using namespace mag::math;
 
+#define CLONE(type) \
+    std::unique_ptr<Component> clone() const override { return std::make_unique<type>(*this); }
+
     struct Component
     {
             virtual ~Component() = default;
+            virtual std::unique_ptr<Component> clone() const = 0;
     };
 
     struct NameComponent : public Component
     {
             NameComponent(const str& name) : name(name){};
+
+            CLONE(NameComponent);
 
             str name;
     };
@@ -24,9 +32,16 @@ namespace mag
                                const vec3& scale = vec3(1))
                 : translation(translation), rotation(rotation), scale(scale){};
 
-            static mat4 get_transformation_matrix(const TransformComponent& transform);
+            CLONE(TransformComponent);
 
             vec3 translation, rotation, scale;
+
+            mat4 get_transformation_matrix() const
+            {
+                const mat4 rotation_mat = math::toMat4(quat(math::radians(rotation)));
+
+                return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
+            }
     };
 
     // @TODO: i didnt turn Model into a component because then the ModelLoader would be loading components directly
@@ -36,15 +51,45 @@ namespace mag
     {
             ModelComponent(const Model& model) : model(model) {}
 
+            CLONE(ModelComponent);
+
             const Model& model;
 
             u32 albedo_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
             u32 normal_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
     };
 
+    struct BoxColliderComponent : public Component
+    {
+            BoxColliderComponent(const vec3& dimensions = vec3(1)) : dimensions(dimensions) {}
+
+            CLONE(BoxColliderComponent);
+
+            vec3 dimensions;
+
+            // Storage for physics engine use
+            void* internal;
+    };
+
+    struct RigidBodyComponent : public Component
+    {
+            RigidBodyComponent(const f32 mass = 0.0f) : mass(mass) {}
+
+            CLONE(RigidBodyComponent);
+
+            f32 mass;
+
+            // Storage for physics engine use
+            void* internal;
+
+            b8 is_dynamic() const { return mass != 0.0f; }
+    };
+
     struct LightComponent : public Component
     {
             LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
+
+            CLONE(LightComponent);
 
             // This should match the shaders max number of lights
             static const u32 MAX_NUMBER_OF_LIGHTS = 4;
@@ -52,19 +97,4 @@ namespace mag
             vec3 color;
             f32 intensity;
     };
-
-    inline mat4 TransformComponent::get_transformation_matrix(const TransformComponent& transform)
-    {
-        const quat pitch = angleAxis(radians(transform.rotation.x), vec3(1.0f, 0.0f, 0.0f));
-        const quat yaw = angleAxis(radians(transform.rotation.y), vec3(0.0f, 1.0f, 0.0f));
-        const quat roll = angleAxis(radians(transform.rotation.z), vec3(0.0f, 0.0f, 1.0f));
-
-        const mat4 rotation_matrix = toMat4(roll) * toMat4(yaw) * toMat4(pitch);
-        const mat4 translation_matrix = translate(mat4(1.0f), transform.translation);
-        const mat4 scale_matrix = math::scale(mat4(1.0f), transform.scale);
-
-        const mat4 model_matrix = translation_matrix * rotation_matrix * scale_matrix;
-
-        return model_matrix;
-    }
 };  // namespace mag

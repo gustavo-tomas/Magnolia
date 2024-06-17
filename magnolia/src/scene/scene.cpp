@@ -14,9 +14,10 @@ namespace mag
           camera_controller(new EditorCameraController(*camera)),
           cube(new Cube())
     {
-        auto& cube_model = cube->get_model();
-        const auto& light_model =
-            get_application().get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
+        auto& app = get_application();
+
+        const auto& cube_model = cube->get_model();
+        const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
         const i32 loops = 5;
         u32 count = 0;
@@ -27,13 +28,39 @@ namespace mag
                 const str name = "Cube" + std::to_string(count++);
 
                 const auto cube_entity = ecs->create_entity(name);
-                ecs->add_component(cube_entity, new TransformComponent(vec3(i * 30, 10, j * 30), vec3(0), vec3(10)));
+
+                const vec3 scale = vec3(10);
+                const vec3 rot = vec3(rand() % 360);
+                const vec3 pos = vec3(i * 30, 100, j * 30);
+
+                auto* transform = new TransformComponent(pos, rot, scale);
+                auto* rigid_body = new RigidBodyComponent(1.0f);
+                auto* collider = new BoxColliderComponent(transform->scale);
+
+                ecs->add_component(cube_entity, transform);
                 ecs->add_component(cube_entity, new ModelComponent(cube_model));
+                ecs->add_component(cube_entity, collider);
+                ecs->add_component(cube_entity, rigid_body);
 
                 render_pass->add_model(*ecs, cube_entity);
 
                 LOG_INFO("Cube created");
             }
+        }
+
+        // Floor
+        {
+            const auto floor_entity = ecs->create_entity("Floor");
+
+            const vec3 pos = vec3(0, -10, 0);
+
+            auto* transform = new TransformComponent(pos);
+            auto* rigid_body = new RigidBodyComponent(0.0f);
+            auto* collider = new BoxColliderComponent(vec3(150, 10, 150));
+
+            ecs->add_component(floor_entity, transform);
+            ecs->add_component(floor_entity, collider);
+            ecs->add_component(floor_entity, rigid_body);
         }
 
         // Light
@@ -54,6 +81,51 @@ namespace mag
     }
 
     void Scene::update(const f32 dt)
+    {
+        if (state_swap_requested)
+        {
+            auto& app = get_application();
+            auto& physics_engine = app.get_physics_engine();
+
+            if (current_state == SceneState::Editor)
+            {
+                runtime_ecs = std::make_unique<ECS>(*ecs);
+                current_state = SceneState::Runtime;
+
+                physics_engine.on_simulation_start();
+            }
+
+            else
+            {
+                runtime_ecs.reset();
+                current_state = SceneState::Editor;
+
+                physics_engine.on_simulation_start();
+            }
+
+            state_swap_requested = false;
+        }
+
+        switch (current_state)
+        {
+            case SceneState::Editor:
+                update_editor(dt);
+                break;
+
+            case SceneState::Runtime:
+                update_runtime(dt);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void Scene::start_runtime() { state_swap_requested = true; }
+
+    void Scene::stop_runtime() { state_swap_requested = true; }
+
+    void Scene::update_editor(const f32 dt)
     {
         auto& app = get_application();
         auto& model_loader = app.get_model_manager();
@@ -85,6 +157,13 @@ namespace mag
 
             models_queue.erase(models_queue.begin());
         }
+    }
+
+    void Scene::update_runtime(const f32 dt)
+    {
+        runtime_ecs->update();
+
+        camera_controller->update(dt);
     }
 
     void Scene::on_event(Event& e)

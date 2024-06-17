@@ -233,6 +233,7 @@ namespace mag
         // Features
         vk::PhysicalDeviceFeatures features;
         features.setSamplerAnisotropy(true);
+        features.setFillModeNonSolid(true);
 
         vk::PhysicalDeviceSynchronization2FeaturesKHR synchronization_2_features(true);
 

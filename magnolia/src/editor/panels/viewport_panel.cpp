@@ -30,6 +30,26 @@ namespace mag
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
+        // @TODO: make a prettier button
+        // Play/Pause simulation
+        {
+            if (ImGui::Button("Play/Pause"))
+            {
+                auto &app = get_application();
+                auto &scene = app.get_active_scene();
+
+                if (scene.get_scene_state() == SceneState::Editor)
+                {
+                    app.get_active_scene().start_runtime();
+                }
+
+                else
+                {
+                    app.get_active_scene().stop_runtime();
+                }
+            }
+        }
+
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
         if (current_viewport_size != viewport_size)
@@ -79,7 +99,7 @@ namespace mag
             ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
                               viewport_bounds[1].y - viewport_bounds[0].y);
 
-            mat4 transform_matrix = TransformComponent::get_transformation_matrix(*transform);
+            mat4 transform_matrix = transform->get_transformation_matrix();
 
             if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))

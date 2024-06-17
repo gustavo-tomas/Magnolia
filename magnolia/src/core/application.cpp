@@ -49,13 +49,16 @@ namespace mag
         editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
         LOG_SUCCESS("Editor initialized");
 
+        // Create the physics engine
+        physics_engine = std::make_unique<PhysicsEngine>();
+        LOG_SUCCESS("Physics initialized");
+
         running = true;
     }
 
     void Application::run()
     {
-        u64 curr_time = 0, last_time = 0;
-        f64 dt = 0.0;
+        f64 curr_time = 0, last_time = 0, dt = 0;
 
         while (running)
         {
@@ -73,12 +76,20 @@ namespace mag
                 continue;
             }
 
+            physics_engine->update(dt);
+
             active_scene->update(dt);
 
             editor->update();
 
             renderer->update(*active_scene, *editor);
         }
+    }
+
+    void Application::set_active_scene(BaseScene* scene)
+    {
+        active_scene = std::unique_ptr<BaseScene>(scene);
+        physics_engine->on_simulation_start();
     }
 
     void Application::on_event(Event& e)

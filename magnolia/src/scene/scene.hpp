@@ -9,6 +9,12 @@
 
 namespace mag
 {
+    enum class SceneState
+    {
+        Editor,
+        Runtime
+    };
+
     class BaseScene
     {
         public:
@@ -24,7 +30,15 @@ namespace mag
                 dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(BaseScene::on_viewport_resize));
             };
 
-            ECS& get_ecs() { return *ecs; };
+            virtual void start_runtime() = 0;
+            virtual void stop_runtime() = 0;
+
+            virtual void add_model(const str& path) = 0;
+            virtual void remove_model(const u32 id) = 0;
+
+            virtual SceneState get_scene_state() const = 0;
+
+            virtual ECS& get_ecs() { return *ecs; };
             Camera& get_camera() { return *camera; };
             StandardRenderPass& get_render_pass() { return *render_pass; };
 
@@ -47,15 +61,35 @@ namespace mag
         public:
             Scene();
 
+            virtual void start_runtime() override;
+            virtual void stop_runtime() override;
+
             virtual void update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
-            void add_model(const str& path);
-            void remove_model(const u32 id);
+            virtual void add_model(const str& path) override;
+            virtual void remove_model(const u32 id) override;
+
+            virtual SceneState get_scene_state() const override { return current_state; };
+            virtual ECS& get_ecs() override
+            {
+                if (current_state == SceneState::Editor)
+                    return *ecs;
+
+                else
+                    return *runtime_ecs;
+            };
 
         private:
+            void update_runtime(const f32 dt);
+            void update_editor(const f32 dt);
+
+            std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<EditorCameraController> camera_controller;
             std::unique_ptr<Cube> cube;
             std::vector<str> models_queue;
+
+            SceneState current_state = SceneState::Editor;
+            b8 state_swap_requested = false;
     };
 };  // namespace mag

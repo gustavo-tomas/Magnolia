@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
+#include <chrono>
 #include <limits>
 #include <vulkan/vulkan.hpp>
 
@@ -51,7 +52,7 @@ namespace mag
 
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
-            u64 get_time() const { return SDL_GetTicks64(); };  // Ms since start
+            f64 get_time() const;  // Ms since start
             SDL_Window* get_handle() const { return handle; };
             const std::vector<const char*>& get_instance_extensions() const { return extensions; };
 
@@ -69,5 +70,7 @@ namespace mag
             std::unordered_map<Key, u32> key_update;
             std::unordered_map<Button, b8> button_state;
             std::unordered_map<Button, u32> button_update;
+
+            const std::chrono::time_point<std::chrono::system_clock> start_time;
     };
 };  // namespace mag

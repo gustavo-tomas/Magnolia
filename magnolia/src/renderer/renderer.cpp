@@ -1,5 +1,6 @@
 #include "renderer/renderer.hpp"
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/render_pass.hpp"
 
@@ -15,7 +16,7 @@ namespace mag
 
     Renderer::~Renderer() { this->context->get_device().waitIdle(); }
 
-    void Renderer::update(Scene& scene, Editor& editor)
+    void Renderer::update(BaseScene& scene, Editor& editor)
     {
         Frame& curr_frame = context->get_curr_frame();
         CommandBuffer& command_buffer = curr_frame.command_buffer;
@@ -25,6 +26,20 @@ namespace mag
         Pass& pass = render_pass.get_pass();
 
         statistics = {};
+
+        // @TODO: dont do this here
+        auto& app = get_application();
+        auto& physics_engine = app.get_physics_engine();
+
+        physics_debug_lines.reset();
+        physics_debug_lines = nullptr;
+        auto& debug_lines = physics_engine.get_line_list();
+        if (!debug_lines.starts.empty())
+        {
+            physics_debug_lines =
+                std::make_unique<Line>("DebugLines", debug_lines.starts, debug_lines.ends, debug_lines.colors);
+        }
+        // @TODO: dont do this here
 
         this->context->begin_frame();
         this->context->begin_timestamp();  // Performance query
