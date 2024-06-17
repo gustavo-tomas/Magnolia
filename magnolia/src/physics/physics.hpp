@@ -4,11 +4,12 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
-#include "renderer/model.hpp"
+#include "ecs/components.hpp"
 
 namespace mag
 {
     class PhysicsDebugDraw;
+    struct DebugLineList;
 
     class PhysicsEngine
     {
@@ -22,7 +23,7 @@ namespace mag
             void start_simulation();
             void update(const f32 dt);
 
-            const std::unique_ptr<Line>& get_line_list() const;
+            const DebugLineList& get_line_list() const;
 
         private:
             btDefaultCollisionConfiguration* collision_configuration;
@@ -34,14 +35,18 @@ namespace mag
             std::unique_ptr<PhysicsDebugDraw> physics_debug_draw;
     };
 
+    struct DebugLineList
+    {
+            std::vector<vec3> starts, ends, colors;
+    };
+
     // @TODO: finish debug draw
     class PhysicsDebugDraw : public btIDebugDraw
     {
         public:
-            void create_lines();
             void reset_lines();
 
-            const std::unique_ptr<Line>& get_line_list() const { return line_list; };
+            const DebugLineList& get_line_list() const { return line_list; };
 
             virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
             virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
@@ -68,7 +73,6 @@ namespace mag
             virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
 
         private:
-            std::unique_ptr<Line> line_list;
-            std::vector<vec3> starts, ends, colors;
+            DebugLineList line_list;
     };
 };  // namespace mag

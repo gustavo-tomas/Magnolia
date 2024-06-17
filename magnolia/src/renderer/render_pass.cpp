@@ -261,16 +261,19 @@ namespace mag
 
         // Draw debug lines for physics
         {
-            auto& line_list = get_application().get_physics_engine().get_line_list();
+            auto& line_list = get_application().get_renderer().get_physics_debug_lines();
 
-            descriptors.set_offset_global(line_pipeline->get_layout());
+            if (line_list != nullptr)
+            {
+                descriptors.set_offset_global(line_pipeline->get_layout());
 
-            const auto& model = line_list->get_model();
+                const auto& model = line_list->get_model();
 
-            line_pipeline->bind();
+                line_pipeline->bind();
 
-            command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
-            command_buffer.draw(model.vertices.size());
+                command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
+                command_buffer.draw(model.vertices.size());
+            }
         }
 
         // Draw the grid
