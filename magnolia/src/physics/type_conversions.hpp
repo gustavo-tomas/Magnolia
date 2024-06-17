@@ -27,7 +27,7 @@ namespace mag
 
         btScalar pitch, yaw, roll;
         t.getRotation().getEulerZYX(roll, yaw, pitch);
-        transform.rotation = vec3(degrees(pitch), degrees(yaw), degrees(roll));
+        transform.rotation = degrees(vec3(pitch, yaw, roll));
 
         // btTransform has no scale so we need to ask the user for that value
         transform.scale = scale;
