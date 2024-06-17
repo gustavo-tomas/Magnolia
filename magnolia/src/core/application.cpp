@@ -58,8 +58,7 @@ namespace mag
 
     void Application::run()
     {
-        u64 curr_time = 0, last_time = 0;
-        f64 dt = 0.0;
+        f64 curr_time = 0, last_time = 0, dt = 0;
 
         while (running)
         {

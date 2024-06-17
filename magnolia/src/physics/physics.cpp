@@ -92,8 +92,6 @@ namespace mag
 
     void PhysicsEngine::update(const f32 dt)
     {
-        (void)dt;  // @TODO: figure out where dt goes
-
         auto& app = get_application();
         auto& scene = app.get_active_scene();
         auto& ecs = scene.get_ecs();
@@ -105,7 +103,7 @@ namespace mag
 
         if (scene.get_scene_state() == SceneState::Runtime)
         {
-            dynamics_world->stepSimulation(1.0f / 60.0f, 10);
+            dynamics_world->stepSimulation(dt, 10);
 
             for (i32 i = objects.size() - 1; i >= 0; i--)
             {

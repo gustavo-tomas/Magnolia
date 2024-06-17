@@ -1,12 +1,14 @@
 #include "core/window.hpp"
 
-#include "SDL_timer.h"
+#include <thread>
+
 #include "core/event.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
-    Window::Window(const WindowOptions& options) : event_callback(options.event_callback)
+    Window::Window(const WindowOptions& options)
+        : event_callback(options.event_callback), start_time(std::chrono::system_clock::now())
     {
         ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
@@ -162,7 +164,7 @@ namespace mag
         return surface;
     }
 
-    void Window::sleep(const u32 ms) { SDL_Delay(ms); }
+    void Window::sleep(const u32 ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 
     b8 Window::is_key_pressed(const Key key) { return key_state[key] && (key_update[key] == update_counter); }
 
@@ -227,5 +229,14 @@ namespace mag
         uvec2 size;
         SDL_Vulkan_GetDrawableSize(handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
         return size;
+    }
+
+    f64 Window::get_time() const
+    {
+        // Ms since start
+        auto current_time = std::chrono::system_clock::now();
+        std::chrono::duration<f64> elapsed_seconds = current_time - start_time;
+
+        return elapsed_seconds.count();
     }
 };  // namespace mag
