@@ -1,6 +1,5 @@
 #include "editor/menu/menu_bar.hpp"
 
-#include "core/types.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
 namespace mag
@@ -38,8 +37,7 @@ namespace mag
 
             if (ImGui::BeginMenu("Quit"))
             {
-                // @TODO: Emit quit event
-                ImGui::Text("@TODO");
+                quit = true;
                 ImGui::EndMenu();
             }
 

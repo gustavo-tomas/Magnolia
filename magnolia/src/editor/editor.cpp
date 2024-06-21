@@ -121,6 +121,12 @@ namespace mag
             set_viewport_image(scene.get_render_pass().get_target_image());
         }
 
+        if (menu_bar->quit_requested())
+        {
+            auto event = QuitEvent();
+            event_callback(event);
+        }
+
         // Alternate between Fullscreen and Windowed
         if (window.is_key_pressed(Key::Escape))
         {

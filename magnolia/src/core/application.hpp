@@ -47,6 +47,7 @@ namespace mag
         private:
             void on_window_close(WindowCloseEvent& e);
             void on_window_resize(WindowResizeEvent& e);
+            void on_quit(QuitEvent& e);
 
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;

@@ -58,6 +58,8 @@ namespace mag
             SDL_SetWindowIcon(handle, icon);
             SDL_FreeSurface(icon);
         }
+
+        set_fullscreen(true);
     }
 
     Window::~Window()

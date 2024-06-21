@@ -97,9 +97,16 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
+        dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
 
         active_scene->on_event(e);
         editor->on_event(e);
+    }
+
+    void Application::on_quit(QuitEvent& e)
+    {
+        (void)e;
+        running = false;
     }
 
     void Application::on_window_close(WindowCloseEvent& e)

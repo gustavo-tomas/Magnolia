@@ -26,7 +26,8 @@ namespace mag
         SDLEvent,
 
         // Editor events
-        ViewportResize
+        ViewportResize,
+        Quit
     };
 
     struct Event
@@ -144,5 +145,12 @@ namespace mag
 
             u32 width;
             u32 height;
+    };
+
+    struct QuitEvent : public Event
+    {
+            EVENT_CLASS_TYPE(Quit);
+
+            // Empty
     };
 };  // namespace mag
