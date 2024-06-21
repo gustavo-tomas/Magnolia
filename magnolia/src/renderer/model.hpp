@@ -30,7 +30,8 @@ namespace mag
 
     struct Model
     {
-            str name;
+            str name = "";
+            str file_path = "";
             std::vector<Mesh> meshes;
 
             std::vector<std::shared_ptr<Material>> materials;

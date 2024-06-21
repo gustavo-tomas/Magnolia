@@ -37,6 +37,7 @@ namespace mag
         ASSERT(scene->HasMeshes(), "Model has no meshes");
 
         Model* model = new Model();
+        model->file_path = file;
         model->name = scene->GetShortFilename(file.c_str());
         model->meshes.resize(scene->mNumMeshes);
 
