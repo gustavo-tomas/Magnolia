@@ -38,7 +38,7 @@ namespace mag
         style.Colors[ImGuiCol_TitleBg] = gray_opaque;
         // style.Colors[ImGuiCol_TitleBgCollapsed] = white_opaque;
         style.Colors[ImGuiCol_TitleBgActive] = blue_opaque;
-        style.Colors[ImGuiCol_MenuBarBg] = black_opaque;
+        style.Colors[ImGuiCol_MenuBarBg] = gray_opaque;
         style.Colors[ImGuiCol_Tab] = gray_opaque;
         style.Colors[ImGuiCol_TabHovered] = blue_opaque;
         style.Colors[ImGuiCol_TabActive] = blue_opaque;

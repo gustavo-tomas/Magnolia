@@ -81,9 +81,9 @@ namespace mag
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
+        menu_bar = std::make_unique<MenuBar>();
         content_browser_panel = std::make_unique<ContentBrowserPanel>();
         viewport_panel = std::make_unique<ViewportPanel>();
-        info_panel = std::make_unique<InfoPanel>();
         scene_panel = std::make_unique<ScenePanel>();
         material_panel = std::make_unique<MaterialsPanel>();
         status_panel = std::make_unique<StatusPanel>();
@@ -159,7 +159,7 @@ namespace mag
         scene_panel->render(window_flags, ecs);
         const u64 selected_entity_id = scene_panel->get_selected_entity_id();
 
-        info_panel->render(window_flags);
+        menu_bar->render(window_flags);
         content_browser_panel->render(window_flags);
         material_panel->render(window_flags, ecs, selected_entity_id);
         properties_panel->render(window_flags, ecs, selected_entity_id);

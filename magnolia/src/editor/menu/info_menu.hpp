@@ -4,7 +4,7 @@
 
 namespace mag
 {
-    class InfoPanel
+    class InfoMenu
     {
         public:
             void render(const ImGuiWindowFlags window_flags);

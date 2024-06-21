@@ -1,4 +1,4 @@
-#include "editor/panels/info_panel.hpp"
+#include "editor/menu/info_menu.hpp"
 
 #include <fstream>
 
@@ -10,7 +10,7 @@ namespace mag
 {
     using json = nlohmann::json;
 
-    void InfoPanel::render(const ImGuiWindowFlags window_flags)
+    void InfoMenu::render(const ImGuiWindowFlags window_flags)
     {
         // Parse instructions from the json file
         const str file_path = "magnolia/assets/json/editor_instructions.json";

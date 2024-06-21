@@ -5,9 +5,9 @@
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
 #include "editor/editor_pass.hpp"
+#include "editor/menu/menu_bar.hpp"
 #include "editor/panels/camera_panel.hpp"
 #include "editor/panels/content_browser_panel.hpp"
-#include "editor/panels/info_panel.hpp"
 #include "editor/panels/materials_panel.hpp"
 #include "editor/panels/properties_panel.hpp"
 #include "editor/panels/scene_panel.hpp"
@@ -51,9 +51,9 @@ namespace mag
             EditorRenderPass render_pass;
             vk::DescriptorPool descriptor_pool;
 
+            std::unique_ptr<MenuBar> menu_bar;
             std::unique_ptr<ContentBrowserPanel> content_browser_panel;
             std::unique_ptr<ViewportPanel> viewport_panel;
-            std::unique_ptr<InfoPanel> info_panel;
             std::unique_ptr<ScenePanel> scene_panel;
             std::unique_ptr<MaterialsPanel> material_panel;
             std::unique_ptr<PropertiesPanel> properties_panel;
