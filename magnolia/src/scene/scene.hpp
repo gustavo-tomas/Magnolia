@@ -18,8 +18,8 @@ namespace mag
     class BaseScene
     {
         public:
-            BaseScene(ECS* ecs, Camera* camera, StandardRenderPass* render_pass)
-                : ecs(ecs), camera(camera), render_pass(render_pass){};
+            BaseScene(const str name, ECS* ecs, Camera* camera, StandardRenderPass* render_pass)
+                : name(name), ecs(ecs), camera(camera), render_pass(render_pass){};
 
             virtual ~BaseScene() = default;
 
@@ -39,6 +39,7 @@ namespace mag
             virtual SceneState get_scene_state() const = 0;
 
             virtual ECS& get_ecs() { return *ecs; };
+            const str& get_name() const { return name; };
             Camera& get_camera() { return *camera; };
             StandardRenderPass& get_render_pass() { return *render_pass; };
 
@@ -51,6 +52,7 @@ namespace mag
                 camera->set_aspect_ratio(size);
             };
 
+            str name;
             std::unique_ptr<ECS> ecs;
             std::unique_ptr<Camera> camera;
             std::unique_ptr<StandardRenderPass> render_pass;
