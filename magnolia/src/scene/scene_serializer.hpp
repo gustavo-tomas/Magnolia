@@ -10,8 +10,8 @@ namespace mag
             SceneSerializer(BaseScene& scene);
             ~SceneSerializer() = default;
 
-            void serialize(const str& path);
-            void deserialize(const str& path);
+            void serialize(const str& file_path);
+            void deserialize(const str& file_path);
 
         private:
             BaseScene& scene;
