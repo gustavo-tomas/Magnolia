@@ -19,11 +19,15 @@ namespace mag
         // Display open dialogs
         display_dialog();
 
-        // Dont do anything if a dialog is still open
-        if (dialog_open) return;
-
         if (ImGui::BeginMainMenuBar())
         {
+            // Dont do anything if a dialog is still open
+            if (dialog_open)
+            {
+                ImGui::EndMainMenuBar();
+                return;
+            }
+
             // File
             if (ImGui::BeginMenu((str(ICON_FA_FILE) + " File").c_str()))
             {
