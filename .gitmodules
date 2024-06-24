@@ -40,3 +40,6 @@
 [submodule "libs/bullet"]
 	path = libs/bullet
 	url = https://github.com/bulletphysics/bullet3.git
+[submodule "libs/imgui_file_dialog"]
+	path = libs/imgui_file_dialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git

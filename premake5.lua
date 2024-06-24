@@ -42,7 +42,7 @@ workspace "magnolia"
 
     lib_links = 
     {
-        "fmt", "imgui", "imguizmo", "assimp", "meshoptimizer", 
+        "fmt", "imgui", "imguizmo", "imgui_file_dialog", "assimp", "meshoptimizer", 
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "BulletLinearMath"
@@ -453,3 +453,30 @@ project "bullet"
             os.execute("cp build/linux/bullet/src/LinearMath/libLinearMath.a " .. libdir .. "/libBulletLinearMath.a")
         end
     end
+
+-- imgui file dialog ---------------------------------------------------------------------------------------------------
+project "imgui_file_dialog"
+    kind "staticlib"
+    language "c++"
+    cppdialect "c++20"
+
+    targetdir (libdir)
+    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
+
+    includedirs { ".", "libs/imgui_file_dialog", "libs/imgui" }
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\imgui_file_dialog 2>NUL")
+    end
+
+    files
+    {
+        "libs/imgui_file_dialog/ImGuiFileDialog.h",
+        "libs/imgui_file_dialog/ImGuiFileDialogConfig.h",
+        "libs/imgui_file_dialog/ImGuiFileDialog.cpp"
+    }
+
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        staticruntime "on"
