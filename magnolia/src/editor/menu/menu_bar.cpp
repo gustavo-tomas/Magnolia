@@ -12,7 +12,6 @@ namespace mag
     void MenuBar::render(const ImGuiWindowFlags window_flags)
     {
         auto& app = get_application();
-        auto& scene = app.get_active_scene();
 
         // @TODO: shortcuts dont do anything
 
@@ -24,6 +23,8 @@ namespace mag
                 // Save
                 if (ImGui::MenuItem("Save", "CTRL+S"))
                 {
+                    auto& scene = app.get_active_scene();
+
                     // @TODO: hardcoded file path
                     const str file_path = "sprout/assets/scenes/test_scene.mag.json";
 
@@ -34,13 +35,15 @@ namespace mag
                 }
 
                 // Load
-                // @TODO
-                if (ImGui::MenuItem("Open", "CTRL+O"))
+                // @TODO: finish
+                if (false && ImGui::MenuItem("Open", "CTRL+O"))
                 {
+                    auto* scene = new Scene();
+
                     // @TODO: hardcoded file path
                     const str file_path = "sprout/assets/scenes/test_scene.mag.json";
 
-                    SceneSerializer scene_serializer(scene);
+                    SceneSerializer scene_serializer(*scene);
                     scene_serializer.deserialize(file_path);
                 }
 
