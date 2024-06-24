@@ -9,7 +9,7 @@
 
 namespace mag
 {
-    using json = nlohmann::json;
+    using json = nlohmann::ordered_json;
 
     json& operator<<(json& out, const vec2& v)
     {
@@ -58,8 +58,8 @@ namespace mag
 
             if (auto component = ecs.get_component<ModelComponent>(entity_id))
             {
-                entity["ModelComponent"]["FilePath"] = component->model.file_path;
                 entity["ModelComponent"]["Name"] = component->model.name;
+                entity["ModelComponent"]["FilePath"] = component->model.file_path;
             }
 
             if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
@@ -74,8 +74,8 @@ namespace mag
 
             if (auto component = ecs.get_component<LightComponent>(entity_id))
             {
-                entity["LightComponent"]["Intensity"] = component->intensity;
                 entity["LightComponent"]["Color"] << component->color;
+                entity["LightComponent"]["Intensity"] = component->intensity;
             }
 
             data["Entities"].push_back(entity);

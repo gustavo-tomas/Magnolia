@@ -1,24 +1,16 @@
 {
+    "Scene": "Untitled",
     "Entities": [
         {
-            "BoxColliderComponent": {
-                "Dimensions": [
-                    10.0,
-                    10.0,
-                    10.0
-                ]
-            },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
             "NameComponent": {
                 "Name": "Cube0"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -60.0,
+                    100.0,
+                    -60.0
+                ],
                 "Rotation": [
                     343.0,
                     343.0,
@@ -28,15 +20,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -60.0,
-                    100.0,
-                    -60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -44,17 +33,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube1"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -60.0,
+                    100.0,
+                    -30.0
+                ],
                 "Rotation": [
                     286.0,
                     286.0,
@@ -64,15 +56,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -60.0,
-                    100.0,
-                    -30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -80,17 +69,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube2"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -60.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     297.0,
                     297.0,
@@ -100,15 +92,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -60.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -116,17 +105,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube3"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -60.0,
+                    100.0,
+                    30.0
+                ],
                 "Rotation": [
                     115.0,
                     115.0,
@@ -136,15 +128,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -60.0,
-                    100.0,
-                    30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -152,17 +141,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube4"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -60.0,
+                    100.0,
+                    60.0
+                ],
                 "Rotation": [
                     113.0,
                     113.0,
@@ -172,15 +164,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -60.0,
-                    100.0,
-                    60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -188,17 +177,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube5"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -30.0,
+                    100.0,
+                    -60.0
+                ],
                 "Rotation": [
                     295.0,
                     295.0,
@@ -208,15 +200,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -30.0,
-                    100.0,
-                    -60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -224,17 +213,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube6"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -30.0,
+                    100.0,
+                    -30.0
+                ],
                 "Rotation": [
                     226.0,
                     226.0,
@@ -244,15 +236,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -30.0,
-                    100.0,
-                    -30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -260,17 +249,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube7"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -30.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     12.0,
                     12.0,
@@ -280,15 +272,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -30.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -296,17 +285,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube8"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -30.0,
+                    100.0,
+                    30.0
+                ],
                 "Rotation": [
                     249.0,
                     249.0,
@@ -316,15 +308,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -30.0,
-                    100.0,
-                    30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -332,17 +321,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube9"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    -30.0,
+                    100.0,
+                    60.0
+                ],
                 "Rotation": [
                     181.0,
                     181.0,
@@ -352,15 +344,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -30.0,
-                    100.0,
-                    60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -368,17 +357,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube10"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    -60.0
+                ],
                 "Rotation": [
                     122.0,
                     122.0,
@@ -388,15 +380,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    -60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -404,17 +393,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube11"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    -30.0
+                ],
                 "Rotation": [
                     67.0,
                     67.0,
@@ -424,15 +416,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    -30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -440,17 +429,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube12"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     50.0,
                     50.0,
@@ -460,15 +452,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -476,17 +465,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube13"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    30.0
+                ],
                 "Rotation": [
                     259.0,
                     259.0,
@@ -496,15 +488,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -512,17 +501,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube14"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    60.0
+                ],
                 "Rotation": [
                     203.0,
                     203.0,
@@ -532,15 +524,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -548,17 +537,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube15"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    30.0,
+                    100.0,
+                    -60.0
+                ],
                 "Rotation": [
                     166.0,
                     166.0,
@@ -568,15 +560,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    30.0,
-                    100.0,
-                    -60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -584,17 +573,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube16"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    30.0,
+                    100.0,
+                    -30.0
+                ],
                 "Rotation": [
                     60.0,
                     60.0,
@@ -604,15 +596,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    30.0,
-                    100.0,
-                    -30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -620,17 +609,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube17"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    30.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     306.0,
                     306.0,
@@ -640,15 +632,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    30.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -656,17 +645,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube18"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    30.0,
+                    100.0,
+                    30.0
+                ],
                 "Rotation": [
                     52.0,
                     52.0,
@@ -676,15 +668,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    30.0,
-                    100.0,
-                    30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -692,17 +681,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube19"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    30.0,
+                    100.0,
+                    60.0
+                ],
                 "Rotation": [
                     136.0,
                     136.0,
@@ -712,15 +704,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    30.0,
-                    100.0,
-                    60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -728,17 +717,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube20"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    60.0,
+                    100.0,
+                    -60.0
+                ],
                 "Rotation": [
                     251.0,
                     251.0,
@@ -748,15 +740,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    60.0,
-                    100.0,
-                    -60.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -764,17 +753,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube21"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    60.0,
+                    100.0,
+                    -30.0
+                ],
                 "Rotation": [
                     8.0,
                     8.0,
@@ -784,15 +776,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    60.0,
-                    100.0,
-                    -30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -800,17 +789,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube22"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    60.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     87.0,
                     87.0,
@@ -820,15 +812,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    60.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -836,17 +825,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube23"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    60.0,
+                    100.0,
+                    30.0
+                ],
                 "Rotation": [
                     69.0,
                     69.0,
@@ -856,15 +848,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    60.0,
-                    100.0,
-                    30.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     10.0,
@@ -872,17 +861,20 @@
                     10.0
                 ]
             },
-            "ModelComponent": {
-                "FilePath": "",
-                "Name": "Cube"
-            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Cube24"
             },
-            "RigidBodyComponent": {
-                "Mass": 1.0
-            },
             "TransformComponent": {
+                "Translation": [
+                    60.0,
+                    100.0,
+                    60.0
+                ],
                 "Rotation": [
                     62.0,
                     62.0,
@@ -892,15 +884,44 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    60.0,
-                    100.0,
-                    60.0
                 ]
+            },
+            "ModelComponent": {
+                "Name": "Cube",
+                "FilePath": ""
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
             }
         },
         {
+            "NameComponent": {
+                "Name": "Floor"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    -10.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "BoxColliderComponent": {
                 "Dimensions": [
                     150.0,
@@ -908,65 +929,35 @@
                     150.0
                 ]
             },
-            "NameComponent": {
-                "Name": "Floor"
-            },
             "RigidBodyComponent": {
                 "Mass": 0.0
-            },
-            "TransformComponent": {
-                "Rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "Translation": [
-                    0.0,
-                    -10.0,
-                    0.0
-                ]
             }
         },
         {
-            "LightComponent": {
-                "Color": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "Intensity": 100.0
-            },
-            "ModelComponent": {
-                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb",
-                "Name": "lightbulb.glb"
-            },
             "NameComponent": {
                 "Name": "Light0"
             },
             "TransformComponent": {
-                "Rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Scale": [
-                    10.0,
-                    10.0,
-                    10.0
-                ],
                 "Translation": [
                     500.0,
                     100.0,
                     0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
             "LightComponent": {
                 "Color": [
                     1.0,
@@ -974,15 +965,18 @@
                     1.0
                 ],
                 "Intensity": 100.0
-            },
-            "ModelComponent": {
-                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb",
-                "Name": "lightbulb.glb"
-            },
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Light1"
             },
             "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     0.0,
                     0.0,
@@ -992,15 +986,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    0.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
             "LightComponent": {
                 "Color": [
                     1.0,
@@ -1008,15 +999,18 @@
                     1.0
                 ],
                 "Intensity": 100.0
-            },
-            "ModelComponent": {
-                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb",
-                "Name": "lightbulb.glb"
-            },
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Light2"
             },
             "TransformComponent": {
+                "Translation": [
+                    -500.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     0.0,
                     0.0,
@@ -1026,15 +1020,12 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -500.0,
-                    100.0,
-                    0.0
                 ]
-            }
-        },
-        {
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
             "LightComponent": {
                 "Color": [
                     1.0,
@@ -1042,15 +1033,18 @@
                     1.0
                 ],
                 "Intensity": 100.0
-            },
-            "ModelComponent": {
-                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb",
-                "Name": "lightbulb.glb"
-            },
+            }
+        },
+        {
             "NameComponent": {
                 "Name": "Light3"
             },
             "TransformComponent": {
+                "Translation": [
+                    -1000.0,
+                    100.0,
+                    0.0
+                ],
                 "Rotation": [
                     0.0,
                     0.0,
@@ -1060,14 +1054,20 @@
                     10.0,
                     10.0,
                     10.0
-                ],
-                "Translation": [
-                    -1000.0,
-                    100.0,
-                    0.0
                 ]
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 100.0
             }
         }
-    ],
-    "Scene": "Untitled"
+    ]
 }
