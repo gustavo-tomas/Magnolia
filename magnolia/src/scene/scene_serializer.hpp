@@ -7,13 +7,13 @@ namespace mag
     class SceneSerializer
     {
         public:
-            SceneSerializer(BaseScene& scene);
+            SceneSerializer(Scene& scene);
             ~SceneSerializer() = default;
 
             void serialize(const str& file_path);
             void deserialize(const str& file_path);
 
         private:
-            BaseScene& scene;
+            Scene& scene;
     };
 };  // namespace mag

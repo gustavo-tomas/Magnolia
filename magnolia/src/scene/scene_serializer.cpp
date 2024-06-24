@@ -23,7 +23,7 @@ namespace mag
         return out;
     }
 
-    SceneSerializer::SceneSerializer(BaseScene& scene) : scene(scene) {}
+    SceneSerializer::SceneSerializer(Scene& scene) : scene(scene) {}
 
     void SceneSerializer::serialize(const str& file_path)
     {

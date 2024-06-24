@@ -6,10 +6,11 @@
 namespace mag
 {
     Scene::Scene()
-        : BaseScene("Untitled", new ECS(),
-                    new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 1.0f, 10000.0f),
-                    new StandardRenderPass({800, 600})),
+        : name("Untitled"),
+          ecs(new ECS()),
+          camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera)),
+          render_pass(new StandardRenderPass({800, 600})),
           cube(new Cube())
     {
         auto& app = get_application();
@@ -155,6 +156,14 @@ namespace mag
 
         camera_controller->on_event(e);
     }
+
+    void Scene::on_viewport_resize(ViewportResizeEvent& e)
+    {
+        const uvec2 size = {e.width, e.height};
+
+        render_pass->on_resize(size);
+        camera->set_aspect_ratio(size);
+    };
 
     void Scene::add_model(const str& path)
     {

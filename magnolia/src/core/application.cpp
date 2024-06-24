@@ -86,9 +86,9 @@ namespace mag
         }
     }
 
-    void Application::set_active_scene(BaseScene* scene)
+    void Application::set_active_scene(Scene* scene)
     {
-        active_scene = std::unique_ptr<BaseScene>(scene);
+        active_scene = std::unique_ptr<Scene>(scene);
         physics_engine->on_simulation_start();
     }
 

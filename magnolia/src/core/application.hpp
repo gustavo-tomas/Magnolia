@@ -32,7 +32,7 @@ namespace mag
             void run();
             void on_event(Event& e);
 
-            void set_active_scene(BaseScene* scene);
+            void set_active_scene(Scene* scene);
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
@@ -42,7 +42,7 @@ namespace mag
             ShaderManager& get_shader_manager() { return *shader_loader; };
             MaterialManager& get_material_manager() { return *material_loader; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
-            BaseScene& get_active_scene() { return *active_scene; };
+            Scene& get_active_scene() { return *active_scene; };
 
         private:
             void on_window_close(WindowCloseEvent& e);
@@ -57,7 +57,7 @@ namespace mag
             std::unique_ptr<MaterialManager> material_loader;
             std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<PhysicsEngine> physics_engine;
-            std::unique_ptr<BaseScene> active_scene;
+            std::unique_ptr<Scene> active_scene;
 
             b8 running;
     };
