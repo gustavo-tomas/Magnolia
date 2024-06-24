@@ -18,7 +18,10 @@ namespace mag
             b8 quit_requested() const { return quit; };
 
         private:
+            void display_dialog();
+
             std::unique_ptr<InfoMenu> info_menu;
             b8 quit = false;
+            b8 dialog_open = false;
     };
 };  // namespace mag
