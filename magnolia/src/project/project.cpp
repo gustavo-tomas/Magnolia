@@ -16,6 +16,8 @@ namespace mag
         ProjectSerializer project_serializer(active_project);
         project_serializer.deserialize(path);
 
+        active_project->project_directory = path.parent_path();
+
         return active_project;
     }
 
@@ -23,5 +25,7 @@ namespace mag
     {
         ProjectSerializer project_serializer(active_project);
         project_serializer.serialize(path);
+
+        active_project->project_directory = path.parent_path();
     }
 };  // namespace mag

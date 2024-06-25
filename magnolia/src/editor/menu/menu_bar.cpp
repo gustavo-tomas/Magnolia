@@ -4,6 +4,7 @@
 #include "core/logger.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui_file_dialog/ImGuiFileDialog.h"
+#include "project/project.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace mag
@@ -35,7 +36,7 @@ namespace mag
                 if (ImGui::MenuItem("Save", "CTRL+S"))
                 {
                     IGFD::FileDialogConfig config;
-                    config.path = "sprout/assets/scenes";
+                    config.path = Project::get_asset_directory();
                     config.fileName = app.get_active_scene().get_name() + ".mag.json";
 
                     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
@@ -49,7 +50,7 @@ namespace mag
                     auto* scene = new Scene();
 
                     // @TODO: hardcoded file path
-                    const str file_path = "sprout/assets/scenes/test_scene.mag.json";
+                    const str file_path = Project::get_asset_directory() / "scenes/test_scene.mag.json";
 
                     SceneSerializer scene_serializer(*scene);
                     scene_serializer.deserialize(file_path);
