@@ -14,7 +14,5 @@ mag::Application* mag::create_application()
     mag::ApplicationOptions options;
     options.title = "Sprout";
 
-    // @TODO: Create a scene system to decouple the cube scene from the engine
-
     return new SproutApp(options);
 }
