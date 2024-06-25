@@ -44,6 +44,8 @@ namespace mag
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
             Scene& get_active_scene() { return *active_scene; };
 
+            StandardRenderPass& get_render_pass() { return *render_pass; };
+
         private:
             void on_window_close(WindowCloseEvent& e);
             void on_window_resize(WindowResizeEvent& e);
@@ -58,6 +60,9 @@ namespace mag
             std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<PhysicsEngine> physics_engine;
             std::unique_ptr<Scene> active_scene;
+
+            // @TODO: temp
+            std::unique_ptr<StandardRenderPass> render_pass;
 
             b8 running;
     };

@@ -5,7 +5,6 @@
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
 #include "renderer/model.hpp"
-#include "renderer/render_pass.hpp"
 
 namespace mag
 {
@@ -34,7 +33,6 @@ namespace mag
 
             const str& get_name() const { return name; };
             Camera& get_camera() { return *camera; };
-            StandardRenderPass& get_render_pass() { return *render_pass; };
 
             ECS& get_ecs()
             {
@@ -56,7 +54,6 @@ namespace mag
             std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<Camera> camera;
             std::unique_ptr<EditorCameraController> camera_controller;
-            std::unique_ptr<StandardRenderPass> render_pass;
             std::unique_ptr<Cube> cube;
 
             SceneState current_state = SceneState::Editor;

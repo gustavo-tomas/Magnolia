@@ -53,6 +53,9 @@ namespace mag
         physics_engine = std::make_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
 
+        render_pass = std::make_unique<StandardRenderPass>(uvec2(800, 600));
+        LOG_SUCCESS("RenderPass initialized");
+
         running = true;
     }
 

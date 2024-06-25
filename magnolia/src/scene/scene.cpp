@@ -10,10 +10,10 @@ namespace mag
           ecs(new ECS()),
           camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera)),
-          render_pass(new StandardRenderPass({800, 600})),
           cube(new Cube())
     {
         auto& app = get_application();
+        auto& render_pass = app.get_render_pass();
 
         const auto& cube_model = cube->get_model();
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
@@ -41,7 +41,7 @@ namespace mag
                 ecs->add_component(cube_entity, collider);
                 ecs->add_component(cube_entity, rigid_body);
 
-                render_pass->add_model(*ecs, cube_entity);
+                render_pass.add_model(*ecs, cube_entity);
 
                 LOG_INFO("Cube created");
             }
@@ -73,7 +73,7 @@ namespace mag
             ecs->add_component(light, new ModelComponent(*light_model));
             ecs->add_component(light, new TransformComponent(vec3(500 - (500 * i), 100, 0), vec3(0), vec3(10)));
 
-            render_pass->add_model(*ecs, light);
+            render_pass.add_model(*ecs, light);
 
             LOG_INFO("Light created");
         }
@@ -127,6 +127,7 @@ namespace mag
     void Scene::update_editor(const f32 dt)
     {
         auto& app = get_application();
+        auto& render_pass = app.get_render_pass();
         auto& window = app.get_window();
 
         ecs->update();
@@ -135,10 +136,10 @@ namespace mag
 
         // @TODO: testing
         if (window.is_key_down(Key::Up))
-            render_pass->set_render_scale(render_pass->get_render_scale() + 0.15f * dt);
+            render_pass.set_render_scale(render_pass.get_render_scale() + 0.15f * dt);
 
         else if (window.is_key_down(Key::Down))
-            render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
+            render_pass.set_render_scale(render_pass.get_render_scale() - 0.15f * dt);
         // @TODO: testing
     }
 
@@ -159,15 +160,19 @@ namespace mag
 
     void Scene::on_viewport_resize(ViewportResizeEvent& e)
     {
+        auto& app = get_application();
+        auto& render_pass = app.get_render_pass();
+
         const uvec2 size = {e.width, e.height};
 
-        render_pass->on_resize(size);
+        render_pass.on_resize(size);
         camera->set_aspect_ratio(size);
     };
 
     void Scene::add_model(const str& path)
     {
         auto& app = get_application();
+        auto& render_pass = app.get_render_pass();
         auto& model_manager = app.get_model_manager();
 
         const auto model = model_manager.load(path);
@@ -176,13 +181,16 @@ namespace mag
         ecs->add_component(entity, new TransformComponent());
         ecs->add_component(entity, new ModelComponent(*model));
 
-        render_pass->add_model(*ecs, entity);
+        render_pass.add_model(*ecs, entity);
     }
 
     void Scene::remove_model(const u32 id)
     {
+        auto& app = get_application();
+        auto& render_pass = app.get_render_pass();
+
         ecs->add_entity_to_deletion_queue(id);
 
-        render_pass->remove_model(*ecs, id);
+        render_pass.remove_model(*ecs, id);
     }
 };  // namespace mag

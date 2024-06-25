@@ -18,17 +18,18 @@ namespace mag
 
     void Renderer::update(Scene& scene, Editor& editor)
     {
+        auto& app = get_application();
+
         Frame& curr_frame = context->get_curr_frame();
         CommandBuffer& command_buffer = curr_frame.command_buffer;
         Camera& camera = scene.get_camera();
         ECS& ecs = scene.get_ecs();
-        StandardRenderPass& render_pass = scene.get_render_pass();
+        StandardRenderPass& render_pass = app.get_render_pass();
         Pass& pass = render_pass.get_pass();
 
         statistics = {};
 
         // @TODO: dont do this here
-        auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
 
         physics_debug_lines.reset();

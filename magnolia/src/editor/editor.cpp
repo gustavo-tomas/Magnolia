@@ -107,8 +107,8 @@ namespace mag
 
     void Editor::update()
     {
-        auto &window = get_application().get_window();
-        auto &scene = get_application().get_active_scene();
+        auto &app = get_application();
+        auto &window = app.get_window();
 
         // Emit event back to the application
         if (viewport_panel->is_resize_needed())
@@ -118,7 +118,7 @@ namespace mag
             event_callback(event);
 
             // By now the scene should be updated
-            set_viewport_image(scene.get_render_pass().get_target_image());
+            set_viewport_image(app.get_render_pass().get_target_image());
         }
 
         if (menu_bar->quit_requested())
