@@ -55,6 +55,12 @@ namespace mag
                     scene_serializer.deserialize(file_path);
                 }
 
+                // Quit
+                if (ImGui::MenuItem("Quit"))
+                {
+                    quit = true;
+                }
+
                 ImGui::EndMenu();
             }
 
@@ -62,12 +68,6 @@ namespace mag
             if (ImGui::BeginMenu((str(ICON_FA_CIRCLE_INFO) + " Info").c_str()))
             {
                 info_menu->render(window_flags);
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Quit"))
-            {
-                quit = true;
                 ImGui::EndMenu();
             }
 
