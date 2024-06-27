@@ -98,6 +98,17 @@ namespace mag
             f32 intensity;
     };
 
+    // @TODO: leak here: the camera is never deleted
+    class Camera;
+    struct CameraComponent : public Component
+    {
+            CameraComponent(Camera* camera) : camera(camera) {}
+
+            CLONE(CameraComponent);
+
+            Camera* camera;
+    };
+
     class ScriptableEntity;
     struct NativeScriptComponent : public Component
     {

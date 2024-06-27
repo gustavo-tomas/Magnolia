@@ -4,9 +4,9 @@
 
 namespace mag
 {
-    Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
+    Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
                    const f32 far)
-        : position(position), rotation(rotation), fov(fov), aspect_ratio(size.x / size.y), near(near), far(far)
+        : position(position), rotation(rotation), fov(fov), aspect_ratio(aspect_ratio), near(near), far(far)
     {
         calculate_view();
         calculate_projection();

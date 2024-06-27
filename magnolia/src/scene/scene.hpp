@@ -33,8 +33,25 @@ namespace mag
             SceneState get_scene_state() const { return current_state; };
 
             const str& get_name() const { return name; };
-            Camera& get_camera() { return *camera; };
+
             StandardRenderPass& get_render_pass() { return *render_pass; };
+
+            Camera& get_camera()
+            {
+                if (current_state == SceneState::Editor) return *camera;
+
+                // @TODO: for now we assume the active camera is the first entity with a camera component
+                else
+                {
+                    auto components = ecs->get_components_of_entities<CameraComponent, TransformComponent>();
+                    for (auto [camera_c, transform] : components)
+                    {
+                        return *camera_c->camera;
+                    }
+                }
+
+                ASSERT(false, "No runtime camera!");
+            };
 
             ECS& get_ecs()
             {

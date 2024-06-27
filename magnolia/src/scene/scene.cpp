@@ -12,7 +12,7 @@ namespace mag
     Scene::Scene()
         : name("Untitled"),
           ecs(new ECS()),
-          camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, {800, 600}, 1.0f, 10000.0f)),
+          camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera)),
           render_pass(new StandardRenderPass({800, 600})),
           cube(new Cube())
@@ -22,23 +22,18 @@ namespace mag
         const auto& cube_model = cube->get_model();
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
-        // 'Player'
+        // Camera
         {
-            const auto player = ecs->create_entity("Player");
+            const auto camera_entity = ecs->create_entity("Camera");
 
-            const vec3 scale = vec3(10);
-            const vec3 pos = vec3(0, 50, 0);
-
-            auto* transform = new TransformComponent(pos, vec3(0), scale);
-            auto* model = new ModelComponent(cube_model);
+            auto* transform = new TransformComponent();
+            auto* camera = new CameraComponent(new Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
             auto* script = new NativeScriptComponent();
-            script->bind<ExampleScript>();
+            script->bind<CameraController>();
 
-            ecs->add_component(player, transform);
-            ecs->add_component(player, model);
-            ecs->add_component(player, script);
-
-            render_pass->add_model(*ecs, player);
+            ecs->add_component(camera_entity, transform);
+            ecs->add_component(camera_entity, camera);
+            ecs->add_component(camera_entity, script);
         }
 
         const i32 loops = 2;
@@ -192,8 +187,6 @@ namespace mag
         {
             nsc->instance->on_update(dt);
         }
-
-        camera_controller->update(dt);
     }
 
     void Scene::on_event(Event& e)
