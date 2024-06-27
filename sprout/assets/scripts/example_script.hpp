@@ -38,10 +38,9 @@ class CameraController : public ScriptableEntity
             // Prevent nan values
             if (length(direction) > 0.0f) direction = normalize(direction) * dt;
 
-            const mat4& camera_rot = camera->get_rotation_mat();
-            const vec3& camera_position = camera->get_position() + vec3(camera_rot * vec4(direction * speed, 0.0f));
-            camera->set_position(camera_position);
+            transform->translation += direction * speed;
+            camera->set_position(transform->translation);
 
-            LOG_SUCCESS("POS: {0}", math::to_string(camera_position));
+            LOG_SUCCESS("POS: {0}", math::to_string(camera->get_position()));
         }
 };

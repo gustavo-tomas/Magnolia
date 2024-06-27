@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-
+#include "camera/camera.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -9,12 +8,12 @@ namespace mag
     using namespace mag::math;
 
 #define CLONE(type) \
-    std::unique_ptr<Component> clone() const override { return std::make_unique<type>(*this); }
+    Component* clone() const override { return new type(*this); }
 
     struct Component
     {
             virtual ~Component() = default;
-            virtual std::unique_ptr<Component> clone() const = 0;
+            virtual Component* clone() const = 0;
     };
 
     struct NameComponent : public Component
