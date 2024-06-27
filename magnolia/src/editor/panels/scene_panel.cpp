@@ -39,7 +39,7 @@ namespace mag
                     ecs.add_component(selected_entity_id, new TransformComponent());
                 }
 
-                auto number_of_lights = ecs.get_components<LightComponent>().size();
+                auto number_of_lights = ecs.get_all_components_of_type<LightComponent>().size();
                 if (!ecs.get_component<LightComponent>(selected_entity_id) &&
                     number_of_lights < LightComponent::MAX_NUMBER_OF_LIGHTS && ImGui::MenuItem("Add Light Component"))
                 {

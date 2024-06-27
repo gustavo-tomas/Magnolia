@@ -29,7 +29,7 @@ namespace mag
         dynamics_world->setDebugDrawer(physics_debug_draw.get());
 
         auto& ecs = get_application().get_active_scene().get_ecs();
-        auto objects = ecs.get_components_of_entities<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
+        auto objects = ecs.get_all_components_of_types<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
         for (auto [transform, collider, rigid_body] : objects)
         {
             add_rigid_body(*transform, *collider, *rigid_body);
@@ -96,7 +96,7 @@ namespace mag
         auto& app = get_application();
         auto& scene = app.get_active_scene();
         auto& ecs = scene.get_ecs();
-        auto objects = ecs.get_components_of_entities<TransformComponent, RigidBodyComponent>();
+        auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();
 
         if (!dynamics_world) return;
 

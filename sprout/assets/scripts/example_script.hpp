@@ -16,11 +16,8 @@ class CameraController : public ScriptableEntity
             auto& app = get_application();
             auto& window = app.get_window();
 
-            // @TODO: wrap the other ecs methods
-            auto* transform = get_component<TransformComponent>();
+            auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
             ASSERT(transform, "No transform!");
-
-            auto* camera_c = get_component<CameraComponent>();
             ASSERT(camera_c, "No camera!");
 
             auto& camera = camera_c->camera;

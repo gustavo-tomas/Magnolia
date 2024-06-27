@@ -22,6 +22,12 @@ namespace mag
                 return ecs->get_component<T>(entity_id);
             }
 
+            template <typename... Ts>
+            std::tuple<Ts*...> get_components()
+            {
+                return ecs->get_components<Ts...>(entity_id);
+            }
+
         private:
             friend class Scene;
 

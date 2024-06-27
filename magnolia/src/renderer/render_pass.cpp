@@ -192,8 +192,8 @@ namespace mag
         auto& descriptors = context.get_descriptor_cache();
         auto& editor = get_application().get_editor();
 
-        auto model_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent>();
-        auto light_entities = ecs.get_components_of_entities<TransformComponent, ModelComponent, LightComponent>();
+        auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
+        auto light_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent, LightComponent>();
 
         u32 l = 0;
         LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};

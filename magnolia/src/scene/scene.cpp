@@ -132,7 +132,7 @@ namespace mag
 
         physics_engine.on_simulation_start();
 
-        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             if (!nsc->instance)
             {
@@ -148,7 +148,7 @@ namespace mag
         auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
 
-        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             nsc->instance->on_destroy();
             nsc->destroy_script(nsc);
@@ -183,7 +183,7 @@ namespace mag
         runtime_ecs->update();
 
         // Update scripts
-        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             nsc->instance->on_update(dt);
         }
