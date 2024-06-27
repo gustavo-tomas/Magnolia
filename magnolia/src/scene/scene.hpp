@@ -60,6 +60,5 @@ namespace mag
             std::unique_ptr<Cube> cube;
 
             SceneState current_state = SceneState::Editor;
-            b8 state_swap_requested = false;
     };
 };  // namespace mag

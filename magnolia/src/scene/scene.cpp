@@ -106,57 +106,12 @@ namespace mag
     {
         if (runtime_ecs)
         {
-            for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
-            {
-                nsc->instance->on_destroy();
-                nsc->destroy_script(nsc);
-            }
+            stop_runtime();
         }
     }
 
     void Scene::update(const f32 dt)
     {
-        // @TODO: fix state swap
-        if (state_swap_requested)
-        {
-            auto& app = get_application();
-            auto& physics_engine = app.get_physics_engine();
-
-            if (current_state == SceneState::Editor)
-            {
-                runtime_ecs = std::make_unique<ECS>(*ecs);
-                current_state = SceneState::Runtime;
-
-                physics_engine.on_simulation_start();
-
-                for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
-                {
-                    if (!nsc->instance)
-                    {
-                        nsc->instance = nsc->instanciate_script();
-                        nsc->instance->ecs = runtime_ecs.get();
-                        nsc->instance->on_create();
-                    }
-                }
-            }
-
-            else
-            {
-                for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
-                {
-                    nsc->instance->on_destroy();
-                    nsc->destroy_script(nsc);
-                }
-
-                runtime_ecs.reset();
-                current_state = SceneState::Editor;
-
-                physics_engine.on_simulation_start();
-            }
-
-            state_swap_requested = false;
-        }
-
         switch (current_state)
         {
             case SceneState::Editor:
@@ -172,9 +127,43 @@ namespace mag
         }
     }
 
-    void Scene::start_runtime() { state_swap_requested = true; }
+    void Scene::start_runtime()
+    {
+        auto& app = get_application();
+        auto& physics_engine = app.get_physics_engine();
 
-    void Scene::stop_runtime() { state_swap_requested = true; }
+        runtime_ecs = std::make_unique<ECS>(*ecs);
+        current_state = SceneState::Runtime;
+
+        physics_engine.on_simulation_start();
+
+        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        {
+            if (!nsc->instance)
+            {
+                nsc->instance = nsc->instanciate_script();
+                nsc->instance->ecs = runtime_ecs.get();
+                nsc->instance->on_create();
+            }
+        }
+    }
+
+    void Scene::stop_runtime()
+    {
+        auto& app = get_application();
+        auto& physics_engine = app.get_physics_engine();
+
+        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        {
+            nsc->instance->on_destroy();
+            nsc->destroy_script(nsc);
+        }
+
+        runtime_ecs.reset();
+        current_state = SceneState::Editor;
+
+        physics_engine.on_simulation_start();
+    }
 
     void Scene::update_editor(const f32 dt)
     {
