@@ -1,3 +1,4 @@
+#include <core/entry_point.hpp>
 #include <magnolia.hpp>
 
 class SproutApp : public mag::Application

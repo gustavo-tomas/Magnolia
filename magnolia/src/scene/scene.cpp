@@ -2,6 +2,10 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "scene/scriptable_entity.hpp"
+
+// @TODO: temp
+#include "../sprout/assets/scripts/example_script.hpp"
 
 namespace mag
 {
@@ -18,7 +22,26 @@ namespace mag
         const auto& cube_model = cube->get_model();
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
-        const i32 loops = 5;
+        // 'Player'
+        {
+            const auto player = ecs->create_entity("Player");
+
+            const vec3 scale = vec3(10);
+            const vec3 pos = vec3(0, 50, 0);
+
+            auto* transform = new TransformComponent(pos, vec3(0), scale);
+            auto* model = new ModelComponent(cube_model);
+            auto* script = new NativeScriptComponent();
+            script->bind<ExampleScript>();
+
+            ecs->add_component(player, transform);
+            ecs->add_component(player, model);
+            ecs->add_component(player, script);
+
+            render_pass->add_model(*ecs, player);
+        }
+
+        const i32 loops = 2;
         u32 count = 0;
         for (i32 i = -loops / 2; i <= loops / 2; i++)
         {
@@ -79,8 +102,21 @@ namespace mag
         }
     }
 
+    Scene::~Scene()
+    {
+        if (runtime_ecs)
+        {
+            for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+            {
+                nsc->instance->on_destroy();
+                nsc->destroy_script(nsc);
+            }
+        }
+    }
+
     void Scene::update(const f32 dt)
     {
+        // @TODO: fix state swap
         if (state_swap_requested)
         {
             auto& app = get_application();
@@ -92,10 +128,26 @@ namespace mag
                 current_state = SceneState::Runtime;
 
                 physics_engine.on_simulation_start();
+
+                for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+                {
+                    if (!nsc->instance)
+                    {
+                        nsc->instance = nsc->instanciate_script();
+                        nsc->instance->ecs = runtime_ecs.get();
+                        nsc->instance->on_create();
+                    }
+                }
             }
 
             else
             {
+                for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+                {
+                    nsc->instance->on_destroy();
+                    nsc->destroy_script(nsc);
+                }
+
                 runtime_ecs.reset();
                 current_state = SceneState::Editor;
 
@@ -145,6 +197,12 @@ namespace mag
     void Scene::update_runtime(const f32 dt)
     {
         runtime_ecs->update();
+
+        // Update scripts
+        for (auto nsc : runtime_ecs->get_components<NativeScriptComponent>())
+        {
+            nsc->instance->on_update(dt);
+        }
 
         camera_controller->update(dt);
     }

@@ -72,6 +72,7 @@ namespace mag
                 deletion_queue.push_back(entity_id);
             }
 
+            // @TODO: maybe this should be handled by the scene
             void update()
             {
                 // Delete enqueued entities

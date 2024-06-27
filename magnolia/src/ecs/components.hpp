@@ -97,4 +97,28 @@ namespace mag
             vec3 color;
             f32 intensity;
     };
+
+    class ScriptableEntity;
+    struct NativeScriptComponent : public Component
+    {
+            CLONE(NativeScriptComponent);
+
+            ScriptableEntity* instance = nullptr;
+
+            ScriptableEntity* (*instanciate_script)();
+            void (*destroy_script)(NativeScriptComponent*);
+
+            template <typename T>
+            void bind()
+            {
+                static_assert(std::is_base_of<ScriptableEntity, T>::value, "T must be derived from ScriptableEntity");
+
+                instanciate_script = []() { return static_cast<ScriptableEntity*>(new T()); };
+                destroy_script = [](NativeScriptComponent* nsc)
+                {
+                    delete nsc->instance;
+                    nsc->instance = nullptr;
+                };
+            }
+    };
 };  // namespace mag
