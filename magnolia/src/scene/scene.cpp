@@ -6,6 +6,7 @@
 
 // @TODO: temp
 #include "../sprout/assets/scripts/example_script.hpp"
+#include "scripting/scripting_engine.hpp"
 
 namespace mag
 {
@@ -95,6 +96,11 @@ namespace mag
 
             LOG_INFO("Light created");
         }
+
+        ScriptingEngine::initialize();
+        ScriptingEngine::load_script("sprout/assets/scripts/example_lua_script.lua");
+        ScriptingEngine::run_script("sprout/assets/scripts/example_lua_script.lua");
+        ScriptingEngine::shutdown();
     }
 
     Scene::~Scene()
