@@ -138,12 +138,14 @@ namespace mag
 
         physics_engine.on_simulation_start();
 
-        for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<NativeScriptComponent>())
         {
+            auto* nsc = runtime_ecs->get_component<NativeScriptComponent>(id);
             if (!nsc->instance)
             {
                 nsc->instance = nsc->instanciate_script();
                 nsc->instance->ecs = runtime_ecs.get();
+                nsc->instance->entity_id = id;
                 nsc->instance->on_create();
             }
         }
