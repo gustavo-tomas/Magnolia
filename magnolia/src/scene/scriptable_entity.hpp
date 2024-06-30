@@ -31,7 +31,7 @@ namespace mag
         private:
             friend class Scene;
 
-            ECS* ecs;
+            ECS* ecs = nullptr;
             u32 entity_id;
     };
 };  // namespace mag
