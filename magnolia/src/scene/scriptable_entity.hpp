@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "core/types.hpp"
 #include "ecs/ecs.hpp"
 
@@ -30,7 +32,26 @@ namespace mag
 
         private:
             friend class Scene;
+
+            ECS* ecs = nullptr;
+            u32 entity_id;
+    };
+
+    class Script
+    {
+        private:
+            friend class Scene;
             friend class ScriptingEngine;  // @TODO: is this a good idea?
+
+            std::function<void(Script&)> on_create;
+            std::function<void(Script&)> on_destroy;
+            std::function<void(Script&, const f32)> on_update;
+
+            template <typename T>
+            T* get_component()
+            {
+                return ecs->get_component<T>(entity_id);
+            }
 
             ECS* ecs = nullptr;
             u32 entity_id;

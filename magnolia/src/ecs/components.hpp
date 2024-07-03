@@ -108,6 +108,7 @@ namespace mag
             Camera* camera;
     };
 
+    class Script;
     struct ScriptComponent : public Component
     {
             ScriptComponent(const str& file_path) : file_path(file_path) {}
@@ -115,6 +116,7 @@ namespace mag
             CLONE(ScriptComponent);
 
             str file_path;
+            Script* instance = nullptr;
     };
 
     class ScriptableEntity;

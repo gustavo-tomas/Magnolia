@@ -136,12 +136,21 @@ namespace mag
 
         ScriptingEngine::new_state();
 
+        // Instanciate the script
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
-            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
-            ScriptingEngine::load_script(script->file_path);
-            ScriptingEngine::instanciate_script_for_entity(runtime_ecs.get(), id);
-            ScriptingEngine::execute_create_method(id);
+            auto* sc = runtime_ecs->get_component<ScriptComponent>(id);
+            if (!sc->instance)
+            {
+                sc->instance = new Script();
+                sc->instance->ecs = runtime_ecs.get();
+                sc->instance->entity_id = id;
+
+                ScriptingEngine::load_script(sc->file_path);
+                ScriptingEngine::register_entity(*sc);
+
+                sc->instance->on_create(*sc->instance);
+            }
         }
 
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<NativeScriptComponent>())
@@ -162,10 +171,12 @@ namespace mag
         auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
 
-        // @TODO: this will crash if application is closed during runtime
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
-            ScriptingEngine::execute_destroy_method(id);
+            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
+            script->instance->on_destroy(*script->instance);
+            delete script->instance;
+            script->instance = nullptr;
         }
 
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
@@ -177,7 +188,7 @@ namespace mag
         runtime_ecs.reset();
         current_state = SceneState::Editor;
 
-        physics_engine.on_simulation_start();
+        physics_engine.on_simulation_end();
     }
 
     void Scene::update_editor(const f32 dt)
@@ -205,7 +216,8 @@ namespace mag
         // Update scripts
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
-            ScriptingEngine::execute_update_method(id, dt);
+            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
+            script->instance->on_update(*script->instance, dt);
         }
 
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())

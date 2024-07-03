@@ -6,6 +6,8 @@
 
 namespace mag
 {
+#define GET_ENTITY_NAME(entity_id) "entity" + std::to_string(entity_id)
+
     // Here we assume that the sol state is persistent until a level or stage is over. There is no way to copy sol state
     // between two objects, so we have to re-register the core types and methods every time a transition happens :(
 
@@ -44,21 +46,15 @@ namespace mag
         lua.new_enum<Buttons>("Buttons", {{"left", Buttons::Left}});
 
         // Register types
-        lua.new_usertype<ScriptableEntity>("ScriptableEntity", sol::constructors<ScriptableEntity()>(),
+        lua.new_usertype<Script>("Script", sol::constructors<Script()>(),
 
-                                           //    "on_create", &ScriptableEntity::on_create,
+                                 "get_name", &Script::get_component<NameComponent>,
 
-                                           //    "on_destroy", &ScriptableEntity::on_destroy,
+                                 "get_transform", &Script::get_component<TransformComponent>,
 
-                                           //    "on_update", &ScriptableEntity::on_update,
+                                 "entity_id", &Script::entity_id,
 
-                                           "get_name", &ScriptableEntity::get_component<NameComponent>,
-
-                                           "get_transform", &ScriptableEntity::get_component<TransformComponent>,
-
-                                           "entity_id", &ScriptableEntity::entity_id,
-
-                                           "ecs", &ScriptableEntity::ecs);
+                                 "ecs", &Script::ecs);
 
         lua.new_usertype<NameComponent>("NameComponent", sol::constructors<NameComponent(const str&)>(),
 
@@ -71,12 +67,6 @@ namespace mag
                                              "rotation", &TransformComponent::rotation,
 
                                              "scale", &TransformComponent::scale);
-    }
-
-    str get_entity_name(const u32 entity_id)
-    {
-        const str entity_name = "entity" + std::to_string(entity_id);
-        return entity_name;
     }
 
     void ScriptingEngine::load_script(const str& file_path)
@@ -96,39 +86,17 @@ namespace mag
         state->loaded_scripts.insert(file_path);
     }
 
-    // @TODO: Move these methods to the component (crash when quitting during runtime)
-    void ScriptingEngine::instanciate_script_for_entity(const ECS* ecs, const u32 entity_id)
+    void ScriptingEngine::register_entity(const ScriptComponent& sc)
     {
         auto& lua = *state->lua;
 
-        lua[get_entity_name(entity_id)] = ScriptableEntity();
-        lua[get_entity_name(entity_id)]["ecs"] = ecs;
-        lua[get_entity_name(entity_id)]["entity_id"] = entity_id;
-    }
+        lua[GET_ENTITY_NAME(sc.instance->entity_id)] = sc.instance;
+        lua[GET_ENTITY_NAME(sc.instance->entity_id)]["ecs"] = sc.instance->ecs;
+        lua[GET_ENTITY_NAME(sc.instance->entity_id)]["entity_id"] = sc.instance->entity_id;
 
-    // @TODO: This is a particularly ugly solution.
-    // This should be called after bind entity, so that the script is instanciated
-    void ScriptingEngine::execute_create_method(const u32 entity_id)
-    {
-        auto& lua = *state->lua;
-
-        std::function<void(ScriptableEntity&)> on_create = lua["on_create"];
-        on_create(lua[get_entity_name(entity_id)]);
-    }
-
-    void ScriptingEngine::execute_destroy_method(const u32 entity_id)
-    {
-        auto& lua = *state->lua;
-
-        std::function<void(ScriptableEntity&)> on_destroy = lua["on_destroy"];
-        on_destroy(lua[get_entity_name(entity_id)]);
-    }
-
-    void ScriptingEngine::execute_update_method(const u32 entity_id, const f32 dt)
-    {
-        auto& lua = *state->lua;
-
-        std::function<void(ScriptableEntity&, const f32)> on_update = lua["on_update"];
-        on_update(lua[get_entity_name(entity_id)], dt);
+        // Make methods acessible to the rest of the application
+        sc.instance->on_create = lua["on_create"];
+        sc.instance->on_destroy = lua["on_destroy"];
+        sc.instance->on_update = lua["on_update"];
     }
 };  // namespace mag

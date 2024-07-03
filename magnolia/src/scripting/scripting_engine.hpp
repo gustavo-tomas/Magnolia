@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    class ECS;
+    class ScriptComponent;
     class ScriptingEngine
     {
         public:
@@ -18,10 +18,6 @@ namespace mag
 
             static void load_script(const str& file_path);
 
-            // @TODO: temp
-            static void instanciate_script_for_entity(const ECS* ecs, const u32 entity_id);
-            static void execute_create_method(const u32 entity_id);
-            static void execute_destroy_method(const u32 entity_id);
-            static void execute_update_method(const u32 entity_id, const f32 dt);
+            static void register_entity(const ScriptComponent& sc);
     };
 };  // namespace mag
