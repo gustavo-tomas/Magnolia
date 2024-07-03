@@ -139,7 +139,7 @@ namespace mag
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
             auto* script = runtime_ecs->get_component<ScriptComponent>(id);
-            ScriptingEngine::load_script(script->file_path);  // @TODO: check if script was already loaded
+            ScriptingEngine::load_script(script->file_path);
             ScriptingEngine::instanciate_script_for_entity(runtime_ecs.get(), id);
             ScriptingEngine::execute_create_method(id);
         }
