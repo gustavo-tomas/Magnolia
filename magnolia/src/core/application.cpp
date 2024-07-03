@@ -61,7 +61,11 @@ namespace mag
         running = true;
     }
 
-    Application::~Application() { ScriptingEngine::shutdown(); }
+    Application::~Application()
+    {
+        active_scene.reset();
+        ScriptingEngine::shutdown();
+    }
 
     void Application::run()
     {
