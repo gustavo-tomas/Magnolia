@@ -10,12 +10,18 @@ function on_destroy(entity)
 end
 
 function on_update(entity, dt)
-    print("DT: ", dt)
+    transform_component = entity:get_transform()
+    camera_component = entity:get_camera()
+    
+    if (is_key_down(Keys.a)) then
 
-    local transform_component = entity:get_transform()
-    -- local camera_component = entity:get_camera()
+        local pos = vec3.new(10, 20, 30) 
 
-    print("Position:", transform_component.translation)
+        transform_component.translation = pos
+        camera_component.camera:set_position(transform_component.translation)
+    end
+
+    print("Camera:", camera_component.camera:get_position())
 
     -- @TODO: finish this script to be equal to the native example
 

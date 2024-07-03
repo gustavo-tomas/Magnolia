@@ -43,10 +43,10 @@ namespace mag
                 // @TODO: for now we assume the active camera is the first entity with a camera component
                 else
                 {
-                    auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+                    auto components = runtime_ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
                     for (auto [camera_c, transform] : components)
                     {
-                        return *camera_c->camera;
+                        return camera_c->camera;
                     }
                 }
 

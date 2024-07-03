@@ -27,8 +27,9 @@ namespace mag
     void ScriptingEngine::new_state()
     {
         state->lua.reset();
-        state->lua = std::make_unique<sol::state>();
         state->loaded_scripts.clear();
+
+        state->lua = std::make_unique<sol::state>();
 
         auto& lua = *state->lua;
 
@@ -52,6 +53,8 @@ namespace mag
 
                                  "get_transform", &Script::get_component<TransformComponent>,
 
+                                 "get_camera", &Script::get_component<CameraComponent>,
+
                                  "entity_id", &Script::entity_id,
 
                                  "ecs", &Script::ecs);
@@ -67,6 +70,21 @@ namespace mag
                                              "rotation", &TransformComponent::rotation,
 
                                              "scale", &TransformComponent::scale);
+
+        lua.new_usertype<CameraComponent>("CameraComponent", sol::constructors<CameraComponent(const Camera&)>(),
+
+                                          "camera", &CameraComponent::camera);
+
+        lua.new_usertype<Camera>(
+            "Camera", sol::constructors<Camera(const vec3&, const vec3&, const f32, const f32, const f32, const f32)>(),
+
+            "get_position", &Camera::get_position,
+
+            "set_position", &Camera::set_position);
+
+        lua.new_usertype<vec3>("vec3", sol::constructors<vec3(const f32 x, const f32 y, const f32 z)>(),
+
+                               "x", &vec3::x, "y", &vec3::y, "z", &vec3::z);
     }
 
     void ScriptingEngine::load_script(const str& file_path)

@@ -36,8 +36,8 @@ class CameraController : public ScriptableEntity
             if (length(direction) > 0.0f) direction = normalize(direction) * dt;
 
             transform->translation += direction * speed;
-            camera->set_position(transform->translation);
+            camera.set_position(transform->translation);
 
-            LOG_SUCCESS("POS: {0}", math::to_string(camera->get_position()));
+            LOG_SUCCESS("POS: {0}", math::to_string(camera.get_position()));
         }
 };

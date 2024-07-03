@@ -80,10 +80,10 @@ namespace mag
 
             if (auto component = ecs.get_component<CameraComponent>(entity_id))
             {
-                entity["CameraComponent"]["Fov"] = component->camera->get_fov();
-                entity["CameraComponent"]["Near"] = component->camera->get_near();
-                entity["CameraComponent"]["Far"] = component->camera->get_far();
-                entity["CameraComponent"]["AspectRatio"] = component->camera->get_aspect_ratio();
+                entity["CameraComponent"]["Fov"] = component->camera.get_fov();
+                entity["CameraComponent"]["Near"] = component->camera.get_near();
+                entity["CameraComponent"]["Far"] = component->camera.get_far();
+                entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
             }
 
             data["Entities"].push_back(entity);

@@ -28,7 +28,7 @@ namespace mag
             const auto camera_entity = ecs->create_entity("Camera");
 
             auto* transform = new TransformComponent();
-            auto* camera = new CameraComponent(new Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
+            auto* camera = new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
             auto* script = new ScriptComponent("sprout/assets/scripts/example_lua_script.lua");
             // auto* script = new NativeScriptComponent();
             // script->bind<CameraController>();
@@ -212,6 +212,17 @@ namespace mag
     void Scene::update_runtime(const f32 dt)
     {
         runtime_ecs->update();
+
+        // Set camera positions the same as the transform
+        // @TODO: there should be only one value for the camera position. I feel that data duplication
+        // could cause issues in the future.
+
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
+        {
+            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(transform->rotation);
+        }
 
         // Update scripts
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
