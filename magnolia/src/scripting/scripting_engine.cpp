@@ -11,6 +11,7 @@ namespace mag
 
     struct State
     {
+            std::set<str> loaded_scripts;
             std::unique_ptr<sol::state> lua;
     };
 
@@ -25,6 +26,7 @@ namespace mag
     {
         state->lua.reset();
         state->lua = std::make_unique<sol::state>();
+        state->loaded_scripts.clear();
 
         auto& lua = *state->lua;
 
@@ -79,6 +81,8 @@ namespace mag
 
     void ScriptingEngine::load_script(const str& file_path)
     {
+        if (state->loaded_scripts.contains(file_path)) return;
+
         auto& lua = *state->lua;
 
         auto res = lua.script_file(file_path);
@@ -88,6 +92,8 @@ namespace mag
         {
             ASSERT(false, "Invalid script: '{0}'", file_path);
         }
+
+        state->loaded_scripts.insert(file_path);
     }
 
     // @TODO: Move these methods to the component (crash when quitting during runtime)
