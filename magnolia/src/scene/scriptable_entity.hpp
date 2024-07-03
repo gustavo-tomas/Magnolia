@@ -30,6 +30,7 @@ namespace mag
 
         private:
             friend class Scene;
+            friend class ScriptingEngine;  // @TODO: is this a good idea?
 
             ECS* ecs = nullptr;
             u32 entity_id;

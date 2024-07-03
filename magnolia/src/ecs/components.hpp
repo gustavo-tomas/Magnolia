@@ -108,6 +108,15 @@ namespace mag
             Camera* camera;
     };
 
+    struct ScriptComponent : public Component
+    {
+            ScriptComponent(const str& file_path) : file_path(file_path) {}
+
+            CLONE(ScriptComponent);
+
+            str file_path;
+    };
+
     class ScriptableEntity;
     struct NativeScriptComponent : public Component
     {

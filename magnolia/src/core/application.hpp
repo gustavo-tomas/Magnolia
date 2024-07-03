@@ -27,7 +27,7 @@ namespace mag
     {
         public:
             explicit Application(const ApplicationOptions& options);
-            virtual ~Application() = default;
+            virtual ~Application();
 
             void run();
             void on_event(Event& e);

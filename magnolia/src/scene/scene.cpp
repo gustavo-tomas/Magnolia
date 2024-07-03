@@ -29,8 +29,9 @@ namespace mag
 
             auto* transform = new TransformComponent();
             auto* camera = new CameraComponent(new Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
-            auto* script = new NativeScriptComponent();
-            script->bind<CameraController>();
+            auto* script = new ScriptComponent("sprout/assets/scripts/example_lua_script.lua");
+            // auto* script = new NativeScriptComponent();
+            // script->bind<CameraController>();
 
             ecs->add_component(camera_entity, transform);
             ecs->add_component(camera_entity, camera);
@@ -96,11 +97,6 @@ namespace mag
 
             LOG_INFO("Light created");
         }
-
-        ScriptingEngine::initialize();
-        ScriptingEngine::load_script("sprout/assets/scripts/example_lua_script.lua");
-        ScriptingEngine::run_script("sprout/assets/scripts/example_lua_script.lua");
-        ScriptingEngine::shutdown();
     }
 
     Scene::~Scene()
@@ -138,6 +134,16 @@ namespace mag
 
         physics_engine.on_simulation_start();
 
+        ScriptingEngine::new_state();
+
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
+            ScriptingEngine::load_script(script->file_path);  // @TODO: check if script was already loaded
+            ScriptingEngine::instanciate_script_for_entity(runtime_ecs.get(), id);
+            ScriptingEngine::execute_create_method(id);
+        }
+
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<NativeScriptComponent>())
         {
             auto* nsc = runtime_ecs->get_component<NativeScriptComponent>(id);
@@ -155,6 +161,12 @@ namespace mag
     {
         auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
+
+        // @TODO: this will crash if application is closed during runtime
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            ScriptingEngine::execute_destroy_method(id);
+        }
 
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
@@ -191,6 +203,11 @@ namespace mag
         runtime_ecs->update();
 
         // Update scripts
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            ScriptingEngine::execute_update_method(id, dt);
+        }
+
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             nsc->instance->on_update(dt);
