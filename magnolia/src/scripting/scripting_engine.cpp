@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "scene/scriptable_entity.hpp"
+#include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"
 
 namespace mag
@@ -43,8 +44,13 @@ namespace mag
 
         // Register key mapping
         // @TODO: finish key mapping (is there an automatic way to do this?)
-        lua.new_enum<Keys>("Keys", {{"a", Keys::a}});
-        lua.new_enum<Buttons>("Buttons", {{"left", Buttons::Left}});
+        // @TODO: move to another file
+        lua.new_enum<Keys>("Keys", {{"a", Keys::a},
+                                    {"d", Keys::d},
+                                    {"w", Keys::w},
+                                    {"s", Keys::s},
+                                    {"Space", Keys::Space},
+                                    {"Lctrl", Keys::Lctrl}});
 
         // Register types
         lua.new_usertype<Script>("Script", sol::constructors<Script()>(),
@@ -82,9 +88,7 @@ namespace mag
 
             "set_position", &Camera::set_position);
 
-        lua.new_usertype<vec3>("vec3", sol::constructors<vec3(const f32 x, const f32 y, const f32 z)>(),
-
-                               "x", &vec3::x, "y", &vec3::y, "z", &vec3::z);
+        LuaBindings::create_math_bindings(*state->lua);
     }
 
     void ScriptingEngine::load_script(const str& file_path)

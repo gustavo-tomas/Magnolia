@@ -30,3 +30,4 @@ python3 build.py debug
 - [[OGLDEV](https://www.youtube.com/watch?v=9HO1dl0zcxg)] Mesh optimizations using meshoptimizer
 - [[LearnOpenGL](https://learnopengl.com/Lighting/Basic-Lighting)] Lighting and basic computer graphics concepts
 - [[WickedEngine](https://wickedengine.net/)] ECS and other graphics systems
+- [[Scion2D](https://github.com/dwjclark11/Scion2D)] Lua scripting
