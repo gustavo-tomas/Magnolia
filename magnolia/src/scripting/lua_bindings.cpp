@@ -163,6 +163,12 @@ namespace mag
         lua.set_function("is_key_down", &Window::is_key_down, &get_application().get_window());
         lua.set_function("is_button_down", &Window::is_button_down, &get_application().get_window());
 
+        lua.new_enum<Buttons>("Buttons", {{"Left", Buttons::Left},
+                                          {"Middle", Buttons::Middle},
+                                          {"Right", Buttons::Right},
+                                          {"X1", Buttons::X1},
+                                          {"X2", Buttons::X2}});
+
         lua.new_enum<Keys>("Keys", {
                                        {"Unknown", Keys::Unknown},
                                        {"Return", Keys::Return},
