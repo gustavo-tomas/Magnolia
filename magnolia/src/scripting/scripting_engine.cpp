@@ -1,6 +1,5 @@
 #include "scripting/scripting_engine.hpp"
 
-#include "core/application.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"
@@ -35,22 +34,6 @@ namespace mag
         auto& lua = *state->lua;
 
         lua.open_libraries(sol::lib::base);
-
-        // Register relevant functions.
-        // @NOTE: use pointers when registering app functions to prevent sol2 from freeing the memory when the state is
-        // deleted.
-        lua.set_function("is_key_down", &Window::is_key_down, &get_application().get_window());
-        lua.set_function("is_button_down", &Window::is_button_down, &get_application().get_window());
-
-        // Register key mapping
-        // @TODO: finish key mapping (is there an automatic way to do this?)
-        // @TODO: move to another file
-        lua.new_enum<Keys>("Keys", {{"a", Keys::a},
-                                    {"d", Keys::d},
-                                    {"w", Keys::w},
-                                    {"s", Keys::s},
-                                    {"Space", Keys::Space},
-                                    {"Lctrl", Keys::Lctrl}});
 
         // Register types
         lua.new_usertype<Script>("Script", sol::constructors<Script()>(),
@@ -88,7 +71,7 @@ namespace mag
 
             "set_position", &Camera::set_position);
 
-        LuaBindings::create_math_bindings(*state->lua);
+        LuaBindings::create_lua_bindings(*state->lua);
     }
 
     void ScriptingEngine::load_script(const str& file_path)
