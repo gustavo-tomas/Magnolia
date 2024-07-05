@@ -86,6 +86,11 @@ namespace mag
                 entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
             }
 
+            if (auto component = ecs.get_component<ScriptComponent>(entity_id))
+            {
+                entity["ScriptComponent"]["FilePath"] = component->file_path;
+            }
+
             data["Entities"].push_back(entity);
         }
 
