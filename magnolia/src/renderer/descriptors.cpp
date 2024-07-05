@@ -454,7 +454,7 @@ namespace mag
 
     void DescriptorCache::remove_image_descriptors_for_model(ECS& ecs, const u32 id)
     {
-        auto models = ecs.get_components<ModelComponent>();
+        auto models = ecs.get_all_components_of_type<ModelComponent>();
 
         auto* model_to_be_removed = ecs.get_component<ModelComponent>(id);
         if (!model_to_be_removed) return;

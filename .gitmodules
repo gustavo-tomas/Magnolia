@@ -43,3 +43,7 @@
 [submodule "libs/imgui_file_dialog"]
 	path = libs/imgui_file_dialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
+[submodule "libs/sol2"]
+	path = libs/sol2
+	url = https://github.com/ThePhD/sol2.git
+	branch = main

@@ -72,6 +72,7 @@ namespace mag
                 deletion_queue.push_back(entity_id);
             }
 
+            // @TODO: maybe this should be handled by the scene
             void update()
             {
                 // Delete enqueued entities
@@ -127,7 +128,7 @@ namespace mag
 
             // Get all components of that type
             template <typename T>
-            std::vector<T*> get_components()
+            std::vector<T*> get_all_components_of_type()
             {
                 ASSERT_TYPE(T);
 
@@ -146,7 +147,7 @@ namespace mag
 
             // Get entities with specific components
             template <typename... Ts>
-            std::vector<u32> get_entities_with_components()
+            std::vector<u32> get_entities_with_components_of_type()
             {
                 ASSERT_TYPES(Ts);
 
@@ -177,18 +178,31 @@ namespace mag
                 return ids;
             }
 
-            // Get components of entities with the specified components
+            // Get the specified components of that entity
             template <typename... Ts>
-            std::vector<std::tuple<Ts*...>> get_components_of_entities()
+            std::tuple<Ts*...> get_components(const u32 id)
             {
                 ASSERT_TYPES(Ts);
 
-                std::vector<u32> entity_ids = get_entities_with_components<Ts...>();
+                std::tuple<Ts*...> components;
+
+                components = std::make_tuple(get_component<Ts>(id)...);
+
+                return components;
+            }
+
+            // Get components of entities with the specified components
+            template <typename... Ts>
+            std::vector<std::tuple<Ts*...>> get_all_components_of_types()
+            {
+                ASSERT_TYPES(Ts);
+
+                std::vector<u32> entity_ids = get_entities_with_components_of_type<Ts...>();
                 std::vector<std::tuple<Ts*...>> components;
 
                 for (auto& id : entity_ids)
                 {
-                    components.push_back(std::make_tuple(get_component<Ts>(id)...));
+                    components.push_back(get_components<Ts...>(id));
                 }
 
                 return components;

@@ -5,37 +5,20 @@
 
 namespace mag
 {
-    // Keep this small and flexible
-    class CameraController
+    class EditorCameraController
     {
         public:
-            CameraController(Camera& camera) : camera(camera){};
-            virtual ~CameraController() = default;
+            EditorCameraController(Camera& camera) : camera(camera) {}
+            ~EditorCameraController() = default;
 
-            virtual void update(const f32 dt) { (void)dt; };
-            virtual void on_event(Event& e) { (void)e; };
+            void update(const f32 dt);
 
-        protected:
-            Camera& camera;
-    };
-
-    // @TODO: legacy event handling. update before use
-    class RuntimeController : public CameraController
-    {
-        public:
-            virtual void update(const f32 dt) override;
-            void on_mouse_move(const ivec2& mouse_dir);
-    };
-
-    class EditorCameraController : public CameraController
-    {
-        public:
-            EditorCameraController(Camera& camera) : CameraController(camera){};
-
-            virtual void on_event(Event& e) override;
+            void on_event(Event& e);
 
         private:
             void on_mouse_move(MouseMoveEvent& e);
             void on_mouse_scroll(MouseScrollEvent& e);
+
+            Camera& camera;
     };
 };  // namespace mag

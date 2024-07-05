@@ -9,7 +9,7 @@ namespace mag
     class Camera
     {
         public:
-            Camera(const vec3& position, const vec3& rotation, const f32 fov, const vec2& size, const f32 near,
+            Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
                    const f32 far);
             ~Camera() = default;
 
@@ -25,6 +25,10 @@ namespace mag
             const vec3& get_position() const { return position; };
             const vec3& get_rotation() const { return rotation; };
             const mat4& get_rotation_mat() const { return rotation_mat; };
+
+            f32 get_near() const { return near; };
+            f32 get_far() const { return far; };
+            f32 get_aspect_ratio() const { return aspect_ratio; };
 
             vec3 get_side() const { return rotation_mat[0]; };
             vec3 get_up() const { return rotation_mat[1]; };

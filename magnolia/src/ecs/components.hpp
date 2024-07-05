@@ -1,20 +1,21 @@
 #pragma once
 
-#include <memory>
-
+#include "camera/camera.hpp"
 #include "core/types.hpp"
 
 namespace mag
 {
     using namespace mag::math;
 
+    // @NOTE: beware of pointers! Deep copy also copies them over!
+
 #define CLONE(type) \
-    std::unique_ptr<Component> clone() const override { return std::make_unique<type>(*this); }
+    Component* clone() const override { return new type(*this); }
 
     struct Component
     {
             virtual ~Component() = default;
-            virtual std::unique_ptr<Component> clone() const = 0;
+            virtual Component* clone() const = 0;
     };
 
     struct NameComponent : public Component
@@ -96,5 +97,50 @@ namespace mag
 
             vec3 color;
             f32 intensity;
+    };
+
+    class Camera;
+    struct CameraComponent : public Component
+    {
+            CameraComponent(const Camera& camera) : camera(camera) {}
+
+            CLONE(CameraComponent);
+
+            Camera camera;
+    };
+
+    class Script;
+    struct ScriptComponent : public Component
+    {
+            ScriptComponent(const str& file_path) : file_path(file_path) {}
+
+            CLONE(ScriptComponent);
+
+            str file_path;
+            Script* instance = nullptr;
+    };
+
+    class ScriptableEntity;
+    struct NativeScriptComponent : public Component
+    {
+            CLONE(NativeScriptComponent);
+
+            ScriptableEntity* instance = nullptr;
+
+            ScriptableEntity* (*instanciate_script)();
+            void (*destroy_script)(NativeScriptComponent*);
+
+            template <typename T>
+            void bind()
+            {
+                static_assert(std::is_base_of<ScriptableEntity, T>::value, "T must be derived from ScriptableEntity");
+
+                instanciate_script = []() { return static_cast<ScriptableEntity*>(new T()); };
+                destroy_script = [](NativeScriptComponent* nsc)
+                {
+                    delete nsc->instance;
+                    nsc->instance = nullptr;
+                };
+            }
     };
 };  // namespace mag
