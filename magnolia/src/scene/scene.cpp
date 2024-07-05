@@ -251,6 +251,18 @@ namespace mag
 
         render_pass->on_resize(size);
         camera->set_aspect_ratio(size);
+
+        for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
+        {
+            camera_c->camera.set_aspect_ratio(size);
+        }
+
+        if (!runtime_ecs) return;
+
+        for (auto camera_c : runtime_ecs->get_all_components_of_type<CameraComponent>())
+        {
+            camera_c->camera.set_aspect_ratio(size);
+        }
     };
 
     void Scene::add_model(const str& path)
