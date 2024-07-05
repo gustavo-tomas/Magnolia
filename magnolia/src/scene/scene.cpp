@@ -6,6 +6,7 @@
 
 // @TODO: temp
 #include "../sprout/assets/scripts/example_script.hpp"
+#include "scripting/scripting_engine.hpp"
 
 namespace mag
 {
@@ -27,9 +28,10 @@ namespace mag
             const auto camera_entity = ecs->create_entity("Camera");
 
             auto* transform = new TransformComponent();
-            auto* camera = new CameraComponent(new Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
-            auto* script = new NativeScriptComponent();
-            script->bind<CameraController>();
+            auto* camera = new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
+            auto* script = new ScriptComponent("sprout/assets/scripts/example_lua_script.lua");
+            // auto* script = new NativeScriptComponent();
+            // script->bind<CameraController>();
 
             ecs->add_component(camera_entity, transform);
             ecs->add_component(camera_entity, camera);
@@ -132,12 +134,33 @@ namespace mag
 
         physics_engine.on_simulation_start();
 
-        for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
+        ScriptingEngine::new_state();
+
+        // Instanciate the script
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
+            auto* sc = runtime_ecs->get_component<ScriptComponent>(id);
+            if (!sc->instance)
+            {
+                sc->instance = new Script();
+                sc->instance->ecs = runtime_ecs.get();
+                sc->instance->entity_id = id;
+
+                ScriptingEngine::load_script(sc->file_path);
+                ScriptingEngine::register_entity(*sc);
+
+                sc->instance->on_create(*sc->instance);
+            }
+        }
+
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<NativeScriptComponent>())
+        {
+            auto* nsc = runtime_ecs->get_component<NativeScriptComponent>(id);
             if (!nsc->instance)
             {
                 nsc->instance = nsc->instanciate_script();
                 nsc->instance->ecs = runtime_ecs.get();
+                nsc->instance->entity_id = id;
                 nsc->instance->on_create();
             }
         }
@@ -148,6 +171,14 @@ namespace mag
         auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
 
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
+            script->instance->on_destroy(*script->instance);
+            delete script->instance;
+            script->instance = nullptr;
+        }
+
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             nsc->instance->on_destroy();
@@ -157,7 +188,7 @@ namespace mag
         runtime_ecs.reset();
         current_state = SceneState::Editor;
 
-        physics_engine.on_simulation_start();
+        physics_engine.on_simulation_end();
     }
 
     void Scene::update_editor(const f32 dt)
@@ -182,7 +213,24 @@ namespace mag
     {
         runtime_ecs->update();
 
+        // Set camera positions the same as the transform
+        // @TODO: there should be only one value for the camera position. I feel that data duplication
+        // could cause issues in the future.
+
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
+        {
+            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(transform->rotation);
+        }
+
         // Update scripts
+        for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            auto* script = runtime_ecs->get_component<ScriptComponent>(id);
+            script->instance->on_update(*script->instance, dt);
+        }
+
         for (auto nsc : runtime_ecs->get_all_components_of_type<NativeScriptComponent>())
         {
             nsc->instance->on_update(dt);

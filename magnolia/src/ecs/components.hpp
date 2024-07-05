@@ -7,6 +7,8 @@ namespace mag
 {
     using namespace mag::math;
 
+    // @NOTE: beware of pointers! Deep copy also copies them over!
+
 #define CLONE(type) \
     Component* clone() const override { return new type(*this); }
 
@@ -97,15 +99,25 @@ namespace mag
             f32 intensity;
     };
 
-    // @TODO: leak here: the camera is never deleted
     class Camera;
     struct CameraComponent : public Component
     {
-            CameraComponent(Camera* camera) : camera(camera) {}
+            CameraComponent(const Camera& camera) : camera(camera) {}
 
             CLONE(CameraComponent);
 
-            Camera* camera;
+            Camera camera;
+    };
+
+    class Script;
+    struct ScriptComponent : public Component
+    {
+            ScriptComponent(const str& file_path) : file_path(file_path) {}
+
+            CLONE(ScriptComponent);
+
+            str file_path;
+            Script* instance = nullptr;
     };
 
     class ScriptableEntity;

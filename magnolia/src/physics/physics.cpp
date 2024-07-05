@@ -67,6 +67,12 @@ namespace mag
         delete overlapping_pair_cache;
         delete dispatcher;
         delete collision_configuration;
+
+        dynamics_world = nullptr;
+        solver = nullptr;
+        overlapping_pair_cache = nullptr;
+        dispatcher = nullptr;
+        collision_configuration = nullptr;
     }
 
     void PhysicsEngine::add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,

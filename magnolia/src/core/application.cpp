@@ -1,6 +1,7 @@
 #include "core/application.hpp"
 
 #include "core/logger.hpp"
+#include "scripting/scripting_engine.hpp"
 
 namespace mag
 {
@@ -53,7 +54,17 @@ namespace mag
         physics_engine = std::make_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
 
+        // Create the scripting engine
+        ScriptingEngine::initialize();
+        LOG_SUCCESS("ScriptingEngine initialized");
+
         running = true;
+    }
+
+    Application::~Application()
+    {
+        active_scene.reset();
+        ScriptingEngine::shutdown();
     }
 
     void Application::run()
