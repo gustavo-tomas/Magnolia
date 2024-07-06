@@ -27,7 +27,7 @@ namespace mag
         {
             const auto camera_entity = ecs->create_entity("Camera");
 
-            auto* transform = new TransformComponent();
+            auto* transform = new TransformComponent(vec3(10, 30, 100));
             auto* camera = new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
             auto* script = new ScriptComponent("sprout/assets/scripts/example_lua_script.lua");
             // auto* script = new NativeScriptComponent();
