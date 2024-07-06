@@ -8,6 +8,7 @@ namespace mag
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         const char *format = "%.2f";
+        const f32 left_offset = 100.0f;
         const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
@@ -23,8 +24,6 @@ namespace mag
                 vec3 translation = transform->translation;
                 vec3 rotation = transform->rotation;
                 vec3 scale = transform->scale;
-
-                const f32 left_offset = 100.0f;
 
                 ImGui::Text("Translation");
                 ImGui::SameLine(left_offset);
@@ -93,8 +92,6 @@ namespace mag
 
                 const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoAlpha;
 
-                const f32 left_offset = 100.0f;
-
                 ImGui::TextWrapped("Color");
                 ImGui::SameLine(left_offset);
                 ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
@@ -105,6 +102,66 @@ namespace mag
                 {
                     light->intensity = light_intensity;
                 }
+            }
+        }
+
+        // Box collider
+        if (auto component = ecs.get_component<BoxColliderComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                vec3 dimensions = component->dimensions;
+
+                ImGui::Text("Dimensions");
+                ImGui::SameLine(left_offset);
+
+                if (ImGui::InputFloat3("##Dimensions", value_ptr(dimensions), format, input_flags))
+                {
+                    component->dimensions = clamp(dimensions, vec3(0.001), vec3(1'000'000));
+                }
+
+                // Reset
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE "##Dimensions"))
+                {
+                    component->dimensions = vec3(1);
+                }
+            }
+        }
+
+        if (auto component = ecs.get_component<RigidBodyComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                f32 mass = component->mass;
+
+                ImGui::Text("Mass");
+                ImGui::SameLine(left_offset);
+
+                if (ImGui::InputFloat("##Mass", &mass, 0.0f, 0.0f, format, input_flags))
+                {
+                    component->mass = clamp(mass, 0.0f, 1'000'000'000.0f);
+                }
+
+                // Reset
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_CIRCLE "##Dimensions"))
+                {
+                    component->mass = 1.0f;
+                }
+            }
+        }
+
+        // @TODO: finish
+        // if (auto component = ecs.get_component<CameraComponent>(selected_entity_id))
+        // {
+        // }
+
+        if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::TextWrapped("File Path: %s", component->file_path.c_str());
             }
         }
 

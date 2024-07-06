@@ -79,6 +79,30 @@ namespace mag
                     ImGui::Text("%s", component_name.c_str());
                 }
 
+                if (ecs.get_component<BoxColliderComponent>(entity_id))
+                {
+                    const str component_name = str(ICON_FA_VECTOR_SQUARE) + " Box Collider";
+                    ImGui::Text("%s", component_name.c_str());
+                }
+
+                if (ecs.get_component<RigidBodyComponent>(entity_id))
+                {
+                    const str component_name = str(ICON_FA_VECTOR_SQUARE) + " Rigidbody";
+                    ImGui::Text("%s", component_name.c_str());
+                }
+
+                if (ecs.get_component<CameraComponent>(entity_id))
+                {
+                    const str component_name = str(ICON_FA_CAMERA) + " Camera";
+                    ImGui::Text("%s", component_name.c_str());
+                }
+
+                if (ecs.get_component<ScriptComponent>(entity_id))
+                {
+                    const str component_name = str(ICON_FA_SCROLL) + " Script";
+                    ImGui::Text("%s", component_name.c_str());
+                }
+
                 ImGui::TreePop();
             }
         }
