@@ -5,12 +5,11 @@
 
 namespace mag
 {
+#define MIN_VALUE -1'000'000'000
+#define MAX_VALUE +1'000'000'000
+
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
-        const char *format = "%.2f";
-        const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
 
         // Only render properties if an entity is selected
@@ -21,54 +20,9 @@ namespace mag
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                vec3 translation = transform->translation;
-                vec3 rotation = transform->rotation;
-                vec3 scale = transform->scale;
-
-                ImGui::Text("Translation");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Translation", value_ptr(translation), format, input_flags))
-                {
-                    transform->translation = translation;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Transform"))
-                {
-                    transform->translation = vec3(0);
-                }
-
-                ImGui::Text("Rotation");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
-                {
-                    transform->rotation = rotation;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Scale"))
-                {
-                    transform->rotation = vec3(0);
-                }
-
-                ImGui::Text("Scale");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Scale", value_ptr(scale), format, input_flags))
-                {
-                    transform->scale = scale;
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Rotation"))
-                {
-                    transform->scale = vec3(1);
-                }
+                editable_field("Translation", transform->translation, vec3(0), vec3(MIN_VALUE), vec3(MAX_VALUE));
+                editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
+                editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MAX_VALUE));
             }
         }
 
@@ -88,20 +42,14 @@ namespace mag
         {
             if (ImGui::CollapsingHeader("Light", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                auto light_intensity = light->intensity;
-
                 const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoAlpha;
+                const f32 left_offset = 100.0f;
 
                 ImGui::TextWrapped("Color");
                 ImGui::SameLine(left_offset);
                 ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
 
-                ImGui::Text("Intensity");
-                ImGui::SameLine(left_offset);
-                if (ImGui::InputFloat("##Intensity", &light_intensity, 1.0f, 10.0f, format, input_flags))
-                {
-                    light->intensity = light_intensity;
-                }
+                editable_field("Intensity", light->intensity, 1.0f, 0.0f, MAX_VALUE);
             }
         }
 
@@ -110,22 +58,7 @@ namespace mag
         {
             if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                vec3 dimensions = component->dimensions;
-
-                ImGui::Text("Dimensions");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat3("##Dimensions", value_ptr(dimensions), format, input_flags))
-                {
-                    component->dimensions = clamp(dimensions, vec3(0.001), vec3(1'000'000));
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Dimensions"))
-                {
-                    component->dimensions = vec3(1);
-                }
+                editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MAX_VALUE));
             }
         }
 
@@ -133,29 +66,26 @@ namespace mag
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                f32 mass = component->mass;
-
-                ImGui::Text("Mass");
-                ImGui::SameLine(left_offset);
-
-                if (ImGui::InputFloat("##Mass", &mass, 0.0f, 0.0f, format, input_flags))
-                {
-                    component->mass = clamp(mass, 0.0f, 1'000'000'000.0f);
-                }
-
-                // Reset
-                ImGui::SameLine();
-                if (ImGui::Button(ICON_FA_CIRCLE "##Dimensions"))
-                {
-                    component->mass = 1.0f;
-                }
+                editable_field("Mass", component->mass, 1.0f, 0.0f, MAX_VALUE);
             }
         }
 
-        // @TODO: finish
-        // if (auto component = ecs.get_component<CameraComponent>(selected_entity_id))
-        // {
-        // }
+        if (auto component = ecs.get_component<CameraComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                f32 near = component->camera.get_near();
+                f32 far = component->camera.get_far();
+                f32 fov = component->camera.get_fov();
+
+                editable_field("Near", near, 1.0f, 0.1f, MAX_VALUE);
+                editable_field("Far", far, 1.0f, 0.1f, MAX_VALUE);
+                editable_field("Fov", fov, 60.0f, 30.0f, 120.0f);
+
+                component->camera.set_near_far({near, far});
+                component->camera.set_fov(fov);
+            }
+        }
 
         if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
         {
@@ -167,5 +97,59 @@ namespace mag
 
     end:
         ImGui::End();
+    }
+
+    void PropertiesPanel::editable_field(const str &field_name, vec3 &value, const vec3 &reset_value,
+                                         const vec3 &min_value, const vec3 &max_value)
+    {
+        const char *format = "%.2f";
+        const f32 left_offset = 100.0f;
+        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+        vec3 editable_value = value;
+
+        ImGui::Text("%s", field_name.c_str());
+        ImGui::SameLine(left_offset);
+
+        const str label = str("##") + field_name.c_str();
+        if (ImGui::InputFloat3(label.c_str(), value_ptr(editable_value), format, input_flags))
+        {
+            value = clamp(editable_value, min_value, max_value);
+        }
+
+        // Reset
+        const str reset_label = str(ICON_FA_CIRCLE) + label;
+        ImGui::SameLine();
+        if (ImGui::Button(reset_label.c_str()))
+        {
+            value = reset_value;
+        }
+    }
+
+    void PropertiesPanel::editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
+                                         const f32 max_value)
+    {
+        const char *format = "%.2f";
+        const f32 left_offset = 100.0f;
+        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+        f32 editable_value = value;
+
+        ImGui::Text("%s", field_name.c_str());
+        ImGui::SameLine(left_offset);
+
+        const str label = str("##") + field_name.c_str();
+        if (ImGui::InputFloat(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags))
+        {
+            value = clamp(editable_value, min_value, max_value);
+        }
+
+        // Reset
+        const str reset_label = str(ICON_FA_CIRCLE) + label;
+        ImGui::SameLine();
+        if (ImGui::Button(reset_label.c_str()))
+        {
+            value = reset_value;
+        }
     }
 };  // namespace mag
