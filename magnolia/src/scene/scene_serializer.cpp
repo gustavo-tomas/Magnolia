@@ -154,10 +154,24 @@ namespace mag
                 // if (entity.contains("ModelComponent"))
                 // {
                 //     const auto& component = entity["ModelComponent"];
+                //     const u32 type = component["Type"].get<u32>();
+                //     const str file_path = component["FilePath"];
 
-                //     auto model = model_manager.load(component["FilePath"]);
+                //     switch (static_cast<Model::Type>(type))
+                //     {
+                //         case Model::Type::Cube:
+                //             ecs.add_component(entity_id, new ModelComponent(model_manager.get_cube_primitive()));
+                //             break;
 
-                //     ecs.add_component(entity_id, new ModelComponent(*model));
+                //         case Model::Type::Mesh:
+                //             ecs.add_component(entity_id,
+                //                               new ModelComponent(*model_manager.load(component["FilePath"])));
+                //             break;
+
+                //         default:
+                //             ASSERT(false, "Invalid model type selected");
+                //             break;
+                //     }
                 // }
 
                 if (entity.contains("BoxColliderComponent"))
@@ -191,6 +205,29 @@ namespace mag
                     intensity = component["Intensity"].get<f32>();
 
                     ecs.add_component(entity_id, new LightComponent(color, intensity));
+                }
+
+                if (entity.contains("CameraComponent"))
+                {
+                    const auto& component = entity["CameraComponent"];
+
+                    const f32 fov = component["Fov"].get<f32>();
+                    const f32 near = component["Near"].get<f32>();
+                    const f32 far = component["Far"].get<f32>();
+                    const f32 aspect = component["AspectRatio"].get<f32>();
+
+                    Camera camera = Camera(vec3(0), vec3(0), fov, aspect, near, far);
+
+                    ecs.add_component(entity_id, new CameraComponent(camera));
+                }
+
+                if (entity.contains("ScriptComponent"))
+                {
+                    const auto& component = entity["ScriptComponent"];
+
+                    const str file_path = component["FilePath"];
+
+                    ecs.add_component(entity_id, new ScriptComponent(file_path));
                 }
             }
         }
