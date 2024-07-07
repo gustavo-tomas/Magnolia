@@ -11,15 +11,6 @@ namespace mag
 {
     using namespace mag::math;
 
-    // @TODO: temporary
-    struct alignas(16) LightData
-    {
-            vec3 color;     // 12 bytes (3 x 4)
-            f32 intensity;  // 4 bytes  (1 x 4)
-            vec3 position;  // 12 bytes (3 x 4)
-    };
-    // @TODO: temporary
-
     class ShaderModule
     {
         public:
