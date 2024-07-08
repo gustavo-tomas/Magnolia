@@ -28,6 +28,8 @@ namespace mag
             void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
                                 RigidBodyComponent& rigid_body);
 
+            void remove_rigid_body(const u32 index);
+
             btDefaultCollisionConfiguration* collision_configuration = nullptr;
             btCollisionDispatcher* dispatcher = nullptr;
             btBroadphaseInterface* overlapping_pair_cache = nullptr;

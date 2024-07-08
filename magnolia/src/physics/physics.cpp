@@ -44,22 +44,7 @@ namespace mag
 
         for (i32 i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
         {
-            btCollisionObject* obj = dynamics_world->getCollisionObjectArray()[i];
-            btRigidBody* body = btRigidBody::upcast(obj);
-
-            if (body && body->getMotionState())
-            {
-                delete body->getMotionState();
-            }
-
-            dynamics_world->removeCollisionObject(obj);
-
-            if (obj->getCollisionShape())
-            {
-                delete obj->getCollisionShape();
-            }
-
-            delete obj;
+            remove_rigid_body(i);
         }
 
         delete dynamics_world;
@@ -94,6 +79,26 @@ namespace mag
 
         collider.internal = shape;
         rigid_body.internal = bt_rigid_body;
+    }
+
+    void PhysicsEngine::remove_rigid_body(const u32 index)
+    {
+        btCollisionObject* obj = dynamics_world->getCollisionObjectArray()[index];
+        btRigidBody* body = btRigidBody::upcast(obj);
+
+        if (body && body->getMotionState())
+        {
+            delete body->getMotionState();
+        }
+
+        dynamics_world->removeCollisionObject(obj);
+
+        if (obj->getCollisionShape())
+        {
+            delete obj->getCollisionShape();
+        }
+
+        delete obj;
     }
 
     // @TODO: the lines are not synced to the transforms. Hopefully this can be fixed after the application refactor.
