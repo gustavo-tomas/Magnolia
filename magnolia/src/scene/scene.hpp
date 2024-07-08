@@ -28,7 +28,7 @@ namespace mag
             void stop_runtime();
 
             void add_model(const str& path);
-            void remove_model(const u32 id);
+            void remove_entity(const u32 id);
 
             SceneState get_scene_state() const { return current_state; };
 
@@ -77,5 +77,6 @@ namespace mag
             std::unique_ptr<Cube> cube;
 
             SceneState current_state = SceneState::Editor;
+            std::vector<u32> editor_deletion_queue;
     };
 };  // namespace mag

@@ -51,7 +51,7 @@ namespace mag
                 if (ImGui::MenuItem("Delete"))
                 {
                     auto& scene = get_application().get_active_scene();
-                    scene.remove_model(entity_id);
+                    scene.remove_entity(entity_id);
 
                     if (selected_entity_id == entity_id) selected_entity_id = INVALID_ID;
                 }

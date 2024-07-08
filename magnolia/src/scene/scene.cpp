@@ -196,7 +196,13 @@ namespace mag
         auto& app = get_application();
         auto& window = app.get_window();
 
-        ecs->update();
+        // Delete enqueued entities
+        for (const auto& entity : editor_deletion_queue)
+        {
+            ecs->erase_entity(entity);
+        }
+
+        editor_deletion_queue.clear();
 
         camera_controller->update(dt);
 
@@ -211,8 +217,6 @@ namespace mag
 
     void Scene::update_runtime(const f32 dt)
     {
-        runtime_ecs->update();
-
         // Set camera positions the same as the transform
         // @TODO: there should be only one value for the camera position. I feel that data duplication
         // could cause issues in the future.
@@ -279,10 +283,13 @@ namespace mag
         render_pass->add_model(*ecs, entity);
     }
 
-    void Scene::remove_model(const u32 id)
+    void Scene::remove_entity(const u32 id)
     {
-        ecs->add_entity_to_deletion_queue(id);
+        if (!ecs->entity_exists(id)) return;
 
         render_pass->remove_model(*ecs, id);
+
+        // Enqueue entity
+        editor_deletion_queue.push_back(id);
     }
 };  // namespace mag

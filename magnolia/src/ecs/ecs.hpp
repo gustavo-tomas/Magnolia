@@ -37,7 +37,6 @@ namespace mag
                 available_ids = other.available_ids;
                 entities = copy_entities(other.entities);
                 component_map = other.component_map;
-                deletion_queue = other.deletion_queue;
             }
 
             ~ECS() = default;
@@ -64,24 +63,26 @@ namespace mag
                 return id;
             }
 
-            void add_entity_to_deletion_queue(const u32 entity_id)
+            void erase_entity(const u32 entity_id)
             {
-                if (!entity_exists(entity_id)) return;
-
-                // Enqueue entity
-                deletion_queue.push_back(entity_id);
-            }
-
-            // @TODO: maybe this should be handled by the scene
-            void update()
-            {
-                // Delete enqueued entities
-                for (const auto& entity : deletion_queue)
+                // Check if entity exists
+                if (!entities.contains(entity_id))
                 {
-                    erase_entity(entity);
+                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
+                    return;
                 }
 
-                deletion_queue.clear();
+                // Erase the entity
+                entities.erase(entity_id);
+
+                // Remove the entity from the component map
+                for (auto& [component_type, entity_set] : component_map)
+                {
+                    entity_set.erase(entity_id);
+                }
+
+                // Free the ID for future use
+                available_ids.insert(entity_id);
             }
 
             // Add a component to the entity
@@ -220,7 +221,6 @@ namespace mag
                 return ids;
             }
 
-        private:
             b8 entity_exists(const u32 id) const
             {
                 if (!entities.contains(id))
@@ -232,28 +232,7 @@ namespace mag
                 return true;
             }
 
-            void erase_entity(const u32 entity_id)
-            {
-                // Check if entity exists
-                if (!entities.contains(entity_id))
-                {
-                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
-                    return;
-                }
-
-                // Erase the entity
-                entities.erase(entity_id);
-
-                // Remove the entity from the component map
-                for (auto& [component_type, entity_set] : component_map)
-                {
-                    entity_set.erase(entity_id);
-                }
-
-                // Free the ID for future use
-                available_ids.insert(entity_id);
-            }
-
+        private:
             std::map<u32, Entity> copy_entities(const std::map<u32, Entity>& source)
             {
                 std::map<u32, Entity> new_entities;
@@ -278,8 +257,5 @@ namespace mag
 
             // Map from component type to entities that have it
             std::map<std::type_index, std::set<u32>> component_map;
-
-            // Entities that will be erased during update
-            std::vector<u32> deletion_queue;
     };
 };  // namespace mag
