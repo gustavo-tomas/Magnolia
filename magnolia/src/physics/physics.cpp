@@ -101,7 +101,6 @@ namespace mag
         delete obj;
     }
 
-    // @TODO: the lines are not synced to the transforms. Hopefully this can be fixed after the application refactor.
     void PhysicsEngine::update(const f32 dt)
     {
         auto& app = get_application();
@@ -113,7 +112,8 @@ namespace mag
 
         if (scene.get_scene_state() == SceneState::Runtime)
         {
-            dynamics_world->stepSimulation(dt, 10);
+            // @TODO: investigate the jittering that happens when maxSubSteps > 0.
+            dynamics_world->stepSimulation(dt, 0);
 
             for (i32 i = objects.size() - 1; i >= 0; i--)
             {
