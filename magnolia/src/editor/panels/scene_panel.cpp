@@ -33,6 +33,12 @@ namespace mag
             // Pop up menu on right click
             if (selected_entity_id == entity_id && ImGui::BeginPopupContextWindow())
             {
+                if (ImGui::MenuItem("New Entity"))
+                {
+                    ecs.create_entity();
+                }
+                ImGui::Separator();
+
                 ImGui::Text("Add Component");
                 ImGui::Separator();
 

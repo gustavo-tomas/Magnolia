@@ -88,11 +88,15 @@ namespace mag
             ImGui::EndDragDropTarget();
         }
 
-        // @TODO: check if entity has a transform before rendering gizmo
         // Render gizmos for selected model
         if (!editor.is_disabled() && selected_entity_id != INVALID_ID)
         {
+            // Check if entity has a transform before rendering gizmo
             auto *transform = ecs.get_component<TransformComponent>(selected_entity_id);
+            if (transform == nullptr)
+            {
+                goto no_transform;
+            }
 
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
@@ -128,6 +132,7 @@ namespace mag
             }
         }
 
+    no_transform:
         // Play/Pause simulation
         {
             if (swap_state)
