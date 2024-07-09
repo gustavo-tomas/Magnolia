@@ -97,9 +97,9 @@ namespace mag
                     ImGui::Text("%s", component_name.c_str());
                 }
 
-                if (auto model = ecs.get_component<ModelComponent>(entity_id))
+                if (auto model_c = ecs.get_component<ModelComponent>(entity_id))
                 {
-                    const str component_name = str(ICON_FA_CUBE) + " " + model->model.name;
+                    const str component_name = str(ICON_FA_CUBE) + " " + model_c->model->name;
                     ImGui::Text("%s", component_name.c_str());
                 }
 

@@ -17,7 +17,7 @@ namespace mag
     {
         auto& app = get_application();
 
-        const auto& cube_model = cube->get_model();
+        const auto& cube_model = std::make_shared<Model>(cube->get_model());
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
         // Camera
@@ -87,7 +87,7 @@ namespace mag
             const f32 intensity = 100;
 
             ecs->add_component(light, new LightComponent(color, intensity));
-            ecs->add_component(light, new ModelComponent(*light_model));
+            ecs->add_component(light, new ModelComponent(light_model));
             ecs->add_component(light, new TransformComponent(vec3(500 - (500 * i), 100, 0), vec3(0), vec3(10)));
 
             render_pass->add_model(*ecs, light);
@@ -275,7 +275,7 @@ namespace mag
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());
-        ecs->add_component(entity, new ModelComponent(*model));
+        ecs->add_component(entity, new ModelComponent(model));
 
         render_pass->add_model(*ecs, entity);
     }

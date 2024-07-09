@@ -15,9 +15,9 @@ namespace mag
         {
             auto &model = model_c->model;
 
-            for (u32 i = 0; i < model.materials.size(); i++)
+            for (u32 i = 0; i < model->materials.size(); i++)
             {
-                const auto &material = model.materials[i];
+                const auto &material = model->materials[i];
                 const str slot_str = "Slot " + std::to_string(i) + ": " + material->name.c_str();
                 ImGui::SeparatorText(slot_str.c_str());
 
@@ -28,7 +28,7 @@ namespace mag
                 }
             }
 
-            const b8 has_material = !model.materials.empty();
+            const b8 has_material = !model->materials.empty();
             if (!has_material)
             {
                 ImGui::Text("No material");

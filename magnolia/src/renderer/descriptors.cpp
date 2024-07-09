@@ -418,7 +418,7 @@ namespace mag
         const u32 frame_count = context.get_frame_count();
 
         // Put all models textures in a single array
-        for (auto& material : model.materials)
+        for (auto& material : model->materials)
         {
             for (auto texture : material->textures)
             {
@@ -460,7 +460,7 @@ namespace mag
         if (!model_to_be_removed) return;
 
         // We are assuming the model has textures of each type
-        const u32 texture_count = model_to_be_removed->model.materials.size() * Material::TextureCount;
+        const u32 texture_count = model_to_be_removed->model->materials.size() * Material::TextureCount;
         const u32 albedo_descriptor_offset = model_to_be_removed->albedo_descriptor_offset;
         const u32 normal_descriptor_offset = model_to_be_removed->normal_descriptor_offset;
 

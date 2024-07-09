@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "camera/camera.hpp"
 #include "core/types.hpp"
 
@@ -50,11 +52,11 @@ namespace mag
     struct Model;
     struct ModelComponent : public Component
     {
-            ModelComponent(const Model& model) : model(model) {}
+            ModelComponent(const std::shared_ptr<Model>& model) : model(model) {}
 
             CLONE(ModelComponent);
 
-            const Model& model;
+            std::shared_ptr<Model> model;
 
             u32 albedo_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery
             u32 normal_descriptor_offset;  // @TODO: temporary fix for descriptor chicanery

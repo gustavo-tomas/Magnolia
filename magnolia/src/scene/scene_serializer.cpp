@@ -58,8 +58,8 @@ namespace mag
 
             if (auto component = ecs.get_component<ModelComponent>(entity_id))
             {
-                entity["ModelComponent"]["Name"] = component->model.name;
-                entity["ModelComponent"]["FilePath"] = component->model.file_path;
+                entity["ModelComponent"]["Name"] = component->model->name;
+                entity["ModelComponent"]["FilePath"] = component->model->file_path;
             }
 
             if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))

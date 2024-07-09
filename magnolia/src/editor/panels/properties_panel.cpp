@@ -33,7 +33,7 @@ namespace mag
             {
                 auto &model = model_c->model;
 
-                ImGui::TextWrapped("Name: %s", model.name.c_str());
+                ImGui::TextWrapped("Name: %s", model->name.c_str());
             }
         }
 

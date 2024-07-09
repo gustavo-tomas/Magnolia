@@ -243,12 +243,12 @@ namespace mag
             descriptors.set_offset_instance(triangle_pipeline->get_layout(), m);
 
             // Bind buffers
-            command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
-            command_buffer.bind_index_buffer(model.ibo.get_buffer());
+            command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
+            command_buffer.bind_index_buffer(model->ibo.get_buffer());
 
-            for (u64 i = 0; i < model.meshes.size(); i++)
+            for (u64 i = 0; i < model->meshes.size(); i++)
             {
-                const auto& mesh = model.meshes[i];
+                const auto& mesh = model->meshes[i];
 
                 // Set the material
                 descriptors.set_offset_material(triangle_pipeline->get_layout(),
