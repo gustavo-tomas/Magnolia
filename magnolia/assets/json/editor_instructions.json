@@ -1,12 +1,13 @@
 {
-    "window_name": "Info",
+    "window_name": "Instructions",
     "sections": [
         {
             "name": "In any mode",
             "instructions": [
                 "Press ESC to enter fullscreen view",
                 "Press TAB to alternate between editor and scene views",
-                "Press KEY_DOWN/KEY_UP to scale image resolution"
+                "Press KEY_DOWN/KEY_UP to scale image resolution",
+                "Click the play/pause button to alternate between editor and runtime modes"
             ]
         },
         {
@@ -18,6 +19,12 @@
                 "Press MOUSE_WHEEL and move the mouse to look around",
                 "Press LEFT_SHIFT + MOUSE_WHEEL and move the mouse to move the camera",
                 "With an entity selected, press RIGHT_MOUSE to open a context menu"
+            ]
+        },
+        {
+            "name": "In runtime mode",
+            "instructions": [
+                "Move around the scene with WASD, LCTRL and SPACE"
             ]
         }
     ]

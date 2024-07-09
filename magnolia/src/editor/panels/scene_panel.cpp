@@ -33,15 +33,39 @@ namespace mag
             // Pop up menu on right click
             if (selected_entity_id == entity_id && ImGui::BeginPopupContextWindow())
             {
-                if (!ecs.get_component<TransformComponent>(selected_entity_id) &&
-                    ImGui::MenuItem("Add Transform Component"))
+                ImGui::Text("Add Component");
+                ImGui::Separator();
+
+                b8 enabled = !ecs.get_component<TransformComponent>(selected_entity_id);
+                if (ImGui::MenuItem("Add Transform", NULL, false, enabled))
                 {
                     ecs.add_component(selected_entity_id, new TransformComponent());
                 }
 
+                enabled = !ecs.get_component<BoxColliderComponent>(selected_entity_id);
+                if (ImGui::MenuItem("Add BoxCollider", NULL, false, enabled))
+                {
+                    ecs.add_component(selected_entity_id, new BoxColliderComponent());
+                }
+
+                enabled = !ecs.get_component<RigidBodyComponent>(selected_entity_id);
+                if (ImGui::MenuItem("Add RigidBody", NULL, false, enabled))
+                {
+                    ecs.add_component(selected_entity_id, new RigidBodyComponent());
+                }
+
+                enabled = !ecs.get_component<CameraComponent>(selected_entity_id);
+                if (ImGui::MenuItem("Add Camera", NULL, false, enabled))
+                {
+                    ecs.add_component(selected_entity_id,
+                                      new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 1.33f, 1.0f, 1000.0f)));
+                }
+
                 auto number_of_lights = ecs.get_all_components_of_type<LightComponent>().size();
-                if (!ecs.get_component<LightComponent>(selected_entity_id) &&
-                    number_of_lights < LightComponent::MAX_NUMBER_OF_LIGHTS && ImGui::MenuItem("Add Light Component"))
+                enabled = !ecs.get_component<LightComponent>(selected_entity_id) &&
+                          number_of_lights < LightComponent::MAX_NUMBER_OF_LIGHTS;
+
+                if (ImGui::MenuItem("Add Light Component", NULL, false, enabled))
                 {
                     ecs.add_component(selected_entity_id, new LightComponent());
                 }

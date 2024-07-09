@@ -35,6 +35,10 @@ namespace mag
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
+        // @TODO: make a prettier button
+        // @NOTE: keep this runtime switch in the end to avoid the consequences of bad design
+        const b8 swap_state = ImGui::Button("Play/Pause");
+
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
         if (current_viewport_size != viewport_size)
@@ -124,11 +128,9 @@ namespace mag
             }
         }
 
-        // @TODO: make a prettier button
-        // @NOTE: keep this runtime switch in the end to avoid the consequences of bad design
         // Play/Pause simulation
         {
-            if (ImGui::Button("Play/Pause"))
+            if (swap_state)
             {
                 if (scene.get_scene_state() == SceneState::Editor)
                 {
