@@ -3,9 +3,6 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
-
-// @TODO: temp
-#include "../sprout/assets/scripts/example_script.hpp"
 #include "scripting/scripting_engine.hpp"
 
 namespace mag
