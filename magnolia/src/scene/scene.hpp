@@ -74,7 +74,7 @@ namespace mag
             std::unique_ptr<Camera> camera;
             std::unique_ptr<EditorCameraController> camera_controller;
             std::unique_ptr<StandardRenderPass> render_pass;
-            std::unique_ptr<Cube> cube;
+            Cube cube;
 
             SceneState current_state = SceneState::Editor;
             std::vector<u32> editor_deletion_queue;

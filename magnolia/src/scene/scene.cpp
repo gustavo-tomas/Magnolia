@@ -12,12 +12,11 @@ namespace mag
           ecs(new ECS()),
           camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera)),
-          render_pass(new StandardRenderPass({800, 600})),
-          cube(new Cube())
+          render_pass(new StandardRenderPass({800, 600}))
     {
         auto& app = get_application();
 
-        const auto& cube_model = std::make_shared<Model>(cube->get_model());
+        const auto& cube_model = std::make_shared<Model>(cube.get_model());
         const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
 
         // Camera
