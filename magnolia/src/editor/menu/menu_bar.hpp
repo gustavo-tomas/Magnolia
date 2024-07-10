@@ -19,6 +19,8 @@ namespace mag
 
         private:
             void display_dialog();
+            void save_active_scene();
+            void quit_application();
 
             std::unique_ptr<InfoMenu> info_menu;
             b8 quit = false;
