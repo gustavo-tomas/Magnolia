@@ -49,10 +49,9 @@ namespace mag
         const vk::PipelineDynamicStateCreateInfo dynamic_state({}, dynamic_states);
 
         const vk::GraphicsPipelineCreateInfo pipeline_create_info(
-            vk::PipelineCreateFlagBits::eDescriptorBufferEXT, shader_stages, &vertex_input_state_create_info,
-            &input_assembly_create_info, {}, &viewport_state, &rasterization_state, &multisampling_state_create_info,
-            &depth_stencil_create_info, &color_blending, &dynamic_state, pipeline_layout, {}, {}, {}, {},
-            &pipeline_rendering_create_info);
+            {}, shader_stages, &vertex_input_state_create_info, &input_assembly_create_info, {}, &viewport_state,
+            &rasterization_state, &multisampling_state_create_info, &depth_stencil_create_info, &color_blending,
+            &dynamic_state, pipeline_layout, {}, {}, {}, {}, &pipeline_rendering_create_info);
 
         const auto result_value = context.get_device().createGraphicsPipeline({}, pipeline_create_info);
         VK_CHECK(result_value.result);

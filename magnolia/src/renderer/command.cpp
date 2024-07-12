@@ -46,6 +46,12 @@ namespace mag
         this->command_buffer.bindIndexBuffer(buffer.get_buffer(), offset, vk::IndexType::eUint32);
     }
 
+    void CommandBuffer::bind_descriptor_set(const vk::PipelineBindPoint bind_point, const vk::PipelineLayout layout,
+                                            const u32 first_set, const vk::DescriptorSet descriptor_set)
+    {
+        this->command_buffer.bindDescriptorSets(bind_point, layout, first_set, descriptor_set, nullptr);
+    }
+
     void CommandBuffer::copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                                     const u64 dst_offset)
     {

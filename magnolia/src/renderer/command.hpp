@@ -31,6 +31,9 @@ namespace mag
 
             void bind_index_buffer(const Buffer& buffer, const u64 offset = 0);
 
+            void bind_descriptor_set(const vk::PipelineBindPoint bind_point, const vk::PipelineLayout layout,
+                                     const u32 first_set, const vk::DescriptorSet descriptor_set);
+
             void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                              const u64 dst_offset);
 

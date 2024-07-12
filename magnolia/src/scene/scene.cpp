@@ -16,12 +16,6 @@ namespace mag
     {
         SceneSerializer scene_serializer(*this);
         scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
-
-        // @TODO: deal with descriptor chicanery
-        for (auto& entity : ecs->get_entities_with_components_of_type<ModelComponent>())
-        {
-            render_pass->add_model(*ecs, entity);
-        }
     }
 
     Scene::~Scene()
@@ -204,15 +198,11 @@ namespace mag
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());
         ecs->add_component(entity, new ModelComponent(model));
-
-        render_pass->add_model(*ecs, entity);
     }
 
     void Scene::remove_entity(const u32 id)
     {
         if (!ecs->entity_exists(id)) return;
-
-        render_pass->remove_model(*ecs, id);
 
         // Enqueue entity
         editor_deletion_queue.push_back(id);

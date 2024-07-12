@@ -79,8 +79,8 @@ namespace mag
             vk::Format get_supported_depth_format() const;
 
             Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
-            DescriptorLayoutCache& get_descriptor_layout_cache() { return this->descriptor_layout_cache; };
-            DescriptorCache& get_descriptor_cache() { return *this->descriptor_cache; };
+            DescriptorLayoutCache& get_descriptor_layout_cache() { return *this->descriptor_layout_cache; };
+            DescriptorAllocator& get_descriptor_allocator() { return *this->descriptor_allocator; };
 
             vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
             u32 get_queue_family_index() const { return this->queue_family_index; };
@@ -119,8 +119,9 @@ namespace mag
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
-            DescriptorLayoutCache descriptor_layout_cache;
-            std::unique_ptr<DescriptorCache> descriptor_cache;
+            std::unique_ptr<DescriptorLayoutCache> descriptor_layout_cache;
+            std::unique_ptr<DescriptorAllocator> descriptor_allocator;
+
             CommandBuffer submit_command_buffer;
     };
 
