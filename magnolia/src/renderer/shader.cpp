@@ -90,7 +90,6 @@ namespace mag
                 if (type == vk::DescriptorType::eUniformBuffer)
                 {
                     uniforms_map[scope].descriptor_binding = descriptor_binding;
-                    uniforms_map[scope].data.resize(size);
                     uniforms_map[scope].buffer.initialize(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                           VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                                                           VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
@@ -168,6 +167,7 @@ namespace mag
 
         auto& uniform = uniforms_map[scope];
         auto& block = uniform.descriptor_binding.block;
+        auto& buffer = uniform.buffer;
 
         u64 offset = 0;
         u64 size = 0;
@@ -182,8 +182,7 @@ namespace mag
             }
         }
 
-        memcpy(uniform.data.data() + offset, data, size);
-        uniform.buffer.copy(uniform.data.data(), uniform.data.size());
+        buffer.copy(data, size, offset);
     }
 
     void Shader::bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set)

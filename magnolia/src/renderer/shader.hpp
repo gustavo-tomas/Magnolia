@@ -43,9 +43,9 @@ namespace mag
             struct UBO
             {
                     SpvReflectDescriptorBinding descriptor_binding;
-                    std::vector<u8> data;
 
                     // @TODO: frames in flight
+                    // One per frame in flight
                     vk::DescriptorSet descriptor_set;
                     vk::DescriptorSetLayout descriptor_set_layout;
                     Buffer buffer;
