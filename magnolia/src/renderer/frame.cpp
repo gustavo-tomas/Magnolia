@@ -76,16 +76,16 @@ namespace mag
         }
 
         // Set swapchain image layout to transfer
-        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[swapchain_image_index],
                                                   vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 
         // Copy from the draw image to the swapchain
-        curr_frame.command_buffer.copy_image_to_image(
-            draw_image.get_image(), extent, context.get_swapchain_images()[context.get_swapchain_image_index()],
-            vk::Extent3D(context.get_surface_extent(), 1));
+        curr_frame.command_buffer.copy_image_to_image(draw_image.get_image(), extent,
+                                                      context.get_swapchain_images()[swapchain_image_index],
+                                                      vk::Extent3D(context.get_surface_extent(), 1));
 
         // Set swapchain image layout to present
-        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[context.get_swapchain_image_index()],
+        curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[swapchain_image_index],
                                                   vk::ImageLayout::eTransferDstOptimal,
                                                   vk::ImageLayout::ePresentSrcKHR);
 
