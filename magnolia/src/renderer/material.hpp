@@ -21,7 +21,7 @@ namespace mag
             std::shared_ptr<Image> textures[TextureSlot::TextureCount];
             str name = "";
 
-            // @TODO: create one per frame in flight
+            // @TODO: create one per frame in flight if materials should change between frames
             // Each texture has a corresponding descriptor set for each frame in flight
             vk::DescriptorSet descriptor_sets[TextureSlot::TextureCount];
             vk::DescriptorSetLayout descriptor_set_layouts[TextureSlot::TextureCount];

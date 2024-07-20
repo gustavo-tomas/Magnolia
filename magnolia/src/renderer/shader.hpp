@@ -44,11 +44,10 @@ namespace mag
             {
                     SpvReflectDescriptorBinding descriptor_binding;
 
-                    // @TODO: frames in flight
                     // One per frame in flight
-                    vk::DescriptorSet descriptor_set;
-                    vk::DescriptorSetLayout descriptor_set_layout;
-                    Buffer buffer;
+                    std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+                    std::vector<vk::DescriptorSet> descriptor_sets;
+                    std::vector<Buffer> buffers;
             };
 
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);

@@ -71,6 +71,9 @@ namespace mag
 
     Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules) : modules(modules)
     {
+        auto& context = get_context();
+        const u32 frame_count = context.get_frame_count();
+
         // Initialize all uniforms
         for (const auto& module : modules)
         {
@@ -86,22 +89,27 @@ namespace mag
                 const u32 size = descriptor_binding.block.size;
                 const vk::DescriptorType type = static_cast<vk::DescriptorType>(descriptor_binding.descriptor_type);
 
+                uniforms_map[scope].descriptor_set_layouts.resize(frame_count);
+                uniforms_map[scope].descriptor_sets.resize(frame_count);
+                uniforms_map[scope].buffers.resize(frame_count);
+                uniforms_map[scope].descriptor_binding = descriptor_binding;
+
                 // Create buffer for ubos
                 if (type == vk::DescriptorType::eUniformBuffer)
                 {
-                    uniforms_map[scope].descriptor_binding = descriptor_binding;
-                    uniforms_map[scope].buffer.initialize(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                          VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
-                                                          VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+                    for (u32 f = 0; f < frame_count; f++)
+                    {
+                        uniforms_map[scope].buffers[f].initialize(
+                            size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
-                    auto& descriptor_set = uniforms_map[scope].descriptor_set;
-                    auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layout;
-                    auto& buffer = uniforms_map[scope].buffer;
+                        auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
+                        auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
+                        auto& buffer = uniforms_map[scope].buffers[f];
 
-                    DescriptorBuilder::create_descriptor_for_ubo(descriptor_set, descriptor_set_layout, buffer, size,
-                                                                 0);
-
-                    descriptor_set_layouts.push_back(descriptor_set_layout);
+                        DescriptorBuilder::create_descriptor_for_ubo(descriptor_set, descriptor_set_layout, buffer,
+                                                                     size, 0);
+                    }
                 }
 
                 // Create samplers for textures
@@ -110,31 +118,38 @@ namespace mag
                     auto& app = get_application();
                     auto& material_manager = app.get_material_manager();
 
-                    uniforms_map[scope].descriptor_binding = descriptor_binding;
-
-                    auto& descriptor_set = uniforms_map[scope].descriptor_set;
-                    auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layout;
-
-                    auto default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
-
-                    // Albedo
-                    if (descriptor_binding.set == 3)
+                    for (u32 f = 0; f < frame_count; f++)
                     {
-                        DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
-                                                                         default_mat->textures[Material::Albedo],
-                                                                         descriptor_set, descriptor_set_layout);
-                    }
+                        auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
+                        auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                    // Normal
-                    if (descriptor_binding.set == 4)
-                    {
-                        DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
-                                                                         default_mat->textures[Material::Normal],
-                                                                         descriptor_set, descriptor_set_layout);
-                    }
+                        auto default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
 
-                    descriptor_set_layouts.push_back(descriptor_set_layout);
+                        // Albedo
+                        if (descriptor_binding.set == 3)
+                        {
+                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
+                                                                             default_mat->textures[Material::Albedo],
+                                                                             descriptor_set, descriptor_set_layout);
+                        }
+
+                        // Normal
+                        if (descriptor_binding.set == 4)
+                        {
+                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
+                                                                             default_mat->textures[Material::Normal],
+                                                                             descriptor_set, descriptor_set_layout);
+                        }
+                    }
                 }
+
+                // Descriptor type not handled
+                else
+                {
+                    ASSERT(false, "Descriptor type " + vk::to_string(type) + " not supported");
+                }
+
+                descriptor_set_layouts.push_back(uniforms_map[scope].descriptor_set_layouts[0]);
             }
         }
     }
@@ -143,7 +158,10 @@ namespace mag
     {
         for (auto& [scope, ubo] : uniforms_map)
         {
-            ubo.buffer.shutdown();
+            for (auto& buffer : ubo.buffers)
+            {
+                buffer.shutdown();
+            }
         }
     }
 
@@ -162,12 +180,12 @@ namespace mag
 
     void Shader::set_uniform(const str& scope, const str& name, const void* data)
     {
-        // auto& context = get_context();
-        // const u32 curr_frame_number = context.get_curr_frame_number();
+        auto& context = get_context();
+        const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& uniform = uniforms_map[scope];
         auto& block = uniform.descriptor_binding.block;
-        auto& buffer = uniform.buffer;
+        auto& buffer = uniform.buffers[curr_frame_number];
 
         u64 offset = 0;
         u64 size = 0;
@@ -189,25 +207,30 @@ namespace mag
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& ubo = uniforms_map[name];
+        auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
 
-        ubo.descriptor_set = descriptor_set;
+        curr_descriptor_set = descriptor_set;
 
         // Rebind the texture descriptor
         command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
-                                           ubo.descriptor_binding.set, ubo.descriptor_set);
+                                           ubo.descriptor_binding.set, curr_descriptor_set);
     }
 
     void Shader::bind(const Pipeline& pipeline)
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
 
         for (auto& [scope, ubo] : uniforms_map)
         {
+            auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
+
             command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
-                                               ubo.descriptor_binding.set, ubo.descriptor_set);
+                                               ubo.descriptor_binding.set, curr_descriptor_set);
         }
     }
 };  // namespace mag
