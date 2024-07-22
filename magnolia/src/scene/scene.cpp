@@ -140,7 +140,7 @@ namespace mag
         // @TODO: there should be only one value for the camera position. I feel that data duplication
         // could cause issues in the future.
 
-        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        auto components = runtime_ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
         for (auto [camera_c, transform] : components)
         {
             camera_c->camera.set_position(transform->translation);
