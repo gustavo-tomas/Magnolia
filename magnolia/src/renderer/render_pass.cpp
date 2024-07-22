@@ -197,11 +197,11 @@ namespace mag
         auto& editor = get_application().get_editor();
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
-        auto light_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent, LightComponent>();
+        auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
 
         u32 l = 0;
         LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
-        for (const auto& [transform, model, light] : light_entities)
+        for (const auto& [transform, light] : light_entities)
         {
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
