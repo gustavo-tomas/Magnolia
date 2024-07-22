@@ -1,7 +1,6 @@
 #include "scene/scene.hpp"
 
 #include "core/application.hpp"
-#include "scene/scene_serializer.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
@@ -14,8 +13,6 @@ namespace mag
           camera_controller(new EditorCameraController(*camera)),
           render_pass(new StandardRenderPass({800, 600}))
     {
-        SceneSerializer scene_serializer(*this);
-        scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
     }
 
     Scene::~Scene()
