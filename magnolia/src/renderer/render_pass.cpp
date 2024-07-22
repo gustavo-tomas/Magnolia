@@ -217,11 +217,8 @@ namespace mag
 
         triangle_pipeline->bind();
 
-        for (u64 m = 0; m < model_entities.size(); m++)
+        for (auto& [transform, model_c] : model_entities)
         {
-            auto* model_c = std::get<1>(model_entities[m]);
-            auto* transform = std::get<0>(model_entities[m]);
-
             const auto& model = model_c->model;
 
             auto model_matrix = transform->get_transformation_matrix();
@@ -231,16 +228,11 @@ namespace mag
             command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
             command_buffer.bind_index_buffer(model->ibo.get_buffer());
 
-            for (u64 i = 0; i < model->meshes.size(); i++)
+            for (auto& mesh : model->meshes)
             {
-                const auto& mesh = model->meshes[i];
-
                 // Set the material
-                const auto albedo_descriptor =
-                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
-
-                const auto normal_descriptor =
-                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
+                const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
+                const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
 
                 triangle_shader->bind_texture(*triangle_pipeline, "u_albedo_texture", albedo_descriptor);
                 triangle_shader->bind_texture(*triangle_pipeline, "u_normal_texture", normal_descriptor);
