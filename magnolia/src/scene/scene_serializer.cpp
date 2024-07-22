@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
 #include "nlohmann/json.hpp"
@@ -58,8 +59,16 @@ namespace mag
 
             if (auto component = ecs.get_component<ModelComponent>(entity_id))
             {
-                entity["ModelComponent"]["Name"] = component->model->name;
-                entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                if (component->model->file_path.empty())
+                {
+                    LOG_WARNING("Model {0} has no file path and will not be serialized", component->model->name);
+                }
+
+                else
+                {
+                    entity["ModelComponent"]["Name"] = component->model->name;
+                    entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                }
             }
 
             if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
@@ -100,7 +109,7 @@ namespace mag
 
     void SceneSerializer::deserialize(const str& file_path)
     {
-        // @TODO: finish
+        auto& app = get_application();
 
         // Parse instructions from the json file
         std::ifstream file(file_path);
@@ -151,28 +160,15 @@ namespace mag
                     ecs.add_component(entity_id, new TransformComponent(translation, rotation, scale));
                 }
 
-                // if (entity.contains("ModelComponent"))
-                // {
-                //     const auto& component = entity["ModelComponent"];
-                //     const u32 type = component["Type"].get<u32>();
-                //     const str file_path = component["FilePath"];
+                if (entity.contains("ModelComponent"))
+                {
+                    const auto& component = entity["ModelComponent"];
+                    const str file_path = component["FilePath"];
 
-                //     switch (static_cast<Model::Type>(type))
-                //     {
-                //         case Model::Type::Cube:
-                //             ecs.add_component(entity_id, new ModelComponent(model_manager.get_cube_primitive()));
-                //             break;
+                    const auto& model = app.get_model_manager().load(file_path);
 
-                //         case Model::Type::Mesh:
-                //             ecs.add_component(entity_id,
-                //                               new ModelComponent(*model_manager.load(component["FilePath"])));
-                //             break;
-
-                //         default:
-                //             ASSERT(false, "Invalid model type selected");
-                //             break;
-                //     }
-                // }
+                    ecs.add_component(entity_id, new ModelComponent(model));
+                }
 
                 if (entity.contains("BoxColliderComponent"))
                 {
@@ -231,7 +227,5 @@ namespace mag
                 }
             }
         }
-
-        ASSERT(false, "Not implemented");
     }
 };  // namespace mag

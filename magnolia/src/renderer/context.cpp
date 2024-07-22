@@ -340,19 +340,19 @@ namespace mag
         }
 
         // Descriptors
-        descriptor_layout_cache.initialize();
-        descriptor_cache = std::make_unique<DescriptorCache>();
+        this->descriptor_layout_cache = std::make_unique<DescriptorLayoutCache>();
+        this->descriptor_allocator = std::make_unique<DescriptorAllocator>();
     }
 
     Context::~Context()
     {
         this->device.waitIdle();
 
-        this->descriptor_cache.reset();
+        this->descriptor_layout_cache.reset();
+        this->descriptor_allocator.reset();
 
         vmaDestroyAllocator(this->allocator);
 
-        this->descriptor_layout_cache.shutdown();
         this->frame_provider.shutdown();
 
         for (const auto& image_view : swapchain_image_views) this->device.destroyImageView(image_view);

@@ -23,7 +23,6 @@ namespace mag
     {
         auto& app = get_application();
         auto& shader_loader = app.get_shader_manager();
-        auto& descriptors = get_context().get_descriptor_cache();
 
         // Set draw size before initializing images
         this->draw_size = {size, 1};
@@ -71,15 +70,12 @@ namespace mag
 
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
-        // Descriptors
-        descriptors.build_descriptors_from_shader(*triangle_shader);
-
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info =
             vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
 
-        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
-                                                       *triangle_shader);
+        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info,
+                                                       triangle_shader->get_descriptor_set_layouts(), *triangle_shader);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -90,7 +86,7 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
+        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
                                                    *grid_shader, Pipeline::default_input_assembly(),
                                                    Pipeline::default_rasterization_state(), color_blend_attachment);
 
@@ -102,7 +98,7 @@ namespace mag
         rasterization_state.setPolygonMode(vk::PolygonMode::eLine);
         rasterization_state.setCullMode(vk::CullModeFlagBits::eNone);
 
-        line_pipeline = std::make_unique<Pipeline>(pipeline_create_info, descriptors.get_descriptor_set_layouts(),
+        line_pipeline = std::make_unique<Pipeline>(pipeline_create_info, color_shader->get_descriptor_set_layouts(),
                                                    *color_shader, input_assembly, rasterization_state);
     }
 
@@ -198,7 +194,6 @@ namespace mag
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
-        auto& descriptors = context.get_descriptor_cache();
         auto& editor = get_application().get_editor();
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
@@ -211,36 +206,26 @@ namespace mag
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
 
-        triangle_shader->set_uniform_global("view", value_ptr(camera.get_view()));
-        triangle_shader->set_uniform_global("projection", value_ptr(camera.get_projection()));
-        triangle_shader->set_uniform_global("near_far", value_ptr(camera.get_near_far()));
-        triangle_shader->set_uniform_global("point_lights", &point_lights);
-        triangle_shader->set_uniform_shader("texture_output", &editor.get_texture_output());
-        triangle_shader->set_uniform_shader("normal_output", &editor.get_normal_output());
+        triangle_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        triangle_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        triangle_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
+        triangle_shader->set_uniform("u_global", "point_lights", &point_lights);
+        triangle_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
+        triangle_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
 
-        for (u64 b = 0; b < model_entities.size(); b++)
-        {
-            // @TODO: this is very wrong. b - 1 assumes that every transform has a corresponding model.
-            // Because of that we have to create a model for the light, even if we intend to use a different
-            // shader to render it.
-            auto [transform, model] = model_entities[b];
-
-            auto model_matrix = transform->get_transformation_matrix();
-            triangle_shader->set_uniform_instance("model", value_ptr(model_matrix), b);
-        }
-
-        descriptors.bind();
-        descriptors.set_offset_global(triangle_pipeline->get_layout());
-        descriptors.set_offset_shader(triangle_pipeline->get_layout());
+        triangle_shader->bind(*triangle_pipeline);
 
         triangle_pipeline->bind();
 
         for (u64 m = 0; m < model_entities.size(); m++)
         {
             auto* model_c = std::get<1>(model_entities[m]);
+            auto* transform = std::get<0>(model_entities[m]);
+
             const auto& model = model_c->model;
 
-            descriptors.set_offset_instance(triangle_pipeline->get_layout(), m);
+            auto model_matrix = transform->get_transformation_matrix();
+            triangle_shader->set_uniform("u_instance", "model", value_ptr(model_matrix));
 
             // Bind buffers
             command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
@@ -251,13 +236,14 @@ namespace mag
                 const auto& mesh = model->meshes[i];
 
                 // Set the material
-                descriptors.set_offset_material(triangle_pipeline->get_layout(),
-                                                mesh.material_index + model_c->albedo_descriptor_offset,
-                                                TextureType::Albedo);
+                const auto albedo_descriptor =
+                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
 
-                descriptors.set_offset_material(triangle_pipeline->get_layout(),
-                                                mesh.material_index + model_c->normal_descriptor_offset,
-                                                TextureType::Normal);
+                const auto normal_descriptor =
+                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
+
+                triangle_shader->bind_texture(*triangle_pipeline, "u_albedo_texture", albedo_descriptor);
+                triangle_shader->bind_texture(*triangle_pipeline, "u_normal_texture", normal_descriptor);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex);
@@ -274,11 +260,14 @@ namespace mag
 
             if (line_list != nullptr)
             {
-                descriptors.set_offset_global(line_pipeline->get_layout());
+                color_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+                color_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-                const auto& model = line_list->get_model();
+                color_shader->bind(*line_pipeline);
 
                 line_pipeline->bind();
+
+                const auto& model = line_list->get_model();
 
                 command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
                 command_buffer.draw(model.vertices.size());
@@ -287,9 +276,14 @@ namespace mag
 
         // Draw the grid
         {
-            descriptors.set_offset_global(grid_pipeline->get_layout());
+            grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+            grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+            grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
+
+            grid_shader->bind(*grid_pipeline);
 
             grid_pipeline->bind();
+
             command_buffer.draw(6);
         }
     }
@@ -303,20 +297,6 @@ namespace mag
 
         command_buffer.transfer_layout(resolve_images[curr_frame_number].get_image(),
                                        vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eTransferSrcOptimal);
-    }
-
-    void StandardRenderPass::add_model(ECS& ecs, const u32 id)
-    {
-        auto& descriptors = get_context().get_descriptor_cache();
-
-        descriptors.add_image_descriptors_for_model(ecs, id);
-    }
-
-    void StandardRenderPass::remove_model(ECS& ecs, const u32 id)
-    {
-        auto& descriptors = get_context().get_descriptor_cache();
-
-        descriptors.remove_image_descriptors_for_model(ecs, id);
     }
 
     void StandardRenderPass::on_resize(const uvec2& size)

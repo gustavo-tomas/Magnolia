@@ -8,13 +8,31 @@
 
 namespace mag
 {
+    b8 is_ctrl_pressed(const ImGuiKey key = ImGuiKey_None)
+    {
+        if (key != ImGuiKey_None)
+        {
+            return ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(key);
+        }
+
+        return ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+    }
+
     MenuBar::MenuBar() : info_menu(new InfoMenu()) {}
 
     void MenuBar::render(const ImGuiWindowFlags window_flags)
     {
-        auto& app = get_application();
+        // Save
+        if (is_ctrl_pressed(ImGuiKey_S))
+        {
+            save_active_scene();
+        }
 
-        // @TODO: shortcuts dont do anything
+        // Quit
+        if (is_ctrl_pressed(ImGuiKey_Q))
+        {
+            quit_application();
+        }
 
         // Display open dialogs
         display_dialog();
@@ -34,17 +52,12 @@ namespace mag
                 // Save
                 if (ImGui::MenuItem("Save", "CTRL+S"))
                 {
-                    IGFD::FileDialogConfig config;
-                    config.path = "sprout/assets/scenes";
-                    config.fileName = app.get_active_scene().get_name() + ".mag.json";
-
-                    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
-                    dialog_open = true;
+                    save_active_scene();
                 }
 
                 // Load
                 // @TODO: finish
-                if (false && ImGui::MenuItem("Open", "CTRL+O"))
+                if (ImGui::MenuItem("Open", "CTRL+O", false, false))
                 {
                     auto* scene = new Scene();
 
@@ -56,9 +69,9 @@ namespace mag
                 }
 
                 // Quit
-                if (ImGui::MenuItem("Quit"))
+                if (ImGui::MenuItem("Quit", "Ctrl+Q"))
                 {
-                    quit = true;
+                    quit_application();
                 }
 
                 ImGui::EndMenu();
@@ -74,6 +87,20 @@ namespace mag
             ImGui::EndMainMenuBar();
         }
     }
+
+    void MenuBar::save_active_scene()
+    {
+        auto& app = get_application();
+
+        IGFD::FileDialogConfig config;
+        config.path = "sprout/assets/scenes";
+        config.fileName = app.get_active_scene().get_name() + ".mag.json";
+
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
+        dialog_open = true;
+    }
+
+    void MenuBar::quit_application() { quit = true; }
 
     void MenuBar::display_dialog()
     {

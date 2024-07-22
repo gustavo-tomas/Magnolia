@@ -31,14 +31,14 @@ layout (set = 1, binding = 0) uniform InstanceBuffer
     mat4 model;
 } u_instance;
 
-// Materials 
-layout (set = 2, binding = 0) uniform sampler2D u_albedo_texture;
-layout (set = 3, binding = 0) uniform sampler2D u_normal_texture;
-
 // Shader parameters
-layout (set = 4, binding = 0) uniform ShaderBuffer
+layout (set = 2, binding = 0) uniform ShaderBuffer
 {
     // Debug
     uint texture_output;
     uint normal_output;
 } u_shader;
+
+// Materials
+layout (set = 3, binding = 0) uniform sampler2D u_albedo_texture;
+layout (set = 4, binding = 0) uniform sampler2D u_normal_texture;

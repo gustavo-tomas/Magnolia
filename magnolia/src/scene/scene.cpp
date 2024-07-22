@@ -1,7 +1,7 @@
 #include "scene/scene.hpp"
 
 #include "core/application.hpp"
-#include "core/logger.hpp"
+#include "scene/scene_serializer.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
@@ -14,85 +14,8 @@ namespace mag
           camera_controller(new EditorCameraController(*camera)),
           render_pass(new StandardRenderPass({800, 600}))
     {
-        auto& app = get_application();
-
-        const auto& cube_model = std::make_shared<Model>(cube.get_model());
-        const auto& light_model = app.get_model_manager().load("magnolia/assets/models/lightbulb/lightbulb.glb");
-
-        // Camera
-        {
-            const auto camera_entity = ecs->create_entity("Camera");
-
-            auto* transform = new TransformComponent(vec3(10, 30, 100));
-            auto* camera = new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f));
-            auto* script = new ScriptComponent("sprout/assets/scripts/example_lua_script.lua");
-            // auto* script = new NativeScriptComponent();
-            // script->bind<CameraController>();
-
-            ecs->add_component(camera_entity, transform);
-            ecs->add_component(camera_entity, camera);
-            ecs->add_component(camera_entity, script);
-        }
-
-        const i32 loops = 2;
-        u32 count = 0;
-        for (i32 i = -loops / 2; i <= loops / 2; i++)
-        {
-            for (i32 j = -loops / 2; j <= loops / 2; j++)
-            {
-                const str name = "Cube" + std::to_string(count++);
-
-                const auto cube_entity = ecs->create_entity(name);
-
-                const vec3 scale = vec3(10);
-                const vec3 rot = vec3(rand() % 360);
-                const vec3 pos = vec3(i * 30, 100, j * 30);
-
-                auto* transform = new TransformComponent(pos, rot, scale);
-                auto* rigid_body = new RigidBodyComponent(1.0f);
-                auto* collider = new BoxColliderComponent(transform->scale);
-
-                ecs->add_component(cube_entity, transform);
-                ecs->add_component(cube_entity, new ModelComponent(cube_model));
-                ecs->add_component(cube_entity, collider);
-                ecs->add_component(cube_entity, rigid_body);
-
-                render_pass->add_model(*ecs, cube_entity);
-
-                LOG_INFO("Cube created");
-            }
-        }
-
-        // Floor
-        {
-            const auto floor_entity = ecs->create_entity("Floor");
-
-            const vec3 pos = vec3(0, -10, 0);
-
-            auto* transform = new TransformComponent(pos);
-            auto* rigid_body = new RigidBodyComponent(0.0f);
-            auto* collider = new BoxColliderComponent(vec3(150, 10, 150));
-
-            ecs->add_component(floor_entity, transform);
-            ecs->add_component(floor_entity, collider);
-            ecs->add_component(floor_entity, rigid_body);
-        }
-
-        // Light
-        for (i32 i = 0; i < static_cast<i32>(LightComponent::MAX_NUMBER_OF_LIGHTS); i++)
-        {
-            const auto light = ecs->create_entity("Light" + std::to_string(i));
-            const vec3 color = vec3(1);
-            const f32 intensity = 100;
-
-            ecs->add_component(light, new LightComponent(color, intensity));
-            ecs->add_component(light, new ModelComponent(light_model));
-            ecs->add_component(light, new TransformComponent(vec3(500 - (500 * i), 100, 0), vec3(0), vec3(10)));
-
-            render_pass->add_model(*ecs, light);
-
-            LOG_INFO("Light created");
-        }
+        SceneSerializer scene_serializer(*this);
+        scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
     }
 
     Scene::~Scene()
@@ -275,15 +198,11 @@ namespace mag
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());
         ecs->add_component(entity, new ModelComponent(model));
-
-        render_pass->add_model(*ecs, entity);
     }
 
     void Scene::remove_entity(const u32 id)
     {
         if (!ecs->entity_exists(id)) return;
-
-        render_pass->remove_model(*ecs, id);
 
         // Enqueue entity
         editor_deletion_queue.push_back(id);

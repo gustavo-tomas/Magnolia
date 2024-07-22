@@ -2,8 +2,11 @@
 
 #include <fstream>
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
+#include "renderer/descriptors.hpp"
+#include "renderer/pipeline.hpp"
 
 namespace mag
 {
@@ -68,6 +71,9 @@ namespace mag
 
     Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules) : modules(modules)
     {
+        auto& context = get_context();
+        const u32 frame_count = context.get_frame_count();
+
         // Initialize all uniforms
         for (const auto& module : modules)
         {
@@ -79,8 +85,82 @@ namespace mag
                 // Already initialized
                 if (uniforms_map.contains(descriptor_binding.name)) continue;
 
-                uniforms_map[descriptor_binding.name].descriptor_binding = descriptor_binding;
-                uniforms_map[descriptor_binding.name].data.resize(descriptor_binding.block.size);
+                const str scope = descriptor_binding.name;
+                const u32 size = descriptor_binding.block.size;
+                const vk::DescriptorType type = static_cast<vk::DescriptorType>(descriptor_binding.descriptor_type);
+
+                uniforms_map[scope].descriptor_set_layouts.resize(frame_count);
+                uniforms_map[scope].descriptor_sets.resize(frame_count);
+                uniforms_map[scope].buffers.resize(frame_count);
+                uniforms_map[scope].descriptor_binding = descriptor_binding;
+
+                // Create buffer for ubos
+                if (type == vk::DescriptorType::eUniformBuffer)
+                {
+                    for (u32 f = 0; f < frame_count; f++)
+                    {
+                        uniforms_map[scope].buffers[f].initialize(
+                            size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                        auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
+                        auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
+                        auto& buffer = uniforms_map[scope].buffers[f];
+
+                        DescriptorBuilder::create_descriptor_for_ubo(descriptor_set, descriptor_set_layout, buffer,
+                                                                     size, 0);
+                    }
+                }
+
+                // Create samplers for textures
+                else if (type == vk::DescriptorType::eCombinedImageSampler)
+                {
+                    auto& app = get_application();
+                    auto& material_manager = app.get_material_manager();
+
+                    for (u32 f = 0; f < frame_count; f++)
+                    {
+                        auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
+                        auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
+
+                        auto default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
+
+                        // Albedo
+                        if (descriptor_binding.set == 3)
+                        {
+                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
+                                                                             default_mat->textures[Material::Albedo],
+                                                                             descriptor_set, descriptor_set_layout);
+                        }
+
+                        // Normal
+                        if (descriptor_binding.set == 4)
+                        {
+                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
+                                                                             default_mat->textures[Material::Normal],
+                                                                             descriptor_set, descriptor_set_layout);
+                        }
+                    }
+                }
+
+                // Descriptor type not handled
+                else
+                {
+                    ASSERT(false, "Descriptor type " + vk::to_string(type) + " not supported");
+                }
+
+                descriptor_set_layouts.push_back(uniforms_map[scope].descriptor_set_layouts[0]);
+            }
+        }
+    }
+
+    Shader::~Shader()
+    {
+        for (auto& [scope, ubo] : uniforms_map)
+        {
+            for (auto& buffer : ubo.buffers)
+            {
+                buffer.shutdown();
             }
         }
     }
@@ -98,14 +178,14 @@ namespace mag
         vertex_bindings.push_back(vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex));
     }
 
-    void Shader::set_uniform(const str& scope, const str& name, const void* data, const u32 buffer_index)
+    void Shader::set_uniform(const str& scope, const str& name, const void* data)
     {
         auto& context = get_context();
-        auto& descriptor_cache = context.get_descriptor_cache();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& uniform = uniforms_map[scope];
         auto& block = uniform.descriptor_binding.block;
+        auto& buffer = uniform.buffers[curr_frame_number];
 
         u64 offset = 0;
         u64 size = 0;
@@ -120,28 +200,37 @@ namespace mag
             }
         }
 
-        memcpy(uniform.data.data() + offset, data, size);
-
-        if (scope == "u_shader")
-        {
-            descriptor_cache.get_shader_data_buffers()[curr_frame_number].copy(uniform.data.data(),
-                                                                               uniform.data.size());
-        }
-
-        else
-        {
-            descriptor_cache.get_data_buffers()[curr_frame_number][buffer_index].copy(uniform.data.data(),
-                                                                                      uniform.data.size());
-        }
+        buffer.copy(data, size, offset);
     }
 
-    void Shader::set_uniform_global(const str& name, const void* data) { set_uniform("u_global", name, data, 0); }
-
-    void Shader::set_uniform_instance(const str& name, const void* data, const u32 instance)
+    void Shader::bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set)
     {
-        // @TODO: hardcoded number of global uniforms (1)
-        set_uniform("u_instance", name, data, instance + 1);
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        auto& ubo = uniforms_map[name];
+        auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
+
+        curr_descriptor_set = descriptor_set;
+
+        // Rebind the texture descriptor
+        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
+                                           ubo.descriptor_binding.set, curr_descriptor_set);
     }
 
-    void Shader::set_uniform_shader(const str& name, const void* data) { set_uniform("u_shader", name, data, 0); }
+    void Shader::bind(const Pipeline& pipeline)
+    {
+        auto& context = get_context();
+        auto& command_buffer = context.get_curr_frame().command_buffer;
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        for (auto& [scope, ubo] : uniforms_map)
+        {
+            auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
+
+            command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
+                                               ubo.descriptor_binding.set, curr_descriptor_set);
+        }
+    }
 };  // namespace mag

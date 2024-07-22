@@ -1,30 +1,55 @@
 #pragma once
 
-// @TODO: imagine how good this will look once i refactor it
-
 #include <memory>
 #include <unordered_map>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
-#include "ecs/ecs.hpp"
-#include "renderer/buffers.hpp"
-#include "spirv_reflect.h"
 
 namespace mag
 {
-    class Context;
-    class Image;
-    enum class TextureType;
+    // DescriptorAllocator
+    // ---------------------------------------------------------------------------------------------------------------------
+    class DescriptorAllocator
+    {
+        public:
+            DescriptorAllocator() = default;
+            ~DescriptorAllocator();
+
+            std::vector<std::pair<vk::DescriptorType, f32>> sizes = {{vk::DescriptorType::eSampler, 0.5f},
+                                                                     {vk::DescriptorType::eCombinedImageSampler, 4.0f},
+                                                                     {vk::DescriptorType::eSampledImage, 4.0f},
+                                                                     {vk::DescriptorType::eStorageImage, 1.0f},
+                                                                     {vk::DescriptorType::eUniformTexelBuffer, 1.0f},
+                                                                     {vk::DescriptorType::eStorageTexelBuffer, 1.0f},
+                                                                     {vk::DescriptorType::eUniformBuffer, 2.0f},
+                                                                     {vk::DescriptorType::eStorageBuffer, 2.0f},
+                                                                     {vk::DescriptorType::eUniformBufferDynamic, 1.0f},
+                                                                     {vk::DescriptorType::eStorageBufferDynamic, 1.0f},
+                                                                     {vk::DescriptorType::eInputAttachment, 0.5f}};
+
+            using PoolSizes = std::vector<std::pair<vk::DescriptorType, f32>>;
+
+            b8 allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout);
+            void reset_pools();
+
+        private:
+            vk::DescriptorPool grab_pool();
+
+            vk::DescriptorPool current_pool = {};
+            PoolSizes descriptor_sizes;
+            std::vector<vk::DescriptorPool> used_pools;
+            std::vector<vk::DescriptorPool> free_pools;
+    };
 
     // DescriptorLayoutCache
-    // -----------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------
     class DescriptorLayoutCache
     {
         public:
-            void initialize();
-            void shutdown();
+            DescriptorLayoutCache() = default;
+            ~DescriptorLayoutCache();
 
             vk::DescriptorSetLayout create_descriptor_layout(const vk::DescriptorSetLayoutCreateInfo* info);
             struct DescriptorLayoutInfo
@@ -46,67 +71,39 @@ namespace mag
             std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layout_cache;
     };
 
-    struct Descriptor
-    {
-            vk::DescriptorSetLayout layout = {};
-            Buffer buffer;
-            u64 size;
-            std::vector<u64> offsets;
-    };
-
     // DescriptorBuilder
-    // -----------------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------------------
+    class Image;
+    class Buffer;
     class DescriptorBuilder
     {
         public:
-            static Descriptor build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set);
+            static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
 
-            static void build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers);
-            static void build(const Descriptor& descriptor, const std::vector<std::shared_ptr<Image>>& images);
-    };
+            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
+                                    const vk::ShaderStageFlags stage_flags,
+                                    const vk::DescriptorBufferInfo* buffer_info);
 
-    // DescriptorCache
-    // -----------------------------------------------------------------------------------------------------------------
-    struct Model;
-    class Shader;
-    class DescriptorCache
-    {
-        public:
-            DescriptorCache() = default;
-            ~DescriptorCache();
+            DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
+                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo* buffer_info);
 
-            void build_descriptors_from_shader(const Shader& shader);
-            void bind();
-            void add_image_descriptors_for_model(ECS& ecs, const u32 id);
-            void remove_image_descriptors_for_model(ECS& ecs, const u32 id);
+            b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
+            b8 build(vk::DescriptorSet& set);
 
-            void set_offset_global(const vk::PipelineLayout& pipeline_layout);
-            void set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance);
-            void set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index,
-                                     const TextureType texture_type);
-            void set_offset_shader(const vk::PipelineLayout& pipeline_layout);
+            // Helpers
+            static void create_descriptor_for_ubo(vk::DescriptorSet& descriptor_set,
+                                                  vk::DescriptorSetLayout& descriptor_set_layout, const Buffer& buffer,
+                                                  const u64 buffer_size, const u64 offset);
 
-            // @TODO: idk
-            std::vector<std::vector<Buffer>>& get_data_buffers() { return data_buffers; };
-            std::vector<Buffer>& get_shader_data_buffers() { return shader_data_buffers; };
-
-            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const
-            {
-                return descriptor_set_layouts;
-            };
-
-            const std::vector<std::shared_ptr<Image>>& get_albedo_textures() const { return albedo_textures; };
-            const std::vector<std::shared_ptr<Image>>& get_normal_textures() const { return normal_textures; };
+            static void create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
+                                                      vk::DescriptorSet& descriptor_set,
+                                                      vk::DescriptorSetLayout& descriptor_set_layout);
 
         private:
-            void set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
-                                              const u32 buffer_indices, const u64 buffer_offsets);
+            std::vector<vk::WriteDescriptorSet> writes;
+            std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
-            std::vector<std::vector<Buffer>> data_buffers;
-            std::vector<Buffer> shader_data_buffers;
-            std::vector<std::shared_ptr<Image>> albedo_textures, normal_textures;
-            std::vector<Descriptor> uniform_descriptors, shader_uniform_descriptors, albedo_image_descriptors,
-                normal_image_descriptors;
-            std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+            DescriptorLayoutCache* cache = nullptr;
+            DescriptorAllocator* alloc = nullptr;
     };
 };  // namespace mag

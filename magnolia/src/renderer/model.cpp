@@ -5,6 +5,7 @@
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "renderer/context.hpp"
+#include "renderer/descriptors.hpp"
 #include "renderer/image.hpp"
 
 namespace mag
@@ -166,6 +167,13 @@ namespace mag
 
             material->textures[Material::TextureSlot::Normal] =
                 load_texture(ai_material, aiTextureType_NORMALS, directory);
+
+            // @TODO: hardcoded binding (0)
+            for (u32 t = 0; t < Material::TextureCount; t++)
+            {
+                DescriptorBuilder::create_descriptor_for_texture(0, material->textures[t], material->descriptor_sets[t],
+                                                                 material->descriptor_set_layouts[t]);
+            }
 
             model->materials[i] = material_manager.load(material);
         }

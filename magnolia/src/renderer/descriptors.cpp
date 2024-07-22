@@ -5,25 +5,123 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
-#include "renderer/model.hpp"
-#include "renderer/shader.hpp"
 
 namespace mag
 {
-    // DescriptorLayoutCache
-    // -----------------------------------------------------------------------------------------------------------------
-    void DescriptorLayoutCache::initialize() {}
+    vk::DescriptorPool create_pool(const DescriptorAllocator::PoolSizes& pool_sizes, const u32 count,
+                                   const vk::DescriptorPoolCreateFlags flags)
+    {
+        auto& device = get_context().get_device();
 
-    void DescriptorLayoutCache::shutdown()
+        std::vector<vk::DescriptorPoolSize> sizes;
+        sizes.reserve(pool_sizes.size());
+        for (const auto& [type, size] : pool_sizes) sizes.push_back({type, static_cast<u32>(size * count)});
+
+        const vk::DescriptorPoolCreateInfo pool_info(flags, count, sizes);
+        const vk::DescriptorPool descriptor_pool = device.createDescriptorPool(pool_info);
+
+        return descriptor_pool;
+    }
+
+    // DescriptorAllocator
+    // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorAllocator::~DescriptorAllocator()
+    {
+        auto& context = get_context();
+
+        for (const auto& p : free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+    }
+
+    b8 DescriptorAllocator::allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout)
+    {
+        auto& context = get_context();
+
+        // initialize the currentPool handle if it's null
+        if (current_pool == VK_NULL_HANDLE)
+        {
+            current_pool = grab_pool();
+            used_pools.push_back(current_pool);
+        }
+
+        vk::DescriptorSetAllocateInfo alloc_info(current_pool, 1, &layout);
+
+        // try to allocate the descriptor set
+        vk::Result alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
+        b8 needReallocate = false;
+
+        switch (alloc_result)
+        {
+            case vk::Result::eSuccess:
+                return true;
+
+            // reallocate pool
+            case vk::Result::eErrorFragmentedPool:
+            case vk::Result::eErrorOutOfPoolMemory:
+                needReallocate = true;
+                break;
+
+            // unrecoverable error
+            default:
+                return false;
+        }
+
+        if (needReallocate)
+        {
+            // allocate a new pool and retry
+            current_pool = grab_pool();
+            used_pools.push_back(current_pool);
+
+            alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
+
+            if (alloc_result == vk::Result::eSuccess) return true;
+        }
+
+        // if it still fails then we have big issues
+        return false;
+    }
+
+    void DescriptorAllocator::reset_pools()
+    {
+        auto& context = get_context();
+
+        // reset all used pools and add them to the free pools
+        for (const auto& p : used_pools)
+        {
+            VK_CHECK(VK_CAST(vkResetDescriptorPool(context.get_device(), p, 0)));
+            free_pools.push_back(p);
+        }
+
+        // clear the used pools, since we've put them all in the free pools
+        used_pools.clear();
+
+        // reset the current pool handle back to null
+        current_pool = VK_NULL_HANDLE;
+    }
+
+    vk::DescriptorPool DescriptorAllocator::grab_pool()
+    {
+        // there are reusable pools availible
+        if (free_pools.size() > 0)
+        {
+            // grab pool from the back of the vector and remove it from there.
+            vk::DescriptorPool pool = free_pools.back();
+            free_pools.pop_back();
+            return pool;
+        }
+
+        // no pools availible, so create a new one
+        return create_pool(descriptor_sizes, 1000, {});
+    }
+
+    // DescriptorLayoutCache
+    // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorLayoutCache::~DescriptorLayoutCache()
     {
         auto& context = get_context();
 
         // delete every descriptor layout held
-        for (const auto& layout_pair : layout_cache)
-        {
-            const auto& layout = layout_pair.second;
-            context.get_device().destroyDescriptorSetLayout(layout);
-        }
+        for (const auto& [info, layout] : layout_cache) context.get_device().destroyDescriptorSetLayout(layout);
     }
 
     vk::DescriptorSetLayout DescriptorLayoutCache::create_descriptor_layout(
@@ -119,435 +217,108 @@ namespace mag
     }
 
     // DescriptorBuilder
-    // -----------------------------------------------------------------------------------------------------------------
-    Descriptor DescriptorBuilder::build_layout(const SpvReflectShaderModule& shader_reflection, const u32 set)
+    // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator)
     {
-        ASSERT(shader_reflection.descriptor_set_count > set, "Invalid descriptor set");
+        DescriptorBuilder builder;
+        builder.cache = layoutCache;
+        builder.alloc = allocator;
 
-        auto& context = get_context();
-        auto& device = context.get_device();
-        auto& cache = context.get_descriptor_layout_cache();
-
-        Descriptor descriptor;
-
-        // @TODO: setting both vertex and fragment stages
-        // const vk::ShaderStageFlagBits stage = static_cast<vk::ShaderStageFlagBits>(shader_reflection.shader_stage);
-        const vk::ShaderStageFlags stage = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment;
-
-        // Create the descriptor binding for the layout
-        const SpvReflectDescriptorSet& descriptor_set = shader_reflection.descriptor_sets[set];
-
-        // Create all bindings for the specified set
-        std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        for (u32 b = 0; b < descriptor_set.binding_count; b++)
-        {
-            const u32 binding = descriptor_set.bindings[b]->binding;
-            const u32 count = descriptor_set.bindings[b]->count;
-            const vk::DescriptorType type =
-                static_cast<vk::DescriptorType>(descriptor_set.bindings[b]->descriptor_type);
-
-            vk::DescriptorSetLayoutBinding new_binding(binding, type, count, stage);
-            bindings.push_back(new_binding);
-        }
-
-        // Build layout
-        const vk::DescriptorSetLayoutCreateInfo layout_info(vk::DescriptorSetLayoutCreateFlagBits::eDescriptorBufferEXT,
-                                                            bindings);
-        descriptor.layout = cache.create_descriptor_layout(&layout_info);
-
-        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
-
-        // 2. Get size
-        // Get set layout descriptor sizes and adjust them to satisfy alignment requirements.
-        const u64 alignment = descriptor_buffer_properties.descriptorBufferOffsetAlignment;
-        descriptor.size = device.getDescriptorSetLayoutSizeEXT(descriptor.layout);
-        descriptor.size = (descriptor.size + alignment - 1) & ~(alignment - 1);
-
-        // 3. Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
-        descriptor.offsets.resize(bindings.size());
-        for (u32 b = 0; b < bindings.size(); b++)
-        {
-            descriptor.offsets[b] = device.getDescriptorSetLayoutBindingOffsetEXT(descriptor.layout, b);
-        }
-
-        return descriptor;
+        return builder;
     }
 
-    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<Buffer>& data_buffers)
+    DescriptorBuilder& DescriptorBuilder::bind(const u32 binding, const vk::DescriptorType type,
+                                               const vk::ShaderStageFlags stage_flags,
+                                               const vk::DescriptorBufferInfo* buffer_info)
     {
-        auto& context = get_context();
-        auto& device = context.get_device();
-        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
+        // create the descriptor binding for the layout
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage_flags);
+        bindings.push_back(new_binding);
 
-        // 4. Put the descriptors into buffers
-        char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
+        // create the descriptor write
+        vk::WriteDescriptorSet new_write({}, binding, {}, 1, type, {}, buffer_info);
+        writes.push_back(new_write);
 
-        for (u64 i = 0; i < data_buffers.size(); i++)
-        {
-            const vk::DescriptorAddressInfoEXT address_info(data_buffers[i].get_device_address(),
-                                                            data_buffers[i].get_size(), vk::Format::eUndefined);
-
-            const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eUniformBuffer, {&address_info});
-
-            // @TODO: hardcoded offset
-            const u64 offset = i ? i * descriptor.size + descriptor.offsets[0] : 0;
-
-            device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize,
-                                    descriptor_buffer_data + offset);
-        }
+        return *this;
     }
 
-    void DescriptorBuilder::build(const Descriptor& descriptor, const std::vector<std::shared_ptr<Image>>& images)
+    DescriptorBuilder& DescriptorBuilder::bind(const u32 binding, const vk::DescriptorType type,
+                                               const vk::ShaderStageFlags stage_flags,
+                                               const vk::DescriptorImageInfo* image_info)
+    {
+        // create the descriptor binding for the layout
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage_flags);
+        bindings.push_back(new_binding);
+
+        // create the descriptor write
+        vk::WriteDescriptorSet new_write({}, binding, {}, 1, type, image_info);
+        writes.push_back(new_write);
+
+        return *this;
+    }
+
+    b8 DescriptorBuilder::build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout)
+    {
+        // build layout first
+        vk::DescriptorSetLayoutCreateInfo layout_info({}, bindings);
+        layout = cache->create_descriptor_layout(&layout_info);
+
+        // allocate descriptor
+        b8 success = alloc->allocate(&set, layout);
+        if (!success) return false;
+
+        // write descriptor
+        return this->build(set);
+    }
+
+    b8 DescriptorBuilder::build(vk::DescriptorSet& set)
     {
         auto& context = get_context();
-        auto& device = context.get_device();
-        auto descriptor_buffer_properties = context.get_descriptor_buffer_properties();
 
-        // 4. Put the descriptors into buffers
-        char* descriptor_buffer_data = static_cast<char*>(descriptor.buffer.get_data());
+        // write descriptor
+        for (vk::WriteDescriptorSet& w : writes) w.setDstSet(set);
 
-        for (u64 i = 0; i < images.size(); i++)
-        {
-            const vk::DescriptorImageInfo image_info(images[i]->get_sampler().get_handle(),
-                                                     images[i]->get_image_view());
+        context.get_device().updateDescriptorSets(writes, {});
 
-            const vk::DescriptorGetInfoEXT descriptor_info(vk::DescriptorType::eCombinedImageSampler, {&image_info});
-
-            // @TODO: hardcoded offset
-            const u64 offset = i * descriptor.size + descriptor.offsets[0];
-
-            device.getDescriptorEXT(descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize,
-                                    descriptor_buffer_data + offset);
-        }
+        return true;
     }
 
-    // @TODO: this is pretty bad. somebody should do something about this.
-
-    // Descriptor Buffer Limits
-    // By limiting the number of models/textures we can initialize the descriptor buffers only once and simply rebuild
-    // get the descriptor sets again when we modify the uniform/texture data. @TODO: we may want to extend this approach
-    // and first check if the descriptor buffer supports the size and also make the limits configurable.
-    const u32 MAX_NUMBER_OF_GLOBALS = 1;      // Only one global buffer
-    const u32 MAX_NUMBER_OF_INSTANCES = 999;  // The rest is instance buffers
-    const u32 MAX_NUMBER_OF_UNIFORMS = MAX_NUMBER_OF_GLOBALS + MAX_NUMBER_OF_INSTANCES;
-    const u32 MAX_NUMBER_OF_TEXTURES = 1000;
-
-    // DescriptorCache
-    // -----------------------------------------------------------------------------------------------------------------
-    void DescriptorCache::build_descriptors_from_shader(const Shader& shader)
+    void DescriptorBuilder::create_descriptor_for_ubo(vk::DescriptorSet& descriptor_set,
+                                                      vk::DescriptorSetLayout& descriptor_set_layout,
+                                                      const Buffer& buffer, const u64 buffer_size, const u64 offset)
     {
-        const u32 frame_count = get_context().get_frame_count();
+        // Create descriptors for this buffer
+        auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
+        auto& descriptor_allocator = get_context().get_descriptor_allocator();
 
-        uniform_descriptors.resize(frame_count);
-        albedo_image_descriptors.resize(frame_count);
-        normal_image_descriptors.resize(frame_count);
-        shader_uniform_descriptors.resize(frame_count);
-        data_buffers.resize(frame_count);
-        shader_data_buffers.resize(frame_count);
+        const vk::DescriptorBufferInfo descriptor_buffer_info(buffer.get_buffer(), offset, buffer_size);
 
-        auto vertex_module = shader.get_modules()[0];
-        auto fragment_module = shader.get_modules()[1];
-        auto uniforms = shader.get_uniforms();
+        const b8 result =
+            DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
+                .bind(0, vk::DescriptorType::eUniformBuffer,
+                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, &descriptor_buffer_info)
+                .build(descriptor_set, descriptor_set_layout);
 
-        // Create descriptors
-        for (u64 i = 0; i < frame_count; i++)
-        {
-            // Global/Instance
-            uniform_descriptors[i] = DescriptorBuilder::build_layout(vertex_module->get_reflection(), 0);
-
-            uniform_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_UNIFORMS * uniform_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            uniform_descriptors[i].buffer.map_memory();
-
-            // Shader
-            shader_uniform_descriptors[i] = DescriptorBuilder::build_layout(vertex_module->get_reflection(), 4);
-
-            shader_uniform_descriptors[i].buffer.initialize(
-                shader_uniform_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            shader_uniform_descriptors[i].buffer.map_memory();
-
-            // Albedo
-            albedo_image_descriptors[i] = DescriptorBuilder::build_layout(fragment_module->get_reflection(), 2);
-
-            albedo_image_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_TEXTURES * albedo_image_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            albedo_image_descriptors[i].buffer.map_memory();
-
-            // Normal
-            normal_image_descriptors[i] = DescriptorBuilder::build_layout(fragment_module->get_reflection(), 3);
-
-            normal_image_descriptors[i].buffer.initialize(
-                MAX_NUMBER_OF_TEXTURES * normal_image_descriptors[i].size,
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-            normal_image_descriptors[i].buffer.map_memory();
-
-            if (i == 0)  // Only insert once
-            {
-                descriptor_set_layouts.push_back(uniform_descriptors[i].layout);         // Global
-                descriptor_set_layouts.push_back(uniform_descriptors[i].layout);         // Instance
-                descriptor_set_layouts.push_back(albedo_image_descriptors[i].layout);    // Albedo textures
-                descriptor_set_layouts.push_back(normal_image_descriptors[i].layout);    // Normal textures
-                descriptor_set_layouts.push_back(shader_uniform_descriptors[i].layout);  // Shader
-            }
-
-            // We can also initialize the data buffers here
-            for (u64 b = 0; b < MAX_NUMBER_OF_UNIFORMS; b++)
-            {
-                const u64 buffer_size =
-                    b < MAX_NUMBER_OF_GLOBALS ? uniforms["u_global"].data.size() : uniforms["u_instance"].data.size();
-
-                Buffer buffer;
-                buffer.initialize(buffer_size,
-                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-                data_buffers[i].push_back(buffer);
-            }
-
-            {
-                const u64 buffer_size = uniforms["u_shader"].data.size();
-
-                Buffer buffer;
-                buffer.initialize(buffer_size,
-                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                  VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-
-                shader_data_buffers[i] = buffer;
-            }
-
-            DescriptorBuilder::build(uniform_descriptors[i], data_buffers[i]);
-            DescriptorBuilder::build(shader_uniform_descriptors[i], {shader_data_buffers[i]});
-        }
+        ASSERT(result, "Failed to build descriptor for UBO");
     }
 
-    DescriptorCache::~DescriptorCache()
+    void DescriptorBuilder::create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
+                                                          vk::DescriptorSet& descriptor_set,
+                                                          vk::DescriptorSetLayout& descriptor_set_layout)
     {
-        for (auto& descriptor : uniform_descriptors)
-        {
-            descriptor.buffer.unmap_memory();
-            descriptor.buffer.shutdown();
-        }
+        // Create descriptors for this texture
+        auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
+        auto& descriptor_allocator = get_context().get_descriptor_allocator();
 
-        for (auto& descriptor : shader_uniform_descriptors)
-        {
-            descriptor.buffer.unmap_memory();
-            descriptor.buffer.shutdown();
-        }
+        const vk::DescriptorImageInfo descriptor_image_info(
+            texture->get_sampler().get_handle(), texture->get_image_view(), vk::ImageLayout::eReadOnlyOptimal);
 
-        for (auto& descriptor : albedo_image_descriptors)
-        {
-            descriptor.buffer.unmap_memory();
-            descriptor.buffer.shutdown();
-        }
+        const b8 result =
+            DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
+                .bind(binding, vk::DescriptorType::eCombinedImageSampler,
+                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, &descriptor_image_info)
+                .build(descriptor_set, descriptor_set_layout);
 
-        for (auto& descriptor : normal_image_descriptors)
-        {
-            descriptor.buffer.unmap_memory();
-            descriptor.buffer.shutdown();
-        }
-
-        for (auto& buffers : data_buffers)
-        {
-            for (auto& buffer : buffers)
-            {
-                buffer.shutdown();
-            }
-        }
-
-        for (auto& buffer : shader_data_buffers)
-        {
-            buffer.shutdown();
-        }
-    }
-
-    void DescriptorCache::bind()
-    {
-        auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
-        const u32 curr_frame_number = context.get_curr_frame_number();
-
-        std::vector<vk::DescriptorBufferBindingInfoEXT> descriptor_buffer_binding_infos;
-
-        descriptor_buffer_binding_infos.push_back({uniform_descriptors[curr_frame_number].buffer.get_device_address(),
-                                                   vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
-
-        descriptor_buffer_binding_infos.push_back(
-            {albedo_image_descriptors[curr_frame_number].buffer.get_device_address(),
-             vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
-                 vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
-
-        descriptor_buffer_binding_infos.push_back(
-            {normal_image_descriptors[curr_frame_number].buffer.get_device_address(),
-             vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT |
-                 vk::BufferUsageFlagBits::eSamplerDescriptorBufferEXT});
-        descriptor_buffer_binding_infos.push_back(
-            {shader_uniform_descriptors[curr_frame_number].buffer.get_device_address(),
-             vk::BufferUsageFlagBits::eResourceDescriptorBufferEXT});
-
-        // Bind descriptor buffers and set offsets
-        command_buffer.get_handle().bindDescriptorBuffersEXT(descriptor_buffer_binding_infos);
-    }
-
-    void DescriptorCache::add_image_descriptors_for_model(ECS& ecs, const u32 id)
-    {
-        auto& context = get_context();
-        auto& descriptors = context.get_descriptor_cache();
-        auto* model_c = ecs.get_component<ModelComponent>(id);
-        auto& model = model_c->model;
-
-        model_c->albedo_descriptor_offset = descriptors.get_albedo_textures().size();
-        model_c->normal_descriptor_offset = descriptors.get_normal_textures().size();
-
-        // Safety check
-        ASSERT(model_c->albedo_descriptor_offset == model_c->normal_descriptor_offset,
-               "Albedo/Normal Descriptor offset mismatch. Check if model textures are loaded correctly.");
-
-        const u32 frame_count = context.get_frame_count();
-
-        // Put all models textures in a single array
-        for (auto& material : model->materials)
-        {
-            for (auto texture : material->textures)
-            {
-                switch (texture->get_type())
-                {
-                    case TextureType::Albedo:
-                        albedo_textures.emplace_back(texture);
-                        break;
-
-                    case TextureType::Normal:
-                        normal_textures.emplace_back(texture);
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            if (albedo_textures.size() + normal_textures.size() > MAX_NUMBER_OF_TEXTURES)
-            {
-                LOG_ERROR("Maximum number of textures exceeded: {0}", MAX_NUMBER_OF_TEXTURES);
-                return;
-            }
-
-            // Create descriptor buffer that holds texture data
-            for (u32 i = 0; i < frame_count; i++)
-            {
-                DescriptorBuilder::build(albedo_image_descriptors[i], albedo_textures);
-                DescriptorBuilder::build(normal_image_descriptors[i], normal_textures);
-            }
-        }
-    }
-
-    void DescriptorCache::remove_image_descriptors_for_model(ECS& ecs, const u32 id)
-    {
-        auto models = ecs.get_all_components_of_type<ModelComponent>();
-
-        auto* model_to_be_removed = ecs.get_component<ModelComponent>(id);
-        if (!model_to_be_removed) return;
-
-        // We are assuming the model has textures of each type
-        const u32 texture_count = model_to_be_removed->model->materials.size() * Material::TextureCount;
-        const u32 albedo_descriptor_offset = model_to_be_removed->albedo_descriptor_offset;
-        const u32 normal_descriptor_offset = model_to_be_removed->normal_descriptor_offset;
-
-        // @TODO: This is very dumb but idk what else to do
-        for (auto* model_c : models)
-        {
-            if (model_c->albedo_descriptor_offset > albedo_descriptor_offset)
-            {
-                model_c->albedo_descriptor_offset -= texture_count / Material::TextureCount;
-            }
-
-            if (model_c->normal_descriptor_offset > normal_descriptor_offset)
-            {
-                model_c->normal_descriptor_offset -= texture_count / Material::TextureCount;
-            }
-        }
-
-        // Rebuild the image descriptors
-        {
-            auto first = albedo_textures.begin() + albedo_descriptor_offset;
-            auto last = albedo_textures.begin() + albedo_descriptor_offset + texture_count / Material::TextureCount;
-            albedo_textures.erase(first, last);
-        }
-
-        {
-            auto first = normal_textures.begin() + normal_descriptor_offset;
-            auto last = normal_textures.begin() + normal_descriptor_offset + texture_count / Material::TextureCount;
-            normal_textures.erase(first, last);
-        }
-
-        {
-            const u32 frame_count = get_context().get_frame_count();
-            for (u32 i = 0; i < frame_count; i++)
-            {
-                DescriptorBuilder::build(albedo_image_descriptors[i], albedo_textures);
-                DescriptorBuilder::build(normal_image_descriptors[i], normal_textures);
-            }
-        }
-    }
-
-    void DescriptorCache::set_descriptor_buffer_offset(const vk::PipelineLayout& pipeline_layout, const u32 first_set,
-                                                       const u32 buffer_indices, const u64 buffer_offsets)
-    {
-        auto& command_buffer = get_context().get_curr_frame().command_buffer;
-
-        const auto pipeline_bind_point = vk::PipelineBindPoint::eGraphics;
-
-        command_buffer.get_handle().setDescriptorBufferOffsetsEXT(pipeline_bind_point, pipeline_layout, first_set,
-                                                                  buffer_indices, buffer_offsets);
-    }
-
-    void DescriptorCache::set_offset_global(const vk::PipelineLayout& pipeline_layout)
-    {
-        set_descriptor_buffer_offset(pipeline_layout, 0, 0, 0);
-    }
-
-    void DescriptorCache::set_offset_instance(const vk::PipelineLayout& pipeline_layout, const u32 instance)
-    {
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
-        const u64 buffer_offsets = (instance + 1) * uniform_descriptors[curr_frame_number].size;
-
-        set_descriptor_buffer_offset(pipeline_layout, 1, 0, buffer_offsets);
-    }
-
-    void DescriptorCache::set_offset_material(const vk::PipelineLayout& pipeline_layout, const u32 index,
-                                              const TextureType texture_type)
-    {
-        const u32 curr_frame_number = get_context().get_curr_frame_number();
-        const u64 buffer_offsets = index * albedo_image_descriptors[curr_frame_number].size;
-
-        switch (texture_type)
-        {
-            case TextureType::Albedo:
-                set_descriptor_buffer_offset(pipeline_layout, 2, 1, buffer_offsets);
-                break;
-
-            case TextureType::Normal:
-                set_descriptor_buffer_offset(pipeline_layout, 3, 2, buffer_offsets);
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    void DescriptorCache::set_offset_shader(const vk::PipelineLayout& pipeline_layout)
-    {
-        set_descriptor_buffer_offset(pipeline_layout, 4, 3, 0);
+        ASSERT(result, "Failed to build descriptor for texture: '{0}'", texture->get_name());
     }
 };  // namespace mag
