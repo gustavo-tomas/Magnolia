@@ -55,7 +55,7 @@ namespace mag
 
         ScriptingEngine::new_state();
 
-        // Instanciate the script
+        // Instantiate the script
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
             auto* sc = runtime_ecs->get_component<ScriptComponent>(id);
