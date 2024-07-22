@@ -195,6 +195,7 @@ namespace mag
         dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
 
+        menu_bar->on_event(e);
         viewport_panel->on_event(e);
     }
 
