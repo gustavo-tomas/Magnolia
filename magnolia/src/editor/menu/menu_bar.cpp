@@ -8,32 +8,10 @@
 
 namespace mag
 {
-    b8 is_ctrl_pressed(const ImGuiKey key = ImGuiKey_None)
-    {
-        if (key != ImGuiKey_None)
-        {
-            return ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyDown(key);
-        }
-
-        return ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-    }
-
     MenuBar::MenuBar() : info_menu(new InfoMenu()) {}
 
     void MenuBar::render(const ImGuiWindowFlags window_flags)
     {
-        // Save
-        if (is_ctrl_pressed(ImGuiKey_S))
-        {
-            save_active_scene();
-        }
-
-        // Quit
-        if (is_ctrl_pressed(ImGuiKey_Q))
-        {
-            quit_application();
-        }
-
         // Display open dialogs
         display_dialog();
 
@@ -50,14 +28,19 @@ namespace mag
             if (ImGui::BeginMenu((str(ICON_FA_FILE) + " File").c_str()))
             {
                 // Save
-                if (ImGui::MenuItem("Save", "CTRL+S"))
+                if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
                     save_active_scene();
                 }
 
+                if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
+                {
+                    save_active_scene_as();
+                }
+
                 // Load
                 // @TODO: finish
-                if (ImGui::MenuItem("Open", "CTRL+O", false, false))
+                if (ImGui::MenuItem("Open", "Ctrl+O", false, false))
                 {
                     auto* scene = new Scene();
 
@@ -92,9 +75,24 @@ namespace mag
     {
         auto& app = get_application();
 
+        if (scene_file_path.empty())
+        {
+            save_active_scene_as();
+            return;
+        }
+
+        auto& scene = app.get_active_scene();
+
+        SceneSerializer scene_serializer(scene);
+        scene_serializer.serialize(scene_file_path);
+
+        LOG_SUCCESS("Saved active scene to '{0}'", scene_file_path);
+    }
+
+    void MenuBar::save_active_scene_as()
+    {
         IGFD::FileDialogConfig config;
-        config.path = "sprout/assets/scenes";
-        config.fileName = app.get_active_scene().get_name() + ".mag.json";
+        config.fileName = "untitled.mag.json";
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
         dialog_open = true;
@@ -117,11 +115,61 @@ namespace mag
                 SceneSerializer scene_serializer(scene);
                 scene_serializer.serialize(file_path);
 
+                scene_file_path = file_path;
+
                 LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
             }
 
             dialog_open = false;
             ImGuiFileDialog::Instance()->Close();
+        }
+    }
+
+    void MenuBar::on_event(Event& e)
+    {
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<KeyPressEvent>(BIND_FN(MenuBar::on_key_press));
+    }
+
+    void MenuBar::on_key_press(KeyPressEvent& e)
+    {
+        auto& window = get_application().get_window();
+
+        const b8 ctrl = window.is_key_down(Keys::Lctrl) || window.is_key_down(Keys::Rctrl);
+        const b8 shift = window.is_key_down(Keys::Lshift) || window.is_key_down(Keys::Rshift);
+
+        switch (e.key)
+        {
+            // Save
+            case Keys::s:
+            {
+                if (ctrl)
+                {
+                    if (shift)
+                    {
+                        save_active_scene_as();
+                    }
+
+                    else
+                    {
+                        save_active_scene();
+                    }
+                }
+            }
+            break;
+
+            // Quit
+            case Keys::q:
+            {
+                if (ctrl)
+                {
+                    quit_application();
+                }
+            }
+            break;
+
+            default:
+                break;
         }
     }
 };  // namespace mag

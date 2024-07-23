@@ -390,37 +390,31 @@ namespace mag
         model.ibo.shutdown();
     }
 
-    Line::Line(const str& name, const std::vector<vec3>& starts, const std::vector<vec3>& ends,
-               const std::vector<vec3>& colors)
+    Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)
     {
-        model.name = name;
-        model.meshes.resize(1);
-        model.meshes[0].base_vertex = 0;
-        model.meshes[0].base_index = 0;
-
         for (u32 i = 0; i < starts.size(); i++)
         {
-            Vertex line_start;
-            Vertex line_end;
+            LineVertex line_start;
+            LineVertex line_end;
 
             line_start.position = starts[i];
             line_end.position = ends[i];
 
             // We use the models normal as the color
-            line_start.normal = colors[i];
-            line_end.normal = colors[i];
+            line_start.color = colors[i];
+            line_end.color = colors[i];
 
-            model.vertices.push_back(line_start);
-            model.vertices.push_back(line_end);
+            vertices.push_back(line_start);
+            vertices.push_back(line_end);
         }
 
-        model.vbo.initialize(model.vertices.data(), VECSIZE(model.vertices) * sizeof(Vertex));
+        vbo.initialize(vertices.data(), VECSIZE(vertices) * sizeof(LineVertex));
     }
 
     Line::~Line()
     {
         get_context().get_device().waitIdle();
 
-        model.vbo.shutdown();
+        vbo.shutdown();
     }
 };  // namespace mag

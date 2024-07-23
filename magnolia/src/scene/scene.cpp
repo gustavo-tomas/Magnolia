@@ -1,7 +1,6 @@
 #include "scene/scene.hpp"
 
 #include "core/application.hpp"
-#include "scene/scene_serializer.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
@@ -14,8 +13,6 @@ namespace mag
           camera_controller(new EditorCameraController(*camera)),
           render_pass(new StandardRenderPass({800, 600}))
     {
-        SceneSerializer scene_serializer(*this);
-        scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
     }
 
     Scene::~Scene()
@@ -55,7 +52,7 @@ namespace mag
 
         ScriptingEngine::new_state();
 
-        // Instanciate the script
+        // Instantiate the script
         for (const u32 id : runtime_ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
             auto* sc = runtime_ecs->get_component<ScriptComponent>(id);
@@ -140,7 +137,7 @@ namespace mag
         // @TODO: there should be only one value for the camera position. I feel that data duplication
         // could cause issues in the future.
 
-        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        auto components = runtime_ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
         for (auto [camera_c, transform] : components)
         {
             camera_c->camera.set_position(transform->translation);

@@ -36,8 +36,7 @@ namespace mag
         auto& debug_lines = physics_engine.get_line_list();
         if (!debug_lines.starts.empty())
         {
-            physics_debug_lines =
-                std::make_unique<Line>("DebugLines", debug_lines.starts, debug_lines.ends, debug_lines.colors);
+            physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
         }
         // @TODO: dont do this here
 

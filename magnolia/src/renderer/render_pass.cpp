@@ -61,12 +61,10 @@ namespace mag
 
         color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
 
-        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position), offsetof(Vertex, position));
-        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
-        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords),
-                                    offsetof(Vertex, tex_coords));
-        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tangent), offsetof(Vertex, tangent));
-        color_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::bitangent), offsetof(Vertex, bitangent));
+        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(LineVertex::position),
+                                    offsetof(LineVertex, position));
+        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(LineVertex::color),
+                                    offsetof(LineVertex, color));
 
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
@@ -197,11 +195,11 @@ namespace mag
         auto& editor = get_application().get_editor();
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
-        auto light_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent, LightComponent>();
+        auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
 
         u32 l = 0;
         LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
-        for (const auto& [transform, model, light] : light_entities)
+        for (const auto& [transform, light] : light_entities)
         {
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
@@ -217,11 +215,8 @@ namespace mag
 
         triangle_pipeline->bind();
 
-        for (u64 m = 0; m < model_entities.size(); m++)
+        for (auto& [transform, model_c] : model_entities)
         {
-            auto* model_c = std::get<1>(model_entities[m]);
-            auto* transform = std::get<0>(model_entities[m]);
-
             const auto& model = model_c->model;
 
             auto model_matrix = transform->get_transformation_matrix();
@@ -231,16 +226,11 @@ namespace mag
             command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
             command_buffer.bind_index_buffer(model->ibo.get_buffer());
 
-            for (u64 i = 0; i < model->meshes.size(); i++)
+            for (auto& mesh : model->meshes)
             {
-                const auto& mesh = model->meshes[i];
-
                 // Set the material
-                const auto albedo_descriptor =
-                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
-
-                const auto normal_descriptor =
-                    model_c->model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
+                const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
+                const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
 
                 triangle_shader->bind_texture(*triangle_pipeline, "u_albedo_texture", albedo_descriptor);
                 triangle_shader->bind_texture(*triangle_pipeline, "u_normal_texture", normal_descriptor);
@@ -267,10 +257,8 @@ namespace mag
 
                 line_pipeline->bind();
 
-                const auto& model = line_list->get_model();
-
-                command_buffer.bind_vertex_buffer(model.vbo.get_buffer());
-                command_buffer.draw(model.vertices.size());
+                command_buffer.bind_vertex_buffer(line_list->get_vbo().get_buffer());
+                command_buffer.draw(line_list->get_vertices().size());
             }
         }
 
