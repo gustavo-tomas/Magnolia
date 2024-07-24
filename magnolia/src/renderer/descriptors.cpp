@@ -302,6 +302,25 @@ namespace mag
         ASSERT(result, "Failed to build descriptor for UBO");
     }
 
+    void DescriptorBuilder::create_descriptor_for_ssbo(vk::DescriptorSet& descriptor_set,
+                                                       vk::DescriptorSetLayout& descriptor_set_layout,
+                                                       const Buffer& buffer, const u64 buffer_size, const u64 offset)
+    {
+        // Create descriptors for this buffer
+        auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
+        auto& descriptor_allocator = get_context().get_descriptor_allocator();
+
+        const vk::DescriptorBufferInfo descriptor_buffer_info(buffer.get_buffer(), offset, buffer_size);
+
+        const b8 result =
+            DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
+                .bind(0, vk::DescriptorType::eStorageBuffer,
+                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, &descriptor_buffer_info)
+                .build(descriptor_set, descriptor_set_layout);
+
+        ASSERT(result, "Failed to build descriptor for SSBO");
+    }
+
     void DescriptorBuilder::create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
                                                           vk::DescriptorSet& descriptor_set,
                                                           vk::DescriptorSetLayout& descriptor_set_layout)

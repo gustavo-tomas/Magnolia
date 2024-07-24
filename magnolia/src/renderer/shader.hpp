@@ -52,7 +52,7 @@ namespace mag
 
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);
 
-            void set_uniform(const str& scope, const str& name, const void* data);
+            void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
 
             void bind(const Pipeline& pipeline);
             void bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set);

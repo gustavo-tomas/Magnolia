@@ -74,6 +74,18 @@ namespace mag
         auto& context = get_context();
         const u32 frame_count = context.get_frame_count();
 
+        // Find total number of descriptor set layouts
+        {
+            u32 binding_count = 0;
+            for (const auto& module : modules)
+            {
+                const auto& reflection = module->get_reflection();
+                binding_count = max(binding_count, reflection.descriptor_binding_count);
+            }
+
+            descriptor_set_layouts.resize(binding_count);
+        }
+
         // Initialize all uniforms
         for (const auto& module : modules)
         {
@@ -109,6 +121,26 @@ namespace mag
 
                         DescriptorBuilder::create_descriptor_for_ubo(descriptor_set, descriptor_set_layout, buffer,
                                                                      size, 0);
+                    }
+                }
+
+                // Create buffer for ssbos
+                // @TODO: hardcoded size
+                else if (type == vk::DescriptorType::eStorageBuffer)
+                {
+                    const u64 BUFFER_SIZE = sizeof(mat4) * 10'000;
+                    for (u32 f = 0; f < frame_count; f++)
+                    {
+                        uniforms_map[scope].buffers[f].initialize(
+                            BUFFER_SIZE, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+
+                        auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
+                        auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
+                        auto& buffer = uniforms_map[scope].buffers[f];
+
+                        DescriptorBuilder::create_descriptor_for_ssbo(descriptor_set, descriptor_set_layout, buffer,
+                                                                      BUFFER_SIZE, 0);
                     }
                 }
 
@@ -149,7 +181,7 @@ namespace mag
                     ASSERT(false, "Descriptor type " + vk::to_string(type) + " not supported");
                 }
 
-                descriptor_set_layouts.push_back(uniforms_map[scope].descriptor_set_layouts[0]);
+                descriptor_set_layouts[descriptor_binding.set] = uniforms_map[scope].descriptor_set_layouts[0];
             }
         }
     }
@@ -178,7 +210,7 @@ namespace mag
         vertex_bindings.push_back(vk::VertexInputBindingDescription(0, stride, vk::VertexInputRate::eVertex));
     }
 
-    void Shader::set_uniform(const str& scope, const str& name, const void* data)
+    void Shader::set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset)
     {
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
@@ -200,7 +232,7 @@ namespace mag
             }
         }
 
-        buffer.copy(data, size, offset);
+        buffer.copy(data, size, offset + data_offset);
     }
 
     void Shader::bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set)

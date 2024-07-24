@@ -15,13 +15,15 @@ layout (location = 3) out mat3 out_tbn;
 
 void main()
 {
-	gl_Position = u_global.projection * u_global.view * u_instance.model * vec4(in_position, 1.0);
-	out_frag_position = vec3(u_instance.model * vec4(in_position, 1.0));
+	const mat4 model = u_instance.models[gl_InstanceIndex].model;
+
+	gl_Position = u_global.projection * u_global.view * model * vec4(in_position, 1.0);
+	out_frag_position = vec3(model * vec4(in_position, 1.0));
 	out_tex_coords = in_tex_coords;
 	
 	// @TODO: this is pretty slow, but for now its ok
 	// Multiply normal by the normal matrix to avoid problems with non uniform scaling 
-	mat3 normal_matrix = mat3(transpose(inverse(u_instance.model)));
+	mat3 normal_matrix = mat3(transpose(inverse(model)));
 	out_normal = normalize(normal_matrix * in_normal);
 
 	vec3 T = normalize(normal_matrix * in_tangent);

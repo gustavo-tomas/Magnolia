@@ -215,12 +215,13 @@ namespace mag
 
         triangle_pipeline->bind();
 
-        for (auto& [transform, model_c] : model_entities)
+        for (u32 i = 0; i < model_entities.size(); i++)
         {
-            const auto& model = model_c->model;
+            const auto& transform = std::get<0>(model_entities[i]);
+            const auto& model = std::get<1>(model_entities[i])->model;
 
             auto model_matrix = transform->get_transformation_matrix();
-            triangle_shader->set_uniform("u_instance", "model", value_ptr(model_matrix));
+            triangle_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
             // Bind buffers
             command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
@@ -236,7 +237,7 @@ namespace mag
                 triangle_shader->bind_texture(*triangle_pipeline, "u_normal_texture", normal_descriptor);
 
                 // Draw the mesh
-                command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex);
+                command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 // @NOTE: not accurate but gives a good estimate
                 pass.statistics.rendered_triangles += mesh.index_count;

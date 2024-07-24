@@ -91,9 +91,14 @@ namespace mag
             b8 build(vk::DescriptorSet& set);
 
             // Helpers
+            // @TODO: these can be DRYed
             static void create_descriptor_for_ubo(vk::DescriptorSet& descriptor_set,
                                                   vk::DescriptorSetLayout& descriptor_set_layout, const Buffer& buffer,
                                                   const u64 buffer_size, const u64 offset);
+
+            static void create_descriptor_for_ssbo(vk::DescriptorSet& descriptor_set,
+                                                   vk::DescriptorSetLayout& descriptor_set_layout, const Buffer& buffer,
+                                                   const u64 buffer_size, const u64 offset);
 
             static void create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
                                                       vk::DescriptorSet& descriptor_set,

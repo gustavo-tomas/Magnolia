@@ -13,6 +13,11 @@ struct Light
 	vec3 position;
 };
 
+struct Model
+{
+	mat4 model;
+};
+
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
@@ -26,9 +31,9 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 } u_global;
 
 // Instance buffer
-layout (set = 1, binding = 0) uniform InstanceBuffer
+layout (std140, set = 1, binding = 0) readonly buffer InstanceBuffer
 {
-    mat4 model;
+    Model models[];
 } u_instance;
 
 // Shader parameters
