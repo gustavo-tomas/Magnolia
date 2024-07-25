@@ -3,6 +3,8 @@
 ![screenshot](magnolia/assets/screenshots/magnolia_v0.4.0.png)
 > Current state of the engine
 
+> Windows build is still in development (for now is linux only)!
+
 ## Requirements
 <!-- Add links -->
 - C++20
