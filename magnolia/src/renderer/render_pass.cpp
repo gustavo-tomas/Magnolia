@@ -49,22 +49,7 @@ namespace mag
         triangle_shader =
             shader_loader.load("triangle", shader_folder + "triangle.vert.spv", shader_folder + "triangle.frag.spv");
 
-        // Dont forget to add vertex attributes
-        triangle_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::position),
-                                       offsetof(Vertex, position));
-        triangle_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(Vertex::normal), offsetof(Vertex, normal));
-        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tex_coords),
-                                       offsetof(Vertex, tex_coords));
-        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::tangent), offsetof(Vertex, tangent));
-        triangle_shader->add_attribute(vk::Format::eR32G32Sfloat, sizeof(Vertex::bitangent),
-                                       offsetof(Vertex, bitangent));
-
         color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
-
-        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(LineVertex::position),
-                                    offsetof(LineVertex, position));
-        color_shader->add_attribute(vk::Format::eR32G32B32Sfloat, sizeof(LineVertex::color),
-                                    offsetof(LineVertex, color));
 
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
@@ -220,6 +205,7 @@ namespace mag
             const auto& transform = std::get<0>(model_entities[i]);
             const auto& model = std::get<1>(model_entities[i])->model;
 
+            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
             auto model_matrix = transform->get_transformation_matrix();
             triangle_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 

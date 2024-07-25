@@ -1,6 +1,7 @@
 #include "renderer/shader.hpp"
 
 #include <fstream>
+#include <limits>
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
@@ -90,6 +91,37 @@ namespace mag
         for (const auto& module : modules)
         {
             const auto& reflection = module->get_reflection();
+
+            const vk::ShaderStageFlags stage = static_cast<vk::ShaderStageFlags>(reflection.shader_stage);
+
+            // Add vertex attributes sorted by location
+            if (stage == vk::ShaderStageFlagBits::eVertex)
+            {
+                std::map<u32, SpvReflectInterfaceVariable*> sorted_input_variables;
+                for (u32 i = 0; i < reflection.input_variable_count; i++)
+                {
+                    const auto& variable = reflection.input_variables[i];
+
+                    // Filter built-in variables
+                    if (variable->location < std::numeric_limits<u32>::max())
+                    {
+                        sorted_input_variables[variable->location] = variable;
+                    }
+                }
+
+                u32 offset = 0;
+                for (auto& [location, variable] : sorted_input_variables)
+                {
+                    const vk::Format format = static_cast<vk::Format>(variable->format);
+                    u32 size = variable->numeric.scalar.width / 8;
+                    size *= variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
+
+                    add_attribute(format, size, offset);
+
+                    offset += size;
+                }
+            }
+
             for (u32 i = 0; i < reflection.descriptor_binding_count; i++)
             {
                 auto& descriptor_binding = reflection.descriptor_bindings[i];
