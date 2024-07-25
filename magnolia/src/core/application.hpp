@@ -32,7 +32,7 @@ namespace mag
             void run();
             void on_event(Event& e);
 
-            void set_active_scene(Scene* scene);
+            void enqueue_scene(Scene* scene);
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
@@ -49,6 +49,8 @@ namespace mag
             void on_window_resize(WindowResizeEvent& e);
             void on_quit(QuitEvent& e);
 
+            void set_active_scene(Scene* scene);
+
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
             std::unique_ptr<Editor> editor;
@@ -58,6 +60,7 @@ namespace mag
             std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<PhysicsEngine> physics_engine;
             std::unique_ptr<Scene> active_scene;
+            std::vector<Scene*> scene_queue;
 
             b8 running;
     };

@@ -39,16 +39,9 @@ namespace mag
                 }
 
                 // Load
-                // @TODO: finish
-                if (ImGui::MenuItem("Open", "Ctrl+O", false, false))
+                if (ImGui::MenuItem("Open", "Ctrl+O"))
                 {
-                    auto* scene = new Scene();
-
-                    // @TODO: hardcoded file path
-                    const str file_path = "sprout/assets/scenes/test_scene.mag.json";
-
-                    SceneSerializer scene_serializer(*scene);
-                    scene_serializer.deserialize(file_path);
+                    open_scene();
                 }
 
                 // Quit
@@ -96,6 +89,20 @@ namespace mag
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
         dialog_open = true;
+    }
+
+    // @TODO: finish
+    void MenuBar::open_scene()
+    {
+        auto* scene = new Scene();
+
+        // @TODO: hardcoded file path
+        const str file_path = "sprout/assets/scenes/sponza_scene.mag.json";
+
+        SceneSerializer scene_serializer(*scene);
+        scene_serializer.deserialize(file_path);
+
+        get_application().enqueue_scene(scene);
     }
 
     void MenuBar::quit_application() { quit = true; }
@@ -154,6 +161,16 @@ namespace mag
                     {
                         save_active_scene();
                     }
+                }
+            }
+            break;
+
+            // Open
+            case Keys::o:
+            {
+                if (ctrl)
+                {
+                    open_scene();
                 }
             }
             break;

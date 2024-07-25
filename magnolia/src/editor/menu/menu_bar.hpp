@@ -24,6 +24,7 @@ namespace mag
             void display_dialog();
             void save_active_scene();
             void save_active_scene_as();
+            void open_scene();
             void quit_application();
 
             void on_key_press(KeyPressEvent& e);

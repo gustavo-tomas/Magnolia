@@ -11,7 +11,7 @@ class SproutApp : public mag::Application
             mag::SceneSerializer scene_serializer(*scene);
             scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
 
-            this->set_active_scene(scene);
+            this->enqueue_scene(scene);
         }
 };
 

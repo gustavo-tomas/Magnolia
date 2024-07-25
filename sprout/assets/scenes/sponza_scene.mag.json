@@ -1,0 +1,96 @@
+{
+    "Scene": "Untitled",
+    "Entities": [
+        {
+            "NameComponent": {
+                "Name": "Camera"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    -1050.0,
+                    550.0,
+                    -160.0
+                ],
+                "Rotation": [
+                    0.0,
+                    90.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "CameraComponent": {
+                "Fov": 60.0,
+                "Near": 1.0,
+                "Far": 10000.0,
+                "AspectRatio": 1.3442211151123047
+            },
+            "ScriptComponent": {
+                "FilePath": "sprout/assets/scripts/example_lua_script.lua"
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity1"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    550.0,
+                    250.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 500.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity3"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "sponza.obj",
+                "FilePath": "magnolia/assets/models/sponza/sponza.obj"
+            }
+        }
+    ]
+}
