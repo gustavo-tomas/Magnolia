@@ -88,7 +88,7 @@ namespace mag
         config.fileName = "untitled.mag.json";
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
-        current_action = DialogAction::Save;
+        set_dialog_action(DialogAction::Save);
     }
 
     // @TODO: finish
@@ -127,7 +127,7 @@ namespace mag
                 LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
             }
 
-            current_action = DialogAction::None;
+            set_dialog_action(DialogAction::None);
             ImGuiFileDialog::Instance()->Close();
         }
     }

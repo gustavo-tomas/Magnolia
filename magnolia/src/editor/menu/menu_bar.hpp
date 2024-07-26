@@ -21,6 +21,14 @@ namespace mag
             void on_event(Event& e);
 
         private:
+            // @TODO: it might be better to handle dialogs natively, but its better to setup the windows build first
+            enum DialogAction
+            {
+                None = 0,
+                Save,
+                Open
+            };
+
             void display_dialog();
             void save_active_scene();
             void save_active_scene_as();
@@ -29,13 +37,7 @@ namespace mag
 
             void on_key_press(KeyPressEvent& e);
 
-            // @TODO: it might be better to handle dialogs natively, but its better to setup the windows build first
-            enum DialogAction
-            {
-                None = 0,
-                Save,
-                Open
-            };
+            void set_dialog_action(const DialogAction action) { current_action = action; };
 
             DialogAction current_action = DialogAction::None;
 
