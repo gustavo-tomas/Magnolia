@@ -128,12 +128,14 @@ namespace mag
 
                     case DialogAction::Open:
                     {
-                        auto* scene = new Scene();
-
                         const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
+
+                        auto* scene = new Scene();
 
                         SceneSerializer scene_serializer(*scene);
                         scene_serializer.deserialize(file_path);
+
+                        scene_file_path = file_path;
 
                         get_application().enqueue_scene(scene);
 
