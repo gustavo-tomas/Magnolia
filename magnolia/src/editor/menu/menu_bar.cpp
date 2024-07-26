@@ -91,18 +91,12 @@ namespace mag
         set_dialog_action(DialogAction::Save);
     }
 
-    // @TODO: finish
     void MenuBar::open_scene()
     {
-        auto* scene = new Scene();
+        IGFD::FileDialogConfig config;
 
-        // @TODO: hardcoded file path
-        const str file_path = "sprout/assets/scenes/sponza_scene.mag.json";
-
-        SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize(file_path);
-
-        get_application().enqueue_scene(scene);
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Open Scene", ".mag.json", config);
+        set_dialog_action(DialogAction::Open);
     }
 
     void MenuBar::quit_application() { quit = true; }
@@ -115,16 +109,41 @@ namespace mag
         {
             if (ImGuiFileDialog::Instance()->IsOk())
             {
-                const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
+                switch (current_action)
+                {
+                    case DialogAction::Save:
+                    {
+                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
 
-                auto& scene = app.get_active_scene();
+                        auto& scene = app.get_active_scene();
 
-                SceneSerializer scene_serializer(scene);
-                scene_serializer.serialize(file_path);
+                        SceneSerializer scene_serializer(scene);
+                        scene_serializer.serialize(file_path);
 
-                scene_file_path = file_path;
+                        scene_file_path = file_path;
 
-                LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
+                        LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
+                    }
+                    break;
+
+                    case DialogAction::Open:
+                    {
+                        auto* scene = new Scene();
+
+                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
+
+                        SceneSerializer scene_serializer(*scene);
+                        scene_serializer.deserialize(file_path);
+
+                        get_application().enqueue_scene(scene);
+
+                        LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
+                    }
+                    break;
+
+                    default:
+                        break;
+                }
             }
 
             set_dialog_action(DialogAction::None);
