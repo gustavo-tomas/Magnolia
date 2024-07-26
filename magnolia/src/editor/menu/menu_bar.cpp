@@ -1,5 +1,7 @@
 #include "editor/menu/menu_bar.hpp"
 
+#include <filesystem>
+
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
@@ -39,6 +41,7 @@ namespace mag
                     save_active_scene();
                 }
 
+                // Save As
                 if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
                 {
                     save_active_scene_as();
@@ -107,10 +110,13 @@ namespace mag
 
     void MenuBar::new_scene()
     {
-        IGFD::FileDialogConfig config;
+        auto* scene = new Scene();
 
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "New Scene", ".mag.json", config);
-        set_dialog_action(DialogAction::New);
+        scene_file_path = std::filesystem::path();
+
+        get_application().enqueue_scene(scene);
+
+        LOG_SUCCESS("Create new scene '{0}'", scene->get_name());
     }
 
     void MenuBar::quit_application() { quit = true; }
@@ -125,20 +131,6 @@ namespace mag
             {
                 switch (current_action)
                 {
-                    case DialogAction::New:
-                    {
-                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
-
-                        auto* scene = new Scene();
-
-                        scene_file_path = file_path;
-
-                        get_application().enqueue_scene(scene);
-
-                        LOG_SUCCESS("Create new scene '{0}' to {1}", scene->get_name(), file_path);
-                    }
-                    break;
-
                     case DialogAction::Save:
                     {
                         const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
