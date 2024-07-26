@@ -29,9 +29,18 @@ namespace mag
 
             void on_key_press(KeyPressEvent& e);
 
+            // @TODO: it might be better to handle dialogs natively, but its better to setup the windows build first
+            enum DialogAction
+            {
+                None = 0,
+                Save,
+                Open
+            };
+
+            DialogAction current_action = DialogAction::None;
+
             std::unique_ptr<InfoMenu> info_menu;
             b8 quit = false;
-            b8 dialog_open = false;
             str scene_file_path = "";
     };
 };  // namespace mag

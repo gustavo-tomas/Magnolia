@@ -18,7 +18,7 @@ namespace mag
         if (ImGui::BeginMainMenuBar())
         {
             // Dont do anything if a dialog is still open
-            if (dialog_open)
+            if (current_action != DialogAction::None)
             {
                 ImGui::EndMainMenuBar();
                 return;
@@ -88,7 +88,7 @@ namespace mag
         config.fileName = "untitled.mag.json";
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
-        dialog_open = true;
+        current_action = DialogAction::Save;
     }
 
     // @TODO: finish
@@ -127,7 +127,7 @@ namespace mag
                 LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
             }
 
-            dialog_open = false;
+            current_action = DialogAction::None;
             ImGuiFileDialog::Instance()->Close();
         }
     }
