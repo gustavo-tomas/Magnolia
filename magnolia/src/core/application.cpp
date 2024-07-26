@@ -78,6 +78,12 @@ namespace mag
             dt = curr_time - last_time;
             last_time = curr_time;
 
+            if (!scene_queue.empty())
+            {
+                set_active_scene(scene_queue.front());
+                scene_queue.clear();
+            }
+
             window->update();
 
             // Skip rendering if minimized or resizing
@@ -97,9 +103,12 @@ namespace mag
         }
     }
 
+    void Application::enqueue_scene(Scene* scene) { scene_queue.push_back(scene); }
+
     void Application::set_active_scene(Scene* scene)
     {
         active_scene = std::unique_ptr<Scene>(scene);
+        active_scene->get_render_pass().set_render_scale(1.0f);  // Update the viewport image
         physics_engine->on_simulation_start();
     }
 
