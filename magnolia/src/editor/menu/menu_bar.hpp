@@ -25,11 +25,13 @@ namespace mag
             enum DialogAction
             {
                 None = 0,
+                New,
                 Save,
                 Open
             };
 
             void display_dialog();
+            void new_scene();
             void save_active_scene();
             void save_active_scene_as();
             void open_scene();

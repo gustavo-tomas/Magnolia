@@ -27,6 +27,12 @@ namespace mag
             // File
             if (ImGui::BeginMenu((str(ICON_FA_FILE) + " File").c_str()))
             {
+                // New
+                if (ImGui::MenuItem("New", "Ctrl+N"))
+                {
+                    new_scene();
+                }
+
                 // Save
                 if (ImGui::MenuItem("Save", "Ctrl+S"))
                 {
@@ -99,6 +105,14 @@ namespace mag
         set_dialog_action(DialogAction::Open);
     }
 
+    void MenuBar::new_scene()
+    {
+        IGFD::FileDialogConfig config;
+
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "New Scene", ".mag.json", config);
+        set_dialog_action(DialogAction::New);
+    }
+
     void MenuBar::quit_application() { quit = true; }
 
     void MenuBar::display_dialog()
@@ -111,6 +125,20 @@ namespace mag
             {
                 switch (current_action)
                 {
+                    case DialogAction::New:
+                    {
+                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
+
+                        auto* scene = new Scene();
+
+                        scene_file_path = file_path;
+
+                        get_application().enqueue_scene(scene);
+
+                        LOG_SUCCESS("Create new scene '{0}' to {1}", scene->get_name(), file_path);
+                    }
+                    break;
+
                     case DialogAction::Save:
                     {
                         const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
@@ -168,6 +196,16 @@ namespace mag
 
         switch (e.key)
         {
+            // New
+            case Keys::n:
+            {
+                if (ctrl)
+                {
+                    new_scene();
+                }
+            }
+            break;
+
             // Save
             case Keys::s:
             {
