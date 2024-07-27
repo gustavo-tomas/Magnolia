@@ -46,19 +46,16 @@ namespace mag
 #endif
         if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
 
-        triangle_shader =
-            shader_loader.load("triangle", shader_folder + "triangle.vert.spv", shader_folder + "triangle.frag.spv");
-
+        mesh_shader = shader_loader.load("mesh", shader_folder + "mesh.vert.spv", shader_folder + "mesh.frag.spv");
         color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
-
         grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info =
             vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
 
-        triangle_pipeline = std::make_unique<Pipeline>(pipeline_create_info,
-                                                       triangle_shader->get_descriptor_set_layouts(), *triangle_shader);
+        mesh_pipeline =
+            std::make_unique<Pipeline>(pipeline_create_info, mesh_shader->get_descriptor_set_layouts(), *mesh_shader);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -189,16 +186,16 @@ namespace mag
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
 
-        triangle_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-        triangle_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
-        triangle_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
-        triangle_shader->set_uniform("u_global", "point_lights", &point_lights);
-        triangle_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
-        triangle_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
+        mesh_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        mesh_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        mesh_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
+        mesh_shader->set_uniform("u_global", "point_lights", &point_lights);
+        mesh_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
+        mesh_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
 
-        triangle_shader->bind(*triangle_pipeline);
+        mesh_shader->bind(*mesh_pipeline);
 
-        triangle_pipeline->bind();
+        mesh_pipeline->bind();
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -207,7 +204,7 @@ namespace mag
 
             // @TODO: hardcoded data offset (should the shader deal with this automagically?)
             auto model_matrix = transform->get_transformation_matrix();
-            triangle_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
+            mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
             // Bind buffers
             command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
@@ -219,8 +216,8 @@ namespace mag
                 const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
                 const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
 
-                triangle_shader->bind_texture(*triangle_pipeline, "u_albedo_texture", albedo_descriptor);
-                triangle_shader->bind_texture(*triangle_pipeline, "u_normal_texture", normal_descriptor);
+                mesh_shader->bind_texture(*mesh_pipeline, "u_albedo_texture", albedo_descriptor);
+                mesh_shader->bind_texture(*mesh_pipeline, "u_normal_texture", normal_descriptor);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
