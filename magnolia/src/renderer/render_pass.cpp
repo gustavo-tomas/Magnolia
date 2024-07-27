@@ -233,10 +233,16 @@ namespace mag
 
         // Draw debug lines for physics
         {
-            auto& line_list = get_application().get_renderer().get_physics_debug_lines();
+            auto& app = get_application();
+            auto& physics_engine = app.get_physics_engine();
 
-            if (line_list != nullptr)
+            physics_debug_lines.reset();
+            physics_debug_lines = nullptr;
+            auto& debug_lines = physics_engine.get_line_list();
+            if (!debug_lines.starts.empty())
             {
+                physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
+
                 color_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
                 color_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
@@ -244,8 +250,8 @@ namespace mag
 
                 line_pipeline->bind();
 
-                command_buffer.bind_vertex_buffer(line_list->get_vbo().get_buffer());
-                command_buffer.draw(line_list->get_vertices().size());
+                command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
+                command_buffer.draw(physics_debug_lines->get_vertices().size());
             }
         }
 

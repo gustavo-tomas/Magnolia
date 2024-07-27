@@ -6,6 +6,7 @@
 #include "camera/camera.hpp"
 #include "ecs/ecs.hpp"
 #include "renderer/image.hpp"
+#include "renderer/model.hpp"
 #include "renderer/pipeline.hpp"
 
 // @TODO: review this whole chicanery
@@ -51,6 +52,7 @@ namespace mag
             std::unique_ptr<Pipeline> triangle_pipeline, grid_pipeline, line_pipeline;
             std::shared_ptr<Shader> triangle_shader, grid_shader, color_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
+            std::unique_ptr<Line> physics_debug_lines;
 
             uvec3 draw_size;
             f32 render_scale = 1.0;
