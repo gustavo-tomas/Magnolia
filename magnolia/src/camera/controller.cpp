@@ -49,6 +49,11 @@ namespace mag
 
     void EditorCameraController::on_mouse_scroll(MouseScrollEvent& e)
     {
+        auto& window = get_application().get_window();
+
+        // Prevent scrolling while moving
+        if (window.is_button_down(Button::Middle)) return;
+
         const ivec2 mouse_scroll = {e.x_offset, e.y_offset};
 
         // We dont change the camera fov, just the position (avoid fov distortions)
