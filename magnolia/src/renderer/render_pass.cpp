@@ -41,8 +41,7 @@ namespace mag
         const vk::PipelineRenderingCreateInfo pipeline_create_info =
             vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
 
-        mesh_pipeline =
-            std::make_unique<Pipeline>(pipeline_create_info, mesh_shader->get_descriptor_set_layouts(), *mesh_shader);
+        mesh_pipeline = std::make_unique<Pipeline>(*mesh_shader, pipeline_create_info);
 
         vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
         color_blend_attachment.setBlendEnable(true)
@@ -53,9 +52,9 @@ namespace mag
             .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
             .setAlphaBlendOp(vk::BlendOp::eAdd);
 
-        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
-                                                   *grid_shader, Pipeline::default_input_assembly(),
-                                                   Pipeline::default_rasterization_state(), color_blend_attachment);
+        grid_pipeline =
+            std::make_unique<Pipeline>(*grid_shader, pipeline_create_info, Pipeline::default_input_assembly(),
+                                       Pipeline::default_rasterization_state(), color_blend_attachment);
 
         // Draw lines for physics debug
         vk::PipelineInputAssemblyStateCreateInfo input_assembly = Pipeline::default_input_assembly();
@@ -65,8 +64,8 @@ namespace mag
         rasterization_state.setPolygonMode(vk::PolygonMode::eLine);
         rasterization_state.setCullMode(vk::CullModeFlagBits::eNone);
 
-        line_pipeline = std::make_unique<Pipeline>(pipeline_create_info, color_shader->get_descriptor_set_layouts(),
-                                                   *color_shader, input_assembly, rasterization_state);
+        line_pipeline =
+            std::make_unique<Pipeline>(*color_shader, pipeline_create_info, input_assembly, rasterization_state);
     }
 
     StandardRenderPass::~StandardRenderPass()
