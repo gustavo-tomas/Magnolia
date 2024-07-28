@@ -1,0 +1,7 @@
+{
+    "Shader": "Mesh",
+    "Files": {
+        "Vertex": "mesh.vert.spv",
+        "Fragment": "mesh.frag.spv"
+    }
+}

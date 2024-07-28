@@ -1,7 +1,5 @@
 #include "renderer/render_pass.hpp"
 
-#include <filesystem>
-
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
@@ -35,20 +33,9 @@ namespace mag
         this->initialize_images();
 
         // Shaders
-        const std::filesystem::path cwd = std::filesystem::current_path();
-        const str last_folder = cwd.filename().string();
-        str system = "linux";
-        str shader_folder = "shaders/";
-
-// @TODO: clean this up (maybe use a filesystem class)
-#if defined(_WIN32)
-        system = "windows";
-#endif
-        if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
-
-        mesh_shader = shader_loader.load("mesh", shader_folder + "mesh.vert.spv", shader_folder + "mesh.frag.spv");
-        color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
-        grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
+        mesh_shader = shader_loader.load("magnolia/assets/shaders/mesh_shader.mag.json");
+        color_shader = shader_loader.load("magnolia/assets/shaders/color_shader.mag.json");
+        grid_shader = shader_loader.load("magnolia/assets/shaders/grid_shader.mag.json");
 
         // Pipelines
         const vk::PipelineRenderingCreateInfo pipeline_create_info =

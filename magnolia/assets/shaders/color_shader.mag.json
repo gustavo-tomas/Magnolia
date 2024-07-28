@@ -1,0 +1,7 @@
+{
+    "Shader": "Color",
+    "Files": {
+        "Vertex": "color.vert.spv",
+        "Fragment": "color.frag.spv"
+    }
+}

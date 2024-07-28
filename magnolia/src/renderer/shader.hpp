@@ -92,7 +92,7 @@ namespace mag
             ShaderManager() = default;
             ~ShaderManager();
 
-            std::shared_ptr<Shader> load(const str& name, const str& vertex_file, const str& fragment_file);
+            std::shared_ptr<Shader> load(const str& file_path);
 
         private:
             std::shared_ptr<ShaderModule> load_module(const str& file);

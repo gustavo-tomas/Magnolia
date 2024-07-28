@@ -1,0 +1,7 @@
+{
+    "Shader": "Grid",
+    "Files": {
+        "Vertex": "grid.vert.spv",
+        "Fragment": "grid.frag.spv"
+    }
+}

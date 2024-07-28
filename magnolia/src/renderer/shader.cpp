@@ -5,25 +5,64 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "nlohmann/json.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderManager::load(const str& name, const str& vertex_file, const str& fragment_file)
+    using json = nlohmann::ordered_json;
+
+    std::shared_ptr<Shader> ShaderManager::load(const str& file_path)
     {
-        auto it = shaders.find(name);
+        auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
 
-        const auto vertex_module = load_module(vertex_file);
-        const auto fragment_module = load_module(fragment_file);
+        // Parse instructions from the json file
+        std::ifstream file(file_path);
+
+        ASSERT(file.is_open(), "Failed to open file: " + file_path);
+
+        // Parse the file
+        const json data = json::parse(file);
+
+        ASSERT(data.contains("Files"), "Shader '" + file_path + "' has no shader stages");
+
+        const str shader_name = data["Shader"];
+
+        const json files = data["Files"];
+
+        // Vertex and fragment shaders are necessary, the other stages are optional
+        ASSERT(files.contains("Vertex") && files.contains("Fragment"), "Missing vertex or fragment shaders");
+
+        // @TODO: cleanup
+        str shader_folder = "shaders/";
+        {
+            // Shaders
+            const std::filesystem::path cwd = std::filesystem::current_path();
+            const str last_folder = cwd.filename().string();
+            str system = "linux";
+
+// @TODO: clean this up (maybe use a filesystem class)
+#if defined(_WIN32)
+            system = "windows";
+#endif
+            if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
+        }
+        // @TODO: cleanup
+
+        const str vertex_file_path = shader_folder + str(files["Vertex"]);
+        const str fragment_file_path = shader_folder + str(files["Fragment"]);
+
+        const auto vertex_module = load_module(vertex_file_path);
+        const auto fragment_module = load_module(fragment_file_path);
 
         Shader* shader = new Shader({vertex_module, fragment_module});
 
-        LOG_SUCCESS("Loaded shader: {0}", name);
-        shaders[name] = std::shared_ptr<Shader>(shader);
-        return shaders[name];
+        LOG_SUCCESS("Loaded shader: {0}", file_path);
+        shaders[file_path] = std::shared_ptr<Shader>(shader);
+        return shaders[file_path];
     }
 
     std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file)
