@@ -1,0 +1,19 @@
+{
+    "Shader": "PhysicsLineShader",
+    "Files": {
+        "Vertex": "color.vert.spv",
+        "Fragment": "color.frag.spv"
+    },
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Line"
+        },
+        "Rasterization": {
+            "PolygonMode": "Line",
+            "CullMode": "None"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        }
+    }
+}

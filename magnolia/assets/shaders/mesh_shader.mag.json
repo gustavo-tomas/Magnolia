@@ -1,0 +1,19 @@
+{
+    "Shader": "Mesh",
+    "Files": {
+        "Vertex": "mesh.vert.spv",
+        "Fragment": "mesh.frag.spv"
+    },
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        }
+    }
+}

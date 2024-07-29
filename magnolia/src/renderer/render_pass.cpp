@@ -1,7 +1,5 @@
 #include "renderer/render_pass.hpp"
 
-#include <filesystem>
-
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
@@ -35,51 +33,9 @@ namespace mag
         this->initialize_images();
 
         // Shaders
-        const std::filesystem::path cwd = std::filesystem::current_path();
-        const str last_folder = cwd.filename().string();
-        str system = "linux";
-        str shader_folder = "shaders/";
-
-// @TODO: clean this up (maybe use a filesystem class)
-#if defined(_WIN32)
-        system = "windows";
-#endif
-        if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
-
-        mesh_shader = shader_loader.load("mesh", shader_folder + "mesh.vert.spv", shader_folder + "mesh.frag.spv");
-        color_shader = shader_loader.load("color", shader_folder + "color.vert.spv", shader_folder + "color.frag.spv");
-        grid_shader = shader_loader.load("grid", shader_folder + "grid.vert.spv", shader_folder + "grid.frag.spv");
-
-        // Pipelines
-        const vk::PipelineRenderingCreateInfo pipeline_create_info =
-            vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
-
-        mesh_pipeline =
-            std::make_unique<Pipeline>(pipeline_create_info, mesh_shader->get_descriptor_set_layouts(), *mesh_shader);
-
-        vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
-        color_blend_attachment.setBlendEnable(true)
-            .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-            .setColorBlendOp(vk::BlendOp::eAdd)
-            .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-            .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-            .setAlphaBlendOp(vk::BlendOp::eAdd);
-
-        grid_pipeline = std::make_unique<Pipeline>(pipeline_create_info, grid_shader->get_descriptor_set_layouts(),
-                                                   *grid_shader, Pipeline::default_input_assembly(),
-                                                   Pipeline::default_rasterization_state(), color_blend_attachment);
-
-        // Draw lines for physics debug
-        vk::PipelineInputAssemblyStateCreateInfo input_assembly = Pipeline::default_input_assembly();
-        input_assembly.setTopology(vk::PrimitiveTopology::eLineList);
-
-        vk::PipelineRasterizationStateCreateInfo rasterization_state = Pipeline::default_rasterization_state();
-        rasterization_state.setPolygonMode(vk::PolygonMode::eLine);
-        rasterization_state.setCullMode(vk::CullModeFlagBits::eNone);
-
-        line_pipeline = std::make_unique<Pipeline>(pipeline_create_info, color_shader->get_descriptor_set_layouts(),
-                                                   *color_shader, input_assembly, rasterization_state);
+        mesh_shader = shader_loader.load("magnolia/assets/shaders/mesh_shader.mag.json");
+        physics_line_shader = shader_loader.load("magnolia/assets/shaders/physics_line_shader.mag.json");
+        grid_shader = shader_loader.load("magnolia/assets/shaders/grid_shader.mag.json");
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -193,9 +149,7 @@ namespace mag
         mesh_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
         mesh_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
 
-        mesh_shader->bind(*mesh_pipeline);
-
-        mesh_pipeline->bind();
+        mesh_shader->bind();
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -216,8 +170,8 @@ namespace mag
                 const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
                 const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
 
-                mesh_shader->bind_texture(*mesh_pipeline, "u_albedo_texture", albedo_descriptor);
-                mesh_shader->bind_texture(*mesh_pipeline, "u_normal_texture", normal_descriptor);
+                mesh_shader->bind_texture("u_albedo_texture", albedo_descriptor);
+                mesh_shader->bind_texture("u_normal_texture", normal_descriptor);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
@@ -240,12 +194,10 @@ namespace mag
             {
                 physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
 
-                color_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-                color_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+                physics_line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+                physics_line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-                color_shader->bind(*line_pipeline);
-
-                line_pipeline->bind();
+                physics_line_shader->bind();
 
                 command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
                 command_buffer.draw(physics_debug_lines->get_vertices().size());
@@ -258,9 +210,7 @@ namespace mag
             grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
             grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
-            grid_shader->bind(*grid_pipeline);
-
-            grid_pipeline->bind();
+            grid_shader->bind();
 
             command_buffer.draw(6);
         }

@@ -11,19 +11,56 @@
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderManager::load(const str& name, const str& vertex_file, const str& fragment_file)
+    std::shared_ptr<Shader> ShaderManager::load(const str& file_path)
     {
-        auto it = shaders.find(name);
+        auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
 
-        const auto vertex_module = load_module(vertex_file);
-        const auto fragment_module = load_module(fragment_file);
+        // Parse instructions from the json file
+        std::ifstream file(file_path);
 
-        Shader* shader = new Shader({vertex_module, fragment_module});
+        ASSERT(file.is_open(), "Failed to open file: " + file_path);
 
-        LOG_SUCCESS("Loaded shader: {0}", name);
-        shaders[name] = std::shared_ptr<Shader>(shader);
-        return shaders[name];
+        // Parse the file
+        const json data = json::parse(file);
+
+        ASSERT(data.contains("Files"), "Shader '" + file_path + "' has no shader stages");
+        ASSERT(data.contains("Pipeline"), "Shader '" + file_path + "' has no pipeline configuration");
+
+        const str shader_name = data["Shader"];
+
+        const json files = data["Files"];
+
+        // Vertex and fragment shaders are necessary, the other stages are optional
+        ASSERT(files.contains("Vertex") && files.contains("Fragment"), "Missing vertex or fragment shaders");
+
+        // @TODO: cleanup
+        str shader_folder = "shaders/";
+        {
+            // Shaders
+            const std::filesystem::path cwd = std::filesystem::current_path();
+            const str last_folder = cwd.filename().string();
+            str system = "linux";
+
+// @TODO: clean this up (maybe use a filesystem class)
+#if defined(_WIN32)
+            system = "windows";
+#endif
+            if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
+        }
+        // @TODO: cleanup
+
+        const str vertex_file_path = shader_folder + str(files["Vertex"]);
+        const str fragment_file_path = shader_folder + str(files["Fragment"]);
+
+        const auto vertex_module = load_module(vertex_file_path);
+        const auto fragment_module = load_module(fragment_file_path);
+
+        Shader* shader = new Shader({vertex_module, fragment_module}, data["Pipeline"]);
+
+        LOG_SUCCESS("Loaded shader: {0}", file_path);
+        shaders[file_path] = std::shared_ptr<Shader>(shader);
+        return shaders[file_path];
     }
 
     std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file)
@@ -70,7 +107,8 @@ namespace mag
         }
     }
 
-    Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules) : modules(modules)
+    Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data)
+        : modules(modules)
     {
         auto& context = get_context();
         const u32 frame_count = context.get_frame_count();
@@ -217,6 +255,16 @@ namespace mag
                 descriptor_set_layouts[descriptor_binding.set] = uniforms_map[scope].descriptor_set_layouts[0];
             }
         }
+
+        // @TODO: hardcoded format
+        const auto color_format = vk::Format::eR16G16B16A16Sfloat;
+        const auto depth_format = vk::Format::eD32Sfloat;
+
+        // Create pipeline
+        const vk::PipelineRenderingCreateInfo pipeline_create_info =
+            vk::PipelineRenderingCreateInfo({}, color_format, depth_format);
+
+        pipeline = std::make_unique<Pipeline>(*this, pipeline_create_info, pipeline_data);
     }
 
     Shader::~Shader()
@@ -268,7 +316,7 @@ namespace mag
         buffer.copy(data, size, offset + data_offset);
     }
 
-    void Shader::bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set)
+    void Shader::bind_texture(const str& name, const vk::DescriptorSet& descriptor_set)
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -280,11 +328,11 @@ namespace mag
         curr_descriptor_set = descriptor_set;
 
         // Rebind the texture descriptor
-        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
+        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(),
                                            ubo.descriptor_binding.set, curr_descriptor_set);
     }
 
-    void Shader::bind(const Pipeline& pipeline)
+    void Shader::bind()
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -294,8 +342,10 @@ namespace mag
         {
             auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
 
-            command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline.get_layout(),
+            command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(),
                                                ubo.descriptor_binding.set, curr_descriptor_set);
         }
+
+        pipeline->bind();
     }
 };  // namespace mag

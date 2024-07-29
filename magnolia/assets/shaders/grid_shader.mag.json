@@ -1,0 +1,25 @@
+{
+    "Shader": "Grid",
+    "Files": {
+        "Vertex": "grid.vert.spv",
+        "Fragment": "grid.frag.spv"
+    },
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
+        },
+        "ColorBlend": {
+            "Enabled": true,
+            "ColorBlendOp": "Add",
+            "AlphaBlendOp": "Add",
+            "SrcColorBlendFactor": "SrcAlpha",
+            "DstColorBlendFactor": "OneMinusSrcAlpha",
+            "SrcAlphaBlendFactor": "One",
+            "DstAlphaBlendFactor": "OneMinusSrcAlpha"
+        }
+    }
+}

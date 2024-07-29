@@ -5,12 +5,14 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "nlohmann/json.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
 {
     using namespace mag::math;
+    using json = nlohmann::ordered_json;
 
     class ShaderModule
     {
@@ -37,7 +39,7 @@ namespace mag
     class Shader
     {
         public:
-            Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules);
+            Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data);
             ~Shader();
 
             struct UBO
@@ -54,8 +56,8 @@ namespace mag
 
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
 
-            void bind(const Pipeline& pipeline);
-            void bind_texture(const Pipeline& pipeline, const str& name, const vk::DescriptorSet& descriptor_set);
+            void bind();
+            void bind_texture(const str& name, const vk::DescriptorSet& descriptor_set);
 
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
@@ -81,6 +83,8 @@ namespace mag
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
+            std::unique_ptr<Pipeline> pipeline;
+
             u32 location = 0;
             u32 stride = 0;
             std::map<str, UBO> uniforms_map;
@@ -92,7 +96,7 @@ namespace mag
             ShaderManager() = default;
             ~ShaderManager();
 
-            std::shared_ptr<Shader> load(const str& name, const str& vertex_file, const str& fragment_file);
+            std::shared_ptr<Shader> load(const str& file_path);
 
         private:
             std::shared_ptr<ShaderModule> load_module(const str& file);
