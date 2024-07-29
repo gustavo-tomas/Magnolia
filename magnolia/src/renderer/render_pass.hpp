@@ -49,7 +49,7 @@ namespace mag
             void initialize_images();
 
             Pass pass = {};
-            std::shared_ptr<Shader> mesh_shader, grid_shader, color_shader;
+            std::shared_ptr<Shader> mesh_shader, grid_shader, physics_line_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
             std::unique_ptr<Line> physics_debug_lines;
 

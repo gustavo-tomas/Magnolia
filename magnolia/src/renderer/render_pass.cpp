@@ -34,7 +34,7 @@ namespace mag
 
         // Shaders
         mesh_shader = shader_loader.load("magnolia/assets/shaders/mesh_shader.mag.json");
-        color_shader = shader_loader.load("magnolia/assets/shaders/color_shader.mag.json");
+        physics_line_shader = shader_loader.load("magnolia/assets/shaders/physics_line_shader.mag.json");
         grid_shader = shader_loader.load("magnolia/assets/shaders/grid_shader.mag.json");
     }
 
@@ -194,10 +194,10 @@ namespace mag
             {
                 physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
 
-                color_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-                color_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+                physics_line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+                physics_line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-                color_shader->bind();
+                physics_line_shader->bind();
 
                 command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
                 command_buffer.draw(physics_debug_lines->get_vertices().size());
