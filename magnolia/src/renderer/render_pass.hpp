@@ -7,7 +7,7 @@
 #include "ecs/ecs.hpp"
 #include "renderer/image.hpp"
 #include "renderer/model.hpp"
-#include "renderer/pipeline.hpp"
+#include "renderer/shader.hpp"
 
 // @TODO: review this whole chicanery
 
@@ -49,7 +49,6 @@ namespace mag
             void initialize_images();
 
             Pass pass = {};
-            std::unique_ptr<Pipeline> mesh_pipeline, grid_pipeline, line_pipeline;
             std::shared_ptr<Shader> mesh_shader, grid_shader, color_shader;
             std::vector<Image> draw_images, depth_images, resolve_images;
             std::unique_ptr<Line> physics_debug_lines;

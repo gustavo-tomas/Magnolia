@@ -36,36 +36,6 @@ namespace mag
         mesh_shader = shader_loader.load("magnolia/assets/shaders/mesh_shader.mag.json");
         color_shader = shader_loader.load("magnolia/assets/shaders/color_shader.mag.json");
         grid_shader = shader_loader.load("magnolia/assets/shaders/grid_shader.mag.json");
-
-        // Pipelines
-        const vk::PipelineRenderingCreateInfo pipeline_create_info =
-            vk::PipelineRenderingCreateInfo({}, draw_images[0].get_format(), depth_images[0].get_format());
-
-        mesh_pipeline = std::make_unique<Pipeline>(*mesh_shader, pipeline_create_info);
-
-        vk::PipelineColorBlendAttachmentState color_blend_attachment = Pipeline::default_color_blend_attachment();
-        color_blend_attachment.setBlendEnable(true)
-            .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-            .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-            .setColorBlendOp(vk::BlendOp::eAdd)
-            .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-            .setDstAlphaBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-            .setAlphaBlendOp(vk::BlendOp::eAdd);
-
-        grid_pipeline =
-            std::make_unique<Pipeline>(*grid_shader, pipeline_create_info, Pipeline::default_input_assembly(),
-                                       Pipeline::default_rasterization_state(), color_blend_attachment);
-
-        // Draw lines for physics debug
-        vk::PipelineInputAssemblyStateCreateInfo input_assembly = Pipeline::default_input_assembly();
-        input_assembly.setTopology(vk::PrimitiveTopology::eLineList);
-
-        vk::PipelineRasterizationStateCreateInfo rasterization_state = Pipeline::default_rasterization_state();
-        rasterization_state.setPolygonMode(vk::PolygonMode::eLine);
-        rasterization_state.setCullMode(vk::CullModeFlagBits::eNone);
-
-        line_pipeline =
-            std::make_unique<Pipeline>(*color_shader, pipeline_create_info, input_assembly, rasterization_state);
     }
 
     StandardRenderPass::~StandardRenderPass()
@@ -179,9 +149,7 @@ namespace mag
         mesh_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
         mesh_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
 
-        mesh_shader->bind(*mesh_pipeline);
-
-        mesh_pipeline->bind();
+        mesh_shader->bind();
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -202,8 +170,8 @@ namespace mag
                 const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
                 const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
 
-                mesh_shader->bind_texture(*mesh_pipeline, "u_albedo_texture", albedo_descriptor);
-                mesh_shader->bind_texture(*mesh_pipeline, "u_normal_texture", normal_descriptor);
+                mesh_shader->bind_texture("u_albedo_texture", albedo_descriptor);
+                mesh_shader->bind_texture("u_normal_texture", normal_descriptor);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
@@ -229,9 +197,7 @@ namespace mag
                 color_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
                 color_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-                color_shader->bind(*line_pipeline);
-
-                line_pipeline->bind();
+                color_shader->bind();
 
                 command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
                 command_buffer.draw(physics_debug_lines->get_vertices().size());
@@ -244,9 +210,7 @@ namespace mag
             grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
             grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
-            grid_shader->bind(*grid_pipeline);
-
-            grid_pipeline->bind();
+            grid_shader->bind();
 
             command_buffer.draw(6);
         }
