@@ -16,7 +16,7 @@ namespace mag
             void render(const ImGuiWindowFlags window_flags);
 
         private:
-            std::shared_ptr<Image> asset_image;
-            vk::DescriptorSet asset_image_descriptor = {};
+            std::shared_ptr<Image> folder_image, file_image;
+            vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
     };
 };  // namespace mag

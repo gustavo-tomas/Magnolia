@@ -11,11 +11,18 @@ namespace mag
 {
     ContentBrowserPanel::ContentBrowserPanel()
     {
-        asset_image = get_application().get_texture_manager().load("magnolia/assets/images/DefaultAlbedoSeamless.png",
-                                                                   TextureType::Albedo);
+        folder_image = get_application().get_texture_manager().load("magnolia/assets/images/fa-folder-solid.png",
+                                                                    TextureType::Albedo);
 
-        asset_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(asset_image->get_sampler().get_handle(), asset_image->get_image_view(),
+        file_image = get_application().get_texture_manager().load("magnolia/assets/images/fa-file-solid.png",
+                                                                  TextureType::Albedo);
+
+        folder_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(folder_image->get_sampler().get_handle(), folder_image->get_image_view(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        file_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(file_image->get_sampler().get_handle(), file_image->get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
@@ -52,8 +59,16 @@ namespace mag
 
             ImGui::PushID(filename_string.c_str());
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));  // Remove button background
-            ImGui::ImageButton(filename_string.c_str(), asset_image_descriptor, {thumbnail_size, thumbnail_size},
-                               {0, 1}, {1, 0});
+
+            if (directory_entry.is_directory())
+            {
+                ImGui::ImageButton(filename_string.c_str(), folder_image_descriptor, {thumbnail_size, thumbnail_size});
+            }
+
+            else
+            {
+                ImGui::ImageButton(filename_string.c_str(), file_image_descriptor, {thumbnail_size, thumbnail_size});
+            }
 
             if (ImGui::BeginDragDropSource())
             {
