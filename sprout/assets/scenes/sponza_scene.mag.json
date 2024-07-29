@@ -34,7 +34,7 @@
         },
         {
             "NameComponent": {
-                "Name": "Entity1"
+                "Name": "Light1"
             },
             "TransformComponent": {
                 "Translation": [
@@ -68,7 +68,41 @@
         },
         {
             "NameComponent": {
-                "Name": "Entity3"
+                "Name": "Light2"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    150.0,
+                    250.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "lightbulb.glb",
+                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 500.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Sponza"
             },
             "TransformComponent": {
                 "Translation": [
