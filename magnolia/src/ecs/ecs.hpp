@@ -91,7 +91,11 @@ namespace mag
             {
                 ASSERT_TYPE(T);
 
-                if (!entity_exists(entity_id)) return;
+                if (!entity_exists(entity_id))
+                {
+                    LOG_ERROR("Entity with ID: {0} does not exist", entity_id);
+                    return;
+                }
 
                 // Check if component already exists
                 if (get_component<T>(entity_id) != nullptr)
@@ -221,16 +225,7 @@ namespace mag
                 return ids;
             }
 
-            b8 entity_exists(const u32 id) const
-            {
-                if (!entities.contains(id))
-                {
-                    LOG_ERROR("Entity with ID: {0} does not exist", id);
-                    return false;
-                }
-
-                return true;
-            }
+            b8 entity_exists(const u32 id) const { return entities.contains(id); }
 
         private:
             std::map<u32, Entity> copy_entities(const std::map<u32, Entity>& source)
