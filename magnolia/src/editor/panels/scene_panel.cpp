@@ -2,12 +2,17 @@
 
 #include "core/application.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/model.hpp"
 
 namespace mag
 {
     void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs)
     {
+        // Check if selected id is valid
+        if (selected_entity_id != INVALID_ID && !ecs.entity_exists(selected_entity_id))
+        {
+            selected_entity_id = INVALID_ID;
+        }
+
         ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
 
         auto entities = ecs.get_entities_ids();
