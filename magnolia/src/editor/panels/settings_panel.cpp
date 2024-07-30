@@ -7,7 +7,7 @@ namespace mag
 {
     void SettingsPanel::render(const ImGuiWindowFlags window_flags)
     {
-        ImGui::Begin(ICON_FA_PAINTBRUSH " Settings", NULL, window_flags);
+        ImGui::Begin(ICON_FA_WRENCH " Settings", NULL, window_flags);
 
         ImGui::SeparatorText("Scene Settings");
         auto &clear_color = get_application().get_active_scene().get_render_pass().get_clear_color();

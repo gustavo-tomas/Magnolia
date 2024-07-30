@@ -30,14 +30,25 @@ namespace mag
         auto &model_manager = app.get_model_manager();
         auto &scene = app.get_active_scene();
 
+        // Runtime controls
+        b8 swap_state;
+        {
+            ImGui::Begin(ICON_FA_GAMEPAD " Runtime Controls", NULL, window_flags);
+
+            const SceneState current_state = scene.get_scene_state();
+
+            // @TODO: make a prettier button
+            // @NOTE: keep the runtime switch in the end
+            const str button_label = current_state == SceneState::Editor ? ICON_FA_PLAY : ICON_FA_STOP;
+            swap_state = ImGui::Button(button_label.c_str());
+
+            ImGui::End();
+        }
+
         // Remove padding for the viewport
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
-
-        // @TODO: make a prettier button
-        // @NOTE: keep this runtime switch in the end to avoid the consequences of bad design
-        const b8 swap_state = ImGui::Button("Play/Pause");
 
         const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
