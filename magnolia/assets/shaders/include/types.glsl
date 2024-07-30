@@ -2,6 +2,11 @@
 
 // @TODO: for now we assume this file is included in every shader module.
 
+// Macros
+#define MODEL_MATRIX u_instance.models[gl_InstanceIndex].model
+#define PROJ_MATRIX u_global.projection
+#define VIEW_MATRIX u_global.view
+
 // Constants
 const uint MAX_NUMBER_OF_LIGHTS = 4;
 

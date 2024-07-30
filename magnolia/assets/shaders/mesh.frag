@@ -20,7 +20,7 @@ void main()
 	object_normal.rgb = linear_to_srgb(object_normal.rgb);
 
 	// @TODO: this is pretty slow, but for now its ok
-	vec3 camera_position = vec3(inverse(u_global.view)[3]);
+	vec3 camera_position = vec3(inverse(VIEW_MATRIX)[3]);
 
 	// Select the fragment normal
 	vec3 normal = vec3(0);

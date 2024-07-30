@@ -24,11 +24,11 @@ vec3 unproject_point(float x, float y, float z, mat4 view, mat4 projection)
 void main() 
 {
     vec3 p = grid_plane[gl_VertexIndex].xyz;
-    out_near_point = unproject_point(p.x, p.y, 0.0, u_global.view, u_global.projection).xyz;
-    out_far_point = unproject_point(p.x, p.y, 1.0, u_global.view, u_global.projection).xyz;
+    out_near_point = unproject_point(p.x, p.y, 0.0, VIEW_MATRIX, PROJ_MATRIX).xyz;
+    out_far_point = unproject_point(p.x, p.y, 1.0, VIEW_MATRIX, PROJ_MATRIX).xyz;
     
-    out_view = u_global.view;
-    out_projection = u_global.projection;
+    out_view = VIEW_MATRIX;
+    out_projection = PROJ_MATRIX;
     out_near_far = u_global.near_far;
 
     gl_Position = vec4(p, 1.0); // using directly the clipped coordinates
