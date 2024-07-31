@@ -226,23 +226,11 @@ namespace mag
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                        auto default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
+                        const auto& default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
 
-                        // Albedo
-                        if (descriptor_binding.set == 3)
-                        {
-                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
-                                                                             default_mat->textures[Material::Albedo],
-                                                                             descriptor_set, descriptor_set_layout);
-                        }
-
-                        // Normal
-                        if (descriptor_binding.set == 4)
-                        {
-                            DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
-                                                                             default_mat->textures[Material::Normal],
-                                                                             descriptor_set, descriptor_set_layout);
-                        }
+                        DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
+                                                                         default_mat->textures[Material::Albedo],
+                                                                         descriptor_set, descriptor_set_layout);
                     }
                 }
 
