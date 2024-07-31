@@ -1,7 +1,5 @@
 #version 460
 
-#include "include/types.glsl"
-
 layout (location = 0) in vec2 in_near_far;
 layout (location = 1) in vec3 in_near_point;
 layout (location = 2) in vec3 in_far_point;
