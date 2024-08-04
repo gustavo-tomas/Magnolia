@@ -162,7 +162,11 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
 
-        camera_controller->on_event(e);
+        // Don't process editor input during runtime
+        if (current_state == SceneState::Editor)
+        {
+            camera_controller->on_event(e);
+        }
     }
 
     void Scene::on_viewport_resize(ViewportResizeEvent& e)
