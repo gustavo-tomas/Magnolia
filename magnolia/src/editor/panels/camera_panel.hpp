@@ -3,8 +3,6 @@
 #include "camera/camera.hpp"
 #include "imgui.h"
 
-// @TODO: this is temporary-ish. The camera will (should?) be an ECS component.
-
 namespace mag
 {
     class CameraPanel

@@ -47,7 +47,7 @@ namespace mag
             }
     };
 
-    // @TODO: i didnt turn Model into a component because then the ModelLoader would be loading components directly
+    // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
     // and i find that a bit weird
     struct Model;
     struct ModelComponent : public Component

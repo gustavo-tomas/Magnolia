@@ -46,7 +46,6 @@ namespace mag
 
     b8 MaterialManager::exists(const str& name) const { return materials.contains(name); }
 
-    // @TODO: return a default material if name not found?
     std::shared_ptr<Material> MaterialManager::get(const str& name)
     {
         auto it = materials.find(name);
