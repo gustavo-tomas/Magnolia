@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "core/event.hpp"
-#include "ecs/ecs.hpp"
 #include "editor/editor_pass.hpp"
 #include "editor/menu/menu_bar.hpp"
 #include "editor/panels/camera_panel.hpp"
@@ -14,6 +13,7 @@
 #include "editor/panels/settings_panel.hpp"
 #include "editor/panels/status_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -27,7 +27,7 @@ namespace mag
             ~Editor();
 
             void update();
-            void render(Camera& camera, ECS& ecs);
+            void render(Scene& scene);
             void on_event(Event& e);
 
             void set_viewport_image(const Image& image);
@@ -38,17 +38,21 @@ namespace mag
 
             u32& get_texture_output() { return settings_panel->get_texture_output(); };
             u32& get_normal_output() { return settings_panel->get_normal_output(); };
-            const Image& get_image() const { return render_pass.get_draw_image(); };
-            const uvec3& get_draw_size() const { return render_pass.get_draw_size(); };
+            const Image& get_image() const { return editor_render_pass.get_draw_image(); };
+            const uvec3& get_draw_size() const { return editor_render_pass.get_draw_size(); };
+            const Statistics& get_statistics() const { return statistics; };
 
             b8 is_disabled() const { return disabled; };
 
         private:
+            void run_editor_pass(Scene& scene);
+            void run_scene_pass(Scene& scene);
+
             void on_sdl_event(SDLEvent& e);
             void on_resize(WindowResizeEvent& e);
 
             EventCallback event_callback;
-            EditorRenderPass render_pass;
+            EditorRenderPass editor_render_pass;
             vk::DescriptorPool descriptor_pool;
 
             std::unique_ptr<MenuBar> menu_bar;
@@ -61,6 +65,7 @@ namespace mag
             std::unique_ptr<CameraPanel> camera_panel;
             std::unique_ptr<SettingsPanel> settings_panel;
 
+            Statistics statistics;
             b8 disabled = false;
     };
 };  // namespace mag

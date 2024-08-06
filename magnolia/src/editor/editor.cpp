@@ -7,6 +7,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "renderer/type_conversions.hpp"
 
 namespace mag
 {
@@ -16,7 +17,7 @@ namespace mag
         auto &device = context.get_device();
 
         // Create support structures for command submition
-        this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
+        editor_render_pass.initialize(vk_extent_to_vec(context.get_surface_extent()));
 
         std::vector<vk::DescriptorPoolSize> pool_sizes = {{vk::DescriptorType::eSampler, 1000},
                                                           {vk::DescriptorType::eCombinedImageSampler, 1000},
@@ -74,7 +75,7 @@ namespace mag
         init_info.MinImageCount = context.get_swapchain_images().size();
         init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
-        init_info.ColorAttachmentFormat = static_cast<VkFormat>(render_pass.get_draw_image().get_format());
+        init_info.ColorAttachmentFormat = static_cast<VkFormat>(editor_render_pass.get_draw_image().get_format());
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
         ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
@@ -95,7 +96,7 @@ namespace mag
     {
         auto &context = get_context();
 
-        this->render_pass.shutdown();
+        editor_render_pass.shutdown();
 
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
@@ -132,18 +133,68 @@ namespace mag
         {
             window.set_fullscreen(!window.is_fullscreen());
         }
+
+        statistics = {};
     }
 
-    void Editor::render(Camera &camera, ECS &ecs)
+    void Editor::render(Scene &scene)
+    {
+        auto &app = get_application();
+        auto &window = app.get_window();
+        auto &renderer = app.get_renderer();
+
+        renderer.begin();
+
+        run_scene_pass(scene);
+        run_editor_pass(scene);
+
+        // @TODO: testing
+        static b8 swap = false;
+        if (window.is_key_pressed(Key::Tab)) swap = !swap;
+
+        const auto &extent = swap ? scene.get_render_pass().get_draw_size() : editor_render_pass.get_draw_size();
+        const auto &image = swap ? scene.get_render_pass().get_target_image() : editor_render_pass.get_draw_image();
+        // @TODO: testing
+
+        renderer.end(image, extent);
+    }
+
+    void Editor::run_scene_pass(Scene &scene)
     {
         auto &context = get_context();
         auto &cmd = context.get_curr_frame().command_buffer;
 
+        // Run the scene pass before the editor
+        auto &render_pass = scene.get_render_pass();
+        Pass &pass = render_pass.get_pass();
+
+        // Draw calls
+        render_pass.before_render();
+        cmd.begin_rendering(pass);
+
+        render_pass.render(scene.get_camera(), scene.get_ecs());
+
+        cmd.end_rendering();
+        render_pass.after_render();
+
+        statistics.draw_calls += pass.statistics.draw_calls;
+        statistics.rendered_triangles += pass.statistics.rendered_triangles;
+    }
+
+    void Editor::run_editor_pass(Scene &scene)
+    {
+        auto &ecs = scene.get_ecs();
+        auto &camera = scene.get_camera();
+        auto &context = get_context();
+        auto &cmd = context.get_curr_frame().command_buffer;
+
+        // Run the editor pass
+
         viewport_panel->before_render();
 
         // @TODO: put this inside the render pass?
-        render_pass.before_render();
-        cmd.begin_rendering(this->render_pass.get_pass());
+        editor_render_pass.before_render();
+        cmd.begin_rendering(editor_render_pass.get_pass());
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
@@ -184,7 +235,7 @@ namespace mag
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
 
         cmd.end_rendering();
-        render_pass.after_render();
+        editor_render_pass.after_render();
 
         viewport_panel->after_render();
     }
@@ -201,7 +252,7 @@ namespace mag
 
     void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
 
-    void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
+    void Editor::on_resize(WindowResizeEvent &e) { editor_render_pass.on_resize({e.width, e.height}); }
 
     void Editor::set_viewport_image(const Image &viewport_image) { viewport_panel->set_viewport_image(viewport_image); }
 

@@ -98,8 +98,7 @@ namespace mag
             active_scene->update(dt);
 
             editor->update();
-
-            renderer->update(*active_scene, *editor);
+            editor->render(*active_scene);
         }
     }
 

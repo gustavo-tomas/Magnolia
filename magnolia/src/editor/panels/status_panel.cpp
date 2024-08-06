@@ -17,7 +17,7 @@ namespace mag
         auto &app = get_application();
         const auto &context = get_context();
         const Timestamp &timestamp = context.get_timestamp();
-        const Statistics &statistics = app.get_renderer().get_statistics();
+        const Statistics &statistics = app.get_editor().get_statistics();
 
         ImGui::Text("CPU: %.3f ms/frame - %lf fps", frame_duration, frame_rate);
         ImGui::Text("GPU: %.3f ms/frame", timestamp.end - timestamp.begin);
