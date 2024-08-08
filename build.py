@@ -2,6 +2,11 @@ import sys
 import os
 import platform
 import shutil
+import multiprocessing
+
+# ----- Helpers -----
+def get_number_of_cores():
+  return multiprocessing.cpu_count()
 
 # ----- Build -----
 def build(system, configuration):
@@ -11,8 +16,11 @@ def build(system, configuration):
   if system == "windows":
     executable += ".exe"
     bar = "\\"
-  assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j4") == 0
-  
+
+  number_of_cores = get_number_of_cores()
+  print(f"(Python) Number of cores: {number_of_cores}")
+  assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j{number_of_cores}") == 0
+
   # Copy shared libs and executables to the same folder
   shaders_src_dir = f"build{bar}{system}{bar}shaders"
   shaders_dst_dir = f"build{bar}{system}{bar}magnolia{bar}shaders"
