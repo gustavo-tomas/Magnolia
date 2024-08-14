@@ -22,6 +22,9 @@ namespace mag
         // - Render scale (just for the scene passes)
         // - Triple buffering
 
+        // @TODO: 'remove' viewport stuff
+        // Editor specific stuff should be decoupled from the Scene/Application
+
         const uvec2 window_size = window.get_size();
         const uvec2 viewport_size = app.get_editor().get_viewport_size();
 
