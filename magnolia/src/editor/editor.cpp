@@ -7,6 +7,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "renderer/type_conversions.hpp"
 
 namespace mag
 {
@@ -16,7 +17,6 @@ namespace mag
         auto &device = context.get_device();
 
         // Create support structures for command submition
-        this->render_pass.initialize({context.get_surface_extent().width, context.get_surface_extent().height});
 
         std::vector<vk::DescriptorPoolSize> pool_sizes = {{vk::DescriptorType::eSampler, 1000},
                                                           {vk::DescriptorType::eCombinedImageSampler, 1000},
@@ -74,7 +74,7 @@ namespace mag
         init_info.MinImageCount = context.get_swapchain_images().size();
         init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
-        init_info.ColorAttachmentFormat = static_cast<VkFormat>(render_pass.get_draw_image().get_format());
+        init_info.ColorAttachmentFormat = static_cast<VkFormat>(vk::Format::eR16G16B16A16Sfloat);
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
         ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
@@ -95,8 +95,6 @@ namespace mag
     {
         auto &context = get_context();
 
-        this->render_pass.shutdown();
-
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
@@ -108,7 +106,6 @@ namespace mag
     void Editor::update()
     {
         auto &window = get_application().get_window();
-        auto &scene = get_application().get_active_scene();
 
         // Emit event back to the application
         if (viewport_panel->is_resize_needed())
@@ -116,9 +113,6 @@ namespace mag
             const auto viewport_size = viewport_panel->get_viewport_size();
             auto event = ViewportResizeEvent(viewport_size.x, viewport_size.y);
             event_callback(event);
-
-            // By now the scene should be updated
-            set_viewport_image(scene.get_render_pass().get_target_image());
         }
 
         if (menu_bar->quit_requested())
@@ -134,16 +128,43 @@ namespace mag
         }
     }
 
-    void Editor::render(Camera &camera, ECS &ecs)
+    void Editor::on_event(Event &e)
     {
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
+
+        menu_bar->on_event(e);
+        viewport_panel->on_event(e);
+    }
+
+    void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
+
+    void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
+
+    b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
+
+    // EditorPass ------------------------------------------------------------------------------------------------------
+
+    EditorPass::EditorPass(const uvec2 &size) : RenderGraphPass("EditorPass", size)
+    {
+        add_input_attachment("OutputColor", AttachmentType::Color, size);
+        add_output_attachment("EditorOutputColor", AttachmentType::Color, size);
+
+        pass.size = size;
+        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
+        pass.depth_clear_value = {1.0f};
+    }
+
+    void EditorPass::on_render(RenderGraph &render_graph)
+    {
+        auto &app = get_application();
+        auto &editor = app.get_editor();
         auto &context = get_context();
         auto &cmd = context.get_curr_frame().command_buffer;
-
-        viewport_panel->before_render();
-
-        // @TODO: put this inside the render pass?
-        render_pass.before_render();
-        cmd.begin_rendering(this->render_pass.get_pass());
+        auto &scene = app.get_active_scene();
+        auto &ecs = scene.get_ecs();
+        auto &camera = scene.get_camera();
+        auto &viewport_image = render_graph.get_attachment("OutputColor");
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
@@ -151,7 +172,7 @@ namespace mag
         ImGui::NewFrame();
 
         // Disable widgets
-        ImGui::BeginDisabled(disabled);
+        ImGui::BeginDisabled(editor.disabled);
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
                                               static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
@@ -162,50 +183,25 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
-        scene_panel->render(window_flags, ecs);
-        const u64 selected_entity_id = scene_panel->get_selected_entity_id();
+        editor.scene_panel->render(window_flags, ecs);
+        const u64 selected_entity_id = editor.scene_panel->get_selected_entity_id();
 
-        menu_bar->render(window_flags);
-        content_browser_panel->render(window_flags);
-        material_panel->render(window_flags, ecs, selected_entity_id);
-        properties_panel->render(window_flags, ecs, selected_entity_id);
-        settings_panel->render(window_flags);
-        camera_panel->render(window_flags, camera);
-        status_panel->render(window_flags);
+        editor.menu_bar->render(window_flags);
+        editor.content_browser_panel->render(window_flags);
+        editor.material_panel->render(window_flags, ecs, selected_entity_id);
+        editor.properties_panel->render(window_flags, ecs, selected_entity_id);
+        editor.settings_panel->render(window_flags);
+        editor.camera_panel->render(window_flags, camera);
+        editor.status_panel->render(window_flags);
 
         ImGui::EndDisabled();
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        viewport_panel->render(window_flags, camera, ecs, selected_entity_id);
+        editor.viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
 
         // End
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
-
-        cmd.end_rendering();
-        render_pass.after_render();
-
-        viewport_panel->after_render();
     }
-
-    void Editor::on_event(Event &e)
-    {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
-
-        menu_bar->on_event(e);
-        viewport_panel->on_event(e);
-    }
-
-    void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
-
-    void Editor::on_resize(WindowResizeEvent &e) { this->render_pass.on_resize({e.width, e.height}); }
-
-    void Editor::set_viewport_image(const Image &viewport_image) { viewport_panel->set_viewport_image(viewport_image); }
-
-    void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
-
-    b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
 };  // namespace mag

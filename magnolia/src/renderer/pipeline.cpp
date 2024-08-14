@@ -87,7 +87,7 @@ namespace mag
         const vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info({}, shader.get_vertex_bindings(),
                                                                                     shader.get_vertex_attributes());
 
-        const vk::PipelineMultisampleStateCreateInfo multisampling_state_create_info({}, context.get_msaa_samples(),
+        const vk::PipelineMultisampleStateCreateInfo multisampling_state_create_info({}, vk::SampleCountFlagBits::e1,
                                                                                      false, 1.0f);
 
         const vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info(

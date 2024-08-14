@@ -9,12 +9,6 @@ namespace mag
     {
         ImGui::Begin(ICON_FA_WRENCH " Settings", NULL, window_flags);
 
-        ImGui::SeparatorText("Scene Settings");
-        auto &clear_color = get_application().get_active_scene().get_render_pass().get_clear_color();
-
-        const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel;
-        ImGui::ColorEdit4("Background Color", value_ptr(clear_color), flags);
-
         ImGui::SeparatorText("Shader Settings");
         ImGui::RadioButton("Show Final Output", reinterpret_cast<i32 *>(&texture_output), 0);
         ImGui::RadioButton("Show Albedo Output", reinterpret_cast<i32 *>(&texture_output), 1);

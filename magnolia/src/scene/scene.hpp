@@ -4,8 +4,7 @@
 #include "camera/controller.hpp"
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
-#include "renderer/model.hpp"
-#include "renderer/render_pass.hpp"
+#include "renderer/render_graph.hpp"
 
 namespace mag
 {
@@ -34,8 +33,6 @@ namespace mag
 
             const str& get_name() const { return name; };
 
-            StandardRenderPass& get_render_pass() { return *render_pass; };
-
             Camera& get_camera()
             {
                 if (current_state == SceneState::Editor) return *camera;
@@ -62,19 +59,23 @@ namespace mag
                     return *runtime_ecs;
             };
 
+            RenderGraph& get_render_graph() { return *render_graph; };
+
         private:
             void update_runtime(const f32 dt);
             void update_editor(const f32 dt);
 
+            void on_resize(WindowResizeEvent& e);
             void on_viewport_resize(ViewportResizeEvent& e);
+
+            void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
             str name;
             std::unique_ptr<ECS> ecs;
             std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<Camera> camera;
             std::unique_ptr<EditorCameraController> camera_controller;
-            std::unique_ptr<StandardRenderPass> render_pass;
-            Cube cube;
+            std::unique_ptr<RenderGraph> render_graph;
 
             SceneState current_state = SceneState::Editor;
             std::vector<u32> editor_deletion_queue;

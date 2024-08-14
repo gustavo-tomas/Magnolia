@@ -99,7 +99,7 @@ namespace mag
 
             editor->update();
 
-            renderer->update(*active_scene, *editor);
+            renderer->update(active_scene->get_render_graph());
         }
     }
 
@@ -108,7 +108,6 @@ namespace mag
     void Application::set_active_scene(Scene* scene)
     {
         active_scene = std::unique_ptr<Scene>(scene);
-        active_scene->get_render_pass().set_render_scale(1.0f);  // Update the viewport image
         physics_engine->on_simulation_start();
     }
 

@@ -15,14 +15,11 @@ namespace mag
     class ViewportPanel
     {
         public:
-            void before_render();
             void render(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs,
-                        const u32 selected_entity_id);
-            void after_render();
+                        const u32 selected_entity_id, const Image& viewport_image);
 
             void on_event(Event& e);
 
-            void set_viewport_image(const Image& image);
             const uvec2& get_viewport_size() const { return viewport_size; };
 
             b8 is_viewport_window_active() const { return viewport_window_active; };
@@ -31,7 +28,6 @@ namespace mag
         private:
             void on_key_press(KeyPressEvent& e);
 
-            const Image* viewport_image = {};
             b8 resize_needed = false;
             b8 viewport_window_active = false;
             uvec2 viewport_size = {1, 1};

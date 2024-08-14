@@ -9,26 +9,23 @@
 
 namespace mag
 {
-    void ViewportPanel::before_render()
-    {
-        // Transition the viewport image into their correct transfer layouts for imgui texture
-        if (viewport_image)
-        {
-            auto &context = get_context();
-            auto &cmd = context.get_curr_frame().command_buffer;
-
-            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eTransferSrcOptimal,
-                                vk::ImageLayout::eShaderReadOnlyOptimal);
-        }
-    }
-
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
-                               const u32 selected_entity_id)
+                               const u32 selected_entity_id, const Image &viewport_image)
     {
         auto &app = get_application();
         auto &editor = app.get_editor();
         auto &model_manager = app.get_model_manager();
         auto &scene = app.get_active_scene();
+
+        // Recreate image descriptors
+        if (viewport_image_descriptor != nullptr)
+        {
+            ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
+        }
+
+        viewport_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         // Runtime controls
         b8 swap_state;
@@ -167,19 +164,6 @@ namespace mag
         ImGui::PopStyleVar();
     }
 
-    void ViewportPanel::after_render()
-    {
-        // Return the viewport image to their original layout
-        if (viewport_image)
-        {
-            auto &context = get_context();
-            auto &cmd = context.get_curr_frame().command_buffer;
-
-            cmd.transfer_layout(viewport_image->get_image(), vk::ImageLayout::eShaderReadOnlyOptimal,
-                                vk::ImageLayout::eTransferSrcOptimal);
-        }
-    }
-
     void ViewportPanel::on_event(Event &e)
     {
         EventDispatcher dispatcher(e);
@@ -213,17 +197,5 @@ namespace mag
             default:
                 break;
         }
-    }
-
-    void ViewportPanel::set_viewport_image(const Image &viewport_image)
-    {
-        // Dont forget to delete old descriptor
-        if (viewport_image_descriptor != nullptr) ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
-
-        viewport_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        this->viewport_image = std::addressof(viewport_image);
     }
 };  // namespace mag
