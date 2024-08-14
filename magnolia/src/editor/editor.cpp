@@ -171,6 +171,11 @@ namespace mag
         ImGui_ImplSDL2_NewFrame(get_application().get_window().get_handle());
         ImGui::NewFrame();
 
+        // @NOTE: not very accurate
+        performance_results = {};
+        performance_results.draw_calls++;
+        performance_results.rendered_triangles += 2;
+
         // Disable widgets
         ImGui::BeginDisabled(editor.disabled);
 

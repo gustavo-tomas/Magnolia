@@ -16,18 +16,12 @@ namespace mag
 
     void Renderer::update(RenderGraph& render_graph)
     {
-        statistics = {};
-
         this->context->begin_frame();
         this->context->begin_timestamp();  // Performance query
 
         render_graph.execute();
 
         context->end_timestamp();
-
-        // @TODO: statistics
-        // statistics.draw_calls += pass.statistics.draw_calls;
-        // statistics.rendered_triangles += pass.statistics.rendered_triangles;
 
         // Present
 

@@ -45,7 +45,7 @@ namespace mag
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
-        pass.statistics = {};
+        performance_results = {};
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
@@ -91,10 +91,11 @@ namespace mag
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
-                // @NOTE: not accurate but gives a good estimate
-                pass.statistics.rendered_triangles += mesh.index_count;
-                pass.statistics.draw_calls++;
+                performance_results.draw_calls++;
             }
+
+            // @NOTE: not accurate but gives a good estimate
+            performance_results.rendered_triangles += model->vertices.size() / 3;
         }
     }
 
@@ -127,7 +128,7 @@ namespace mag
         auto& scene = app.get_active_scene();
         const auto& camera = scene.get_camera();
 
-        pass.statistics = {};
+        performance_results = {};
 
         // Draw debug lines for physics
 
@@ -148,6 +149,10 @@ namespace mag
 
         command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
         command_buffer.draw(physics_debug_lines->get_vertices().size());
+
+        // @NOTE: not accurate but gives a good estimate
+        performance_results.rendered_triangles += physics_debug_lines->get_vertices().size() / 3;
+        performance_results.draw_calls++;
     }
 
     // GridPass --------------------------------------------------------------------------------------------------------
@@ -178,7 +183,7 @@ namespace mag
         auto& scene = app.get_active_scene();
         const auto& camera = scene.get_camera();
 
-        pass.statistics = {};
+        performance_results = {};
 
         // Draw the grid
         grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
@@ -188,5 +193,9 @@ namespace mag
         grid_shader->bind();
 
         command_buffer.draw(6);
+
+        // Very accurate :)
+        performance_results.rendered_triangles += 2;
+        performance_results.draw_calls++;
     }
 };  // namespace mag

@@ -16,11 +16,8 @@ namespace mag
 
             void on_resize(const uvec2& size);
 
-            const Statistics& get_statistics() const { return statistics; };
-
         private:
             Window& window;
             std::unique_ptr<Context> context;
-            Statistics statistics;
     };
 };  // namespace mag

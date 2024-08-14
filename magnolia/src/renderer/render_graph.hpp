@@ -42,6 +42,12 @@ namespace mag
             vk::ImageLayout curr_layout;
     };
 
+    struct PerformanceResults
+    {
+            u32 rendered_triangles = 0;
+            u32 draw_calls = 0;
+    };
+
     struct Pass
     {
             vk::RenderingInfo rendering_info;
@@ -51,8 +57,6 @@ namespace mag
             vk::ClearValue color_clear_value = vk::ClearColorValue(0.0f, 1.0f, 1.0f, 1.0f);
             vk::ClearValue depth_clear_value = vk::ClearDepthStencilValue(1.0f);
             uvec2 size = {};
-
-            Statistics statistics = {};
     };
 
     class RenderGraph;
@@ -63,6 +67,9 @@ namespace mag
             virtual ~RenderGraphPass() = default;
 
             virtual void on_render(RenderGraph& render_graph) { (void)render_graph; };
+
+            const PerformanceResults& get_performance_results() const { return performance_results; };
+            const str& get_name() const { return name; };
 
             // @TODO: temp?
             Pass pass;
@@ -75,6 +82,8 @@ namespace mag
             void add_output_attachment(const str& attachment_name, const AttachmentType attachment_type,
                                        const uvec2& size,
                                        const AttachmentState attachment_state = AttachmentState::Clear);
+
+            PerformanceResults performance_results;
 
         private:
             friend class RenderGraph;
@@ -100,6 +109,7 @@ namespace mag
 
             Image& get_attachment(const str& attachment_name) { return attachments[attachment_name].texture; };
             Image& get_output_attachment() { return get_attachment(output_attachment_name); };
+            const std::vector<RenderGraphPass*>& get_passes() const { return passes; };
 
         private:
             void execute_render_pass(RenderGraphPass* render_pass);
