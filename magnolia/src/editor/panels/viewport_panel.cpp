@@ -13,9 +13,9 @@ namespace mag
                                const u32 selected_entity_id, const Image &viewport_image)
     {
         auto &app = get_application();
-        auto &editor = app.get_editor();
+        auto &editor = get_editor();
         auto &model_manager = app.get_model_manager();
-        auto &scene = app.get_active_scene();
+        auto &scene = editor.get_active_scene();
 
         // Recreate image descriptors
         if (viewport_image_descriptor != nullptr)
@@ -147,12 +147,12 @@ namespace mag
             {
                 if (scene.get_scene_state() == SceneState::Editor)
                 {
-                    app.get_active_scene().start_runtime();
+                    editor.get_active_scene().start_runtime();
                 }
 
                 else
                 {
-                    app.get_active_scene().stop_runtime();
+                    editor.get_active_scene().stop_runtime();
                 }
             }
         }
@@ -172,7 +172,7 @@ namespace mag
 
     void ViewportPanel::on_key_press(KeyPressEvent &e)
     {
-        auto &editor = get_application().get_editor();
+        auto &editor = get_editor();
 
         if (editor.is_disabled()) return;
 

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "core/event.hpp"
+#include "core/layer.hpp"
 #include "editor/menu/menu_bar.hpp"
 #include "editor/panels/camera_panel.hpp"
 #include "editor/panels/content_browser_panel.hpp"
@@ -13,6 +14,7 @@
 #include "editor/panels/status_panel.hpp"
 #include "editor/panels/viewport_panel.hpp"
 #include "renderer/render_graph.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -27,20 +29,24 @@ namespace mag
             virtual void on_render(RenderGraph& render_graph) override;
     };
 
-    class Editor
+    class Editor : public Layer
     {
         public:
             Editor(const EventCallback& event_callback);
             ~Editor();
 
-            void update();
-            void on_event(Event& e);
+            virtual void on_attach() override;
+            virtual void on_update(const f32 dt) override;
+            virtual void on_event(Event& e) override;
+
+            void enqueue_scene(Scene* scene);
 
             void set_input_disabled(const b8 disable);
 
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
+            Scene& get_active_scene() { return *active_scene; };
             u32& get_texture_output() { return settings_panel->get_texture_output(); };
             u32& get_normal_output() { return settings_panel->get_normal_output(); };
             const uvec2& get_viewport_size() const { return viewport_panel->get_viewport_size(); };
@@ -51,6 +57,7 @@ namespace mag
             friend class EditorPass;
 
             void on_sdl_event(SDLEvent& e);
+            void set_active_scene(Scene* scene);
 
             EventCallback event_callback;
             vk::DescriptorPool descriptor_pool;
@@ -65,6 +72,11 @@ namespace mag
             std::unique_ptr<CameraPanel> camera_panel;
             std::unique_ptr<SettingsPanel> settings_panel;
 
+            std::unique_ptr<Scene> active_scene;
+            std::vector<Scene*> scene_queue;
+
             b8 disabled = false;
     };
+
+    Editor& get_editor();
 };  // namespace mag

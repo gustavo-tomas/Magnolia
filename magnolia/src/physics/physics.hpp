@@ -5,6 +5,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
 #include "ecs/components.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -17,7 +18,7 @@ namespace mag
             PhysicsEngine();
             ~PhysicsEngine();
 
-            void on_simulation_start();
+            void on_simulation_start(Scene* scene);
             void on_simulation_end();
 
             void update(const f32 dt);
@@ -37,6 +38,7 @@ namespace mag
             btDiscreteDynamicsWorld* dynamics_world = nullptr;
 
             std::unique_ptr<PhysicsDebugDraw> physics_debug_draw;
+            Scene* scene;
     };
 
     struct DebugLineList

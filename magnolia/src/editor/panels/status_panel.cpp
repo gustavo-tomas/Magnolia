@@ -1,6 +1,6 @@
 #include "editor/panels/status_panel.hpp"
 
-#include "core/application.hpp"
+#include "editor/editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
 namespace mag
@@ -9,7 +9,7 @@ namespace mag
     {
         ImGui::Begin(ICON_FA_INFO " Status", NULL, window_flags);
 
-        auto &app = get_application();
+        auto &editor = get_editor();
         const auto &context = get_context();
 
         // Frame times
@@ -31,7 +31,7 @@ namespace mag
             ImGui::SeparatorText("Render Passes");
 
             PerformanceResults final_performance_results = {};
-            for (const auto *pass : app.get_active_scene().get_render_graph().get_passes())
+            for (const auto *pass : editor.get_active_scene().get_render_graph().get_passes())
             {
                 const auto &performance = pass->get_performance_results();
                 final_performance_results.draw_calls += performance.draw_calls;

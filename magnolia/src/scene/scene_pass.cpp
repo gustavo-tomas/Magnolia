@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "editor/editor.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/type_conversions.hpp"
@@ -37,11 +38,10 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
-        auto& editor = app.get_editor();
-        auto& scene = app.get_active_scene();
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -122,10 +122,11 @@ namespace mag
         (void)render_graph;
 
         auto& app = get_application();
+        auto& editor = get_editor();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& physics_engine = app.get_physics_engine();
-        auto& scene = app.get_active_scene();
+        auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
 
         performance_results = {};
@@ -177,10 +178,10 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
-        auto& scene = app.get_active_scene();
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
 
         performance_results = {};

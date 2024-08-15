@@ -1,17 +1,14 @@
 #include <core/entry_point.hpp>
 #include <magnolia.hpp>
-#include <scene/scene_serializer.hpp>  // @TODO: temp
+
+#include "editor/editor.hpp"
 
 class SproutApp : public mag::Application
 {
     public:
         SproutApp(const mag::ApplicationOptions& options) : mag::Application(options)
         {
-            mag::Scene* scene = new mag::Scene();
-            mag::SceneSerializer scene_serializer(*scene);
-            scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
-
-            this->enqueue_scene(scene);
+            push_layer(new mag::Editor(BIND_FN(Application::on_event)));
         }
 };
 

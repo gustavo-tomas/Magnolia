@@ -1,6 +1,7 @@
 #include "scene/scene.hpp"
 
 #include "core/application.hpp"
+#include "editor/editor.hpp"
 #include "scene/scene_pass.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
@@ -26,7 +27,7 @@ namespace mag
         // Editor specific stuff should be decoupled from the Scene/Application
 
         const uvec2 window_size = window.get_size();
-        const uvec2 viewport_size = app.get_editor().get_viewport_size();
+        const uvec2 viewport_size = get_editor().get_viewport_size();
 
         camera->set_aspect_ratio(viewport_size);
         build_render_graph(window_size, viewport_size);
@@ -65,7 +66,7 @@ namespace mag
         runtime_ecs = std::make_unique<ECS>(*ecs);
         current_state = SceneState::Runtime;
 
-        physics_engine.on_simulation_start();
+        physics_engine.on_simulation_start(this);
 
         ScriptingEngine::new_state();
 
@@ -190,7 +191,7 @@ namespace mag
     void Scene::on_resize(WindowResizeEvent& e)
     {
         const uvec2 window_size = {e.width, e.height};
-        const uvec2 viewport_size = get_application().get_editor().get_viewport_size();
+        const uvec2 viewport_size = get_editor().get_viewport_size();
 
         camera->set_aspect_ratio(viewport_size);
         build_render_graph(window_size, viewport_size);

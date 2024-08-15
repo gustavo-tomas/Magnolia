@@ -8,11 +8,22 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "renderer/type_conversions.hpp"
+#include "scene/scene_serializer.hpp"
 
 namespace mag
 {
+    static Editor *editor = nullptr;
+
+    Editor &get_editor()
+    {
+        ASSERT(editor != nullptr, "Editor is null");
+        return *editor;
+    }
+
     Editor::Editor(const EventCallback &event_callback) : event_callback(event_callback)
     {
+        editor = this;
+
         auto &context = get_context();
         auto &device = context.get_device();
 
@@ -95,6 +106,8 @@ namespace mag
     {
         auto &context = get_context();
 
+        active_scene.reset();
+
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
@@ -103,9 +116,33 @@ namespace mag
         context.get_device().destroyDescriptorPool(descriptor_pool);
     }
 
-    void Editor::update()
+    void Editor::on_attach()
     {
-        auto &window = get_application().get_window();
+        Scene *scene = new Scene();
+        SceneSerializer scene_serializer(*scene);
+        scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
+
+        set_active_scene(scene);
+    }
+
+    void Editor::on_update(const f32 dt)
+    {
+        (void)dt;
+
+        auto &app = get_application();
+        auto &window = app.get_window();
+        auto &renderer = app.get_renderer();
+        auto &physics_engine = app.get_physics_engine();
+
+        if (!scene_queue.empty())
+        {
+            set_active_scene(scene_queue.front());
+            scene_queue.clear();
+        }
+
+        physics_engine.update(dt);
+
+        active_scene->update(dt);
 
         // Emit event back to the application
         if (viewport_panel->is_resize_needed())
@@ -126,6 +163,8 @@ namespace mag
         {
             window.set_fullscreen(!window.is_fullscreen());
         }
+
+        renderer.update(active_scene->get_render_graph());
     }
 
     void Editor::on_event(Event &e)
@@ -133,11 +172,23 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
 
+        active_scene->on_event(e);
         menu_bar->on_event(e);
         viewport_panel->on_event(e);
     }
 
     void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
+
+    void Editor::enqueue_scene(Scene *scene) { scene_queue.push_back(scene); }
+
+    void Editor::set_active_scene(Scene *scene)
+    {
+        auto &app = get_application();
+        auto &physics_engine = app.get_physics_engine();
+
+        active_scene = std::unique_ptr<Scene>(scene);
+        physics_engine.on_simulation_start(scene);
+    }
 
     void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
 
@@ -157,11 +208,9 @@ namespace mag
 
     void EditorPass::on_render(RenderGraph &render_graph)
     {
-        auto &app = get_application();
-        auto &editor = app.get_editor();
         auto &context = get_context();
         auto &cmd = context.get_curr_frame().command_buffer;
-        auto &scene = app.get_active_scene();
+        auto &scene = get_editor().get_active_scene();
         auto &ecs = scene.get_ecs();
         auto &camera = scene.get_camera();
         auto &viewport_image = render_graph.get_attachment("OutputColor");
@@ -177,7 +226,7 @@ namespace mag
         performance_results.rendered_triangles += 2;
 
         // Disable widgets
-        ImGui::BeginDisabled(editor.disabled);
+        ImGui::BeginDisabled(editor->disabled);
 
         const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
                                               static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
@@ -188,22 +237,22 @@ namespace mag
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
-        editor.scene_panel->render(window_flags, ecs);
-        const u64 selected_entity_id = editor.scene_panel->get_selected_entity_id();
+        editor->scene_panel->render(window_flags, ecs);
+        const u64 selected_entity_id = editor->scene_panel->get_selected_entity_id();
 
-        editor.menu_bar->render(window_flags);
-        editor.content_browser_panel->render(window_flags);
-        editor.material_panel->render(window_flags, ecs, selected_entity_id);
-        editor.properties_panel->render(window_flags, ecs, selected_entity_id);
-        editor.settings_panel->render(window_flags);
-        editor.camera_panel->render(window_flags, camera);
-        editor.status_panel->render(window_flags);
+        editor->menu_bar->render(window_flags);
+        editor->content_browser_panel->render(window_flags);
+        editor->material_panel->render(window_flags, ecs, selected_entity_id);
+        editor->properties_panel->render(window_flags, ecs, selected_entity_id);
+        editor->settings_panel->render(window_flags);
+        editor->camera_panel->render(window_flags, camera);
+        editor->status_panel->render(window_flags);
 
         ImGui::EndDisabled();
 
         // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
         // by rendering after the ImGui::EndDisabled()
-        editor.viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
+        editor->viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
 
         // End
         ImGui::Render();

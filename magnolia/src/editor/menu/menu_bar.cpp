@@ -4,6 +4,7 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "editor/editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui_file_dialog/ImGuiFileDialog.h"
 #include "scene/scene_serializer.hpp"
@@ -75,15 +76,13 @@ namespace mag
 
     void MenuBar::save_active_scene()
     {
-        auto& app = get_application();
-
         if (scene_file_path.empty())
         {
             save_active_scene_as();
             return;
         }
 
-        auto& scene = app.get_active_scene();
+        auto& scene = get_editor().get_active_scene();
 
         SceneSerializer scene_serializer(scene);
         scene_serializer.serialize(scene_file_path);
@@ -114,7 +113,7 @@ namespace mag
 
         scene_file_path = std::filesystem::path();
 
-        get_application().enqueue_scene(scene);
+        get_editor().enqueue_scene(scene);
 
         LOG_SUCCESS("Create new scene '{0}'", scene->get_name());
     }
@@ -123,7 +122,7 @@ namespace mag
 
     void MenuBar::display_dialog()
     {
-        auto& app = get_application();
+        auto& editor = get_editor();
 
         if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
         {
@@ -135,7 +134,7 @@ namespace mag
                     {
                         const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
 
-                        auto& scene = app.get_active_scene();
+                        auto& scene = editor.get_active_scene();
 
                         SceneSerializer scene_serializer(scene);
                         scene_serializer.serialize(file_path);
@@ -157,7 +156,7 @@ namespace mag
 
                         scene_file_path = file_path;
 
-                        get_application().enqueue_scene(scene);
+                        editor.enqueue_scene(scene);
 
                         LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
                     }
