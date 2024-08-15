@@ -27,10 +27,10 @@ namespace mag
         // Editor specific stuff should be decoupled from the Scene/Application
 
         const uvec2 window_size = window.get_size();
-        const uvec2 viewport_size = get_editor().get_viewport_size();
+        current_viewport_size = window_size;
 
-        camera->set_aspect_ratio(viewport_size);
-        build_render_graph(window_size, viewport_size);
+        camera->set_aspect_ratio(current_viewport_size);
+        build_render_graph(window_size, current_viewport_size);
     }
 
     Scene::~Scene()
@@ -179,7 +179,6 @@ namespace mag
     {
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Scene::on_resize));
-        dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
 
         // Don't process editor input during runtime
         if (current_state == SceneState::Editor)
@@ -191,30 +190,31 @@ namespace mag
     void Scene::on_resize(WindowResizeEvent& e)
     {
         const uvec2 window_size = {e.width, e.height};
-        const uvec2 viewport_size = get_editor().get_viewport_size();
 
-        camera->set_aspect_ratio(viewport_size);
-        build_render_graph(window_size, viewport_size);
+        camera->set_aspect_ratio(current_viewport_size);
+        build_render_graph(window_size, current_viewport_size);
     }
 
-    void Scene::on_viewport_resize(ViewportResizeEvent& e)
+    void Scene::on_viewport_resize(const uvec2& new_viewport_size)
     {
-        const uvec2 viewport_size = {e.width, e.height};
+        if (new_viewport_size == current_viewport_size) return;
+
+        current_viewport_size = new_viewport_size;
         const uvec2 window_size = get_application().get_window().get_size();
 
-        camera->set_aspect_ratio(viewport_size);
-        build_render_graph(window_size, viewport_size);
+        camera->set_aspect_ratio(current_viewport_size);
+        build_render_graph(window_size, current_viewport_size);
 
         for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(viewport_size);
+            camera_c->camera.set_aspect_ratio(current_viewport_size);
         }
 
         if (!runtime_ecs) return;
 
         for (auto camera_c : runtime_ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(viewport_size);
+            camera_c->camera.set_aspect_ratio(current_viewport_size);
         }
     }
 

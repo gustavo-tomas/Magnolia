@@ -140,17 +140,14 @@ namespace mag
             scene_queue.clear();
         }
 
+        // @TODO: this is a hack. We want to resize the editor viewport but we want to decouple the application from the
+        // rest of the engine. We should find a better solution to handle application side events.
+        const auto &viewport_size = viewport_panel->get_viewport_size();
+        active_scene->on_viewport_resize(viewport_size);
+
         physics_engine.update(dt);
 
         active_scene->update(dt);
-
-        // Emit event back to the application
-        if (viewport_panel->is_resize_needed())
-        {
-            const auto viewport_size = viewport_panel->get_viewport_size();
-            auto event = ViewportResizeEvent(viewport_size.x, viewport_size.y);
-            event_callback(event);
-        }
 
         if (menu_bar->quit_requested())
         {

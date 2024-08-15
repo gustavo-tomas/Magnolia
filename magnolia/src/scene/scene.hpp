@@ -22,6 +22,7 @@ namespace mag
 
             void update(const f32 dt);
             void on_event(Event& e);
+            void on_viewport_resize(const uvec2& new_viewport_size);
 
             void start_runtime();
             void stop_runtime();
@@ -66,7 +67,6 @@ namespace mag
             void update_editor(const f32 dt);
 
             void on_resize(WindowResizeEvent& e);
-            void on_viewport_resize(ViewportResizeEvent& e);
 
             void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
@@ -79,5 +79,6 @@ namespace mag
 
             SceneState current_state = SceneState::Editor;
             std::vector<u32> entity_deletion_queue;
+            uvec2 current_viewport_size;
     };
 };  // namespace mag

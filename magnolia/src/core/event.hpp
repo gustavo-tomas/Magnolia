@@ -25,8 +25,7 @@ namespace mag
         MousePress,
         SDLEvent,
 
-        // Editor events
-        ViewportResize,
+        // Client events
         Quit
     };
 
@@ -135,16 +134,6 @@ namespace mag
             EVENT_CLASS_TYPE(SDLEvent);
 
             SDL_Event e;
-    };
-
-    struct ViewportResizeEvent : public Event
-    {
-            ViewportResizeEvent(const u32 width, const u32 height) : width(width), height(height) {}
-
-            EVENT_CLASS_TYPE(ViewportResize);
-
-            u32 width;
-            u32 height;
     };
 
     struct QuitEvent : public Event

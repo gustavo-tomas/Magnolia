@@ -47,15 +47,7 @@ namespace mag
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
-        const uvec2 current_viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
-
-        if (current_viewport_size != viewport_size)
-            resize_needed = true;
-
-        else
-            resize_needed = false;
-
-        viewport_size = current_viewport_size;
+        viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
         ImGui::SetNextItemAllowOverlap();
         ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
