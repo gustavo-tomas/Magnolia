@@ -78,6 +78,6 @@ namespace mag
             std::unique_ptr<RenderGraph> render_graph;
 
             SceneState current_state = SceneState::Editor;
-            std::vector<u32> editor_deletion_queue;
+            std::vector<u32> entity_deletion_queue;
     };
 };  // namespace mag

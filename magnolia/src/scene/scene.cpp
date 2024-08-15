@@ -131,12 +131,12 @@ namespace mag
         // auto& window = app.get_window();
 
         // Delete enqueued entities
-        for (const auto& entity : editor_deletion_queue)
+        for (const auto& entity : entity_deletion_queue)
         {
             ecs->erase_entity(entity);
         }
 
-        editor_deletion_queue.clear();
+        entity_deletion_queue.clear();
 
         camera_controller->update(dt);
 
@@ -267,6 +267,6 @@ namespace mag
         if (!ecs->entity_exists(id)) return;
 
         // Enqueue entity
-        editor_deletion_queue.push_back(id);
+        entity_deletion_queue.push_back(id);
     }
 };  // namespace mag
