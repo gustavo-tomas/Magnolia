@@ -45,3 +45,4 @@ compile_commands.json
 # Exceptions
 !ext/**
 !magnolia/assets/**
+!sprout_editor/assets/**
