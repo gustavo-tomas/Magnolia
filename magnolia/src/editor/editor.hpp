@@ -21,14 +21,6 @@ namespace mag
     // ImGui drag and drop types
     inline const char* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
-    class EditorPass : public RenderGraphPass
-    {
-        public:
-            EditorPass(const uvec2& size);
-
-            virtual void on_render(RenderGraph& render_graph) override;
-    };
-
     class Editor : public Layer
     {
         public:
