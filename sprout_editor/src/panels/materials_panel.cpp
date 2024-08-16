@@ -3,7 +3,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "renderer/model.hpp"
 
-namespace mag
+namespace sprout
 {
     void MaterialsPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
@@ -38,4 +38,4 @@ namespace mag
     end:
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

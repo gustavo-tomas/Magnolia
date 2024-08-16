@@ -16,8 +16,10 @@
 #include "renderer/render_graph.hpp"
 #include "scene/scene.hpp"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     // ImGui drag and drop types
     inline const char* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
@@ -78,4 +80,4 @@ namespace mag
     };
 
     Editor& get_editor();
-};  // namespace mag
+};  // namespace sprout

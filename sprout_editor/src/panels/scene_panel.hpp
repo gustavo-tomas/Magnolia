@@ -3,8 +3,10 @@
 #include "ecs/ecs.hpp"
 #include "imgui.h"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class ScenePanel
     {
         public:
@@ -15,4 +17,4 @@ namespace mag
         private:
             u32 selected_entity_id = INVALID_ID;
     };
-};  // namespace mag
+};  // namespace sprout

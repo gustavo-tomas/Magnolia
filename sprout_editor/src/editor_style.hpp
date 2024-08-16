@@ -2,7 +2,7 @@
 
 #include "imgui.h"
 
-namespace mag
+namespace sprout
 {
     inline void set_default_editor_style(ImGuiStyle &style)
     {
@@ -65,4 +65,4 @@ namespace mag
         // style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
         // style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
     }
-};  // namespace mag
+};  // namespace sprout

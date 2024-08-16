@@ -8,7 +8,7 @@
 #include "imgui_internal.h"
 #include "renderer/type_conversions.hpp"
 
-namespace mag
+namespace sprout
 {
     EditorPass::EditorPass(const uvec2 &size) : RenderGraphPass("EditorPass", size)
     {
@@ -73,4 +73,4 @@ namespace mag
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
     }
-};  // namespace mag
+};  // namespace sprout

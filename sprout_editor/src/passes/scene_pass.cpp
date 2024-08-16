@@ -7,7 +7,7 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/type_conversions.hpp"
 
-namespace mag
+namespace sprout
 {
     // @TODO: temporary
     struct alignas(16) LightData
@@ -199,4 +199,4 @@ namespace mag
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;
     }
-};  // namespace mag
+};  // namespace sprout

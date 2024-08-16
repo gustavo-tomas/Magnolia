@@ -7,7 +7,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
-namespace mag
+namespace sprout
 {
     ContentBrowserPanel::ContentBrowserPanel()
     {
@@ -97,4 +97,4 @@ namespace mag
 
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

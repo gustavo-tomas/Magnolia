@@ -5,8 +5,10 @@
 #include "imgui.h"
 #include "renderer/image.hpp"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class ContentBrowserPanel
     {
         public:
@@ -19,4 +21,4 @@ namespace mag
             std::shared_ptr<Image> folder_image, file_image;
             vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
     };
-};  // namespace mag
+};  // namespace sprout

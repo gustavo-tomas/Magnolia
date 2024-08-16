@@ -7,8 +7,10 @@
 #include "imgui.h"
 #include "menu/info_menu.hpp"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class MenuBar
     {
         public:
@@ -47,4 +49,4 @@ namespace mag
             b8 quit = false;
             str scene_file_path = "";
     };
-};  // namespace mag
+};  // namespace sprout

@@ -7,7 +7,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
-namespace mag
+namespace sprout
 {
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
                                const u32 selected_entity_id, const Image &viewport_image)
@@ -190,4 +190,4 @@ namespace mag
                 break;
         }
     }
-};  // namespace mag
+};  // namespace sprout

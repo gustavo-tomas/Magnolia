@@ -10,7 +10,7 @@
 #include "passes/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
 
-namespace mag
+namespace sprout
 {
     static Editor *editor = nullptr;
 
@@ -241,4 +241,4 @@ namespace mag
 
         render_graph->build();
     }
-};  // namespace mag
+};  // namespace sprout

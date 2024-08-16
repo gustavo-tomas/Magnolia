@@ -10,8 +10,10 @@
 
 // clang-format on
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class ViewportPanel
     {
         public:
@@ -32,4 +34,4 @@ namespace mag
             vk::DescriptorSet viewport_image_descriptor = {};
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };
-};  // namespace mag
+};  // namespace sprout

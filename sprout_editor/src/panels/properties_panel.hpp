@@ -3,8 +3,10 @@
 #include "ecs/ecs.hpp"
 #include "imgui.h"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class PropertiesPanel
     {
         public:
@@ -17,4 +19,4 @@ namespace mag
             void editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
                                 const f32 max_value);
     };
-};  // namespace mag
+};  // namespace sprout

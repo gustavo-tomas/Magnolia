@@ -2,8 +2,10 @@
 
 #include "renderer/render_graph.hpp"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class EditorPass : public RenderGraphPass
     {
         public:
@@ -11,4 +13,4 @@ namespace mag
 
             virtual void on_render(RenderGraph& render_graph) override;
     };
-};  // namespace mag
+};  // namespace sprout

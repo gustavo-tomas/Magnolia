@@ -3,7 +3,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "renderer/model.hpp"
 
-namespace mag
+namespace sprout
 {
 #define MIN_VALUE -1'000'000'000
 #define MAX_VALUE +1'000'000'000
@@ -152,4 +152,4 @@ namespace mag
             value = reset_value;
         }
     }
-};  // namespace mag
+};  // namespace sprout

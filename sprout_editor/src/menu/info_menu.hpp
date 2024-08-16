@@ -2,11 +2,11 @@
 
 #include "imgui.h"
 
-namespace mag
+namespace sprout
 {
     class InfoMenu
     {
         public:
             void render(const ImGuiWindowFlags window_flags);
     };
-};  // namespace mag
+};  // namespace sprout

@@ -2,7 +2,7 @@
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
-namespace mag
+namespace sprout
 {
     void CameraPanel::render(const ImGuiWindowFlags window_flags, Camera& camera)
     {
@@ -51,4 +51,4 @@ namespace mag
 
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

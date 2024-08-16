@@ -3,7 +3,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
-namespace mag
+namespace sprout
 {
     void StatusPanel::render(const ImGuiWindowFlags window_flags)
     {
@@ -53,4 +53,4 @@ namespace mag
 
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

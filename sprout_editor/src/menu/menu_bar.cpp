@@ -9,7 +9,7 @@
 #include "imgui_file_dialog/ImGuiFileDialog.h"
 #include "scene/scene_serializer.hpp"
 
-namespace mag
+namespace sprout
 {
     MenuBar::MenuBar() : info_menu(new InfoMenu()) {}
 
@@ -239,4 +239,4 @@ namespace mag
                 break;
         }
     }
-};  // namespace mag
+};  // namespace sprout

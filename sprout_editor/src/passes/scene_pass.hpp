@@ -6,8 +6,10 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/shader.hpp"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class ScenePass : public RenderGraphPass
     {
         public:
@@ -41,4 +43,4 @@ namespace mag
         private:
             std::shared_ptr<Shader> grid_shader;
     };
-};  // namespace mag
+};  // namespace sprout

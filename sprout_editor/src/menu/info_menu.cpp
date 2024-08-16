@@ -6,9 +6,10 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "nlohmann/json.hpp"
 
-namespace mag
+namespace sprout
 {
     using json = nlohmann::json;
+    using namespace mag;
 
     void InfoMenu::render(const ImGuiWindowFlags window_flags)
     {
@@ -43,4 +44,4 @@ namespace mag
 
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

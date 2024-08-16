@@ -4,7 +4,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "renderer/model.hpp"
 
-namespace mag
+namespace sprout
 {
     void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs)
     {
@@ -145,4 +145,4 @@ namespace mag
 
         ImGui::End();
     }
-};  // namespace mag
+};  // namespace sprout

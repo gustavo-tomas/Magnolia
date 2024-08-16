@@ -3,8 +3,10 @@
 #include "core/types.hpp"
 #include "imgui.h"
 
-namespace mag
+namespace sprout
 {
+    using namespace mag;
+
     class SettingsPanel
     {
         public:
@@ -16,4 +18,4 @@ namespace mag
         private:
             u32 texture_output = 0, normal_output = 0;
     };
-};  // namespace mag
+};  // namespace sprout
