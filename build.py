@@ -47,6 +47,7 @@ def clean(configuration):
 # ----- Format -----
 def format():
   os.system(f"find magnolia/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
+  os.system(f"find sprout_editor/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
   return
 
 # ----- Lint -----
