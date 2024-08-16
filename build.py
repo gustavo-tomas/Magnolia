@@ -59,7 +59,7 @@ def shaders(system):
   bar = "/"
   if system == "windows":
     bar = "\\"
-  shader_dir = f"magnolia{bar}assets{bar}shaders"
+  shader_dir = f"sprout_editor{bar}assets{bar}shaders"
   output_dir = f"build{bar}{system}{bar}shaders"
 
   print("----- Compiling shaders -----")

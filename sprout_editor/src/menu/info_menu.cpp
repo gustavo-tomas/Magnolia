@@ -13,7 +13,7 @@ namespace mag
     void InfoMenu::render(const ImGuiWindowFlags window_flags)
     {
         // Parse instructions from the json file
-        const str file_path = "magnolia/assets/json/editor_instructions.json";
+        const str file_path = "sprout_editor/assets/json/editor_instructions.json";
         std::ifstream file(file_path);
 
         if (!file.is_open())

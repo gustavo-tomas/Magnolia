@@ -11,10 +11,10 @@ namespace mag
 {
     ContentBrowserPanel::ContentBrowserPanel()
     {
-        folder_image = get_application().get_texture_manager().load("magnolia/assets/images/fa-folder-solid.png",
+        folder_image = get_application().get_texture_manager().load("sprout_editor/assets/images/fa-folder-solid.png",
                                                                     TextureType::Albedo);
 
-        file_image = get_application().get_texture_manager().load("magnolia/assets/images/fa-file-solid.png",
+        file_image = get_application().get_texture_manager().load("sprout_editor/assets/images/fa-file-solid.png",
                                                                   TextureType::Albedo);
 
         folder_image_descriptor =
@@ -30,7 +30,7 @@ namespace mag
     {
         ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
-        const std::filesystem::path base_directory = std::filesystem::path("magnolia/assets");
+        const std::filesystem::path base_directory = std::filesystem::path("sprout_editor/assets");
         static std::filesystem::path current_directory = base_directory;
 
         // Traverse directories

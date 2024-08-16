@@ -65,8 +65,8 @@ namespace mag
         icons_config.PixelSnapH = true;
         icons_config.GlyphMinAdvanceX = icon_font_size;
 
-        const str icon_path = "magnolia/assets/fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS;
-        const str font_path = "magnolia/assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
+        const str icon_path = "sprout_editor/assets/fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS;
+        const str font_path = "sprout_editor/assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
 
         io.Fonts->AddFontFromFileTTF(font_path.c_str(), font_size);
         io.Fonts->AddFontFromFileTTF(icon_path.c_str(), icon_font_size, &icons_config, icons_ranges);

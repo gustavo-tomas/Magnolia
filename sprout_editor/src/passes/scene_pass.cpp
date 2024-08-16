@@ -24,7 +24,7 @@ namespace mag
         auto& shader_loader = app.get_shader_manager();
 
         // Shaders
-        mesh_shader = shader_loader.load("magnolia/assets/shaders/mesh_shader.mag.json");
+        mesh_shader = shader_loader.load("sprout_editor/assets/shaders/mesh_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
@@ -107,7 +107,7 @@ namespace mag
         auto& shader_loader = app.get_shader_manager();
 
         // Shaders
-        physics_line_shader = shader_loader.load("magnolia/assets/shaders/physics_line_shader.mag.json");
+        physics_line_shader = shader_loader.load("sprout_editor/assets/shaders/physics_line_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
@@ -164,7 +164,7 @@ namespace mag
         auto& shader_loader = app.get_shader_manager();
 
         // Shaders
-        grid_shader = shader_loader.load("magnolia/assets/shaders/grid_shader.mag.json");
+        grid_shader = shader_loader.load("sprout_editor/assets/shaders/grid_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
