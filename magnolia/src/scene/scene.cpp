@@ -1,8 +1,6 @@
 #include "scene/scene.hpp"
 
 #include "core/application.hpp"
-#include "editor/editor.hpp"
-#include "scene/scene_pass.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
@@ -12,8 +10,7 @@ namespace mag
         : name("Untitled"),
           ecs(new ECS()),
           camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f)),
-          camera_controller(new EditorCameraController(*camera)),
-          render_graph(new RenderGraph())
+          camera_controller(new EditorCameraController(*camera))
     {
         auto& app = get_application();
         auto& window = app.get_window();
@@ -30,7 +27,6 @@ namespace mag
         current_viewport_size = window_size;
 
         camera->set_aspect_ratio(current_viewport_size);
-        build_render_graph(window_size, current_viewport_size);
     }
 
     Scene::~Scene()
@@ -177,9 +173,6 @@ namespace mag
 
     void Scene::on_event(Event& e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Scene::on_resize));
-
         // Don't process editor input during runtime
         if (current_state == SceneState::Editor)
         {
@@ -187,23 +180,13 @@ namespace mag
         }
     }
 
-    void Scene::on_resize(WindowResizeEvent& e)
-    {
-        const uvec2 window_size = {e.width, e.height};
-
-        camera->set_aspect_ratio(current_viewport_size);
-        build_render_graph(window_size, current_viewport_size);
-    }
-
     void Scene::on_viewport_resize(const uvec2& new_viewport_size)
     {
         if (new_viewport_size == current_viewport_size) return;
 
         current_viewport_size = new_viewport_size;
-        const uvec2 window_size = get_application().get_window().get_size();
 
         camera->set_aspect_ratio(current_viewport_size);
-        build_render_graph(window_size, current_viewport_size);
 
         for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
         {
@@ -216,28 +199,6 @@ namespace mag
         {
             camera_c->camera.set_aspect_ratio(current_viewport_size);
         }
-    }
-
-    void Scene::build_render_graph(const uvec2& size, const uvec2& viewport_size)
-    {
-        render_graph.reset(new RenderGraph());
-
-        // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
-
-        ScenePass* scene_pass = new ScenePass(viewport_size);
-        PhysicsPass* physics_pass = new PhysicsPass(viewport_size);
-        GridPass* grid_pass = new GridPass(viewport_size);
-        EditorPass* editor_pass = new EditorPass(size);
-
-        render_graph->set_output_attachment("EditorOutputColor");
-        // render_graph->set_output_attachment("OutputColor");
-
-        render_graph->add_pass(scene_pass);
-        render_graph->add_pass(physics_pass);
-        render_graph->add_pass(grid_pass);
-        render_graph->add_pass(editor_pass);
-
-        render_graph->build();
     }
 
     // void Scene::set_render_scale(const f32 new_render_scale)

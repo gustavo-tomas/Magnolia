@@ -4,7 +4,6 @@
 #include "camera/controller.hpp"
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
-#include "renderer/render_graph.hpp"
 
 namespace mag
 {
@@ -60,22 +59,15 @@ namespace mag
                     return *runtime_ecs;
             };
 
-            RenderGraph& get_render_graph() { return *render_graph; };
-
         private:
             void update_runtime(const f32 dt);
             void update_editor(const f32 dt);
-
-            void on_resize(WindowResizeEvent& e);
-
-            void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
             str name;
             std::unique_ptr<ECS> ecs;
             std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<Camera> camera;
             std::unique_ptr<EditorCameraController> camera_controller;
-            std::unique_ptr<RenderGraph> render_graph;
 
             SceneState current_state = SceneState::Editor;
             std::vector<u32> entity_deletion_queue;

@@ -31,7 +31,7 @@ namespace mag
             ImGui::SeparatorText("Render Passes");
 
             PerformanceResults final_performance_results = {};
-            for (const auto *pass : editor.get_active_scene().get_render_graph().get_passes())
+            for (const auto *pass : editor.get_render_graph().get_passes())
             {
                 const auto &performance = pass->get_performance_results();
                 final_performance_results.draw_calls += performance.draw_calls;

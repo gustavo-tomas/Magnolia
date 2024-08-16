@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "renderer/type_conversions.hpp"
+#include "scene/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace mag
@@ -100,6 +101,15 @@ namespace mag
         status_panel = std::make_unique<StatusPanel>();
         camera_panel = std::make_unique<CameraPanel>();
         settings_panel = std::make_unique<SettingsPanel>();
+
+        // Initialize render graph
+        auto &app = get_application();
+        auto &window = app.get_window();
+
+        const uvec2 window_size = window.get_size();
+        curr_viewport_size = window_size;
+
+        build_render_graph(window_size, get_viewport_size());
     }
 
     Editor::~Editor()
@@ -144,6 +154,7 @@ namespace mag
         // rest of the engine. We should find a better solution to handle application side events.
         const auto &viewport_size = viewport_panel->get_viewport_size();
         active_scene->on_viewport_resize(viewport_size);
+        this->on_viewport_resize(viewport_size);
 
         physics_engine.update(dt);
 
@@ -161,13 +172,14 @@ namespace mag
             window.set_fullscreen(!window.is_fullscreen());
         }
 
-        renderer.update(active_scene->get_render_graph());
+        renderer.update(get_render_graph());
     }
 
     void Editor::on_event(Event &e)
     {
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
 
         active_scene->on_event(e);
         menu_bar->on_event(e);
@@ -175,6 +187,24 @@ namespace mag
     }
 
     void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
+
+    void Editor::on_resize(WindowResizeEvent &e)
+    {
+        const uvec2 window_size = {e.width, e.height};
+
+        build_render_graph(window_size, get_viewport_size());
+    }
+
+    void Editor::on_viewport_resize(const uvec2 &new_viewport_size)
+    {
+        if (new_viewport_size == curr_viewport_size) return;
+
+        curr_viewport_size = new_viewport_size;
+
+        const uvec2 window_size = get_application().get_window().get_size();
+
+        build_render_graph(window_size, new_viewport_size);
+    }
 
     void Editor::enqueue_scene(Scene *scene) { scene_queue.push_back(scene); }
 
@@ -190,6 +220,28 @@ namespace mag
     void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
 
     b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
+
+    void Editor::build_render_graph(const uvec2 &size, const uvec2 &viewport_size)
+    {
+        render_graph.reset(new RenderGraph());
+
+        // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
+
+        ScenePass *scene_pass = new ScenePass(viewport_size);
+        PhysicsPass *physics_pass = new PhysicsPass(viewport_size);
+        GridPass *grid_pass = new GridPass(viewport_size);
+        EditorPass *editor_pass = new EditorPass(size);
+
+        render_graph->set_output_attachment("EditorOutputColor");
+        // render_graph->set_output_attachment("OutputColor");
+
+        render_graph->add_pass(scene_pass);
+        render_graph->add_pass(physics_pass);
+        render_graph->add_pass(grid_pass);
+        render_graph->add_pass(editor_pass);
+
+        render_graph->build();
+    }
 
     // EditorPass ------------------------------------------------------------------------------------------------------
 
