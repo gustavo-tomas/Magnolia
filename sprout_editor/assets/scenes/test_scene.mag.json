@@ -87,7 +87,7 @@
             },
             "ModelComponent": {
                 "Name": "lightbulb.glb",
-                "FilePath": "magnolia/assets/models/lightbulb/lightbulb.glb"
+                "FilePath": "sprout_editor/assets/models/lightbulb/lightbulb.glb"
             },
             "LightComponent": {
                 "Color": [
