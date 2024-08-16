@@ -1,10 +1,10 @@
-#include "editor/panels/content_browser_panel.hpp"
+#include "panels/content_browser_panel.hpp"
 
 #include <filesystem>
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
-#include "editor/editor.hpp"
+#include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
 namespace mag

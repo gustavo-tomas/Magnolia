@@ -1,4 +1,4 @@
-#include "editor/panels/camera_panel.hpp"
+#include "panels/camera_panel.hpp"
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
 

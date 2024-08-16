@@ -1,13 +1,13 @@
-#include "editor/editor.hpp"
+#include "editor.hpp"
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
-#include "editor/editor_style.hpp"
-#include "editor/passes/editor_pass.hpp"
-#include "editor/passes/scene_pass.hpp"
+#include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "passes/editor_pass.hpp"
+#include "passes/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace mag
@@ -129,7 +129,7 @@ namespace mag
     {
         Scene *scene = new Scene();
         SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize("sprout/assets/scenes/test_scene.mag.json");
+        scene_serializer.deserialize("sprout_editor/assets/scenes/test_scene.mag.json");
 
         set_active_scene(scene);
     }

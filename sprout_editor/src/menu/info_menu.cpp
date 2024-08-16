@@ -1,4 +1,4 @@
-#include "editor/menu/info_menu.hpp"
+#include "menu/info_menu.hpp"
 
 #include <fstream>
 

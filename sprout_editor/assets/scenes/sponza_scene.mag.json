@@ -29,7 +29,7 @@
                 "AspectRatio": 1.3442211151123047
             },
             "ScriptComponent": {
-                "FilePath": "sprout/assets/scripts/example_lua_script.lua"
+                "FilePath": "sprout_editor/assets/scripts/example_lua_script.lua"
             }
         },
         {

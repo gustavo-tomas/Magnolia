@@ -1,10 +1,10 @@
-#include "editor/menu/menu_bar.hpp"
+#include "menu/menu_bar.hpp"
 
 #include <filesystem>
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
-#include "editor/editor.hpp"
+#include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui_file_dialog/ImGuiFileDialog.h"
 #include "scene/scene_serializer.hpp"

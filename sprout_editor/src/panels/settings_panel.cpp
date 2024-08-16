@@ -1,4 +1,4 @@
-#include "editor/panels/settings_panel.hpp"
+#include "panels/settings_panel.hpp"
 
 #include "core/application.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"

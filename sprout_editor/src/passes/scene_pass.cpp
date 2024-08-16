@@ -1,8 +1,8 @@
-#include "editor/passes/scene_pass.hpp"
+#include "passes/scene_pass.hpp"
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
-#include "editor/editor.hpp"
+#include "editor.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/type_conversions.hpp"

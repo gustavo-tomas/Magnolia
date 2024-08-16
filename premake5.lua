@@ -141,7 +141,7 @@ project "magnolia"
         runtime "release"
 
 -- Client Application --------------------------------------------------------------------------------------------------
-project "sprout"
+project "sprout_editor"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "consoleapp"
 

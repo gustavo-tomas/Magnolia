@@ -1,9 +1,9 @@
-#include "editor/passes/editor_pass.hpp"
+#include "passes/editor_pass.hpp"
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
-#include "editor/editor.hpp"
+#include "editor.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "renderer/type_conversions.hpp"

@@ -4,8 +4,8 @@
 
 #include "core/event.hpp"
 #include "core/types.hpp"
-#include "editor/menu/info_menu.hpp"
 #include "imgui.h"
+#include "menu/info_menu.hpp"
 
 namespace mag
 {

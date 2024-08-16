@@ -1,4 +1,4 @@
-#include "editor/panels/materials_panel.hpp"
+#include "panels/materials_panel.hpp"
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "renderer/model.hpp"

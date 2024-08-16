@@ -1,6 +1,6 @@
-#include "editor/panels/status_panel.hpp"
+#include "panels/status_panel.hpp"
 
-#include "editor/editor.hpp"
+#include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
 namespace mag
