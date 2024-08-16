@@ -5,9 +5,9 @@
 #include "core/application.hpp"
 #include "editor/editor_style.hpp"
 #include "editor/passes/editor_pass.hpp"
+#include "editor/passes/scene_pass.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
-#include "scene/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace mag

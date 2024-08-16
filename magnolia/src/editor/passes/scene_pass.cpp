@@ -1,4 +1,4 @@
-#include "scene/scene_pass.hpp"
+#include "editor/passes/scene_pass.hpp"
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
