@@ -119,7 +119,7 @@ namespace mag
             void execute_render_pass(RenderGraphPass* render_pass);
 
             std::vector<RenderGraphPass*> passes;
-            std::map<str, std::vector<Attachment>> attachments;
+            std::map<str, std::vector<Attachment>> attachments;  // One per frame in flight
             str output_attachment_name;
     };
 };  // namespace mag

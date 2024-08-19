@@ -4,6 +4,9 @@
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
+// @TODO: 'remove' viewport stuff
+// Editor specific stuff should be decoupled from the Scene/Application
+
 namespace mag
 {
     Scene::Scene()
@@ -14,13 +17,6 @@ namespace mag
     {
         auto& app = get_application();
         auto& window = app.get_window();
-
-        // @TODO: reimplement missing features:
-        // - Multisampling
-        // - Render scale (just for the scene passes)
-
-        // @TODO: 'remove' viewport stuff
-        // Editor specific stuff should be decoupled from the Scene/Application
 
         const uvec2 window_size = window.get_size();
         current_viewport_size = window_size;
@@ -122,9 +118,6 @@ namespace mag
 
     void Scene::update_editor(const f32 dt)
     {
-        // auto& app = get_application();
-        // auto& window = app.get_window();
-
         // Delete enqueued entities
         for (const auto& entity : entity_deletion_queue)
         {
@@ -134,14 +127,6 @@ namespace mag
         entity_deletion_queue.clear();
 
         camera_controller->update(dt);
-
-        // @TODO: testing
-        // if (window.is_key_down(Key::Up))
-        //     set_render_scale(render_scale + 0.15f * dt);
-
-        // else if (window.is_key_down(Key::Down))
-        //     set_render_scale(render_scale - 0.15f * dt);
-        // @TODO: testing
     }
 
     void Scene::update_runtime(const f32 dt)

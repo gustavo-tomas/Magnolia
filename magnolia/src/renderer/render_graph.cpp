@@ -5,6 +5,10 @@
 #include "renderer/render_graph_conversions.hpp"
 #include "renderer/type_conversions.hpp"
 
+// @TODO: reimplement missing features:
+// - Multisampling
+// - Render scale (just for the scene passes)
+
 namespace mag
 {
     RenderGraphPass::RenderGraphPass(const str& name, const uvec2& size) : name(name), size(size) {}
