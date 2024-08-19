@@ -18,7 +18,7 @@ namespace mag
 
             void begin();
             void end();
-            void begin_rendering(const Pass& pass);
+            void begin_rendering(const vk::RenderingInfo& rendering_info);
             void end_rendering();
 
             void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,

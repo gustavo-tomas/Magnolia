@@ -1,6 +1,5 @@
 #include "physics/physics.hpp"
 
-#include "core/application.hpp"
 #include "physics/type_conversions.hpp"
 
 namespace mag
@@ -9,9 +8,11 @@ namespace mag
 
     PhysicsEngine::~PhysicsEngine() { on_simulation_end(); }
 
-    void PhysicsEngine::on_simulation_start()
+    void PhysicsEngine::on_simulation_start(Scene* scene)
     {
         if (dynamics_world) on_simulation_end();
+
+        this->scene = scene;
 
         collision_configuration = new btDefaultCollisionConfiguration();
 
@@ -28,7 +29,7 @@ namespace mag
 
         dynamics_world->setDebugDrawer(physics_debug_draw.get());
 
-        auto& ecs = get_application().get_active_scene().get_ecs();
+        auto& ecs = scene->get_ecs();
         auto objects = ecs.get_all_components_of_types<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
         for (auto [transform, collider, rigid_body] : objects)
         {
@@ -103,14 +104,12 @@ namespace mag
 
     void PhysicsEngine::update(const f32 dt)
     {
-        auto& app = get_application();
-        auto& scene = app.get_active_scene();
-        auto& ecs = scene.get_ecs();
+        auto& ecs = scene->get_ecs();
         auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();
 
         if (!dynamics_world) return;
 
-        if (scene.get_scene_state() == SceneState::Runtime)
+        if (scene->get_scene_state() == SceneState::Runtime)
         {
             // @TODO: investigate the jittering that happens when maxSubSteps > 0.
             dynamics_world->stepSimulation(dt, 0);

@@ -4,8 +4,6 @@
 #include "camera/controller.hpp"
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
-#include "renderer/model.hpp"
-#include "renderer/render_pass.hpp"
 
 namespace mag
 {
@@ -23,6 +21,7 @@ namespace mag
 
             void update(const f32 dt);
             void on_event(Event& e);
+            void on_viewport_resize(const uvec2& new_viewport_size);
 
             void start_runtime();
             void stop_runtime();
@@ -33,8 +32,6 @@ namespace mag
             SceneState get_scene_state() const { return current_state; };
 
             const str& get_name() const { return name; };
-
-            StandardRenderPass& get_render_pass() { return *render_pass; };
 
             Camera& get_camera()
             {
@@ -66,17 +63,14 @@ namespace mag
             void update_runtime(const f32 dt);
             void update_editor(const f32 dt);
 
-            void on_viewport_resize(ViewportResizeEvent& e);
-
             str name;
             std::unique_ptr<ECS> ecs;
             std::unique_ptr<ECS> runtime_ecs;
             std::unique_ptr<Camera> camera;
             std::unique_ptr<EditorCameraController> camera_controller;
-            std::unique_ptr<StandardRenderPass> render_pass;
-            Cube cube;
 
             SceneState current_state = SceneState::Editor;
-            std::vector<u32> editor_deletion_queue;
+            std::vector<u32> entity_deletion_queue;
+            uvec2 current_viewport_size;
     };
 };  // namespace mag

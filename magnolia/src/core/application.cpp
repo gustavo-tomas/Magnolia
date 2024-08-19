@@ -46,10 +46,6 @@ namespace mag
         shader_loader = std::make_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
-        // Create the editor
-        editor = std::make_unique<Editor>(BIND_FN(Application::on_event));
-        LOG_SUCCESS("Editor initialized");
-
         // Create the physics engine
         physics_engine = std::make_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
@@ -63,7 +59,12 @@ namespace mag
 
     Application::~Application()
     {
-        active_scene.reset();
+        for (auto* layer : layers)
+        {
+            layer->on_detach();
+            delete layer;
+        }
+
         ScriptingEngine::shutdown();
     }
 
@@ -78,12 +79,6 @@ namespace mag
             dt = curr_time - last_time;
             last_time = curr_time;
 
-            if (!scene_queue.empty())
-            {
-                set_active_scene(scene_queue.front());
-                scene_queue.clear();
-            }
-
             window->update();
 
             // Skip rendering if minimized or resizing
@@ -93,23 +88,17 @@ namespace mag
                 continue;
             }
 
-            physics_engine->update(dt);
-
-            active_scene->update(dt);
-
-            editor->update();
-
-            renderer->update(*active_scene, *editor);
+            for (auto* layer : layers)
+            {
+                layer->on_update(dt);
+            }
         }
     }
 
-    void Application::enqueue_scene(Scene* scene) { scene_queue.push_back(scene); }
-
-    void Application::set_active_scene(Scene* scene)
+    void Application::push_layer(Layer* layer)
     {
-        active_scene = std::unique_ptr<Scene>(scene);
-        active_scene->get_render_pass().set_render_scale(1.0f);  // Update the viewport image
-        physics_engine->on_simulation_start();
+        layers.push_back(layer);
+        layer->on_attach();
     }
 
     void Application::on_event(Event& e)
@@ -119,8 +108,10 @@ namespace mag
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
 
-        active_scene->on_event(e);
-        editor->on_event(e);
+        for (auto* layer : layers)
+        {
+            layer->on_event(e);
+        }
     }
 
     void Application::on_quit(QuitEvent& e)

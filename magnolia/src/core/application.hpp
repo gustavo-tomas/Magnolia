@@ -3,15 +3,14 @@
 #include <memory>
 
 #include "core/event.hpp"
+#include "core/layer.hpp"
 #include "core/window.hpp"
-#include "editor/editor.hpp"
 #include "physics/physics.hpp"
 #include "renderer/image.hpp"
 #include "renderer/material.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
-#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -32,35 +31,30 @@ namespace mag
             void run();
             void on_event(Event& e);
 
-            void enqueue_scene(Scene* scene);
+            void push_layer(Layer* layer);
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
-            Editor& get_editor() { return *editor; };
             ModelManager& get_model_manager() { return *model_loader; };
             TextureManager& get_texture_manager() { return *texture_loader; };
             ShaderManager& get_shader_manager() { return *shader_loader; };
             MaterialManager& get_material_manager() { return *material_loader; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
-            Scene& get_active_scene() { return *active_scene; };
 
         private:
             void on_window_close(WindowCloseEvent& e);
             void on_window_resize(WindowResizeEvent& e);
             void on_quit(QuitEvent& e);
 
-            void set_active_scene(Scene* scene);
-
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
-            std::unique_ptr<Editor> editor;
             std::unique_ptr<ModelManager> model_loader;
             std::unique_ptr<TextureManager> texture_loader;
             std::unique_ptr<MaterialManager> material_loader;
             std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<PhysicsEngine> physics_engine;
-            std::unique_ptr<Scene> active_scene;
-            std::vector<Scene*> scene_queue;
+
+            std::vector<Layer*> layers;
 
             b8 running;
     };

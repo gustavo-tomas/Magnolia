@@ -2,7 +2,6 @@
 
 #include "renderer/context.hpp"
 #include "renderer/image.hpp"
-#include "renderer/render_pass.hpp"
 
 namespace mag
 {
@@ -20,7 +19,10 @@ namespace mag
 
     void CommandBuffer::end() { this->command_buffer.end(); }
 
-    void CommandBuffer::begin_rendering(const Pass& pass) { this->command_buffer.beginRendering(pass.rendering_info); }
+    void CommandBuffer::begin_rendering(const vk::RenderingInfo& rendering_info)
+    {
+        this->command_buffer.beginRendering(rendering_info);
+    }
 
     void CommandBuffer::end_rendering() { this->command_buffer.endRendering(); }
 

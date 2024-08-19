@@ -4,15 +4,24 @@
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
+// @TODO: 'remove' viewport stuff
+// Editor specific stuff should be decoupled from the Scene/Application
+
 namespace mag
 {
     Scene::Scene()
         : name("Untitled"),
           ecs(new ECS()),
           camera(new Camera({-200.0f, 50.0f, 0.0f}, {0.0f, 90.0f, 0.0f}, 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f)),
-          camera_controller(new EditorCameraController(*camera)),
-          render_pass(new StandardRenderPass({800, 600}))
+          camera_controller(new EditorCameraController(*camera))
     {
+        auto& app = get_application();
+        auto& window = app.get_window();
+
+        const uvec2 window_size = window.get_size();
+        current_viewport_size = window_size;
+
+        camera->set_aspect_ratio(current_viewport_size);
     }
 
     Scene::~Scene()
@@ -48,7 +57,7 @@ namespace mag
         runtime_ecs = std::make_unique<ECS>(*ecs);
         current_state = SceneState::Runtime;
 
-        physics_engine.on_simulation_start();
+        physics_engine.on_simulation_start(this);
 
         ScriptingEngine::new_state();
 
@@ -109,26 +118,15 @@ namespace mag
 
     void Scene::update_editor(const f32 dt)
     {
-        auto& app = get_application();
-        auto& window = app.get_window();
-
         // Delete enqueued entities
-        for (const auto& entity : editor_deletion_queue)
+        for (const auto& entity : entity_deletion_queue)
         {
             ecs->erase_entity(entity);
         }
 
-        editor_deletion_queue.clear();
+        entity_deletion_queue.clear();
 
         camera_controller->update(dt);
-
-        // @TODO: testing
-        if (window.is_key_down(Key::Up))
-            render_pass->set_render_scale(render_pass->get_render_scale() + 0.15f * dt);
-
-        else if (window.is_key_down(Key::Down))
-            render_pass->set_render_scale(render_pass->get_render_scale() - 0.15f * dt);
-        // @TODO: testing
     }
 
     void Scene::update_runtime(const f32 dt)
@@ -159,9 +157,6 @@ namespace mag
 
     void Scene::on_event(Event& e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<ViewportResizeEvent>(BIND_FN(Scene::on_viewport_resize));
-
         // Don't process editor input during runtime
         if (current_state == SceneState::Editor)
         {
@@ -169,25 +164,36 @@ namespace mag
         }
     }
 
-    void Scene::on_viewport_resize(ViewportResizeEvent& e)
+    void Scene::on_viewport_resize(const uvec2& new_viewport_size)
     {
-        const uvec2 size = {e.width, e.height};
+        if (new_viewport_size == current_viewport_size) return;
 
-        render_pass->on_resize(size);
-        camera->set_aspect_ratio(size);
+        current_viewport_size = new_viewport_size;
+
+        camera->set_aspect_ratio(current_viewport_size);
 
         for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(size);
+            camera_c->camera.set_aspect_ratio(current_viewport_size);
         }
 
         if (!runtime_ecs) return;
 
         for (auto camera_c : runtime_ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(size);
+            camera_c->camera.set_aspect_ratio(current_viewport_size);
         }
-    };
+    }
+
+    // void Scene::set_render_scale(const f32 new_render_scale)
+    // {
+    //     (void)
+    //     // render_scale = std::clamp(new_render_scale, 0.01f, 1.0f);
+
+    //     // auto e = WindowResizeEvent(draw_size.x, draw_size.y);
+    //     // on_resize(e);
+    //     // // build_render_graph(draw_size);
+    // }
 
     void Scene::add_model(const str& path)
     {
@@ -206,6 +212,6 @@ namespace mag
         if (!ecs->entity_exists(id)) return;
 
         // Enqueue entity
-        editor_deletion_queue.push_back(id);
+        entity_deletion_queue.push_back(id);
     }
 };  // namespace mag
