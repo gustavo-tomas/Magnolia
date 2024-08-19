@@ -63,18 +63,28 @@ namespace mag
 
         for (auto& [attachment_name, attachment] : attachments)
         {
-            attachment.texture.shutdown();
+            for (auto& at : attachment)
+            {
+                at.texture.shutdown();
+            }
         }
     }
 
     void RenderGraph::add_pass(RenderGraphPass* render_pass)
     {
+        const u32 frame_count = get_context().get_frame_count();
+
         for (const auto& attachment_desc : render_pass->attachment_descriptions)
         {
             if (!attachments.contains(attachment_desc.name))
             {
                 attachments[attachment_desc.name] = {};
-                attachments[attachment_desc.name].description = attachment_desc;
+                attachments[attachment_desc.name].resize(frame_count);
+
+                for (u32 i = 0; i < frame_count; i++)
+                {
+                    attachments[attachment_desc.name][i].description = attachment_desc;
+                }
             }
         }
 
@@ -87,10 +97,12 @@ namespace mag
     {
         auto& context = get_context();
 
+        const u32 frame_count = context.get_frame_count();
+
         // Build attachments
         for (auto& [attachment_name, attachment] : attachments)
         {
-            const auto& description = attachment.description;
+            const auto& description = attachment[0].description;
 
             vk::ImageAspectFlags image_aspect = {};
             vk::ImageUsageFlags image_usage = {};
@@ -118,8 +130,11 @@ namespace mag
                     break;
             }
 
-            attachment.curr_layout = vk::ImageLayout::eUndefined;
-            attachment.texture.initialize(image_extent, image_format, image_usage, image_aspect);
+            for (u32 i = 0; i < frame_count; i++)
+            {
+                attachment[i].curr_layout = vk::ImageLayout::eUndefined;
+                attachment[i].texture.initialize(image_extent, image_format, image_usage, image_aspect);
+            }
         }
 
         // Check if output is valid
@@ -131,6 +146,8 @@ namespace mag
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
+
+        const u32 curr_frame = context.get_curr_frame_number();
 
         // Execute passes
         for (auto* render_pass : passes)
@@ -146,8 +163,9 @@ namespace mag
                 {
                     vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
 
-                    command_buffer.transfer_layout(attachment.texture.get_image(), attachment.curr_layout, new_layout);
-                    attachment.curr_layout = new_layout;
+                    command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                                                   attachment[curr_frame].curr_layout, new_layout);
+                    attachment[curr_frame].curr_layout = new_layout;
                 }
             }
         }
@@ -155,14 +173,15 @@ namespace mag
         // Transition final image layout
 
         auto& attachment = attachments[output_attachment_name];
-        auto& description = attachment.description;
+        auto& description = attachment[curr_frame].description;
 
         if (description.stage == AttachmentStage::Output && description.type == AttachmentType::Color)
         {
             vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
 
-            command_buffer.transfer_layout(attachment.texture.get_image(), attachment.curr_layout, new_layout);
-            attachment.curr_layout = new_layout;
+            command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                                           attachment[curr_frame].curr_layout, new_layout);
+            attachment[curr_frame].curr_layout = new_layout;
         }
     }
 
@@ -171,6 +190,8 @@ namespace mag
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& pass = render_pass->pass;
+
+        const u32 curr_frame = context.get_curr_frame_number();
 
         // Build attachment and execute pass
         for (const auto& description : render_pass->attachment_descriptions)
@@ -181,21 +202,22 @@ namespace mag
             {
                 vk::ImageLayout new_layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-                command_buffer.transfer_layout(attachment.texture.get_image(), attachment.curr_layout, new_layout);
+                command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                                               attachment[curr_frame].curr_layout, new_layout);
 
-                attachment.curr_layout = new_layout;
+                attachment[curr_frame].curr_layout = new_layout;
             }
 
             else if (description.stage == AttachmentStage::Output)
             {
-                vk::ImageLayout new_layout = attachment.curr_layout;
+                vk::ImageLayout new_layout = attachment[curr_frame].curr_layout;
                 vk::AttachmentLoadOp load_op = mag_attachment_state_to_vk(description.state);
 
                 switch (description.type)
                 {
                     case AttachmentType::Color:
                         pass.color_attachment = vk::RenderingAttachmentInfo(
-                            attachment.texture.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+                            attachment[curr_frame].texture.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
                             vk::ResolveModeFlagBits::eNone, {}, {}, load_op, vk::AttachmentStoreOp::eStore,
                             pass.color_clear_value);
                         new_layout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -203,9 +225,9 @@ namespace mag
 
                     case AttachmentType::Depth:
                         pass.depth_attachment = vk::RenderingAttachmentInfo(
-                            attachment.texture.get_image_view(), vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                            vk::ResolveModeFlagBits::eNone, {}, {}, load_op, vk::AttachmentStoreOp::eStore,
-                            {pass.depth_clear_value});
+                            attachment[curr_frame].texture.get_image_view(),
+                            vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, {},
+                            load_op, vk::AttachmentStoreOp::eStore, {pass.depth_clear_value});
                         break;
 
                     default:
@@ -216,8 +238,9 @@ namespace mag
                 // This only transitions color attachments
                 if (description.type == AttachmentType::Color)
                 {
-                    command_buffer.transfer_layout(attachment.texture.get_image(), attachment.curr_layout, new_layout);
-                    attachment.curr_layout = new_layout;
+                    command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                                                   attachment[curr_frame].curr_layout, new_layout);
+                    attachment[curr_frame].curr_layout = new_layout;
                 }
             }
         }

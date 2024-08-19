@@ -107,7 +107,11 @@ namespace mag
             void build();
             void execute();
 
-            Image& get_attachment(const str& attachment_name) { return attachments[attachment_name].texture; };
+            Image& get_attachment(const str& attachment_name)
+            {
+                const u32 curr_frame = get_context().get_curr_frame_number();
+                return attachments[attachment_name][curr_frame].texture;
+            };
             Image& get_output_attachment() { return get_attachment(output_attachment_name); };
             const std::vector<RenderGraphPass*>& get_passes() const { return passes; };
 
@@ -115,7 +119,7 @@ namespace mag
             void execute_render_pass(RenderGraphPass* render_pass);
 
             std::vector<RenderGraphPass*> passes;
-            std::map<str, Attachment> attachments;
+            std::map<str, std::vector<Attachment>> attachments;
             str output_attachment_name;
     };
 };  // namespace mag

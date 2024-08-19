@@ -18,7 +18,6 @@ namespace mag
         // @TODO: reimplement missing features:
         // - Multisampling
         // - Render scale (just for the scene passes)
-        // - Triple buffering
 
         // @TODO: 'remove' viewport stuff
         // Editor specific stuff should be decoupled from the Scene/Application
