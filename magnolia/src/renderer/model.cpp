@@ -10,7 +10,7 @@
 
 namespace mag
 {
-    ModelManager::ModelManager() { importer = std::make_unique<Assimp::Importer>(); }
+    ModelManager::ModelManager() : importer(new Assimp::Importer()) {}
 
     ModelManager::~ModelManager()
     {
