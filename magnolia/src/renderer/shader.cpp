@@ -228,9 +228,11 @@ namespace mag
 
                         const auto& default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
 
-                        DescriptorBuilder::create_descriptor_for_texture(descriptor_binding.binding,
-                                                                         default_mat->textures[Material::Albedo],
-                                                                         descriptor_set, descriptor_set_layout);
+                        const std::vector<std::shared_ptr<Image>> textures(
+                            default_mat->textures, default_mat->textures + Material::TextureCount);
+
+                        DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
+                                                                          descriptor_set, descriptor_set_layout);
                     }
                 }
 

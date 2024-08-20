@@ -244,14 +244,14 @@ namespace mag
 
     DescriptorBuilder& DescriptorBuilder::bind(const u32 binding, const vk::DescriptorType type,
                                                const vk::ShaderStageFlags stage_flags,
-                                               const vk::DescriptorImageInfo& image_info)
+                                               const std::vector<vk::DescriptorImageInfo>& infos)
     {
         // create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage_flags);
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, infos.size(), stage_flags);
         bindings.push_back(new_binding);
 
         // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, binding, {}, type, image_info);
+        vk::WriteDescriptorSet new_write({}, binding, {}, type, infos);
         writes.push_back(new_write);
 
         return *this;
@@ -302,23 +302,31 @@ namespace mag
         ASSERT(result, "Failed to build descriptor of type '{0}'", vk::to_string(type));
     }
 
-    void DescriptorBuilder::create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
-                                                          vk::DescriptorSet& descriptor_set,
-                                                          vk::DescriptorSetLayout& descriptor_set_layout)
+    void DescriptorBuilder::create_descriptor_for_textures(const u32 binding,
+                                                           const std::vector<std::shared_ptr<Image>>& textures,
+                                                           vk::DescriptorSet& descriptor_set,
+                                                           vk::DescriptorSetLayout& descriptor_set_layout)
     {
         // Create descriptors for this texture
         auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
         auto& descriptor_allocator = get_context().get_descriptor_allocator();
 
-        const vk::DescriptorImageInfo descriptor_image_info(
-            texture->get_sampler().get_handle(), texture->get_image_view(), vk::ImageLayout::eReadOnlyOptimal);
+        std::vector<vk::DescriptorImageInfo> descriptor_image_infos;
+
+        for (auto& texture : textures)
+        {
+            const vk::DescriptorImageInfo descriptor_image_info(
+                texture->get_sampler().get_handle(), texture->get_image_view(), vk::ImageLayout::eReadOnlyOptimal);
+
+            descriptor_image_infos.push_back(descriptor_image_info);
+        }
 
         const b8 result =
             DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
                 .bind(binding, vk::DescriptorType::eCombinedImageSampler,
-                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, descriptor_image_info)
+                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, descriptor_image_infos)
                 .build(descriptor_set, descriptor_set_layout);
 
-        ASSERT(result, "Failed to build descriptor for texture: '{0}'", texture->get_name());
+        ASSERT(result, "Failed to build descriptor for textures");
     }
 };  // namespace mag

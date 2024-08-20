@@ -13,8 +13,8 @@ layout (location = 0) out vec4 out_frag_color;
 
 void main()
 {
-	vec4 object_color = texture(u_albedo_texture, in_tex_coords);
-	vec4 object_normal = texture(u_normal_texture, in_tex_coords);
+	vec4 object_color = texture(ALBEDO_TEXTURE, in_tex_coords);
+	vec4 object_normal = texture(NORMAL_TEXTURE, in_tex_coords);
 
 	// Convert from linear to srgb
 	object_normal.rgb = linear_to_srgb(object_normal.rgb);

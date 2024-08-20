@@ -82,11 +82,9 @@ namespace sprout
             for (auto& mesh : model->meshes)
             {
                 // Set the material
-                const auto albedo_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Albedo];
-                const auto normal_descriptor = model->materials[mesh.material_index]->descriptor_sets[Material::Normal];
+                const auto descriptor_set = model->materials[mesh.material_index]->descriptor_set;
 
-                mesh_shader->bind_texture("u_albedo_texture", albedo_descriptor);
-                mesh_shader->bind_texture("u_normal_texture", normal_descriptor);
+                mesh_shader->bind_texture("u_material_textures", descriptor_set);
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);

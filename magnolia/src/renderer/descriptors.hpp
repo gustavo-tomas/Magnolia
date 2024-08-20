@@ -84,7 +84,8 @@ namespace mag
                                     const vk::ShaderStageFlags stage_flags, const vk::DescriptorBufferInfo& info);
 
             DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo& info);
+                                    const vk::ShaderStageFlags stage_flags,
+                                    const std::vector<vk::DescriptorImageInfo>& infos);
 
             b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
             b8 build(vk::DescriptorSet& set);
@@ -95,9 +96,10 @@ namespace mag
                                                      const vk::DescriptorType type, const Buffer& buffer,
                                                      const u64 buffer_size, const u64 offset);
 
-            static void create_descriptor_for_texture(const u32 binding, const std::shared_ptr<Image>& texture,
-                                                      vk::DescriptorSet& descriptor_set,
-                                                      vk::DescriptorSetLayout& descriptor_set_layout);
+            static void create_descriptor_for_textures(const u32 binding,
+                                                       const std::vector<std::shared_ptr<Image>>& textures,
+                                                       vk::DescriptorSet& descriptor_set,
+                                                       vk::DescriptorSetLayout& descriptor_set_layout);
 
         private:
             std::vector<vk::WriteDescriptorSet> writes;

@@ -5,6 +5,9 @@
 #define PROJ_MATRIX u_global.projection
 #define VIEW_MATRIX u_global.view
 
+#define ALBEDO_TEXTURE u_material_textures[0]
+#define NORMAL_TEXTURE u_material_textures[1]
+
 // Constants
 const uint MAX_NUMBER_OF_LIGHTS = 4;
 
@@ -48,5 +51,5 @@ layout (set = 2, binding = 0) uniform ShaderBuffer
 } u_shader;
 
 // Materials
-layout (set = 3, binding = 0) uniform sampler2D u_albedo_texture;
-layout (set = 4, binding = 0) uniform sampler2D u_normal_texture;
+// 0 - Albedo | 1 - Normal
+layout (set = 3, binding = 0) uniform sampler2D u_material_textures[2];

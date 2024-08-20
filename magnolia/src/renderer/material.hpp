@@ -22,9 +22,8 @@ namespace mag
             str name = "";
 
             // @TODO: create one per frame in flight if materials should change between frames
-            // Each texture has a corresponding descriptor set for each frame in flight
-            vk::DescriptorSet descriptor_sets[TextureSlot::TextureCount];
-            vk::DescriptorSetLayout descriptor_set_layouts[TextureSlot::TextureCount];
+            vk::DescriptorSet descriptor_set;
+            vk::DescriptorSetLayout descriptor_set_layout;
     };
 
     class MaterialManager
