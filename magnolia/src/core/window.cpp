@@ -150,7 +150,7 @@ namespace mag
                     break;
             }
 
-            auto event = SDLEvent(e);
+            auto event = NativeEvent(&e);
             event_callback(event);
         }
     }

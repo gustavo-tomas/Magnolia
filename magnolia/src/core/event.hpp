@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "SDL_events.h"
 #include "core/keys.hpp"
 #include "core/types.hpp"
 
@@ -23,7 +22,7 @@ namespace mag
         MouseMove,
         MouseScroll,
         MousePress,
-        SDLEvent,
+        NativeEvent,
 
         // Client events
         Quit
@@ -126,14 +125,13 @@ namespace mag
             Button button;
     };
 
-    // @TODO: ooffff
-    struct SDLEvent : public Event
+    struct NativeEvent : public Event
     {
-            SDLEvent(const SDL_Event e) : e(e) {}
+            NativeEvent(const void* e) : e(e) {}
 
-            EVENT_CLASS_TYPE(SDLEvent);
+            EVENT_CLASS_TYPE(NativeEvent);
 
-            SDL_Event e;
+            const void* e;
     };
 
     struct QuitEvent : public Event

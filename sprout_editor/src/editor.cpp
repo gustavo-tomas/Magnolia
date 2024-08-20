@@ -177,7 +177,7 @@ namespace sprout
     void Editor::on_event(Event &e)
     {
         EventDispatcher dispatcher(e);
-        dispatcher.dispatch<SDLEvent>(BIND_FN(Editor::on_sdl_event));
+        dispatcher.dispatch<NativeEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
 
         active_scene->on_event(e);
@@ -185,7 +185,7 @@ namespace sprout
         viewport_panel->on_event(e);
     }
 
-    void Editor::on_sdl_event(SDLEvent &e) { ImGui_ImplSDL2_ProcessEvent(&e.e); }
+    void Editor::on_sdl_event(NativeEvent &e) { ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<const SDL_Event *>(e.e)); }
 
     void Editor::on_resize(WindowResizeEvent &e)
     {

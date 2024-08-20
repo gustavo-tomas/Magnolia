@@ -51,7 +51,7 @@ namespace sprout
         private:
             friend class EditorPass;
 
-            void on_sdl_event(SDLEvent& e);
+            void on_sdl_event(NativeEvent& e);
             void on_resize(WindowResizeEvent& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 
