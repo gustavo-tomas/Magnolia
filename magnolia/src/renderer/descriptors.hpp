@@ -81,11 +81,10 @@ namespace mag
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
 
             DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags,
-                                    const vk::DescriptorBufferInfo* buffer_info);
+                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorBufferInfo& info);
 
             DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo* buffer_info);
+                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorImageInfo& info);
 
             b8 build(vk::DescriptorSet& set, vk::DescriptorSetLayout& layout);
             b8 build(vk::DescriptorSet& set);
