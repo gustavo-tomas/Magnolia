@@ -7,7 +7,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "renderer/buffers.hpp"
-#include "renderer/material.hpp"
+#include "renderer/image.hpp"
 
 namespace mag
 {
@@ -34,7 +34,7 @@ namespace mag
             str file_path = "";
             std::vector<Mesh> meshes;
 
-            std::vector<std::shared_ptr<Material>> materials;
+            std::vector<str> materials;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
 

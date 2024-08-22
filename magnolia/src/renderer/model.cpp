@@ -152,15 +152,15 @@ namespace mag
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
             const str material_name = ai_material->GetName().C_Str();
 
+            model->materials[i] = material_name;
             if (material_manager.exists(material_name))
             {
-                model->materials[i] = material_manager.get(material_name);
                 continue;
             }
 
             Material* material = new Material();
 
-            material->name = ai_material->GetName().C_Str();
+            material->name = material_name;
 
             material->textures[Material::TextureSlot::Albedo] =
                 load_texture(ai_material, aiTextureType_DIFFUSE, directory);
@@ -175,7 +175,7 @@ namespace mag
             DescriptorBuilder::create_descriptor_for_textures(0, textures, material->descriptor_set,
                                                               material->descriptor_set_layout);
 
-            model->materials[i] = material_manager.load(material);
+            material_manager.load(material);
         }
     }
 
@@ -375,11 +375,8 @@ namespace mag
         model.vbo.initialize(model.vertices.data(), VECSIZE(model.vertices) * sizeof(Vertex));
         model.ibo.initialize(model.indices.data(), VECSIZE(model.indices) * sizeof(u32));
 
-        auto& app = get_application();
-        auto& material_manager = app.get_material_manager();
-
         // Use the default material
-        model.materials.push_back(material_manager.get(DEFAULT_MATERIAL_NAME));
+        model.materials.push_back(DEFAULT_MATERIAL_NAME);
     }
 
     Cube::~Cube()
