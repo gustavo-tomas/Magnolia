@@ -187,5 +187,4 @@ namespace mag
         context.get_device().destroyImageView(this->image_view);
         vmaDestroyImage(context.get_allocator(), image, allocation);
     }
-
 };  // namespace mag
