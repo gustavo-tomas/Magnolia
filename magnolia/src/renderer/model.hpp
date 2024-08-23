@@ -7,17 +7,18 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "renderer/buffers.hpp"
-#include "renderer/image.hpp"
 
 namespace mag
 {
+    using namespace math;
+
     struct Vertex
     {
-            math::vec3 position;
-            math::vec3 normal;
-            math::vec2 tex_coords;
-            math::vec3 tangent;
-            math::vec3 bitangent;
+            vec3 position;
+            vec3 normal;
+            vec2 tex_coords;
+            vec3 tangent;
+            vec3 bitangent;
     };
 
     struct Mesh
@@ -56,8 +57,7 @@ namespace mag
             void initialize_materials(const aiScene* ai_scene, const str& file, Model* model);
             void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model);
 
-            std::shared_ptr<Image> load_texture(const aiMaterial* ai_material, aiTextureType ai_type,
-                                                const str& directory);
+            const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
 
             std::unique_ptr<Assimp::Importer> importer;
             std::map<str, std::shared_ptr<Model>> models;

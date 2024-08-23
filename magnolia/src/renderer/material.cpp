@@ -1,25 +1,17 @@
 #include "renderer/material.hpp"
 
-#include "core/application.hpp"
 #include "core/logger.hpp"
 
 namespace mag
 {
     MaterialManager::MaterialManager()
     {
-        auto& app = get_application();
-        auto& texture_loader = app.get_texture_manager();
-
         // Create a default material
         Material* default_material = new Material();
 
         default_material->name = DEFAULT_MATERIAL_NAME;
-
-        default_material->textures[Material::TextureSlot::Albedo] =
-            texture_loader.load("magnolia/assets/images/DefaultAlbedoSeamless.png", TextureType::Albedo);
-
-        default_material->textures[Material::TextureSlot::Normal] =
-            texture_loader.load("magnolia/assets/images/DefaultNormal.png", TextureType::Normal);
+        default_material->textures[Material::TextureSlot::Albedo] = "magnolia/assets/images/DefaultAlbedoSeamless.png";
+        default_material->textures[Material::TextureSlot::Normal] = "magnolia/assets/images/DefaultNormal.png";
 
         load(default_material);
     }

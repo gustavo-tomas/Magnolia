@@ -1,8 +1,10 @@
 #pragma once
 
+#include <map>
 #include <memory>
+#include <vulkan/vulkan.hpp>
 
-#include "renderer/image.hpp"
+#include "core/types.hpp"
 
 namespace mag
 {
@@ -18,7 +20,7 @@ namespace mag
                 TextureCount
             };
 
-            std::shared_ptr<Image> textures[TextureSlot::TextureCount];
+            str textures[TextureSlot::TextureCount];
             str name = "";
 
             // @TODO: create one per frame in flight if materials should change between frames

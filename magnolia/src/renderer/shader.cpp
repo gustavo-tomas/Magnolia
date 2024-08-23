@@ -7,6 +7,7 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
+#include "renderer/image.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
@@ -220,6 +221,7 @@ namespace mag
                 {
                     auto& app = get_application();
                     auto& material_manager = app.get_material_manager();
+                    auto& texture_manager = app.get_texture_manager();
 
                     for (u32 f = 0; f < frame_count; f++)
                     {
@@ -228,8 +230,11 @@ namespace mag
 
                         const auto& default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
 
-                        const std::vector<std::shared_ptr<Image>> textures(
-                            default_mat->textures, default_mat->textures + Material::TextureCount);
+                        std::vector<std::shared_ptr<Image>> textures;
+                        for (const auto& texture_name : default_mat->textures)
+                        {
+                            textures.push_back(texture_manager.load(texture_name, TextureType::Undefined));
+                        }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
                                                                           descriptor_set, descriptor_set_layout);

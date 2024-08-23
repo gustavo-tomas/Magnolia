@@ -142,6 +142,7 @@ namespace mag
     {
         auto& app = get_application();
         auto& material_manager = app.get_material_manager();
+        auto& texture_manager = app.get_texture_manager();
 
         const str directory = file.substr(0, file.find_last_of('/'));
 
@@ -163,28 +164,32 @@ namespace mag
             material->name = material_name;
 
             material->textures[Material::TextureSlot::Albedo] =
-                load_texture(ai_material, aiTextureType_DIFFUSE, directory);
+                find_texture(ai_material, aiTextureType_DIFFUSE, directory);
 
             material->textures[Material::TextureSlot::Normal] =
-                load_texture(ai_material, aiTextureType_NORMALS, directory);
+                find_texture(ai_material, aiTextureType_NORMALS, directory);
 
-            const std::vector<std::shared_ptr<Image>> textures(material->textures,
-                                                               material->textures + Material::TextureCount);
+            // @TODO: temporary? idk if textures should be loaded here
+            std::vector<std::shared_ptr<Image>> textures;
+            for (const auto& texture_name : material->textures)
+            {
+                textures.push_back(texture_manager.load(texture_name, TextureType::Undefined));
+            }
 
             // @TODO: hardcoded binding (0)
             DescriptorBuilder::create_descriptor_for_textures(0, textures, material->descriptor_set,
                                                               material->descriptor_set_layout);
+            // @TODO: temporary? idk if textures should be loaded here
 
             material_manager.load(material);
         }
     }
 
-    std::shared_ptr<Image> ModelManager::load_texture(const aiMaterial* ai_material, aiTextureType ai_type,
-                                                      const str& directory)
+    const str ModelManager::find_texture(const aiMaterial* ai_material, aiTextureType ai_type,
+                                         const str& directory) const
     {
         auto& app = get_application();
         auto& material_manager = app.get_material_manager();
-        auto& texture_manager = app.get_texture_manager();
 
         const TextureType type = TextureType(ai_type);
         const str material_name = ai_material->GetName().C_Str();
@@ -197,15 +202,15 @@ namespace mag
             texture_count = ai_material->GetTextureCount(ai_type);
         }
 
-        std::shared_ptr<Image> texture;
+        str texture_name = "";
         switch (type)
         {
             case TextureType::Albedo:
-                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Albedo];
+                texture_name = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Albedo];
                 break;
 
             case TextureType::Normal:
-                texture = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Normal];
+                texture_name = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Normal];
                 break;
 
             default:
@@ -226,21 +231,20 @@ namespace mag
             if (result != aiReturn::aiReturn_SUCCESS)
             {
                 LOG_ERROR("Failed to retrieve texture with index {0}, using default", 0);
-                return texture;
+                return texture_name;
             }
 
-            LOG_INFO("TEX: {0}", ai_tex_path.C_Str());
             const str texture_path = directory + "/" + ai_tex_path.C_Str();
-            texture = texture_manager.load(texture_path, type);
+            texture_name = texture_path;
 
-            LOG_INFO("Loaded texture: {0}", texture_path);
-            return texture;
+            LOG_INFO("Loaded texture: {0}", texture_name);
+            return texture_name;
         }
 
         // No textures, use default
         LOG_WARNING("Material '{0}' has no texture of type '{1}', using default", material_name,
                     std::to_string(ai_type));
-        return texture;
+        return texture_name;
     }
 
     b8 ModelManager::is_extension_supported(const str& extension_with_dot)

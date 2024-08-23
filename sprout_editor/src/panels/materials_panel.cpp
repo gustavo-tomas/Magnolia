@@ -2,7 +2,6 @@
 
 #include "core/application.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/model.hpp"
 
 namespace sprout
 {
@@ -26,9 +25,9 @@ namespace sprout
                 ImGui::SeparatorText(slot_str.c_str());
 
                 ImGui::Text("Textures");
-                for (const auto &texture : material->textures)
+                for (const auto &texture_name : material->textures)
                 {
-                    ImGui::TextWrapped("%s", texture->get_name().c_str());
+                    ImGui::TextWrapped("%s", texture_name.c_str());
                 }
             }
 
