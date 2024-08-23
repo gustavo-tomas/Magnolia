@@ -11,6 +11,7 @@
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "resources/image_loader.hpp"
 
 namespace mag
 {
@@ -35,6 +36,7 @@ namespace mag
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
+            ImageLoader& get_image_loader() { return *image_loader; };
             ModelManager& get_model_manager() { return *model_loader; };
             TextureManager& get_texture_manager() { return *texture_loader; };
             ShaderManager& get_shader_manager() { return *shader_loader; };
@@ -48,6 +50,7 @@ namespace mag
 
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
+            std::unique_ptr<ImageLoader> image_loader;
             std::unique_ptr<ModelManager> model_loader;
             std::unique_ptr<TextureManager> texture_loader;
             std::unique_ptr<MaterialManager> material_loader;

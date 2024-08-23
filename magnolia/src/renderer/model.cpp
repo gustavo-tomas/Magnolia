@@ -1,5 +1,6 @@
 #include "renderer/model.hpp"
 
+#include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
 #include "core/logger.hpp"
@@ -173,7 +174,7 @@ namespace mag
             std::vector<std::shared_ptr<Image>> textures;
             for (const auto& texture_name : material->textures)
             {
-                textures.push_back(texture_manager.load(texture_name, TextureType::Undefined));
+                textures.push_back(texture_manager.get(texture_name));
             }
 
             // @TODO: hardcoded binding (0)
@@ -191,7 +192,6 @@ namespace mag
         auto& app = get_application();
         auto& material_manager = app.get_material_manager();
 
-        const TextureType type = TextureType(ai_type);
         const str material_name = ai_material->GetName().C_Str();
 
         // For some reason, assimp may identify normal textures as height textures
@@ -203,13 +203,14 @@ namespace mag
         }
 
         str texture_name = "";
-        switch (type)
+        switch (ai_type)
         {
-            case TextureType::Albedo:
+            case aiTextureType_DIFFUSE:
                 texture_name = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Albedo];
                 break;
 
-            case TextureType::Normal:
+            case aiTextureType_NORMALS:
+            case aiTextureType_HEIGHT:
                 texture_name = material_manager.get(DEFAULT_MATERIAL_NAME)->textures[Material::TextureSlot::Normal];
                 break;
 

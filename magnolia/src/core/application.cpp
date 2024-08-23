@@ -30,6 +30,10 @@ namespace mag
         renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
+        // Create the image loader
+        image_loader = std::make_unique<ImageLoader>();
+        LOG_SUCCESS("ImageLoader initialized");
+
         // Create the texture manager
         texture_loader = std::make_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");

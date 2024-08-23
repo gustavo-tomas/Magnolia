@@ -64,14 +64,6 @@ namespace mag
         {
             delete pass;
         }
-
-        for (auto& [attachment_name, attachment] : attachments)
-        {
-            for (auto& at : attachment)
-            {
-                at.texture.shutdown();
-            }
-        }
     }
 
     void RenderGraph::add_pass(RenderGraphPass* render_pass)
@@ -137,7 +129,7 @@ namespace mag
             for (u32 i = 0; i < frame_count; i++)
             {
                 attachment[i].curr_layout = vk::ImageLayout::eUndefined;
-                attachment[i].texture.initialize(image_extent, image_format, image_usage, image_aspect);
+                attachment[i].texture = std::make_shared<Image>(image_extent, image_format, image_usage, image_aspect);
             }
         }
 
@@ -167,7 +159,7 @@ namespace mag
                 {
                     vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
 
-                    command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                    command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
                                                    attachment[curr_frame].curr_layout, new_layout);
                     attachment[curr_frame].curr_layout = new_layout;
                 }
@@ -183,7 +175,7 @@ namespace mag
         {
             vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
 
-            command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+            command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
                                            attachment[curr_frame].curr_layout, new_layout);
             attachment[curr_frame].curr_layout = new_layout;
         }
@@ -206,7 +198,7 @@ namespace mag
             {
                 vk::ImageLayout new_layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-                command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
                                                attachment[curr_frame].curr_layout, new_layout);
 
                 attachment[curr_frame].curr_layout = new_layout;
@@ -221,7 +213,7 @@ namespace mag
                 {
                     case AttachmentType::Color:
                         pass.color_attachment = vk::RenderingAttachmentInfo(
-                            attachment[curr_frame].texture.get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
+                            attachment[curr_frame].texture->get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
                             vk::ResolveModeFlagBits::eNone, {}, {}, load_op, vk::AttachmentStoreOp::eStore,
                             pass.color_clear_value);
                         new_layout = vk::ImageLayout::eColorAttachmentOptimal;
@@ -229,7 +221,7 @@ namespace mag
 
                     case AttachmentType::Depth:
                         pass.depth_attachment = vk::RenderingAttachmentInfo(
-                            attachment[curr_frame].texture.get_image_view(),
+                            attachment[curr_frame].texture->get_image_view(),
                             vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, {},
                             load_op, vk::AttachmentStoreOp::eStore, {pass.depth_clear_value});
                         break;
@@ -242,7 +234,7 @@ namespace mag
                 // This only transitions color attachments
                 if (description.type == AttachmentType::Color)
                 {
-                    command_buffer.transfer_layout(attachment[curr_frame].texture.get_image(),
+                    command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
                                                    attachment[curr_frame].curr_layout, new_layout);
                     attachment[curr_frame].curr_layout = new_layout;
                 }

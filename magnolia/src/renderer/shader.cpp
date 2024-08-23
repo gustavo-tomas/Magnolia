@@ -233,7 +233,7 @@ namespace mag
                         std::vector<std::shared_ptr<Image>> textures;
                         for (const auto& texture_name : default_mat->textures)
                         {
-                            textures.push_back(texture_manager.load(texture_name, TextureType::Undefined));
+                            textures.push_back(texture_manager.get(texture_name));
                         }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,

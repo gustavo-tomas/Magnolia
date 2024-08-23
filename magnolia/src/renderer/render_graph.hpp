@@ -38,7 +38,7 @@ namespace mag
     struct Attachment
     {
             AttachmentDescription description;
-            Image texture;
+            std::shared_ptr<Image> texture;
             vk::ImageLayout curr_layout;
     };
 
@@ -110,7 +110,7 @@ namespace mag
             Image& get_attachment(const str& attachment_name)
             {
                 const u32 curr_frame = get_context().get_curr_frame_number();
-                return attachments[attachment_name][curr_frame].texture;
+                return *attachments[attachment_name][curr_frame].texture;
             };
             Image& get_output_attachment() { return get_attachment(output_attachment_name); };
             const std::vector<RenderGraphPass*>& get_passes() const { return passes; };
