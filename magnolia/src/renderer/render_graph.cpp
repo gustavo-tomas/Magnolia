@@ -96,8 +96,9 @@ namespace mag
         const u32 frame_count = context.get_frame_count();
 
         // Build attachments
-        for (auto& [attachment_name, attachment] : attachments)
+        for (auto& attachment_p : attachments)
         {
+            auto& attachment = attachment_p.second;
             const auto& description = attachment[0].description;
 
             vk::ImageAspectFlags image_aspect = {};
