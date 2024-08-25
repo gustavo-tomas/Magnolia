@@ -84,7 +84,7 @@ namespace sprout
             {
                 // Set the material
                 const auto& material = material_manager.get(model->materials[mesh.material_index]);
-                const auto& descriptor_set = material->descriptor_set;
+                const auto& descriptor_set = renderer.get_material_descriptor(material.get());
 
                 mesh_shader->bind_texture("u_material_textures", descriptor_set);
 
