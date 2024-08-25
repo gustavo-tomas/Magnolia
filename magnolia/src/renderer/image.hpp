@@ -8,13 +8,14 @@
 
 namespace mag
 {
-    class Image
+    class RendererImage
     {
         public:
-            Image(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
-                  const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
-                  const vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1, const str& name = "");
-            ~Image();
+            RendererImage(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
+                          const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
+                          const vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1,
+                          const str& name = "");
+            ~RendererImage();
 
             const vk::Image& get_image() const { return image; };
             const vk::ImageView& get_image_view() const { return image_view; };
@@ -38,10 +39,10 @@ namespace mag
     class TextureManager
     {
         public:
-            std::shared_ptr<Image> get(const str& name);
-            std::shared_ptr<Image> get_default();
+            std::shared_ptr<RendererImage> get(const str& name);
+            std::shared_ptr<RendererImage> get_default();
 
         private:
-            std::map<str, std::shared_ptr<Image>> textures;
+            std::map<str, std::shared_ptr<RendererImage>> textures;
     };
 };  // namespace mag

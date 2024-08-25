@@ -231,7 +231,7 @@ namespace mag
 
                         const auto& default_mat = material_manager.get_default();
 
-                        std::vector<std::shared_ptr<Image>> textures;
+                        std::vector<std::shared_ptr<RendererImage>> textures;
                         for (const auto& texture_p : default_mat->textures)
                         {
                             auto& texture_name = texture_p.second;

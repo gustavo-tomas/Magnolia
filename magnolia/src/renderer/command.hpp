@@ -9,7 +9,7 @@
 namespace mag
 {
     struct Pass;
-    class Image;
+    class RendererImage;
 
     class CommandBuffer
     {
@@ -37,12 +37,12 @@ namespace mag
             void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
                              const u64 dst_offset);
 
-            void copy_buffer_to_image(const Buffer& src, const Image& image);
+            void copy_buffer_to_image(const Buffer& src, const RendererImage& image);
 
             void copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
                                      const vk::Extent3D& dst_extent);
 
-            void transfer_layout(const Image& image, const vk::ImageLayout curr_layout,
+            void transfer_layout(const RendererImage& image, const vk::ImageLayout curr_layout,
                                  const vk::ImageLayout new_layout, const u32 base_mip_levels = 0);
 
             void transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,

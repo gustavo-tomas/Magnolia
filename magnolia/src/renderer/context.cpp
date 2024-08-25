@@ -415,7 +415,7 @@ namespace mag
 
     void Context::begin_frame() { this->frame_provider.begin_frame(); }
 
-    b8 Context::end_frame(const Image& image, const vk::Extent3D& extent)
+    b8 Context::end_frame(const RendererImage& image, const vk::Extent3D& extent)
     {
         return this->frame_provider.end_frame(image, extent);
     }

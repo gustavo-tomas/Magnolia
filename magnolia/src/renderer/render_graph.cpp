@@ -130,7 +130,8 @@ namespace mag
             for (u32 i = 0; i < frame_count; i++)
             {
                 attachment[i].curr_layout = vk::ImageLayout::eUndefined;
-                attachment[i].texture = std::make_shared<Image>(image_extent, image_format, image_usage, image_aspect);
+                attachment[i].texture =
+                    std::make_shared<RendererImage>(image_extent, image_format, image_usage, image_aspect);
             }
         }
 

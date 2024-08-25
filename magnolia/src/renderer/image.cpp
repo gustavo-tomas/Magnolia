@@ -6,7 +6,7 @@ namespace mag
 {
 #define DEFAULT_TEXTURE_NAME "magnolia/assets/images/DefaultAlbedoSeamless.png"
 
-    std::shared_ptr<Image> TextureManager::get(const str& name)
+    std::shared_ptr<RendererImage> TextureManager::get(const str& name)
     {
         // Texture found
         auto it = textures.find(name);
@@ -43,10 +43,11 @@ namespace mag
         const vk::Extent3D texture_extent(image_resource->width, image_resource->height, 1);
         const u32 mip_levels = image_resource->mip_levels;
 
-        Image* texture = new Image(texture_extent, texture_format,
-                                   vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
-                                       vk::ImageUsageFlagBits::eTransferDst,
-                                   vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, name);
+        RendererImage* texture =
+            new RendererImage(texture_extent, texture_format,
+                              vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
+                                  vk::ImageUsageFlagBits::eTransferDst,
+                              vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, name);
 
         auto& context = get_context();
 
@@ -121,15 +122,15 @@ namespace mag
 
         staging_buffer.shutdown();
 
-        textures[name] = std::shared_ptr<Image>(texture);
+        textures[name] = std::shared_ptr<RendererImage>(texture);
         return textures[name];
     }
 
-    std::shared_ptr<Image> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
+    std::shared_ptr<RendererImage> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
 
-    Image::Image(const vk::Extent3D& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
-                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                 const vk::SampleCountFlagBits msaa_samples, const str& name)
+    RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,
+                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
+                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
     {
         auto& context = get_context();
 
@@ -167,7 +168,7 @@ namespace mag
         this->image_view = context.get_device().createImageView(view_create_info);
     }
 
-    Image::~Image()
+    RendererImage::~RendererImage()
     {
         auto& context = get_context();
 

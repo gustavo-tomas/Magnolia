@@ -130,7 +130,7 @@ namespace mag
         auto& app = get_application();
         auto& texture_manager = app.get_texture_manager();
 
-        std::vector<std::shared_ptr<Image>> textures;
+        std::vector<std::shared_ptr<RendererImage>> textures;
         for (const auto& texture_name : material->textures)
         {
             textures.push_back(texture_manager.get(texture_name.second));

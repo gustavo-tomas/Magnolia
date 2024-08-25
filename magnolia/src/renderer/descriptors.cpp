@@ -311,7 +311,7 @@ namespace mag
     }
 
     void DescriptorBuilder::create_descriptor_for_textures(const u32 binding,
-                                                           const std::vector<std::shared_ptr<Image>>& textures,
+                                                           const std::vector<std::shared_ptr<RendererImage>>& textures,
                                                            vk::DescriptorSet& descriptor_set,
                                                            vk::DescriptorSetLayout& descriptor_set_layout)
     {
