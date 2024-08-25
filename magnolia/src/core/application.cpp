@@ -34,16 +34,24 @@ namespace mag
         image_loader = std::make_unique<ImageLoader>();
         LOG_SUCCESS("ImageLoader initialized");
 
+        // Create the material loader
+        material_loader = std::make_unique<MaterialLoader>();
+        LOG_SUCCESS("MaterialLoader initialized");
+
+        // Create the model loader
+        model_loader = std::make_unique<ModelLoader>();
+        LOG_SUCCESS("ModelLoader initialized");
+
         // Create the texture manager
         texture_loader = std::make_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
 
         // Create the material manager
-        material_loader = std::make_unique<MaterialManager>();
+        material_manager = std::make_unique<MaterialManager>();
         LOG_SUCCESS("MaterialManager initialized");
 
         // Create the model manager
-        model_loader = std::make_unique<ModelManager>();
+        model_manager = std::make_unique<ModelManager>();
         LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager

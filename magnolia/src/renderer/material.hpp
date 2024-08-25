@@ -5,22 +5,15 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
+#include "resources/material_loader.hpp"
 
 namespace mag
 {
-#define DEFAULT_MATERIAL_NAME "_MagDefaultMaterial"
+#define DEFAULT_MATERIAL_NAME "magnolia/assets/materials/default_material.mat.json"
 
     struct Material
     {
-            enum TextureSlot
-            {
-                Albedo = 0,
-                Normal,
-
-                TextureCount
-            };
-
-            str textures[TextureSlot::TextureCount];
+            std::map<TextureSlot, str> textures;
             str name = "";
 
             // @TODO: create one per frame in flight if materials should change between frames
@@ -31,14 +24,8 @@ namespace mag
     class MaterialManager
     {
         public:
-            MaterialManager();
-            ~MaterialManager() = default;
-
-            // std::shared_ptr<Material> load(const str& file); // @TODO: make a material file one day
-            std::shared_ptr<Material> load(Material* material);
-            b8 exists(const str& name) const;
-
             std::shared_ptr<Material> get(const str& name);
+            std::shared_ptr<Material> get_default();
 
         private:
             std::map<str, std::shared_ptr<Material>> materials;

@@ -25,7 +25,7 @@ namespace sprout
                 ImGui::SeparatorText(slot_str.c_str());
 
                 ImGui::Text("Textures");
-                for (const auto &texture_name : material->textures)
+                for (const auto &[texture_slot, texture_name] : material->textures)
                 {
                     ImGui::TextWrapped("%s", texture_name.c_str());
                 }

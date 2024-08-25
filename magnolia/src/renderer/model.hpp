@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
 #include "renderer/buffers.hpp"
 
 namespace mag
@@ -46,20 +44,11 @@ namespace mag
     class ModelManager
     {
         public:
-            ModelManager();
             ~ModelManager();
 
-            std::shared_ptr<Model> load(const str& file);
-            b8 is_extension_supported(const str& extension_with_dot);
+            std::shared_ptr<Model> get(const str& name);
 
         private:
-            void initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model);
-            void initialize_materials(const aiScene* ai_scene, const str& file, Model* model);
-            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model);
-
-            const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
-
-            std::unique_ptr<Assimp::Importer> importer;
             std::map<str, std::shared_ptr<Model>> models;
     };
 

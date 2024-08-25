@@ -12,6 +12,8 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/image_loader.hpp"
+#include "resources/material_loader.hpp"
+#include "resources/model_loader.hpp"
 
 namespace mag
 {
@@ -37,10 +39,12 @@ namespace mag
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
             ImageLoader& get_image_loader() { return *image_loader; };
-            ModelManager& get_model_manager() { return *model_loader; };
+            MaterialLoader& get_material_loader() { return *material_loader; };
+            ModelLoader& get_model_loader() { return *model_loader; };
+            ModelManager& get_model_manager() { return *model_manager; };
             TextureManager& get_texture_manager() { return *texture_loader; };
             ShaderManager& get_shader_manager() { return *shader_loader; };
-            MaterialManager& get_material_manager() { return *material_loader; };
+            MaterialManager& get_material_manager() { return *material_manager; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
 
         private:
@@ -51,9 +55,11 @@ namespace mag
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
             std::unique_ptr<ImageLoader> image_loader;
-            std::unique_ptr<ModelManager> model_loader;
+            std::unique_ptr<MaterialLoader> material_loader;
+            std::unique_ptr<ModelLoader> model_loader;
+            std::unique_ptr<ModelManager> model_manager;
             std::unique_ptr<TextureManager> texture_loader;
-            std::unique_ptr<MaterialManager> material_loader;
+            std::unique_ptr<MaterialManager> material_manager;
             std::unique_ptr<ShaderManager> shader_loader;
             std::unique_ptr<PhysicsEngine> physics_engine;
 

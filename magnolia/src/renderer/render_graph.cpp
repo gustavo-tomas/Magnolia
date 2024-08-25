@@ -153,10 +153,10 @@ namespace mag
             // Transition layout
             for (const auto& description : render_pass->attachment_descriptions)
             {
-                auto& attachment = attachments[description.name];
-
                 if (description.stage == AttachmentStage::Output && description.type == AttachmentType::Color)
                 {
+                    auto& attachment = attachments[description.name];
+
                     vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
 
                     command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),

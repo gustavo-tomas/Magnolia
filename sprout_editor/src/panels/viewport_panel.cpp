@@ -14,7 +14,7 @@ namespace sprout
     {
         auto &app = get_application();
         auto &editor = get_editor();
-        auto &model_manager = app.get_model_manager();
+        auto &model_loader = app.get_model_loader();
         auto &scene = editor.get_active_scene();
 
         // Recreate image descriptors
@@ -74,7 +74,7 @@ namespace sprout
                 }
 
                 // Then check if this extension is supported
-                else if (!model_manager.is_extension_supported(extension))
+                else if (!model_loader.is_extension_supported(extension))
                 {
                     LOG_ERROR("Extension not supported: {0}", extension);
                 }

@@ -228,10 +228,10 @@ namespace mag
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                        const auto& default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
+                        const auto& default_mat = material_manager.get_default();
 
                         std::vector<std::shared_ptr<Image>> textures;
-                        for (const auto& texture_name : default_mat->textures)
+                        for (const auto& [texture_slot, texture_name] : default_mat->textures)
                         {
                             textures.push_back(texture_manager.get(texture_name));
                         }
