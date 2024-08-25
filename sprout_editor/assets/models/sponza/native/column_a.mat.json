@@ -1,0 +1,7 @@
+{
+    "Material": "column_a",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_column_a_diff.png",
+        "Normal": "sprout_editor/assets/models/sponza/textures/sponza_column_a_ddn.png"
+    }
+}

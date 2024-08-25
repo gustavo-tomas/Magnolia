@@ -1,0 +1,7 @@
+{
+    "Material": "vase_round",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/vase_round.png",
+        "Normal": "sprout_editor/assets/models/sponza/textures/vase_round_ddn.png"
+    }
+}

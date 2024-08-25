@@ -140,18 +140,19 @@ namespace mag
             initialize_mesh(m, mesh, model);
         }
 
-        initialize_materials(scene, file_path, model);
+        const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
+        std::filesystem::create_directories(output_directory);
 
-        const str directory = file_path.substr(0, file_path.find_last_of('/'));
-        create_native_file(directory, model);
+        initialize_materials(scene, file_path, output_directory, model);
+        create_native_file(output_directory, model);
 
         return model;
     }
 
-    void ModelLoader::create_native_file(const str& directory, Model* model)
+    void ModelLoader::create_native_file(const str& output_directory, Model* model)
     {
         // Write the data to the native file format
-        const str native_model_file_path = directory + "/" + model->name + MODEL_FILE_EXTENSION;
+        const str native_model_file_path = output_directory + "/" + model->name + MODEL_FILE_EXTENSION;
 
         std::ofstream model_file(native_model_file_path);
 
@@ -162,7 +163,7 @@ namespace mag
         }
 
         // Write binary model data to file
-        const str binary_file_path = directory + "/" + model->name + BINARY_FILE_EXTENSION;
+        const str binary_file_path = output_directory + "/" + model->name + BINARY_FILE_EXTENSION;
 
         json data;
         data["Model"] = model->name;
@@ -290,9 +291,10 @@ namespace mag
         model->indices.insert(model->indices.end(), optimized_indices.begin(), optimized_indices.end());
     }
 
-    void ModelLoader::initialize_materials(const aiScene* ai_scene, const str& file_path, Model* model)
+    void ModelLoader::initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
+                                           Model* model)
     {
-        const str directory = file_path.substr(0, file_path.find_last_of('/'));
+        const str model_directory = file_path.substr(0, file_path.find_last_of('/'));
 
         model->materials.resize(ai_scene->mNumMaterials);
 
@@ -300,7 +302,7 @@ namespace mag
         {
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
             str material_name = ai_material->GetName().C_Str();
-            str material_file_path = directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
+            str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
             // Invalid material, use the default one instead
             if (material_name.empty())
@@ -323,8 +325,8 @@ namespace mag
             // Write material data to file
             json data;
             data["Material"] = material_name;
-            data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, directory);
-            data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, directory);
+            data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
+            data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
 
             file << std::setw(4) << data;
             file.close();

@@ -1,0 +1,7 @@
+{
+    "Material": "arch",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_arch_diff.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

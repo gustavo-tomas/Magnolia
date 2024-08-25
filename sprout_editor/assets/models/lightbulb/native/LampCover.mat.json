@@ -1,0 +1,7 @@
+{
+    "Material": "LampCover",
+    "Textures": {
+        "Albedo": "magnolia/assets/images/DefaultAlbedoSeamless.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

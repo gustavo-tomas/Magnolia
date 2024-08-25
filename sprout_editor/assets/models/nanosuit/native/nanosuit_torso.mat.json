@@ -1,0 +1,7 @@
+{
+    "Material": "nanosuit_torso",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/nanosuit/nanosuit_torso_d.tga",
+        "Normal": "sprout_editor/assets/models/nanosuit/nanosuit_torso_n.tga"
+    }
+}

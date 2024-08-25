@@ -1,0 +1,7 @@
+{
+    "Material": "vase_hanging",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/vase_hanging.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

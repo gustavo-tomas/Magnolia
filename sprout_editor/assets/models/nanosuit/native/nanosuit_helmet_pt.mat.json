@@ -1,0 +1,7 @@
+{
+    "Material": "nanosuit_helmet_pt",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/nanosuit/nanosuit_helmet_pt_d.tga",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

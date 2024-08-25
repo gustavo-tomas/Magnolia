@@ -1,0 +1,7 @@
+{
+    "Material": "ceiling",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_ceiling_a_diff.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

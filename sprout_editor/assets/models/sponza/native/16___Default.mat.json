@@ -1,0 +1,7 @@
+{
+    "Material": "16___Default",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/gi_flag.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}
