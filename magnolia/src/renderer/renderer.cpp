@@ -1,6 +1,8 @@
 #include "renderer/renderer.hpp"
 
 #include "core/logger.hpp"
+#include "renderer/buffers.hpp"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -12,7 +14,16 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
-    Renderer::~Renderer() { this->context->get_device().waitIdle(); }
+    Renderer::~Renderer()
+    {
+        context->get_device().waitIdle();
+
+        for (const auto& vertex_buffer_p : vertex_buffers)
+        {
+            auto* model = vertex_buffer_p.first;
+            remove_model(model);
+        }
+    }
 
     void Renderer::update(RenderGraph& render_graph)
     {
@@ -30,6 +41,57 @@ namespace mag
 
         this->context->end_frame(image, extent);
         this->context->calculate_timestamp();  // Calculate after command recording ended
+    }
+
+    void Renderer::bind_buffers(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+
+        // Bind buffers
+        command_buffer.bind_vertex_buffer(vbo_it->second.get_buffer());
+        command_buffer.bind_index_buffer(ibo_it->second.get_buffer());
+    }
+
+    void Renderer::add_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it != vertex_buffers.end() || ibo_it != index_buffers.end())
+        {
+            LOG_WARNING("Model '{0}' was already uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        vertex_buffers[model].initialize(model->vertices.data(), VECSIZE(model->vertices) * sizeof(model->vertices[0]));
+        index_buffers[model].initialize(model->indices.data(), VECSIZE(model->indices) * sizeof(model->indices[0]));
+    }
+
+    void Renderer::remove_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Tried to remove invalid model '{0}'", static_cast<void*>(model));
+            return;
+        }
+
+        vbo_it->second.shutdown();
+        ibo_it->second.shutdown();
+
+        vertex_buffers.erase(vbo_it);
+        index_buffers.erase(ibo_it);
     }
 
     void Renderer::on_event(Event& e)

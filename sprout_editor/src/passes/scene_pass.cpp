@@ -39,6 +39,7 @@ namespace sprout
         (void)render_graph;
 
         auto& app = get_application();
+        auto& renderer = app.get_renderer();
         auto& material_manager = app.get_material_manager();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -77,9 +78,7 @@ namespace sprout
             auto model_matrix = transform->get_transformation_matrix();
             mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
-            // Bind buffers
-            command_buffer.bind_vertex_buffer(model->vbo.get_buffer());
-            command_buffer.bind_index_buffer(model->ibo.get_buffer());
+            renderer.bind_buffers(model.get());
 
             for (auto& mesh : model->meshes)
             {
