@@ -8,7 +8,7 @@
 
 namespace mag
 {
-    struct ImageResource
+    struct Image
     {
             u8 channels;
             u32 width;
@@ -20,10 +20,10 @@ namespace mag
     class ImageLoader
     {
         public:
-            std::shared_ptr<ImageResource> load(const str& name);
+            std::shared_ptr<Image> load(const str& name);
             void unload(const str& name);
 
         private:
-            std::map<str, std::shared_ptr<ImageResource>> image_resources;
+            std::map<str, std::shared_ptr<Image>> image_resources;
     };
 };  // namespace mag

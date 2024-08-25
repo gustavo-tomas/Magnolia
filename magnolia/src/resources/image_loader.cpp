@@ -19,7 +19,7 @@ namespace mag
         LOG_WARNING("Image unload called with invalid name '{0}'", name);
     }
 
-    std::shared_ptr<ImageResource> ImageLoader::load(const str& file)
+    std::shared_ptr<Image> ImageLoader::load(const str& file)
     {
         auto it = image_resources.find(file);
         if (it != image_resources.end())
@@ -44,16 +44,16 @@ namespace mag
         const u64 image_size = tex_width * tex_height * tex_channels;
         const u32 mip_levels = static_cast<u32>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
 
-        ImageResource image_resource = {};
-        image_resource.channels = tex_channels;
-        image_resource.width = tex_width;
-        image_resource.height = tex_height;
-        image_resource.mip_levels = mip_levels;
-        image_resource.pixels = std::vector<u8>(pixels, pixels + image_size);
+        Image image = {};
+        image.channels = tex_channels;
+        image.width = tex_width;
+        image.height = tex_height;
+        image.mip_levels = mip_levels;
+        image.pixels = std::vector<u8>(pixels, pixels + image_size);
 
         stbi_image_free(pixels);
 
-        image_resources[file] = std::make_shared<ImageResource>(image_resource);
+        image_resources[file] = std::make_shared<Image>(image);
         return image_resources[file];
     }
 };  // namespace mag
