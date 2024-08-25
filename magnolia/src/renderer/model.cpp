@@ -18,6 +18,7 @@ namespace mag
         auto& model_loader = app.get_model_loader();
         auto& renderer = app.get_renderer();
 
+        // @TODO: the loader can return  nullptr!
         Model* model = model_loader.load(name);
 
         // Send model data to the GPU
