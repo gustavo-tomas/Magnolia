@@ -18,18 +18,15 @@ namespace mag
         auto& texture_manager = app.get_texture_manager();
 
         // Try loading the material
-        auto material_resource = material_loader.load(name);
-        if (material_resource == nullptr)
+        Material* material = material_loader.load(name);
+
+        if (material == nullptr)
         {
             LOG_ERROR("Material '{0}' not found, using default", name);
 
-            material_resource = material_loader.load(DEFAULT_MATERIAL_NAME);
-            ASSERT(material_resource, "Default material has not been loaded");
+            material = material_loader.load(DEFAULT_MATERIAL_NAME);
+            ASSERT(material, "Default material has not been loaded");
         }
-
-        Material* material = new Material();
-        material->name = name;
-        material->textures = material_resource->textures;
 
         // @TODO: temporary? idk if descriptors should be created here
         {

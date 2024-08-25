@@ -5,11 +5,18 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
-#include "resources/material_loader.hpp"
 
 namespace mag
 {
 #define DEFAULT_MATERIAL_NAME "magnolia/assets/materials/default_material.mat.json"
+
+    enum class TextureSlot
+    {
+        Albedo = 0,
+        Normal,
+
+        TextureCount
+    };
 
     struct Material
     {
