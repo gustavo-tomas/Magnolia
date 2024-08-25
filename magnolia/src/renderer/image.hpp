@@ -8,6 +8,15 @@
 
 namespace mag
 {
+    struct Image
+    {
+            u8 channels;
+            u32 width;
+            u32 height;
+            u32 mip_levels;
+            std::vector<u8> pixels;
+    };
+
     class RendererImage
     {
         public:
