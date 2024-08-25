@@ -32,8 +32,16 @@ namespace mag
         this->context->calculate_timestamp();  // Calculate after command recording ended
     }
 
-    void Renderer::on_resize(const uvec2& size)
+    void Renderer::on_event(Event& e)
     {
+        EventDispatcher dispatcher(e);
+        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Renderer::on_resize));
+    }
+
+    void Renderer::on_resize(WindowResizeEvent& e)
+    {
+        const uvec2& size = {e.width, e.height};
+
         context->get_device().waitIdle();
 
         context->recreate_swapchain(size);

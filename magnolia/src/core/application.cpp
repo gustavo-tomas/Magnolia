@@ -55,7 +55,7 @@ namespace mag
         LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager
-        shader_loader = std::make_unique<ShaderManager>();
+        shader_manager = std::make_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
         // Create the physics engine
@@ -117,8 +117,9 @@ namespace mag
     {
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
+
+        renderer->on_event(e);
 
         for (auto* layer : layers)
         {
@@ -136,12 +137,5 @@ namespace mag
     {
         (void)e;
         running = false;
-    }
-
-    void Application::on_window_resize(WindowResizeEvent& e)
-    {
-        const uvec2 size = {e.width, e.height};
-
-        renderer->on_resize(size);
     }
 };  // namespace mag
