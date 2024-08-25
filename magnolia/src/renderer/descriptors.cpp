@@ -15,7 +15,11 @@ namespace mag
 
         std::vector<vk::DescriptorPoolSize> sizes;
         sizes.reserve(pool_sizes.size());
-        for (const auto& [type, size] : pool_sizes) sizes.push_back({type, static_cast<u32>(size * count)});
+        for (const auto& [type, size] : pool_sizes)
+        {
+            vk::DescriptorPoolSize descriptor_pool_size(type, static_cast<u32>(size * count));
+            sizes.push_back(descriptor_pool_size);
+        }
 
         const vk::DescriptorPoolCreateInfo pool_info(flags, count, sizes);
         const vk::DescriptorPool descriptor_pool = device.createDescriptorPool(pool_info);
@@ -121,7 +125,11 @@ namespace mag
         auto& context = get_context();
 
         // delete every descriptor layout held
-        for (const auto& [info, layout] : layout_cache) context.get_device().destroyDescriptorSetLayout(layout);
+        for (const auto& layout_p : layout_cache)
+        {
+            const auto& layout = layout_p.second;
+            context.get_device().destroyDescriptorSetLayout(layout);
+        }
     }
 
     vk::DescriptorSetLayout DescriptorLayoutCache::create_descriptor_layout(

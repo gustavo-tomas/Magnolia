@@ -7,6 +7,7 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
+#include "renderer/image.hpp"
 #include "renderer/pipeline.hpp"
 
 namespace mag
@@ -148,8 +149,9 @@ namespace mag
                 }
 
                 u32 offset = 0;
-                for (auto& [location, variable] : sorted_input_variables)
+                for (auto& input_variable_p : sorted_input_variables)
                 {
+                    auto& variable = input_variable_p.second;
                     const vk::Format format = static_cast<vk::Format>(variable->format);
                     u32 size = variable->numeric.scalar.width / 8;
                     size *= variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
@@ -220,16 +222,21 @@ namespace mag
                 {
                     auto& app = get_application();
                     auto& material_manager = app.get_material_manager();
+                    auto& texture_manager = app.get_texture_manager();
 
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                        const auto& default_mat = material_manager.get(DEFAULT_MATERIAL_NAME);
+                        const auto& default_mat = material_manager.get_default();
 
-                        const std::vector<std::shared_ptr<Image>> textures(
-                            default_mat->textures, default_mat->textures + Material::TextureCount);
+                        std::vector<std::shared_ptr<Image>> textures;
+                        for (const auto& texture_p : default_mat->textures)
+                        {
+                            auto& texture_name = texture_p.second;
+                            textures.push_back(texture_manager.get(texture_name));
+                        }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
                                                                           descriptor_set, descriptor_set_layout);
@@ -259,8 +266,9 @@ namespace mag
 
     Shader::~Shader()
     {
-        for (auto& [scope, ubo] : uniforms_map)
+        for (auto& uniform_p : uniforms_map)
         {
+            auto& ubo = uniform_p.second;
             for (auto& buffer : ubo.buffers)
             {
                 buffer.shutdown();
@@ -328,8 +336,10 @@ namespace mag
         auto& command_buffer = context.get_curr_frame().command_buffer;
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        for (auto& [scope, ubo] : uniforms_map)
+        for (auto& uniform_p : uniforms_map)
         {
+            auto& ubo = uniform_p.second;
+
             auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
 
             command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(),

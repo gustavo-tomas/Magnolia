@@ -1,0 +1,7 @@
+{
+    "Material": "fabric_e",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_fabric_green_diff.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "Model": "Nanosuit.obj",
+    "File": "sprout_editor/assets/models/nanosuit/native/Nanosuit.obj.model.bin",
+    "Materials": [
+        "sprout_editor/assets/models/nanosuit/native/DefaultMaterial.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_arms.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_hands.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_helmet.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_helmet_pt.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_legs.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_torso.mat.json",
+        "sprout_editor/assets/models/nanosuit/native/nanosuit_visor.mat.json"
+    ]
+}

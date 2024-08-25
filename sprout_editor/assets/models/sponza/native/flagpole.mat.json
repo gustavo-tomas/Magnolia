@@ -1,0 +1,7 @@
+{
+    "Material": "flagpole",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_flagpole_diff.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

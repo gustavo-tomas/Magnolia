@@ -11,11 +11,8 @@ namespace sprout
 {
     ContentBrowserPanel::ContentBrowserPanel()
     {
-        folder_image = get_application().get_texture_manager().load("sprout_editor/assets/images/fa-folder-solid.png",
-                                                                    TextureType::Albedo);
-
-        file_image = get_application().get_texture_manager().load("sprout_editor/assets/images/fa-file-solid.png",
-                                                                  TextureType::Albedo);
+        folder_image = get_application().get_texture_manager().get("sprout_editor/assets/images/fa-folder-solid.png");
+        file_image = get_application().get_texture_manager().get("sprout_editor/assets/images/fa-file-solid.png");
 
         folder_image_descriptor =
             ImGui_ImplVulkan_AddTexture(folder_image->get_sampler().get_handle(), folder_image->get_image_view(),

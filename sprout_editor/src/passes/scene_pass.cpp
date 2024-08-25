@@ -38,6 +38,8 @@ namespace sprout
     {
         (void)render_graph;
 
+        auto& app = get_application();
+        auto& material_manager = app.get_material_manager();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& editor = get_editor();
@@ -82,7 +84,8 @@ namespace sprout
             for (auto& mesh : model->meshes)
             {
                 // Set the material
-                const auto descriptor_set = model->materials[mesh.material_index]->descriptor_set;
+                const auto& material = material_manager.get(model->materials[mesh.material_index]);
+                const auto& descriptor_set = material->descriptor_set;
 
                 mesh_shader->bind_texture("u_material_textures", descriptor_set);
 

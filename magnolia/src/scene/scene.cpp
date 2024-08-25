@@ -200,7 +200,7 @@ namespace mag
         auto& app = get_application();
         auto& model_manager = app.get_model_manager();
 
-        const auto model = model_manager.load(path);
+        const auto model = model_manager.get(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());

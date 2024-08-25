@@ -1,0 +1,7 @@
+{
+    "Material": "Material__47",
+    "Textures": {
+        "Albedo": "magnolia/assets/images/DefaultAlbedoSeamless.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

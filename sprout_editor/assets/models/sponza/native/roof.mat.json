@@ -1,0 +1,7 @@
+{
+    "Material": "roof",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_roof_diff.png",
+        "Normal": "magnolia/assets/images/DefaultNormal.png"
+    }
+}

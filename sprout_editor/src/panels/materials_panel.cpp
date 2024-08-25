@@ -1,13 +1,16 @@
 #include "panels/materials_panel.hpp"
 
+#include "core/application.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/model.hpp"
 
 namespace sprout
 {
     void MaterialsPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials", NULL, window_flags);
+
+        auto &app = get_application();
+        auto &material_manager = app.get_material_manager();
 
         if (selected_entity_id == INVALID_ID) goto end;
 
@@ -17,14 +20,14 @@ namespace sprout
 
             for (u32 i = 0; i < model->materials.size(); i++)
             {
-                const auto &material = model->materials[i];
+                const auto &material = material_manager.get(model->materials[i]);
                 const str slot_str = "Slot " + std::to_string(i) + ": " + material->name.c_str();
                 ImGui::SeparatorText(slot_str.c_str());
 
                 ImGui::Text("Textures");
-                for (const auto &texture : material->textures)
+                for (const auto &[texture_slot, texture_name] : material->textures)
                 {
-                    ImGui::TextWrapped("%s", texture->get_name().c_str());
+                    ImGui::TextWrapped("%s", texture_name.c_str());
                 }
             }
 

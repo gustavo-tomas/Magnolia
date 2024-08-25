@@ -30,20 +30,32 @@ namespace mag
         renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
+        // Create the image loader
+        image_loader = std::make_unique<ImageLoader>();
+        LOG_SUCCESS("ImageLoader initialized");
+
+        // Create the material loader
+        material_loader = std::make_unique<MaterialLoader>();
+        LOG_SUCCESS("MaterialLoader initialized");
+
+        // Create the model loader
+        model_loader = std::make_unique<ModelLoader>();
+        LOG_SUCCESS("ModelLoader initialized");
+
         // Create the texture manager
         texture_loader = std::make_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
 
         // Create the material manager
-        material_loader = std::make_unique<MaterialManager>();
+        material_manager = std::make_unique<MaterialManager>();
         LOG_SUCCESS("MaterialManager initialized");
 
         // Create the model manager
-        model_loader = std::make_unique<ModelManager>();
+        model_manager = std::make_unique<ModelManager>();
         LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager
-        shader_loader = std::make_unique<ShaderManager>();
+        shader_manager = std::make_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
         // Create the physics engine
@@ -105,8 +117,9 @@ namespace mag
     {
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Application::on_window_resize));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
+
+        renderer->on_event(e);
 
         for (auto* layer : layers)
         {
@@ -124,12 +137,5 @@ namespace mag
     {
         (void)e;
         running = false;
-    }
-
-    void Application::on_window_resize(WindowResizeEvent& e)
-    {
-        const uvec2 size = {e.width, e.height};
-
-        renderer->on_resize(size);
     }
 };  // namespace mag
