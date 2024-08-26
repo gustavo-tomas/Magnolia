@@ -221,6 +221,7 @@ namespace mag
                 else if (type == vk::DescriptorType::eCombinedImageSampler)
                 {
                     auto& app = get_application();
+                    auto& renderer = app.get_renderer();
                     auto& material_manager = app.get_material_manager();
                     auto& texture_manager = app.get_texture_manager();
 
@@ -231,11 +232,11 @@ namespace mag
 
                         const auto& default_mat = material_manager.get_default();
 
-                        std::vector<std::shared_ptr<Image>> textures;
+                        std::vector<std::shared_ptr<RendererImage>> textures;
                         for (const auto& texture_p : default_mat->textures)
                         {
-                            auto& texture_name = texture_p.second;
-                            textures.push_back(texture_manager.get(texture_name));
+                            auto texture = texture_manager.get(texture_p.second);
+                            textures.push_back(renderer.get_renderer_image(texture.get()));
                         }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,

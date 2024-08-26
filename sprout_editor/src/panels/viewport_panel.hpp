@@ -18,7 +18,7 @@ namespace sprout
     {
         public:
             void render(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs,
-                        const u32 selected_entity_id, const Image& viewport_image);
+                        const u32 selected_entity_id, const RendererImage& viewport_image);
 
             void on_event(Event& e);
 

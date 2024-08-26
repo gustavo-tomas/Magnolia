@@ -11,8 +11,15 @@ namespace sprout
 {
     ContentBrowserPanel::ContentBrowserPanel()
     {
-        folder_image = get_application().get_texture_manager().get("sprout_editor/assets/images/fa-folder-solid.png");
-        file_image = get_application().get_texture_manager().get("sprout_editor/assets/images/fa-file-solid.png");
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& texture_manager = app.get_texture_manager();
+
+        auto folder_tex = texture_manager.get("sprout_editor/assets/images/fa-folder-solid.png");
+        auto file_tex = texture_manager.get("sprout_editor/assets/images/fa-file-solid.png");
+
+        folder_image = renderer.get_renderer_image(folder_tex.get());
+        file_image = renderer.get_renderer_image(file_tex.get());
 
         folder_image_descriptor =
             ImGui_ImplVulkan_AddTexture(folder_image->get_sampler().get_handle(), folder_image->get_image_view(),
@@ -49,9 +56,9 @@ namespace sprout
 
         ImGui::Columns(column_count, 0, false);
 
-        for (auto &directory_entry : std::filesystem::directory_iterator(current_directory))
+        for (auto& directory_entry : std::filesystem::directory_iterator(current_directory))
         {
-            const auto &path = directory_entry.path();
+            const auto& path = directory_entry.path();
             const str filename_string = path.filename().string();
 
             ImGui::PushID(filename_string.c_str());
@@ -70,7 +77,7 @@ namespace sprout
             if (ImGui::BeginDragDropSource())
             {
                 std::filesystem::path relative_path(path);
-                const wchar_t *item_path = reinterpret_cast<const wchar_t *>(relative_path.c_str());
+                const wchar_t* item_path = reinterpret_cast<const wchar_t*>(relative_path.c_str());
                 ImGui::SetDragDropPayload(CONTENT_BROWSER_ITEM, item_path, (wcslen(item_path) + 1) * sizeof(wchar_t));
                 ImGui::EndDragDropSource();
             }

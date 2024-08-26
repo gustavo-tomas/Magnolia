@@ -9,9 +9,9 @@ namespace mag
     class Sampler
     {
         public:
-            void initialize(const vk::Filter min_mag_filter, const vk::SamplerAddressMode address_mode,
-                            const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels);
-            void shutdown();
+            Sampler(const vk::Filter min_mag_filter, const vk::SamplerAddressMode address_mode,
+                    const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels);
+            ~Sampler();
 
             const vk::Sampler& get_handle() const { return sampler; };
 

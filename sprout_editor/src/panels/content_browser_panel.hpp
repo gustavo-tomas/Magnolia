@@ -18,7 +18,7 @@ namespace sprout
             void render(const ImGuiWindowFlags window_flags);
 
         private:
-            std::shared_ptr<Image> folder_image, file_image;
+            std::shared_ptr<RendererImage> folder_image, file_image;
             vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
     };
 };  // namespace sprout

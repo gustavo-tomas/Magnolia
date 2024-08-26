@@ -48,7 +48,7 @@ namespace mag
     }
 
     // End command recording, submit info and acquire/present the image
-    b8 FrameProvider::end_frame(const Image& draw_image, const vk::Extent3D& extent)
+    b8 FrameProvider::end_frame(const RendererImage& draw_image, const vk::Extent3D& extent)
     {
         auto& context = get_context();
 

@@ -31,21 +31,16 @@ namespace mag
     {
             str name = "";
             str file_path = "";
-            std::vector<Mesh> meshes;
 
-            std::vector<str> materials;
+            std::vector<Mesh> meshes;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
-
-            VertexBuffer vbo;
-            IndexBuffer ibo;
+            std::vector<str> materials;
     };
 
     class ModelManager
     {
         public:
-            ~ModelManager();
-
             std::shared_ptr<Model> get(const str& name);
 
         private:
@@ -57,7 +52,6 @@ namespace mag
     {
         public:
             Cube(const str& name = "Cube");
-            ~Cube();
 
             Model& get_model() { return model; };
 

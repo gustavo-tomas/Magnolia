@@ -22,10 +22,6 @@ namespace mag
     {
             std::map<TextureSlot, str> textures;
             str name = "";
-
-            // @TODO: create one per frame in flight if materials should change between frames
-            vk::DescriptorSet descriptor_set;
-            vk::DescriptorSetLayout descriptor_set_layout;
     };
 
     class MaterialManager

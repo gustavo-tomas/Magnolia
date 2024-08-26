@@ -10,7 +10,7 @@
 namespace sprout
 {
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
-                               const u32 selected_entity_id, const Image &viewport_image)
+                               const u32 selected_entity_id, const RendererImage &viewport_image)
     {
         auto &app = get_application();
         auto &editor = get_editor();

@@ -6,18 +6,7 @@
 
 namespace mag
 {
-    ModelManager::~ModelManager()
-    {
-        // @TODO: idk about this
-        get_context().get_device().waitIdle();
-
-        for (const auto& model_pair : models)
-        {
-            const auto& model = model_pair.second;
-            model->vbo.shutdown();
-            model->ibo.shutdown();
-        }
-    }
+#define DEFAULT_MODEL_NAME "magnolia/assets/models/DefaultCube.model.json"
 
     std::shared_ptr<Model> ModelManager::get(const str& name)
     {
@@ -29,11 +18,20 @@ namespace mag
 
         auto& app = get_application();
         auto& model_loader = app.get_model_loader();
+        auto& renderer = app.get_renderer();
+
         Model* model = model_loader.load(name);
 
-        // @TODO: buffer stuff should be handled by the renderer
-        model->vbo.initialize(model->vertices.data(), model->vertices.size() * sizeof(Vertex));
-        model->ibo.initialize(model->indices.data(), model->indices.size() * sizeof(u32));
+        if (model == nullptr)
+        {
+            LOG_ERROR("Model '{0}' not found, using default", name);
+
+            model = model_loader.load(DEFAULT_MODEL_NAME);
+            ASSERT(model, "Default model has not been loaded");
+        }
+
+        // Send model data to the GPU
+        renderer.add_model(model);
 
         models[name] = std::shared_ptr<Model>(model);
         return models[name];
@@ -163,19 +161,14 @@ namespace mag
 
         model.meshes[0].index_count = VECSIZE(model.indices);
 
-        model.vbo.initialize(model.vertices.data(), VECSIZE(model.vertices) * sizeof(Vertex));
-        model.ibo.initialize(model.indices.data(), VECSIZE(model.indices) * sizeof(u32));
-
         // Use the default material
         model.materials.push_back(DEFAULT_MATERIAL_NAME);
-    }
 
-    Cube::~Cube()
-    {
-        get_context().get_device().waitIdle();
+        // Send model data to the GPU
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
 
-        model.vbo.shutdown();
-        model.ibo.shutdown();
+        renderer.add_model(&model);
     }
 
     Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)

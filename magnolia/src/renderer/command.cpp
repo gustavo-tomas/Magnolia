@@ -61,7 +61,7 @@ namespace mag
         this->command_buffer.copyBuffer(src.get_buffer(), dst.get_buffer(), copy);
     }
 
-    void CommandBuffer::copy_buffer_to_image(const Buffer& src, const Image& image)
+    void CommandBuffer::copy_buffer_to_image(const Buffer& src, const RendererImage& image)
     {
         const vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, image.get_mip_levels(), 0, 1);
         const vk::ImageMemoryBarrier to_transfer_barrier(
@@ -110,7 +110,7 @@ namespace mag
                                        vk::ImageLayout::eTransferDstOptimal, blit_region, vk::Filter::eLinear);
     }
 
-    void CommandBuffer::transfer_layout(const Image& image, const vk::ImageLayout curr_layout,
+    void CommandBuffer::transfer_layout(const RendererImage& image, const vk::ImageLayout curr_layout,
                                         const vk::ImageLayout new_layout, const u32 base_mip_levels)
     {
         this->transfer_layout(image.get_image(), curr_layout, new_layout, base_mip_levels, image.get_mip_levels());

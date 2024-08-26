@@ -1,6 +1,10 @@
 #include "renderer/renderer.hpp"
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
+#include "renderer/buffers.hpp"
+#include "renderer/material.hpp"
+#include "renderer/model.hpp"
 
 namespace mag
 {
@@ -12,7 +16,28 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
-    Renderer::~Renderer() { this->context->get_device().waitIdle(); }
+    Renderer::~Renderer()
+    {
+        context->get_device().waitIdle();
+
+        for (const auto& vertex_buffer_p : vertex_buffers)
+        {
+            auto* model = vertex_buffer_p.first;
+            remove_model(model);
+        }
+
+        for (const auto& images_p : images)
+        {
+            auto* image = images_p.first;
+            remove_image(image);
+        }
+
+        for (const auto& descriptor_set_p : descriptor_sets)
+        {
+            auto* material = descriptor_set_p.first;
+            remove_material(material);
+        }
+    }
 
     void Renderer::update(RenderGraph& render_graph)
     {
@@ -30,6 +55,165 @@ namespace mag
 
         this->context->end_frame(image, extent);
         this->context->calculate_timestamp();  // Calculate after command recording ended
+    }
+
+    void Renderer::bind_buffers(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+
+        // Bind buffers
+        command_buffer.bind_vertex_buffer(vbo_it->second.get_buffer());
+        command_buffer.bind_index_buffer(ibo_it->second.get_buffer());
+    }
+
+    void Renderer::add_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it != vertex_buffers.end() || ibo_it != index_buffers.end())
+        {
+            LOG_WARNING("Model '{0}' was already uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        vertex_buffers[model].initialize(model->vertices.data(), VECSIZE(model->vertices) * sizeof(model->vertices[0]));
+        index_buffers[model].initialize(model->indices.data(), VECSIZE(model->indices) * sizeof(model->indices[0]));
+    }
+
+    void Renderer::remove_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Tried to remove invalid model '{0}'", static_cast<void*>(model));
+            return;
+        }
+
+        vbo_it->second.shutdown();
+        ibo_it->second.shutdown();
+
+        vertex_buffers.erase(vbo_it);
+        index_buffers.erase(ibo_it);
+    }
+
+    std::shared_ptr<RendererImage> Renderer::get_renderer_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+            ASSERT(false, "@TODO: this shouldnt crash the application");
+        }
+
+        return it->second;
+    }
+
+    void Renderer::add_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it != images.end())
+        {
+            LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<void*>(image));
+            return;
+        }
+
+        const vk::Extent3D extent(image->width, image->height, 1);
+
+        // @TODO: check for supported formats
+        const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+
+        images[image] = std::make_shared<RendererImage>(
+            extent, image->channels, image->pixels.data(), format,
+            vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
+                vk::ImageUsageFlagBits::eTransferDst,
+            vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+    }
+
+    void Renderer::remove_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Tried to remove invalid image '{0}'", static_cast<void*>(image));
+            return;
+        }
+
+        images.erase(it);
+    }
+
+    vk::DescriptorSet& Renderer::get_material_descriptor(Material* material)
+    {
+        auto material_desc_set_it = descriptor_sets.find(material);
+        auto material_desc_lay_it = descriptor_set_layouts.find(material);
+
+        if (material_desc_set_it == descriptor_sets.end() || material_desc_lay_it == descriptor_set_layouts.end())
+        {
+            LOG_ERROR("Material '{0}' was not uploaded to the GPU", static_cast<void*>(material));
+            ASSERT(false, "@TODO: this shouldnt crash the application");
+        }
+
+        return material_desc_set_it->second;
+    }
+
+    void Renderer::add_material(Material* material)
+    {
+        auto material_desc_set_it = descriptor_sets.find(material);
+        auto material_desc_lay_it = descriptor_set_layouts.find(material);
+
+        if (material_desc_set_it != descriptor_sets.end() || material_desc_lay_it != descriptor_set_layouts.end())
+        {
+            LOG_WARNING("Material '{0}' was already uploaded to the GPU", static_cast<void*>(material));
+            return;
+        }
+
+        auto& app = get_application();
+        auto& texture_manager = app.get_texture_manager();
+
+        std::vector<std::shared_ptr<RendererImage>> textures;
+        for (const auto& texture_p : material->textures)
+        {
+            auto texture = texture_manager.get(texture_p.second);
+            textures.push_back(get_renderer_image(texture.get()));
+        }
+
+        vk::DescriptorSet descriptor_set;
+        vk::DescriptorSetLayout descriptor_set_layout;
+
+        // @TODO: hardcoded binding (0)
+        DescriptorBuilder::create_descriptor_for_textures(0, textures, descriptor_set, descriptor_set_layout);
+
+        descriptor_sets[material] = descriptor_set;
+        descriptor_set_layouts[material] = descriptor_set_layout;
+    }
+
+    void Renderer::remove_material(Material* material)
+    {
+        auto material_desc_set_it = descriptor_sets.find(material);
+        auto material_desc_lay_it = descriptor_set_layouts.find(material);
+
+        if (material_desc_set_it == descriptor_sets.end() || material_desc_lay_it == descriptor_set_layouts.end())
+        {
+            LOG_ERROR("Tried to remove invalid material '{0}'", static_cast<void*>(material));
+            return;
+        }
+
+        descriptor_sets.erase(material_desc_set_it);
+        descriptor_set_layouts.erase(material_desc_lay_it);
     }
 
     void Renderer::on_event(Event& e)
