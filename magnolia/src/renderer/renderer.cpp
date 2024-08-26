@@ -86,8 +86,8 @@ namespace mag
             return;
         }
 
-        vertex_buffers[model].initialize(model->vertices.data(), VECSIZE(model->vertices) * sizeof(model->vertices[0]));
-        index_buffers[model].initialize(model->indices.data(), VECSIZE(model->indices) * sizeof(model->indices[0]));
+        vertex_buffers[model].initialize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
     }
 
     void Renderer::remove_model(Model* model)

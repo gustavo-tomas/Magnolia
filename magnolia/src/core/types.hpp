@@ -65,9 +65,9 @@ namespace mag
 #endif
 
 // Common macros
-#define VECSIZE(vec) static_cast<u32>(vec.size())
-#define MAG_TIMEOUT 1'000'000'000                             /* 1 second in nanoseconds */
-#define BIND_FN(x) std::bind(&x, this, std::placeholders::_1) /* Shortcut to bind methods */
+#define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0])) /* Vector size in bytes */
+#define MAG_TIMEOUT 1'000'000'000                                           /* 1 second in nanoseconds */
+#define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)               /* Shortcut to bind methods */
 
     // Math definitions
     namespace math

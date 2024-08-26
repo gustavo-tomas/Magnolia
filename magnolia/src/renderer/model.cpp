@@ -159,7 +159,7 @@ namespace mag
                          // Bottom face
                          22, 21, 20, 23, 22, 20};
 
-        model.meshes[0].index_count = VECSIZE(model.indices);
+        model.meshes[0].index_count = model.indices.size();
 
         // Use the default material
         model.materials.push_back(DEFAULT_MATERIAL_NAME);
@@ -189,7 +189,7 @@ namespace mag
             vertices.push_back(line_end);
         }
 
-        vbo.initialize(vertices.data(), VECSIZE(vertices) * sizeof(LineVertex));
+        vbo.initialize(vertices.data(), VEC_SIZE_BYTES(vertices));
     }
 
     Line::~Line()

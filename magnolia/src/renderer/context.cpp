@@ -399,7 +399,7 @@ namespace mag
 
         // Create new swapchain
         this->swapchain_images = this->device.getSwapchainImagesKHR(this->swapchain);
-        this->present_image_count = VECSIZE(this->swapchain_images);
+        this->present_image_count = this->swapchain_images.size();
         this->surface_present_mode = present_mode;
 
         this->swapchain_image_views.reserve(this->present_image_count);
