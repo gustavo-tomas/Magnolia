@@ -54,10 +54,9 @@ namespace mag
         create_image_and_view();
     }
 
-    RendererImage::RendererImage(const vk::Extent3D& extent, const u8 channels, const void* pixels,
-                                 const vk::Format format, const vk::ImageUsageFlags image_usage,
-                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                                 const vk::SampleCountFlagBits msaa_samples, const str& name)
+    RendererImage::RendererImage(const vk::Extent3D& extent, const std::vector<u8>& pixels, const vk::Format format,
+                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
+                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
         : name(name),
           mip_levels(mip_levels),
           sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
@@ -71,12 +70,12 @@ namespace mag
 
         auto& context = get_context();
 
-        const u64 texture_size = extent.width * extent.height * channels;
+        const u64 texture_size = pixels.size();
 
         Buffer staging_buffer;
         staging_buffer.initialize(texture_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-        staging_buffer.copy(pixels, texture_size);
+        staging_buffer.copy(pixels.data(), texture_size);
 
         context.submit_commands_immediate(
             [&](CommandBuffer cmd)

@@ -137,7 +137,7 @@ namespace mag
         const vk::Format format = vk::Format::eR8G8B8A8Srgb;
 
         images[image] = std::make_shared<RendererImage>(
-            extent, image->channels, image->pixels.data(), format,
+            extent, image->pixels, format,
             vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                 vk::ImageUsageFlagBits::eTransferDst,
             vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
