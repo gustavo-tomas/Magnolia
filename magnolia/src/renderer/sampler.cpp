@@ -4,8 +4,8 @@
 
 namespace mag
 {
-    void Sampler::initialize(const vk::Filter min_mag_filter, const vk::SamplerAddressMode address_mode,
-                             const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels)
+    Sampler::Sampler(const vk::Filter min_mag_filter, const vk::SamplerAddressMode address_mode,
+                     const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels)
     {
         auto& context = get_context();
 
@@ -17,7 +17,7 @@ namespace mag
         this->sampler = context.get_device().createSampler(sampler_info);
     }
 
-    void Sampler::shutdown()
+    Sampler::~Sampler()
     {
         auto& context = get_context();
         context.get_device().destroySampler(sampler);

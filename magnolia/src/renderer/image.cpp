@@ -44,16 +44,13 @@ namespace mag
                                  const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
         : name(name),
           mip_levels(mip_levels),
+          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
           format(format),
           extent(extent),
           msaa_samples(msaa_samples),
           image_usage(image_usage),
           image_aspect(image_aspect)
     {
-        // @TODO: use Sampler constructors
-        this->sampler.initialize(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear,
-                                 this->mip_levels);
-
         create_image_and_view();
     }
 
@@ -63,16 +60,13 @@ namespace mag
                                  const vk::SampleCountFlagBits msaa_samples, const str& name)
         : name(name),
           mip_levels(mip_levels),
+          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
           format(format),
           extent(extent),
           msaa_samples(msaa_samples),
           image_usage(image_usage),
           image_aspect(image_aspect)
     {
-        // @TODO: use Sampler constructors
-        this->sampler.initialize(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear,
-                                 this->mip_levels);
-
         create_image_and_view();
 
         auto& context = get_context();
@@ -188,7 +182,6 @@ namespace mag
     {
         auto& context = get_context();
 
-        this->sampler.shutdown();
         context.get_device().destroyImageView(this->image_view);
         vmaDestroyImage(context.get_allocator(), image, allocation);
     }
