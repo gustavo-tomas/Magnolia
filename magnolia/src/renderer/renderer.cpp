@@ -26,6 +26,12 @@ namespace mag
             remove_model(model);
         }
 
+        for (const auto& images_p : images)
+        {
+            auto* image = images_p.first;
+            remove_image(image);
+        }
+
         for (const auto& descriptor_set_p : descriptor_sets)
         {
             auto* material = descriptor_set_p.first;
@@ -102,6 +108,54 @@ namespace mag
         index_buffers.erase(ibo_it);
     }
 
+    std::shared_ptr<RendererImage> Renderer::get_renderer_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+            ASSERT(false, "@TODO: this shouldnt crash the application");
+        }
+
+        return it->second;
+    }
+
+    void Renderer::add_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it != images.end())
+        {
+            LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<void*>(image));
+            return;
+        }
+
+        const vk::Extent3D extent(image->width, image->height, 1);
+
+        // @TODO: check for supported formats
+        const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+
+        images[image] = std::make_shared<RendererImage>(
+            extent, image->channels, image->pixels.data(), format,
+            vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
+                vk::ImageUsageFlagBits::eTransferDst,
+            vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+    }
+
+    void Renderer::remove_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Tried to remove invalid image '{0}'", static_cast<void*>(image));
+            return;
+        }
+
+        images.erase(it);
+    }
+
     vk::DescriptorSet& Renderer::get_material_descriptor(Material* material)
     {
         auto material_desc_set_it = descriptor_sets.find(material);
@@ -131,9 +185,10 @@ namespace mag
         auto& texture_manager = app.get_texture_manager();
 
         std::vector<std::shared_ptr<RendererImage>> textures;
-        for (const auto& texture_name : material->textures)
+        for (const auto& texture_p : material->textures)
         {
-            textures.push_back(texture_manager.get(texture_name.second));
+            auto texture = texture_manager.get(texture_p.second);
+            textures.push_back(get_renderer_image(texture.get()));
         }
 
         vk::DescriptorSet descriptor_set;

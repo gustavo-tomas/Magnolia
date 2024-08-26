@@ -6,7 +6,7 @@ namespace mag
 {
 #define DEFAULT_TEXTURE_NAME "magnolia/assets/images/DefaultAlbedoSeamless.png"
 
-    std::shared_ptr<RendererImage> TextureManager::get(const str& name)
+    std::shared_ptr<Image> TextureManager::get(const str& name)
     {
         // Texture found
         auto it = textures.find(name);
@@ -16,55 +16,88 @@ namespace mag
         }
 
         auto& app = get_application();
+        auto& renderer = app.get_renderer();
         auto& image_loader = app.get_image_loader();
 
         // Else load image from disk and create a new texture
-        auto image_resource = image_loader.load(name);
-        if (image_resource == nullptr)
+        Image* image = image_loader.load(name);
+
+        // Send image data to the GPU
+        renderer.add_image(image);
+
+        if (image == nullptr)
         {
-            image_resource = image_loader.load(DEFAULT_TEXTURE_NAME);
-            ASSERT(image_resource, "Default texture has not been loaded");
+            LOG_ERROR("Texture '{0}' not found, using default", name);
+
+            image = image_loader.load(DEFAULT_TEXTURE_NAME);
+            ASSERT(image, "Default texture has not been loaded");
         }
 
-        auto& pixels = image_resource->pixels;
-        const u64 texture_width = image_resource->width;
-        const u64 texture_height = image_resource->height;
-        const u64 texture_channels = 4;  // @TODO: hardcoded channels
-        const u64 texture_size = texture_width * texture_height * texture_channels;
+        textures[name] = std::shared_ptr<Image>(image);
+        return textures[name];
+    }
 
-        // @TODO: check for supported formats
-        const vk::Format texture_format = vk::Format::eR8G8B8A8Srgb;
+    std::shared_ptr<Image> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
+
+    RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,
+                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
+                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
+        : name(name),
+          mip_levels(mip_levels),
+          format(format),
+          extent(extent),
+          msaa_samples(msaa_samples),
+          image_usage(image_usage),
+          image_aspect(image_aspect)
+    {
+        // @TODO: use Sampler constructors
+        this->sampler.initialize(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear,
+                                 this->mip_levels);
+
+        create_image_and_view();
+    }
+
+    RendererImage::RendererImage(const vk::Extent3D& extent, const u8 channels, const void* pixels,
+                                 const vk::Format format, const vk::ImageUsageFlags image_usage,
+                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
+                                 const vk::SampleCountFlagBits msaa_samples, const str& name)
+        : name(name),
+          mip_levels(mip_levels),
+          format(format),
+          extent(extent),
+          msaa_samples(msaa_samples),
+          image_usage(image_usage),
+          image_aspect(image_aspect)
+    {
+        // @TODO: use Sampler constructors
+        this->sampler.initialize(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear,
+                                 this->mip_levels);
+
+        create_image_and_view();
+
+        auto& context = get_context();
+
+        const u64 texture_size = extent.width * extent.height * channels;
 
         Buffer staging_buffer;
         staging_buffer.initialize(texture_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-        staging_buffer.copy(reinterpret_cast<void*>(pixels.data()), texture_size);
-
-        const vk::Extent3D texture_extent(image_resource->width, image_resource->height, 1);
-        const u32 mip_levels = image_resource->mip_levels;
-
-        RendererImage* texture =
-            new RendererImage(texture_extent, texture_format,
-                              vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
-                                  vk::ImageUsageFlagBits::eTransferDst,
-                              vk::ImageAspectFlagBits::eColor, mip_levels, vk::SampleCountFlagBits::e1, name);
-
-        auto& context = get_context();
+        staging_buffer.copy(pixels, texture_size);
 
         context.submit_commands_immediate(
             [&](CommandBuffer cmd)
             {
-                cmd.copy_buffer_to_image(staging_buffer, *texture);
+                cmd.copy_buffer_to_image(staging_buffer, *this);
 
-                cmd.transfer_layout(*texture, vk::ImageLayout::eShaderReadOnlyOptimal,
+                cmd.transfer_layout(*this, vk::ImageLayout::eShaderReadOnlyOptimal,
                                     vk::ImageLayout::eTransferDstOptimal);
 
                 vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, {}, 1, 0, 1);
-                vk::ImageMemoryBarrier barrier({}, {}, {}, {}, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored,
-                                               texture->get_image(), range);
+                vk::ImageMemoryBarrier barrier({}, {}, {}, {}, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored, image,
+                                               range);
 
-                i32 mip_width = texture_width;
-                i32 mip_height = texture_height;
+                i32 mip_width = extent.width;
+                i32 mip_height = extent.height;
 
                 // @TODO: improve layout transition
                 for (u32 i = 1; i < mip_levels; i++)
@@ -92,9 +125,8 @@ namespace mag
                         .setZ(1);
 
                     vk::ImageBlit blit(src_subresource, src_offsets, dst_subresource, dst_offsets);
-                    cmd.get_handle().blitImage(texture->get_image(), vk::ImageLayout::eTransferSrcOptimal,
-                                               texture->get_image(), vk::ImageLayout::eTransferDstOptimal, blit,
-                                               vk::Filter::eLinear);
+                    cmd.get_handle().blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image,
+                                               vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
 
                     barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
                     barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -121,26 +153,13 @@ namespace mag
             });
 
         staging_buffer.shutdown();
-
-        textures[name] = std::shared_ptr<RendererImage>(texture);
-        return textures[name];
     }
 
-    std::shared_ptr<RendererImage> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
-
-    RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,
-                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
+    void RendererImage::create_image_and_view()
     {
         auto& context = get_context();
 
-        this->name = name;
-        this->format = format;
-        this->extent = extent;
-        this->mip_levels = mip_levels;
-        this->sampler.initialize(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear,
-                                 this->mip_levels);
-
+        // Create image and image view
         VkImageCreateInfo image_create_info = {};
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
@@ -156,11 +175,8 @@ namespace mag
         vma_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        VkImage vk_image;
-        VK_CHECK(VK_CAST(
-            vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info, &vk_image, &allocation, 0)));
-
-        this->image = vk::Image(vk_image);
+        VK_CHECK(VK_CAST(vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info,
+                                        reinterpret_cast<VkImage*>(&this->image), &allocation, 0)));
 
         const vk::ImageSubresourceRange range(image_aspect, 0, mip_levels, 0, 1);
         const vk::ImageViewCreateInfo view_create_info({}, image, vk::ImageViewType::e2D, format, {}, range);
