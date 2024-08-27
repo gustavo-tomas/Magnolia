@@ -222,21 +222,19 @@ namespace mag
                 {
                     auto& app = get_application();
                     auto& renderer = app.get_renderer();
-                    auto& material_manager = app.get_material_manager();
                     auto& texture_manager = app.get_texture_manager();
+
+                    const auto& default_texture = texture_manager.get_default();
 
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                        const auto& default_mat = material_manager.get_default();
-
                         std::vector<std::shared_ptr<RendererImage>> textures;
-                        for (const auto& texture_p : default_mat->textures)
+                        for (u32 sampler_idx = 0; sampler_idx < descriptor_binding.count; sampler_idx++)
                         {
-                            auto texture = texture_manager.get(texture_p.second);
-                            textures.push_back(renderer.get_renderer_image(texture.get()));
+                            textures.push_back(renderer.get_renderer_image(default_texture.get()));
                         }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
