@@ -8,6 +8,15 @@ layout (location = 2) out vec3 out_far_point;
 layout (location = 3) out mat4 out_view;
 layout (location = 7) out mat4 out_projection;
 
+// Global buffer
+layout (set = 0, binding = 0) uniform GlobalBuffer
+{
+    // Camera
+    mat4 view;
+    mat4 projection;
+    vec2 near_far;
+} u_global;
+
 // Grid position are in xy clipped space
 vec3 grid_plane[6] = vec3[]
 (
@@ -29,7 +38,7 @@ void main()
     
     out_view = VIEW_MATRIX;
     out_projection = PROJ_MATRIX;
-    out_near_far = u_global.near_far;
+    out_near_far = NEAR_FAR;
 
     gl_Position = vec4(p, 1.0); // using directly the clipped coordinates
 }

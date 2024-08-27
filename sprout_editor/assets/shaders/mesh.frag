@@ -1,6 +1,6 @@
 #version 460
 
-#include "include/types.glsl"
+#include "mesh.include.glsl"
 #include "include/utils.glsl"
 #include "include/phong.glsl"
 
