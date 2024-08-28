@@ -2,7 +2,7 @@
 
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/model.hpp"
+#include "renderer/test_model.hpp"
 
 namespace sprout
 {

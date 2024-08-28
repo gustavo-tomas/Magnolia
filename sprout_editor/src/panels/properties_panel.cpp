@@ -1,7 +1,7 @@
 #include "panels/properties_panel.hpp"
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/model.hpp"
+#include "resources/model.hpp"
 
 namespace sprout
 {

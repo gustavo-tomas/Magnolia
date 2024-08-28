@@ -3,7 +3,6 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/buffers.hpp"
-#include "renderer/model.hpp"
 #include "resources/material.hpp"
 
 namespace mag

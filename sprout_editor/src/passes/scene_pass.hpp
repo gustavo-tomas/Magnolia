@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include "renderer/model.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/shader.hpp"
+#include "renderer/test_model.hpp"
 
 namespace sprout
 {

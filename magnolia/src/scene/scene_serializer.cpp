@@ -6,7 +6,6 @@
 #include "core/types.hpp"
 #include "ecs/components.hpp"
 #include "nlohmann/json.hpp"
-#include "renderer/model.hpp"
 
 namespace mag
 {
