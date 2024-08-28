@@ -7,8 +7,8 @@
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
-#include "renderer/image.hpp"
 #include "renderer/pipeline.hpp"
+#include "renderer/renderer_image.hpp"
 
 namespace mag
 {

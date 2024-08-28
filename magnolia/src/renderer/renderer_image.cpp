@@ -1,4 +1,4 @@
-#include "renderer/image.hpp"
+#include "renderer/renderer_image.hpp"
 
 #include "core/application.hpp"
 

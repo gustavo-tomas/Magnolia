@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "renderer/image.hpp"
+#include "renderer/renderer_image.hpp"
 
 namespace mag
 {

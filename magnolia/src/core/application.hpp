@@ -6,7 +6,6 @@
 #include "core/layer.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
-#include "renderer/image.hpp"
 #include "renderer/material.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"

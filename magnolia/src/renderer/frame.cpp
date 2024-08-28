@@ -2,7 +2,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
-#include "renderer/image.hpp"
+#include "renderer/renderer_image.hpp"
 
 namespace mag
 {

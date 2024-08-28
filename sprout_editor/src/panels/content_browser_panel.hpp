@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "imgui.h"
-#include "renderer/image.hpp"
+#include "renderer/renderer_image.hpp"
 
 namespace sprout
 {

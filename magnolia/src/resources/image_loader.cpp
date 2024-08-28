@@ -1,7 +1,7 @@
 #include "resources/image_loader.hpp"
 
 #include "core/logger.hpp"
-#include "renderer/image.hpp"
+#include "renderer/renderer_image.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
