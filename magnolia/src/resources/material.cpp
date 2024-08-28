@@ -1,4 +1,4 @@
-#include "renderer/material.hpp"
+#include "resources/material.hpp"
 
 #include "core/application.hpp"
 #include "core/logger.hpp"

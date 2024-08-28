@@ -8,7 +8,7 @@
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "nlohmann/json.hpp"
-#include "renderer/material.hpp"
+#include "resources/material.hpp"
 #include "resources/material_loader.hpp"
 
 namespace mag

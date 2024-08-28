@@ -2,7 +2,6 @@
 
 #include <map>
 #include <memory>
-#include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
 

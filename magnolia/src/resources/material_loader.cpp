@@ -4,7 +4,7 @@
 
 #include "core/logger.hpp"
 #include "nlohmann/json.hpp"
-#include "renderer/material.hpp"
+#include "resources/material.hpp"
 
 namespace mag
 {

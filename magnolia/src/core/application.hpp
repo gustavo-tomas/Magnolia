@@ -6,11 +6,11 @@
 #include "core/layer.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
-#include "renderer/material.hpp"
 #include "renderer/model.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/image_loader.hpp"
+#include "resources/material.hpp"
 #include "resources/material_loader.hpp"
 #include "resources/model_loader.hpp"
 
