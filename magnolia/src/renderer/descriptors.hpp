@@ -91,7 +91,7 @@ namespace mag
             b8 build(vk::DescriptorSet& set);
 
             // Helpers
-            static void create_descriptor_for_buffer(vk::DescriptorSet& descriptor_set,
+            static void create_descriptor_for_buffer(const u32 binding, vk::DescriptorSet& descriptor_set,
                                                      vk::DescriptorSetLayout& descriptor_set_layout,
                                                      const vk::DescriptorType type, const Buffer& buffer,
                                                      const u64 buffer_size, const u64 offset);

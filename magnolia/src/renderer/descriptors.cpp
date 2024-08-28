@@ -291,7 +291,7 @@ namespace mag
         return true;
     }
 
-    void DescriptorBuilder::create_descriptor_for_buffer(vk::DescriptorSet& descriptor_set,
+    void DescriptorBuilder::create_descriptor_for_buffer(const u32 binding, vk::DescriptorSet& descriptor_set,
                                                          vk::DescriptorSetLayout& descriptor_set_layout,
                                                          const vk::DescriptorType type, const Buffer& buffer,
                                                          const u64 buffer_size, const u64 offset)
@@ -302,10 +302,11 @@ namespace mag
 
         const vk::DescriptorBufferInfo descriptor_buffer_info(buffer.get_buffer(), offset, buffer_size);
 
-        const b8 result = DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
-                              .bind(0, type, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                                    descriptor_buffer_info)
-                              .build(descriptor_set, descriptor_set_layout);
+        const b8 result =
+            DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
+                .bind(binding, type, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                      descriptor_buffer_info)
+                .build(descriptor_set, descriptor_set_layout);
 
         ASSERT(result, "Failed to build descriptor of type '{0}'", vk::to_string(type));
     }

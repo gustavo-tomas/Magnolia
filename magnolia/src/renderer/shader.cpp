@@ -192,7 +192,8 @@ namespace mag
                         auto& buffer = uniforms_map[scope].buffers[f];
 
                         DescriptorBuilder::create_descriptor_for_buffer(
-                            descriptor_set, descriptor_set_layout, vk::DescriptorType::eUniformBuffer, buffer, size, 0);
+                            descriptor_binding.binding, descriptor_set, descriptor_set_layout,
+                            vk::DescriptorType::eUniformBuffer, buffer, size, 0);
                     }
                 }
 
@@ -211,9 +212,9 @@ namespace mag
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
                         auto& buffer = uniforms_map[scope].buffers[f];
 
-                        DescriptorBuilder::create_descriptor_for_buffer(descriptor_set, descriptor_set_layout,
-                                                                        vk::DescriptorType::eStorageBuffer, buffer,
-                                                                        BUFFER_SIZE, 0);
+                        DescriptorBuilder::create_descriptor_for_buffer(
+                            descriptor_binding.binding, descriptor_set, descriptor_set_layout,
+                            vk::DescriptorType::eStorageBuffer, buffer, BUFFER_SIZE, 0);
                     }
                 }
 
