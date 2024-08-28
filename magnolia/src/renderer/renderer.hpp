@@ -4,6 +4,7 @@
 #include "core/window.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
+#include "resources/image.hpp"
 
 namespace mag
 {
