@@ -42,22 +42,10 @@ namespace mag
             Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data);
             ~Shader();
 
-            struct UBO
-            {
-                    SpvReflectDescriptorBinding descriptor_binding;
-
-                    // One per frame in flight
-                    std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
-                    std::vector<vk::DescriptorSet> descriptor_sets;
-                    std::vector<Buffer> buffers;
-            };
-
-            void add_attribute(const vk::Format format, const u32 size, const u32 offset);
-
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
+            void bind_texture(const str& name, const vk::DescriptorSet& descriptor_set);
 
             void bind();
-            void bind_texture(const str& name, const vk::DescriptorSet& descriptor_set);
 
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
@@ -78,6 +66,18 @@ namespace mag
             };
 
         private:
+            struct UBO
+            {
+                    SpvReflectDescriptorBinding descriptor_binding;
+
+                    // One per frame in flight
+                    std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+                    std::vector<vk::DescriptorSet> descriptor_sets;
+                    std::vector<Buffer> buffers;
+            };
+
+            void add_attribute(const vk::Format format, const u32 size, const u32 offset);
+
             std::vector<std::shared_ptr<ShaderModule>> modules;
             std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
