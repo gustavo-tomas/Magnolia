@@ -22,9 +22,6 @@ namespace mag
         // Else load image from disk and create a new texture
         Image* image = image_loader.load(name);
 
-        // Send image data to the GPU
-        renderer.add_image(image);
-
         if (image == nullptr)
         {
             LOG_ERROR("Texture '{0}' not found, using default", name);
@@ -32,6 +29,9 @@ namespace mag
             image = image_loader.load(DEFAULT_TEXTURE_NAME);
             ASSERT(image, "Default texture has not been loaded");
         }
+
+        // Send image data to the GPU
+        renderer.add_image(image);
 
         textures[name] = std::shared_ptr<Image>(image);
         return textures[name];
