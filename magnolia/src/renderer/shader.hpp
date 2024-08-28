@@ -14,6 +14,10 @@ namespace mag
     using namespace mag::math;
     using json = nlohmann::ordered_json;
 
+    class Pipeline;
+    struct Image;
+    struct Material;
+
     class ShaderModule
     {
         public:
@@ -35,17 +39,17 @@ namespace mag
             str file = {};
     };
 
-    class Pipeline;
     class Shader
     {
         public:
             Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data);
             ~Shader();
 
-            void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
-            void bind_texture(const str& name, const vk::DescriptorSet& descriptor_set);
-
             void bind();
+
+            void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
+            void set_texture(const str& name, Image* texture);
+            void set_material(const str& name, Material* material);
 
             // @TODO: this is temporary. We want to avoid needing to pass modules around
             const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
@@ -77,6 +81,7 @@ namespace mag
             };
 
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);
+            void bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set);
 
             std::vector<std::shared_ptr<ShaderModule>> modules;
             std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
@@ -88,6 +93,10 @@ namespace mag
             u32 location = 0;
             u32 stride = 0;
             std::map<str, UBO> uniforms_map;
+
+            // Keep track of the descriptors for each texture
+            std::map<Image*, vk::DescriptorSet> texture_descriptor_sets;
+            std::map<Material*, vk::DescriptorSet> material_descriptor_sets;
     };
 
     class ShaderManager

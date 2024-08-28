@@ -6,6 +6,7 @@
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/type_conversions.hpp"
+#include "resources/material.hpp"
 
 namespace sprout
 {
@@ -60,14 +61,14 @@ namespace sprout
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
 
+        mesh_shader->bind();
+
         mesh_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         mesh_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
         mesh_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
         mesh_shader->set_uniform("u_global", "point_lights", &point_lights);
         mesh_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
         mesh_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
-
-        mesh_shader->bind();
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -84,9 +85,7 @@ namespace sprout
             {
                 // Set the material
                 const auto& material = material_manager.get(model->materials[mesh.material_index]);
-                const auto& descriptor_set = renderer.get_material_descriptor(material.get());
-
-                mesh_shader->bind_texture("u_material_textures", descriptor_set);
+                mesh_shader->set_material("u_material_textures", material.get());
 
                 // Draw the mesh
                 command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
@@ -143,10 +142,10 @@ namespace sprout
 
         physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
 
+        physics_line_shader->bind();
+
         physics_line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         physics_line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
-
-        physics_line_shader->bind();
 
         command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
         command_buffer.draw(physics_debug_lines->get_vertices().size());
@@ -186,13 +185,13 @@ namespace sprout
 
         performance_results = {};
 
-        // Draw the grid
+        grid_shader->bind();
+
         grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
         grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
-        grid_shader->bind();
-
+        // Draw the grid
         command_buffer.draw(6);
 
         // Very accurate :)

@@ -1,9 +1,8 @@
 #include "renderer/renderer.hpp"
 
-#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/buffers.hpp"
-#include "resources/material.hpp"
+#include "resources/model.hpp"
 
 namespace mag
 {
@@ -29,12 +28,6 @@ namespace mag
         {
             auto* image = images_p.first;
             remove_image(image);
-        }
-
-        for (const auto& descriptor_set_p : descriptor_sets)
-        {
-            auto* material = descriptor_set_p.first;
-            remove_material(material);
         }
     }
 
@@ -153,66 +146,6 @@ namespace mag
         }
 
         images.erase(it);
-    }
-
-    vk::DescriptorSet& Renderer::get_material_descriptor(Material* material)
-    {
-        auto material_desc_set_it = descriptor_sets.find(material);
-        auto material_desc_lay_it = descriptor_set_layouts.find(material);
-
-        if (material_desc_set_it == descriptor_sets.end() || material_desc_lay_it == descriptor_set_layouts.end())
-        {
-            LOG_ERROR("Material '{0}' was not uploaded to the GPU", static_cast<void*>(material));
-            ASSERT(false, "@TODO: this shouldnt crash the application");
-        }
-
-        return material_desc_set_it->second;
-    }
-
-    void Renderer::add_material(Material* material)
-    {
-        auto material_desc_set_it = descriptor_sets.find(material);
-        auto material_desc_lay_it = descriptor_set_layouts.find(material);
-
-        if (material_desc_set_it != descriptor_sets.end() || material_desc_lay_it != descriptor_set_layouts.end())
-        {
-            LOG_WARNING("Material '{0}' was already uploaded to the GPU", static_cast<void*>(material));
-            return;
-        }
-
-        auto& app = get_application();
-        auto& texture_manager = app.get_texture_manager();
-
-        std::vector<std::shared_ptr<RendererImage>> textures;
-        for (const auto& texture_p : material->textures)
-        {
-            auto texture = texture_manager.get(texture_p.second);
-            textures.push_back(get_renderer_image(texture.get()));
-        }
-
-        vk::DescriptorSet descriptor_set;
-        vk::DescriptorSetLayout descriptor_set_layout;
-
-        // @TODO: hardcoded binding (0)
-        DescriptorBuilder::create_descriptor_for_textures(0, textures, descriptor_set, descriptor_set_layout);
-
-        descriptor_sets[material] = descriptor_set;
-        descriptor_set_layouts[material] = descriptor_set_layout;
-    }
-
-    void Renderer::remove_material(Material* material)
-    {
-        auto material_desc_set_it = descriptor_sets.find(material);
-        auto material_desc_lay_it = descriptor_set_layouts.find(material);
-
-        if (material_desc_set_it == descriptor_sets.end() || material_desc_lay_it == descriptor_set_layouts.end())
-        {
-            LOG_ERROR("Tried to remove invalid material '{0}'", static_cast<void*>(material));
-            return;
-        }
-
-        descriptor_sets.erase(material_desc_set_it);
-        descriptor_set_layouts.erase(material_desc_lay_it);
     }
 
     void Renderer::on_event(Event& e)

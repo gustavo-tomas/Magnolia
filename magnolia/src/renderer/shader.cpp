@@ -276,6 +276,8 @@ namespace mag
         }
     }
 
+    void Shader::bind() { pipeline->bind(); }
+
     // We can automate some of these steps with spv reflect but it is better to set this values manually
     void Shader::add_attribute(const vk::Format format, const u32 size, const u32 offset)
     {
@@ -294,9 +296,9 @@ namespace mag
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto& uniform = uniforms_map[scope];
-        auto& block = uniform.descriptor_binding.block;
-        auto& buffer = uniform.buffers[curr_frame_number];
+        auto& ubo = uniforms_map[scope];
+        auto& block = ubo.descriptor_binding.block;
+        auto& buffer = ubo.buffers[curr_frame_number];
 
         u64 offset = 0;
         u64 size = 0;
@@ -312,40 +314,83 @@ namespace mag
         }
 
         buffer.copy(data, size, offset + data_offset);
+
+        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
     }
 
-    void Shader::bind_texture(const str& name, const vk::DescriptorSet& descriptor_set)
+    void Shader::set_texture(const str& name, Image* texture)
     {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
         auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
+
         const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& ubo = uniforms_map[name];
-        auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
 
-        curr_descriptor_set = descriptor_set;
+        // Create descriptor for this texture
+        if (texture_descriptor_sets.count(texture) == 0)
+        {
+            vk::DescriptorSet descriptor_set;
+            vk::DescriptorSetLayout descriptor_set_layout;
 
-        // Rebind the texture descriptor
-        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(),
-                                           ubo.descriptor_binding.set, curr_descriptor_set);
+            auto renderer_texture = renderer.get_renderer_image(texture);
+
+            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding.binding, {renderer_texture},
+                                                              descriptor_set, descriptor_set_layout);
+
+            texture_descriptor_sets[texture] = descriptor_set;
+        }
+
+        ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[texture];
+
+        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
     }
 
-    void Shader::bind()
+    void Shader::set_material(const str& name, Material* material)
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& texture_manager = app.get_texture_manager();
+        auto& context = get_context();
+
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        auto& ubo = uniforms_map[name];
+
+        // Create descriptor for this material
+        if (material_descriptor_sets.count(material) == 0)
+        {
+            vk::DescriptorSet descriptor_set;
+            vk::DescriptorSetLayout descriptor_set_layout;
+
+            std::vector<std::shared_ptr<RendererImage>> renderer_textures;
+            for (const auto& texture_p : material->textures)
+            {
+                const auto& texture_name = texture_p.second;
+                const auto& texture = texture_manager.get(texture_name);
+                const auto& renderer_texture = renderer.get_renderer_image(texture.get());
+
+                renderer_textures.push_back(renderer_texture);
+            }
+
+            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding.binding, renderer_textures,
+                                                              descriptor_set, descriptor_set_layout);
+
+            material_descriptor_sets[material] = descriptor_set;
+        }
+
+        ubo.descriptor_sets[curr_frame_number] = material_descriptor_sets[material];
+
+        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+    }
+
+    void Shader::bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set)
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
-        const u32 curr_frame_number = context.get_curr_frame_number();
 
-        for (auto& uniform_p : uniforms_map)
-        {
-            auto& ubo = uniform_p.second;
-
-            auto& curr_descriptor_set = ubo.descriptor_sets[curr_frame_number];
-
-            command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(),
-                                               ubo.descriptor_binding.set, curr_descriptor_set);
-        }
-
-        pipeline->bind();
+        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), set,
+                                           descriptor_set);
     }
 };  // namespace mag

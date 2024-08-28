@@ -15,7 +15,6 @@ namespace mag
 
         auto& app = get_application();
         auto& material_loader = app.get_material_loader();
-        auto& renderer = app.get_renderer();
 
         // Try loading the material
         Material* material = material_loader.load(name);
@@ -27,9 +26,6 @@ namespace mag
             material = material_loader.load(DEFAULT_MATERIAL_NAME);
             ASSERT(material, "Default material has not been loaded");
         }
-
-        // Send material data to the GPU
-        renderer.add_material(material);
 
         materials[name] = std::shared_ptr<Material>(material);
         return materials[name];
