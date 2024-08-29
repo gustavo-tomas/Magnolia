@@ -33,6 +33,48 @@ namespace mag
     {
         create_image_and_view();
 
+        set_pixels(pixels);
+    }
+
+    RendererImage::~RendererImage()
+    {
+        auto& context = get_context();
+
+        context.get_device().destroyImageView(this->image_view);
+        vmaDestroyImage(context.get_allocator(), image, allocation);
+    }
+
+    void RendererImage::create_image_and_view()
+    {
+        auto& context = get_context();
+
+        // Create image and image view
+        VkImageCreateInfo image_create_info = {};
+        image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info.imageType = VK_IMAGE_TYPE_2D;
+        image_create_info.format = static_cast<VkFormat>(format);
+        image_create_info.extent = extent;
+        image_create_info.mipLevels = mip_levels;
+        image_create_info.arrayLayers = 1;
+        image_create_info.samples = static_cast<VkSampleCountFlagBits>(msaa_samples);
+        image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_create_info.usage = static_cast<VkImageUsageFlags>(image_usage);
+
+        VmaAllocationCreateInfo vma_alloc_info = {};
+        vma_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        VK_CHECK(VK_CAST(vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info,
+                                        reinterpret_cast<VkImage*>(&this->image), &allocation, 0)));
+
+        const vk::ImageSubresourceRange range(image_aspect, 0, mip_levels, 0, 1);
+        const vk::ImageViewCreateInfo view_create_info({}, image, vk::ImageViewType::e2D, format, {}, range);
+
+        this->image_view = context.get_device().createImageView(view_create_info);
+    }
+
+    void RendererImage::set_pixels(const std::vector<u8>& pixels)
+    {
         auto& context = get_context();
 
         const u64 texture_size = pixels.size();
@@ -111,42 +153,5 @@ namespace mag
             });
 
         staging_buffer.shutdown();
-    }
-
-    void RendererImage::create_image_and_view()
-    {
-        auto& context = get_context();
-
-        // Create image and image view
-        VkImageCreateInfo image_create_info = {};
-        image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_create_info.imageType = VK_IMAGE_TYPE_2D;
-        image_create_info.format = static_cast<VkFormat>(format);
-        image_create_info.extent = extent;
-        image_create_info.mipLevels = mip_levels;
-        image_create_info.arrayLayers = 1;
-        image_create_info.samples = static_cast<VkSampleCountFlagBits>(msaa_samples);
-        image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_create_info.usage = static_cast<VkImageUsageFlags>(image_usage);
-
-        VmaAllocationCreateInfo vma_alloc_info = {};
-        vma_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        VK_CHECK(VK_CAST(vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info,
-                                        reinterpret_cast<VkImage*>(&this->image), &allocation, 0)));
-
-        const vk::ImageSubresourceRange range(image_aspect, 0, mip_levels, 0, 1);
-        const vk::ImageViewCreateInfo view_create_info({}, image, vk::ImageViewType::e2D, format, {}, range);
-
-        this->image_view = context.get_device().createImageView(view_create_info);
-    }
-
-    RendererImage::~RendererImage()
-    {
-        auto& context = get_context();
-
-        context.get_device().destroyImageView(this->image_view);
-        vmaDestroyImage(context.get_allocator(), image, allocation);
     }
 };  // namespace mag
