@@ -19,16 +19,33 @@ namespace mag
         auto& renderer = app.get_renderer();
         auto& image_loader = app.get_image_loader();
 
-        // Else load image from disk and create a new texture
-        Image* image = image_loader.load(name);
+        // Create a new texture
+        u32 width, height, channels, mip_levels, color = 200;
 
-        if (image == nullptr)
+        Image* image = new Image();
+
+        // Try to create placeholder texture with the texture dimensions
+        if (image_loader.get_info(name, &width, &height, &channels, &mip_levels))
         {
-            LOG_ERROR("Texture '{0}' not found, using default", name);
-
-            image = image_loader.load(DEFAULT_TEXTURE_NAME);
-            ASSERT(image, "Default texture has not been loaded");
+            image->width = width;
+            image->height = height;
+            image->channels = channels;
+            image->mip_levels = mip_levels;
+            image->pixels = std::vector<u8>(width * height * channels, color);
         }
+
+        // Use default dimensions on failure
+        else
+        {
+            image->width = 64;
+            image->height = 64;
+            image->channels = 4;
+            image->mip_levels = 1;
+            image->pixels = std::vector<u8>(64 * 64 * 4, color);
+        }
+
+        // If the load fails we still have valid data
+        image_loader.load(name, image);
 
         // Send image data to the GPU
         renderer.add_image(image);
