@@ -30,6 +30,10 @@ namespace mag
         renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
+        // Create the job system
+        job_system = std::make_unique<JobSystem>(std::thread::hardware_concurrency());
+        LOG_SUCCESS("JobSystem initialized");
+
         // Create the image loader
         image_loader = std::make_unique<ImageLoader>();
         LOG_SUCCESS("ImageLoader initialized");
@@ -99,6 +103,8 @@ namespace mag
                 window->sleep(50);
                 continue;
             }
+
+            job_system->process_callbacks();
 
             for (auto* layer : layers)
             {

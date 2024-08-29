@@ -44,11 +44,22 @@ namespace mag
             image->pixels = std::vector<u8>(64 * 64 * 4, color);
         }
 
-        // If the load fails we still have valid data
-        image_loader.load(name, image);
-
         // Send image data to the GPU
         renderer.add_image(image);
+
+        // Callback when finished loading
+        auto load_finished_callback = [image]()
+        {
+            auto& app = get_application();
+            auto& renderer = app.get_renderer();
+
+            // Update the renderer image data
+            auto renderer_image = renderer.get_renderer_image(image);
+            renderer_image->set_pixels(image->pixels);
+        };
+
+        // If the load fails we still have valid data
+        image_loader.load(name, image, load_finished_callback);
 
         textures[name] = std::shared_ptr<Image>(image);
         return textures[name];
