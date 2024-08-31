@@ -113,14 +113,14 @@ namespace mag
         return it->second;
     }
 
-    void Renderer::add_image(Image* image)
+    std::shared_ptr<RendererImage> Renderer::add_image(Image* image)
     {
         auto it = images.find(image);
 
         if (it != images.end())
         {
             LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<void*>(image));
-            return;
+            return it->second;
         }
 
         const vk::Extent3D extent(image->width, image->height, 1);
@@ -133,6 +133,8 @@ namespace mag
             vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                 vk::ImageUsageFlagBits::eTransferDst,
             vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+
+        return images[image];
     }
 
     void Renderer::remove_image(Image* image)
