@@ -16,52 +16,42 @@ namespace mag
         }
 
         auto& app = get_application();
+        auto& job_system = app.get_job_system();
         auto& renderer = app.get_renderer();
         auto& image_loader = app.get_image_loader();
 
         // Create a new texture
-        u32 width, height, channels, mip_levels, color = 200;
-
         Image* image = new Image();
 
-        // Try to create placeholder texture with the texture dimensions
-        if (image_loader.get_info(name, &width, &height, &channels, &mip_levels))
-        {
-            image->width = width;
-            image->height = height;
-            image->channels = channels;
-            image->mip_levels = mip_levels;
-            image->pixels = std::vector<u8>(width * height * channels, color);
-        }
+        textures[name] = std::shared_ptr<Image>(image);
 
-        // Use default dimensions on failure
-        else
+        // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
+        if (image_loader.get_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
+                                  &image->mip_levels))
         {
-            image->width = 64;
-            image->height = 64;
-            image->channels = 4;
-            image->mip_levels = 1;
-            image->pixels = std::vector<u8>(64 * 64 * 4, color);
+            image->pixels.resize(image->width * image->height * image->channels, image->pixels[0]);
         }
 
         // Send image data to the GPU
-        renderer.add_image(image);
+        auto renderer_image = renderer.add_image(image);
+
+        // Load in another thread
+        auto execute = [&image_loader, name, image]
+        {
+            // If the load fails we still have valid data
+            image_loader.load(name, image);
+        };
 
         // Callback when finished loading
-        auto load_finished_callback = [image]()
+        auto load_finished_callback = [image, renderer_image]
         {
-            auto& app = get_application();
-            auto& renderer = app.get_renderer();
-
             // Update the renderer image data
-            auto renderer_image = renderer.get_renderer_image(image);
             renderer_image->set_pixels(image->pixels);
         };
 
-        // If the load fails we still have valid data
-        image_loader.load(name, image, load_finished_callback);
+        Job* load_job = new Job(execute, load_finished_callback);
+        job_system.add_job(load_job);
 
-        textures[name] = std::shared_ptr<Image>(image);
         return textures[name];
     }
 

@@ -10,11 +10,11 @@ namespace mag
 {
     struct Image
     {
-            u8 channels;
-            u32 width;
-            u32 height;
-            u32 mip_levels;
-            std::vector<u8> pixels;
+            u8 channels = 4;
+            u32 width = 64;
+            u32 height = 64;
+            u32 mip_levels = 1;
+            std::vector<u8> pixels = std::vector<u8>(64 * 64 * 4, 153);
     };
 
     class TextureManager
