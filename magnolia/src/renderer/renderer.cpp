@@ -67,6 +67,24 @@ namespace mag
         command_buffer.bind_index_buffer(ibo_it->second.get_buffer());
     }
 
+    void Renderer::update_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        vertex_buffers[model].shutdown();
+        index_buffers[model].shutdown();
+
+        vertex_buffers[model].initialize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
+    }
+
     void Renderer::add_model(Model* model)
     {
         auto vbo_it = vertex_buffers.find(model);

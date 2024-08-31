@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "core/logger.hpp"
+#include "renderer/test_model.hpp"
 
 namespace mag
 {
@@ -16,23 +17,50 @@ namespace mag
         }
 
         auto& app = get_application();
+        auto& job_system = app.get_job_system();
         auto& model_loader = app.get_model_loader();
         auto& renderer = app.get_renderer();
 
-        Model* model = model_loader.load(name);
+        // Create a new model
+        Model* model = new Model();
 
-        if (model == nullptr)
-        {
-            LOG_ERROR("Model '{0}' not found, using default", name);
+        models[name] = std::shared_ptr<Model>(model);
 
-            model = model_loader.load(DEFAULT_MODEL_NAME);
-            ASSERT(model, "Default model has not been loaded");
-        }
+        // Create placeholder model with cube data
+        Cube placeholder;
+        const auto& placeholder_model = placeholder.get_model();
+
+        *model = placeholder_model;
+        model->file_path = "Placeholder";
+        model->name = "Placeholder";
 
         // Send model data to the GPU
         renderer.add_model(model);
 
-        models[name] = std::shared_ptr<Model>(model);
+        // Temporary model to load data into
+        Model* transfer_model = new Model();
+
+        // Load in another thread
+        auto execute = [&model_loader, name, transfer_model]
+        {
+            // If the load fails we still have valid data
+            model_loader.load(name, transfer_model);
+        };
+
+        // Callback when finished loading
+        auto load_finished_callback = [&renderer, model, transfer_model]
+        {
+            // Update the model and renderer model data
+            *model = *transfer_model;
+            renderer.update_model(model);
+
+            // We can dispose of the temporary model now
+            delete transfer_model;
+        };
+
+        Job* load_job = new Job(execute, load_finished_callback);
+        job_system.add_job(load_job);
+
         return models[name];
     }
 };  // namespace mag

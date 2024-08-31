@@ -9,7 +9,6 @@
 #include "meshoptimizer.h"
 #include "nlohmann/json.hpp"
 #include "resources/material.hpp"
-#include "resources/material_loader.hpp"
 
 namespace mag
 {
@@ -21,7 +20,7 @@ namespace mag
 
     ModelLoader::ModelLoader() : importer(new Assimp::Importer()) {}
 
-    Model* ModelLoader::load(const str& file_path)
+    b8 ModelLoader::load(const str& file_path, Model* model)
     {
         const std::filesystem::path filesystem_path(file_path);
         const str extension = filesystem_path.extension().c_str();
@@ -29,19 +28,19 @@ namespace mag
         if (!is_extension_supported(extension))
         {
             LOG_ERROR("Extension '{0}' not supported", extension);
-            return nullptr;
+            return false;
         }
 
-        Model* result = nullptr;
+        b8 result = false;
 
         if (extension == ".json")
         {
-            result = load_native(file_path);
+            result = load_native(file_path, model);
         }
 
         else
         {
-            result = import_from_file(file_path);
+            result = import_from_file(file_path, model);
         }
 
         if (result)
@@ -57,14 +56,14 @@ namespace mag
         return result;
     }
 
-    Model* ModelLoader::load_native(const str& file_path)
+    b8 ModelLoader::load_native(const str& file_path, Model* model)
     {
         std::ifstream file(file_path);
 
         if (!file.is_open())
         {
             LOG_ERROR("Failed to open model file: '{0}'", file_path);
-            return nullptr;
+            return false;
         }
 
         const json data = json::parse(file);
@@ -72,7 +71,7 @@ namespace mag
         if (!data.contains("Model") || !data.contains("File") || !data.contains("Materials"))
         {
             LOG_ERROR("Model file '{0}' has incomplete fields", file_path);
-            return nullptr;
+            return false;
         }
 
         const str model_name = data["Model"];
@@ -84,11 +83,10 @@ namespace mag
         if (!binary_file.is_open())
         {
             LOG_ERROR("Failed to open model binary file: '{0}'", binary_file_path);
-            return nullptr;
+            return false;
         }
 
         // Extract juicy model data
-        Model* model = new Model();
         model->name = model_name;
         model->file_path = file_path;
         model->materials = materials;
@@ -117,10 +115,10 @@ namespace mag
         model->meshes.resize(num_meshes);
         binary_file.read(reinterpret_cast<char*>(model->meshes.data()), num_meshes * sizeof(model->meshes[0]));
 
-        return model;
+        return true;
     }
 
-    Model* ModelLoader::import_from_file(const str& file_path)
+    b8 ModelLoader::import_from_file(const str& file_path, Model* model)
     {
         // Import the model
         const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_GenNormals |
@@ -130,7 +128,6 @@ namespace mag
         ASSERT(scene && scene->mRootNode && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Failed to load model");
         ASSERT(scene->HasMeshes(), "Model has no meshes");
 
-        Model* model = new Model();
         model->name = scene->mRootNode->mName.C_Str();
         model->meshes.resize(scene->mNumMeshes);
 
@@ -146,7 +143,7 @@ namespace mag
         initialize_materials(scene, file_path, output_directory, model);
         create_native_file(output_directory, model);
 
-        return model;
+        return true;
     }
 
     void ModelLoader::create_native_file(const str& output_directory, Model* model)

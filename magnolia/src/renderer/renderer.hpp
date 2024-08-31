@@ -27,6 +27,7 @@ namespace mag
 
             void add_model(Model* model);
             void remove_model(Model* model);
+            void update_model(Model* model);
 
             std::shared_ptr<RendererImage> add_image(Image* image);
             void remove_image(Image* image);
