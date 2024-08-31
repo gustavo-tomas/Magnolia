@@ -33,6 +33,9 @@ namespace mag
 
         b8 result = false;
 
+        // Reset model data
+        *model = {};
+
         if (extension == ".json")
         {
             result = load_native(file_path, model);
