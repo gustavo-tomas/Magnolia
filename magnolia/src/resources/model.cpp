@@ -1,7 +1,6 @@
 #include "resources/model.hpp"
 
 #include "core/application.hpp"
-#include "core/logger.hpp"
 #include "renderer/test_model.hpp"
 
 namespace mag
@@ -31,31 +30,35 @@ namespace mag
         const auto& placeholder_model = placeholder.get_model();
 
         *model = placeholder_model;
-        model->file_path = "Placeholder";
         model->name = "Placeholder";
 
         // Send model data to the GPU
         renderer.add_model(model);
 
         // Temporary model to load data into
-        Model* transfer_model = new Model();
+        Model* transfer_model = new Model(*model);
+        b8* load_result = new b8(false);
 
         // Load in another thread
-        auto execute = [&model_loader, name, transfer_model]
+        auto execute = [&model_loader, name, transfer_model, load_result]
         {
             // If the load fails we still have valid data
-            model_loader.load(name, transfer_model);
+            *load_result = model_loader.load(name, transfer_model);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [&renderer, model, transfer_model]
+        auto load_finished_callback = [&renderer, model, transfer_model, load_result]
         {
             // Update the model and renderer model data
-            *model = *transfer_model;
-            renderer.update_model(model);
+            if (*load_result == true)
+            {
+                *model = *transfer_model;
+                renderer.update_model(model);
+            }
 
             // We can dispose of the temporary model now
             delete transfer_model;
+            delete load_result;
         };
 
         Job* load_job = new Job(execute, load_finished_callback);

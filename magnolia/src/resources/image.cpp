@@ -37,23 +37,28 @@ namespace mag
 
         // Temporary image to load data into
         Image* transfer_image = new Image(*image);
+        b8* load_result = new b8(false);
 
         // Load in another thread
-        auto execute = [&image_loader, name, transfer_image]
+        auto execute = [&image_loader, name, transfer_image, load_result]
         {
             // If the load fails we still have valid data
-            image_loader.load(name, transfer_image);
+            *load_result = image_loader.load(name, transfer_image);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [image, renderer_image, transfer_image]
+        auto load_finished_callback = [image, renderer_image, transfer_image, load_result]
         {
             // Update the image and the renderer image data
-            *image = *transfer_image;
-            renderer_image->set_pixels(image->pixels);
+            if (*load_result == true)
+            {
+                *image = *transfer_image;
+                renderer_image->set_pixels(image->pixels);
+            }
 
             // We can dispose of the temporary image now
             delete transfer_image;
+            delete load_result;
         };
 
         Job* load_job = new Job(execute, load_finished_callback);
