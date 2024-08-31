@@ -35,18 +35,25 @@ namespace mag
         // Send image data to the GPU
         auto renderer_image = renderer.add_image(image);
 
+        // Temporary image to load data into
+        Image* transfer_image = new Image(*image);
+
         // Load in another thread
-        auto execute = [&image_loader, name, image]
+        auto execute = [&image_loader, name, transfer_image]
         {
             // If the load fails we still have valid data
-            image_loader.load(name, image);
+            image_loader.load(name, transfer_image);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [image, renderer_image]
+        auto load_finished_callback = [image, renderer_image, transfer_image]
         {
-            // Update the renderer image data
+            // Update the image and the renderer image data
+            *image = *transfer_image;
             renderer_image->set_pixels(image->pixels);
+
+            // We can dispose of the temporary image now
+            delete transfer_image;
         };
 
         Job* load_job = new Job(execute, load_finished_callback);
