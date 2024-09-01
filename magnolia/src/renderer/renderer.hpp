@@ -25,12 +25,13 @@ namespace mag
             std::shared_ptr<RendererImage> get_renderer_image(Image* image);
             // @TODO: temp?
 
-            void add_model(Model* model);
+            void upload_model(Model* model);
             void remove_model(Model* model);
             void update_model(Model* model);
 
-            std::shared_ptr<RendererImage> add_image(Image* image);
+            std::shared_ptr<RendererImage> upload_image(Image* image);
             void remove_image(Image* image);
+            void update_image(Image* image);
 
         private:
             void on_resize(WindowResizeEvent& e);

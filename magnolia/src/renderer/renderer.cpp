@@ -85,7 +85,7 @@ namespace mag
         index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
     }
 
-    void Renderer::add_model(Model* model)
+    void Renderer::upload_model(Model* model)
     {
         auto vbo_it = vertex_buffers.find(model);
         auto ibo_it = index_buffers.find(model);
@@ -131,7 +131,20 @@ namespace mag
         return it->second;
     }
 
-    std::shared_ptr<RendererImage> Renderer::add_image(Image* image)
+    void Renderer::update_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+            return;
+        }
+
+        it->second->set_pixels(image->pixels);
+    }
+
+    std::shared_ptr<RendererImage> Renderer::upload_image(Image* image)
     {
         auto it = images.find(image);
 

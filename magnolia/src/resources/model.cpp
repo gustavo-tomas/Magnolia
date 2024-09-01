@@ -33,7 +33,7 @@ namespace mag
         model->name = "Placeholder";
 
         // Send model data to the GPU
-        renderer.add_model(model);
+        renderer.upload_model(model);
 
         // Temporary model to load data into
         Model* transfer_model = new Model(*model);

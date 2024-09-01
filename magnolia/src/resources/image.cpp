@@ -33,7 +33,7 @@ namespace mag
         }
 
         // Send image data to the GPU
-        auto renderer_image = renderer.add_image(image);
+        renderer.upload_image(image);
 
         // Temporary image to load data into
         Image* transfer_image = new Image(*image);
@@ -47,13 +47,13 @@ namespace mag
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [image, renderer_image, transfer_image, load_result]
+        auto load_finished_callback = [image, transfer_image, load_result, &renderer]
         {
             // Update the image and the renderer image data
             if (*load_result == true)
             {
                 *image = *transfer_image;
-                renderer_image->set_pixels(image->pixels);
+                renderer.update_image(image);
             }
 
             // We can dispose of the temporary image now
