@@ -10,7 +10,7 @@ namespace mag
 {
     using json = nlohmann::ordered_json;
 
-    Material* MaterialLoader::load(const str& name)
+    b8 MaterialLoader::load(const str& name, Material* material)
     {
         // Parse instructions from the json file
         std::ifstream file(name);
@@ -18,7 +18,7 @@ namespace mag
         if (!file.is_open())
         {
             LOG_ERROR("Failed to open material file: '{0}'", name);
-            return nullptr;
+            return false;
         }
 
         // Parse the file
@@ -27,13 +27,13 @@ namespace mag
         if (!data.contains("Material"))
         {
             LOG_ERROR("Material file '{0}' has no name", name);
-            return nullptr;
+            return false;
         }
 
         if (!data.contains("Textures"))
         {
             LOG_ERROR("Material file '{0}' has no textures", name);
-            return nullptr;
+            return false;
         }
 
         const str material_name = data["Material"];
@@ -43,15 +43,15 @@ namespace mag
         if (!textures.contains("Albedo") || !textures.contains("Normal"))
         {
             LOG_ERROR("Material file '{0}' has missing textures", name);
-            return nullptr;
+            return false;
         }
 
-        Material* material = new Material();
+        // Set material data
         material->name = name;
         material->textures[TextureSlot::Albedo] = textures["Albedo"];
         material->textures[TextureSlot::Normal] = textures["Normal"];
 
         LOG_SUCCESS("Loaded material: {0}", name);
-        return material;
+        return true;
     }
 };  // namespace mag

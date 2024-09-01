@@ -13,6 +13,7 @@
 #include "resources/material_loader.hpp"
 #include "resources/model.hpp"
 #include "resources/model_loader.hpp"
+#include "threads/job_system.hpp"
 
 namespace mag
 {
@@ -37,6 +38,7 @@ namespace mag
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
+            JobSystem& get_job_system() { return *job_system; };
             ImageLoader& get_image_loader() { return *image_loader; };
             MaterialLoader& get_material_loader() { return *material_loader; };
             ModelLoader& get_model_loader() { return *model_loader; };
@@ -52,6 +54,7 @@ namespace mag
 
             std::unique_ptr<Window> window;
             std::unique_ptr<Renderer> renderer;
+            std::unique_ptr<JobSystem> job_system;
             std::unique_ptr<ImageLoader> image_loader;
             std::unique_ptr<MaterialLoader> material_loader;
             std::unique_ptr<ModelLoader> model_loader;

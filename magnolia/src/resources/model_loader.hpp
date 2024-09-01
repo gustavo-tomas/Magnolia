@@ -19,13 +19,12 @@ namespace mag
         public:
             ModelLoader();
 
-            Model* load(const str& file_path);
-
+            b8 load(const str& file_path, Model* model);
             b8 is_extension_supported(const str& extension_with_dot);
 
         private:
-            Model* import_from_file(const str& name);
-            Model* load_native(const str& file_path);
+            b8 import_from_file(const str& name, Model* model);
+            b8 load_native(const str& file_path, Model* model);
             void create_native_file(const str& output_directory, Model* model_resource);
 
             void initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model_resource);

@@ -9,6 +9,6 @@ namespace mag
     class MaterialLoader
     {
         public:
-            Material* load(const str& name);
+            b8 load(const str& name, Material* material);
     };
 };  // namespace mag

@@ -67,7 +67,25 @@ namespace mag
         command_buffer.bind_index_buffer(ibo_it->second.get_buffer());
     }
 
-    void Renderer::add_model(Model* model)
+    void Renderer::update_model(Model* model)
+    {
+        auto vbo_it = vertex_buffers.find(model);
+        auto ibo_it = index_buffers.find(model);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        vertex_buffers[model].shutdown();
+        index_buffers[model].shutdown();
+
+        vertex_buffers[model].initialize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
+    }
+
+    void Renderer::upload_model(Model* model)
     {
         auto vbo_it = vertex_buffers.find(model);
         auto ibo_it = index_buffers.find(model);
@@ -113,14 +131,27 @@ namespace mag
         return it->second;
     }
 
-    void Renderer::add_image(Image* image)
+    void Renderer::update_image(Image* image)
+    {
+        auto it = images.find(image);
+
+        if (it == images.end())
+        {
+            LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+            return;
+        }
+
+        it->second->set_pixels(image->pixels);
+    }
+
+    std::shared_ptr<RendererImage> Renderer::upload_image(Image* image)
     {
         auto it = images.find(image);
 
         if (it != images.end())
         {
             LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<void*>(image));
-            return;
+            return it->second;
         }
 
         const vk::Extent3D extent(image->width, image->height, 1);
@@ -133,6 +164,8 @@ namespace mag
             vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                 vk::ImageUsageFlagBits::eTransferDst,
             vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+
+        return images[image];
     }
 
     void Renderer::remove_image(Image* image)

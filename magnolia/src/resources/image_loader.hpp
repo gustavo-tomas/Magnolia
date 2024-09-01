@@ -9,6 +9,7 @@ namespace mag
     class ImageLoader
     {
         public:
-            Image* load(const str& file_path);
+            b8 load(const str& file_path, Image* image);
+            b8 get_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels) const;
     };
 };  // namespace mag

@@ -21,6 +21,9 @@ namespace mag
 
             ~RendererImage();
 
+            // The dimensions, mip levels, channels, etc are not changed, only the image pixels
+            void set_pixels(const std::vector<u8>& pixels);
+
             const vk::Image& get_image() const { return image; };
             const vk::ImageView& get_image_view() const { return image_view; };
             const vk::Format& get_format() const { return format; };

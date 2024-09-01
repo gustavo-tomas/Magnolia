@@ -137,7 +137,7 @@ namespace mag
         auto& app = get_application();
         auto& renderer = app.get_renderer();
 
-        renderer.add_model(&model);
+        renderer.upload_model(&model);
     }
 
     Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)
