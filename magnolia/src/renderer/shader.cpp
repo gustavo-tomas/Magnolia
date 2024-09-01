@@ -358,8 +358,10 @@ namespace mag
 
         auto& ubo = uniforms_map[name];
 
-        // Create descriptor for this material
-        if (material_descriptor_sets.count(material) == 0)
+        // @TODO: this blocks the main thread and should be paralelized when the renderer supports it.
+        // Create/Update descriptor for this material
+        if (material_descriptor_sets.count(material) == 0 ||
+            material->loading_state == MaterialLoadingState::LoadingFinished)
         {
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
@@ -378,6 +380,8 @@ namespace mag
                                                               descriptor_set, descriptor_set_layout);
 
             material_descriptor_sets[material] = descriptor_set;
+
+            material->loading_state = MaterialLoadingState::UploadedToGPU;
         }
 
         ubo.descriptor_sets[curr_frame_number] = material_descriptor_sets[material];
