@@ -1,6 +1,5 @@
 #pragma once
 
-#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -30,19 +29,14 @@ namespace mag
     class JobQueue
     {
         public:
-            JobQueue();
             ~JobQueue();
 
-            void push(Job* job);
-            Job* pop();
-            void stop();
+            void push(Job job);
+            Job pop();
 
         private:
-            std::queue<Job*> jobs;
-            std::mutex mutex;
-            std::condition_variable condition;
-
-            b8 running;
+            std::queue<Job> jobs;
+            std::mutex jobs_mutex;
     };
 
     class JobSystem
@@ -51,7 +45,7 @@ namespace mag
             JobSystem(const u32 max_number_of_threads);
             ~JobSystem();
 
-            void add_job(Job* job);
+            void add_job(Job job);
             void process_callbacks();
 
         private:

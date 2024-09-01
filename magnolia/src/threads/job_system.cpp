@@ -2,43 +2,33 @@
 
 namespace mag
 {
-    JobQueue::JobQueue() : running(true) {}
-
     JobQueue::~JobQueue()
     {
-        std::unique_lock<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(jobs_mutex);
         while (!jobs.empty())
         {
-            Job* job = jobs.front();
             jobs.pop();
-
-            delete job;
         }
     }
 
-    void JobQueue::push(Job* job)
+    void JobQueue::push(Job job)
     {
-        std::unique_lock<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(jobs_mutex);
         jobs.push(job);
-        condition.notify_one();
     }
 
-    Job* JobQueue::pop()
+    Job JobQueue::pop()
     {
-        std::unique_lock<std::mutex> lock(mutex);
-        condition.wait(lock, [this] { return !jobs.empty() || !running; });
+        std::unique_lock<std::mutex> lock(jobs_mutex);
+        if (jobs.empty())
+        {
+            return Job({}, {});
+        }
 
-        Job* job = jobs.front();
+        Job job = jobs.front();
         jobs.pop();
 
         return job;
-    }
-
-    void JobQueue::stop()
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        running = false;
-        condition.notify_all();
     }
 
     JobSystem::JobSystem(const u32 max_number_of_threads) : running(true)
@@ -49,27 +39,20 @@ namespace mag
             {
                 while (running)
                 {
-                    Job* job = job_queue.pop();
-
-                    if (job == nullptr)
-                    {
-                        continue;
-                    }
+                    Job job = job_queue.pop();
 
                     // Execute the job
-                    if (job->execute_fn)
+                    if (job.execute_fn)
                     {
-                        job->execute_fn();
+                        job.execute_fn();
                     }
 
                     // Push the callback to the callback queue
-                    if (job->callback_fn)
+                    if (job.callback_fn)
                     {
                         std::lock_guard<std::mutex> lock(callback_mutex);
-                        callback_queue.push(job->callback_fn);
+                        callback_queue.push(job.callback_fn);
                     }
-
-                    delete job;
                 }
             };
 
@@ -79,10 +62,7 @@ namespace mag
 
     JobSystem::~JobSystem()
     {
-        // @TODO: figure out shutdown
-
         running = false;
-        job_queue.stop();
 
         for (auto& worker : workers)
         {
@@ -109,5 +89,5 @@ namespace mag
         }
     }
 
-    void JobSystem::add_job(Job* job) { job_queue.push(job); }
+    void JobSystem::add_job(Job job) { job_queue.push(job); }
 };  // namespace mag

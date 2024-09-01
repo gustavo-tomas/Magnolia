@@ -61,7 +61,7 @@ namespace mag
             delete load_result;
         };
 
-        Job* load_job = new Job(execute, load_finished_callback);
+        Job load_job = Job(execute, load_finished_callback);
         job_system.add_job(load_job);
 
         return textures[name];
