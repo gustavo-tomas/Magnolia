@@ -26,21 +26,20 @@ namespace mag
 
         // Temporary material to load data into
         Material* transfer_material = new Material(*material);
-        b8* load_result = new b8(false);
 
         // Load in another thread
-        auto execute = [&material_loader, name, transfer_material, load_result]
+        auto execute = [&material_loader, name, transfer_material]
         {
             // If the load fails we still have valid data
             transfer_material->loading_state = MaterialLoadingState::LoadingInProgress;
-            *load_result = material_loader.load(name, transfer_material);
+            return material_loader.load(name, transfer_material);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [material, transfer_material, load_result]
+        auto load_finished_callback = [material, transfer_material](const b8 result)
         {
             // Update the material and the renderer material data
-            if (*load_result == true)
+            if (result == true)
             {
                 transfer_material->loading_state = MaterialLoadingState::LoadingFinished;
                 *material = *transfer_material;
@@ -48,7 +47,6 @@ namespace mag
 
             // We can dispose of the temporary material now
             delete transfer_material;
-            delete load_result;
         };
 
         Job load_job = Job(execute, load_finished_callback);

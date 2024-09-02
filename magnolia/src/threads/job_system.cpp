@@ -44,7 +44,9 @@ namespace mag
                     // Execute the job
                     if (job.execute_fn)
                     {
-                        job.execute_fn();
+                        const b8 result = job.execute_fn();
+                        std::lock_guard<std::mutex> lock(execute_mutex);
+                        execute_result_queue.push(result);
                     }
 
                     // Push the callback to the callback queue
@@ -75,17 +77,25 @@ namespace mag
 
     void JobSystem::process_callbacks()
     {
-        std::unique_lock<std::mutex> lock(callback_mutex);
+        std::unique_lock<std::mutex> callback_lock(callback_mutex);
+        std::unique_lock<std::mutex> execute_lock(execute_mutex);
+
         while (!callback_queue.empty())
         {
             auto callback = callback_queue.front();
+            const b8 result = execute_result_queue.front();
+
             callback_queue.pop();
-            lock.unlock();
+            execute_result_queue.pop();
+
+            callback_lock.unlock();
+            execute_lock.unlock();
 
             // Execute the callback on the main thread
-            callback();
+            callback(result);
 
-            lock.lock();
+            callback_lock.lock();
+            execute_lock.lock();
         }
     }
 
