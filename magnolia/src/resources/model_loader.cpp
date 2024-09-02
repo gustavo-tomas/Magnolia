@@ -82,11 +82,15 @@ namespace mag
         const str binary_file_path = data["File"];
         const std::vector<str> materials = data["Materials"];
 
-        std::ifstream binary_file(binary_file_path, std::ios::binary);
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        if (!binary_file.is_open())
+        Buffer buffer;
+        const b8 result = file_system.read_binary_data(binary_file_path, buffer);
+
+        if (!result)
         {
-            LOG_ERROR("Failed to open model binary file: '{0}'", binary_file_path);
+            LOG_ERROR("Failed to load native model binary file: '{0}'", binary_file_path);
             return false;
         }
 
@@ -95,29 +99,34 @@ namespace mag
         model->file_path = file_path;
         model->materials = materials;
 
+        char* model_data = buffer.cast<char>();
+
         // Read number of vertices
-        u32 num_vertices = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_vertices), sizeof(num_vertices));
+        const u32 num_vertices = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read vertices
         model->vertices.resize(num_vertices);
-        binary_file.read(reinterpret_cast<char*>(model->vertices.data()), num_vertices * sizeof(model->vertices[0]));
+        memcpy(model->vertices.data(), model_data, num_vertices * sizeof(model->vertices[0]));
+        model_data += num_vertices * sizeof(model->vertices[0]);
 
         // Read number of indices
-        u32 num_indices = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_indices), sizeof(num_indices));
+        const u32 num_indices = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read indices
         model->indices.resize(num_indices);
-        binary_file.read(reinterpret_cast<char*>(model->indices.data()), num_indices * sizeof(model->indices[0]));
+        memcpy(model->indices.data(), model_data, num_indices * sizeof(model->indices[0]));
+        model_data += num_indices * sizeof(model->indices[0]);
 
         // Read number of meshes
-        u32 num_meshes = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_meshes), sizeof(num_meshes));
+        const u32 num_meshes = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read meshes
         model->meshes.resize(num_meshes);
-        binary_file.read(reinterpret_cast<char*>(model->meshes.data()), num_meshes * sizeof(model->meshes[0]));
+        memcpy(model->meshes.data(), model_data, num_meshes * sizeof(model->meshes[0]));
+        model_data += num_meshes * sizeof(model->meshes[0]);
 
         return true;
     }
