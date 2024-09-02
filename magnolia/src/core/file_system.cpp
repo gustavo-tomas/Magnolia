@@ -1,0 +1,38 @@
+#include "core/file_system.hpp"
+
+#include <fstream>
+
+#include "core/logger.hpp"
+
+namespace mag
+{
+    b8 FileSystem::read_binary_data(const std::filesystem::path& file_path, Buffer& buffer)
+    {
+        std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+
+        // Failed to open the file
+        if (!file)
+        {
+            LOG_ERROR("Failed to open file: '{0}'", file_path.string());
+            return false;
+        }
+
+        std::streampos end = file.tellg();
+        file.seekg(0, std::ios::beg);
+        const u64 size = end - file.tellg();
+
+        // File is empty
+        if (size == 0)
+        {
+            LOG_ERROR("File is empty: '{0}'", file_path.string());
+            return false;
+        }
+
+        buffer.data.resize(size);
+
+        file.read(buffer.cast<char>(), size);
+        file.close();
+
+        return true;
+    }
+};  // namespace mag

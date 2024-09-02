@@ -65,34 +65,31 @@ namespace mag
         return shaders[file_path];
     }
 
-    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file)
+    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file_path)
     {
-        auto it = shader_modules.find(file);
+        auto it = shader_modules.find(file_path);
         if (it != shader_modules.end()) return it->second;
 
         auto& context = get_context();
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        std::ifstream file_stream(file, std::ios::ate | std::ios::binary);
-        ASSERT(file_stream.is_open(), "Failed to open file: " + file);
+        Buffer buffer;
+        ASSERT(file_system.read_binary_data(file_path, buffer), "Failed to load module: '{0}'", file_path);
 
-        const size_t file_size = static_cast<size_t>(file_stream.tellg());
-        std::vector<u32> buffer(file_size / sizeof(u32));
-        file_stream.seekg(0);
-        file_stream.read(reinterpret_cast<char*>(buffer.data()), file_size);
-        file_stream.close();
-
-        const vk::ShaderModule module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
+        const vk::ShaderModule module = context.get_device().createShaderModule(
+            vk::ShaderModuleCreateInfo({}, buffer.get_size(), buffer.cast<u32>()));
 
         // Generate reflection data for a shader
         SpvReflectShaderModule spv_module = {};
-        SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
+        SpvReflectResult result = spvReflectCreateShaderModule(buffer.get_size(), buffer.cast<u32>(), &spv_module);
         VK_CHECK(VK_CAST(result));
 
-        ShaderModule* shader_module = new ShaderModule(file, module, spv_module);
+        ShaderModule* shader_module = new ShaderModule(file_path, module, spv_module);
 
-        LOG_INFO("Loaded shader module: {0}", file);
-        shader_modules[file] = std::shared_ptr<ShaderModule>(shader_module);
-        return shader_modules[file];
+        LOG_INFO("Loaded shader module: {0}", file_path);
+        shader_modules[file_path] = std::shared_ptr<ShaderModule>(shader_module);
+        return shader_modules[file_path];
     }
 
     ShaderManager::~ShaderManager()

@@ -30,6 +30,10 @@ namespace mag
         renderer = std::make_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
+        // Create the file system
+        file_system = std::make_unique<FileSystem>();
+        LOG_SUCCESS("FileSystem initialized");
+
         // Create the job system
         job_system = std::make_unique<JobSystem>(std::thread::hardware_concurrency());
         LOG_SUCCESS("JobSystem initialized");
