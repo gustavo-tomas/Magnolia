@@ -16,9 +16,10 @@ namespace mag
     class FileSystem
     {
         public:
-            b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
-            b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
+            b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const;
+            b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const;
 
-            b8 read_json_data(const std::filesystem::path& file_path, json& data);
+            b8 read_json_data(const std::filesystem::path& file_path, json& data) const;
+            b8 write_json_data(const std::filesystem::path& file_path, json& data) const;
     };
 };  // namespace mag

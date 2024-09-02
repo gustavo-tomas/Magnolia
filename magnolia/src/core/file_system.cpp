@@ -6,7 +6,7 @@
 
 namespace mag
 {
-    b8 FileSystem::read_binary_data(const std::filesystem::path& file_path, Buffer& buffer)
+    b8 FileSystem::read_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const
     {
         std::ifstream file(file_path, std::ios::binary | std::ios::ate);
 
@@ -36,7 +36,7 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::write_binary_data(const std::filesystem::path& file_path, Buffer& buffer)
+    b8 FileSystem::write_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const
     {
         std::ofstream file(file_path, std::ios::binary);
 
@@ -58,7 +58,7 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::read_json_data(const std::filesystem::path& file_path, json& data)
+    b8 FileSystem::read_json_data(const std::filesystem::path& file_path, json& data) const
     {
         // Parse data from the json file
         std::ifstream file(file_path);
@@ -76,6 +76,22 @@ namespace mag
             LOG_ERROR("Invalid json data: '{0}'", file_path.string());
             return false;
         }
+
+        return true;
+    }
+
+    b8 FileSystem::write_json_data(const std::filesystem::path& file_path, json& data) const
+    {
+        std::ofstream file(file_path);
+
+        if (!file)
+        {
+            LOG_ERROR("Failed to open file: '{0}'", file_path.string());
+            return false;
+        }
+
+        file << std::setw(4) << data;
+        file.close();
 
         return true;
     }

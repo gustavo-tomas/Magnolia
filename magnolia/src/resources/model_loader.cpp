@@ -1,7 +1,5 @@
 #include "resources/model_loader.hpp"
 
-#include <fstream>
-
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
@@ -159,18 +157,10 @@ namespace mag
 
     void ModelLoader::create_native_file(const str& output_directory, Model* model)
     {
-        // Write the data to the native file format
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str native_model_file_path = output_directory + "/" + model->name + MODEL_FILE_EXTENSION;
-
-        std::ofstream model_file(native_model_file_path);
-
-        if (!model_file.is_open())
-        {
-            LOG_ERROR("Failed to create model file: {0}", native_model_file_path);
-            return;
-        }
-
-        // Write binary model data to file
         const str binary_file_path = output_directory + "/" + model->name + BINARY_FILE_EXTENSION;
 
         json data;
@@ -178,15 +168,16 @@ namespace mag
         data["File"] = binary_file_path;
         data["Materials"] = model->materials;
 
-        model_file << std::setw(4) << data;
-        model_file.close();
+        // Write the data to the native file format
+        if (!file_system.write_json_data(native_model_file_path, data))
+        {
+            LOG_ERROR("Failed to create native model file: '{0}'", native_model_file_path);
+            return;
+        }
 
         const u32 num_vertices = model->vertices.size();
         const u32 num_indices = model->indices.size();
         const u32 num_meshes = model->meshes.size();
-
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
 
         Buffer buffer;
 
@@ -220,6 +211,7 @@ namespace mag
         memcpy(ptr, model->meshes.data(), VEC_SIZE_BYTES(model->meshes));
         ptr += VEC_SIZE_BYTES(model->meshes);
 
+        // Write binary model data to file
         if (!file_system.write_binary_data(binary_file_path, buffer))
         {
             LOG_ERROR("Failed to create binary model file: '{0}'", binary_file_path);
@@ -312,6 +304,9 @@ namespace mag
     void ModelLoader::initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
                                            Model* model)
     {
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str model_directory = file_path.substr(0, file_path.find_last_of('/'));
 
         model->materials.resize(ai_scene->mNumMaterials);
@@ -331,23 +326,17 @@ namespace mag
 
             model->materials[i] = material_file_path;
 
-            // Create the material file
-            std::ofstream file(material_file_path);
-
-            if (!file.is_open())
-            {
-                LOG_ERROR("Failed to create material file: {0}", material_file_path);
-                return;
-            }
-
             // Write material data to file
             json data;
             data["Material"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
             data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
 
-            file << std::setw(4) << data;
-            file.close();
+            if (!file_system.write_json_data(material_file_path, data))
+            {
+                LOG_ERROR("Failed to create material file: {0}", material_file_path);
+                continue;
+            }
         }
     }
 
