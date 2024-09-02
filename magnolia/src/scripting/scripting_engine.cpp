@@ -1,5 +1,6 @@
 #include "scripting/scripting_engine.hpp"
 
+#include "core/assert.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"

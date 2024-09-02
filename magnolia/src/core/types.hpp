@@ -50,20 +50,6 @@ namespace mag
 
     static_assert(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
 
-// Assert
-#if defined(MAG_ASSERTIONS_ENABLED)
-    #define ASSERT(assertion, ...)                                                              \
-        {                                                                                       \
-            if (!(assertion))                                                                   \
-            {                                                                                   \
-                LOG_ERROR("Assertion failed: {0} at {1}:{2}", __VA_ARGS__, __FILE__, __LINE__); \
-                std::abort();                                                                   \
-            }                                                                                   \
-        }
-#else
-    #define ASSERT(assertion, ...)
-#endif
-
 // Common macros
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0])) /* Vector size in bytes */
 #define MAG_TIMEOUT 1'000'000'000                                           /* 1 second in nanoseconds */

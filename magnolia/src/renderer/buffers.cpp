@@ -1,6 +1,6 @@
 #include "renderer/buffers.hpp"
 
-#include "core/logger.hpp"
+#include "core/assert.hpp"
 #include "renderer/context.hpp"
 
 namespace mag

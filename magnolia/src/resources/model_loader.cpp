@@ -5,6 +5,7 @@
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
+#include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "nlohmann/json.hpp"

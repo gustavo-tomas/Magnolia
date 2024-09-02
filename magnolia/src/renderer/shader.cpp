@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "core/application.hpp"
+#include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"

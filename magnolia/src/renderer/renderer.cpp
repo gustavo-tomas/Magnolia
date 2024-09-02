@@ -1,5 +1,6 @@
 #include "renderer/renderer.hpp"
 
+#include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "renderer/buffers.hpp"
 #include "resources/model.hpp"

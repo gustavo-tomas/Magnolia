@@ -1,6 +1,6 @@
 #include "renderer/pipeline.hpp"
 
-#include "core/logger.hpp"
+#include "core/assert.hpp"
 #include "renderer/context.hpp"
 #include "renderer/pipeline_type_conversions.hpp"
 

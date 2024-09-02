@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/logger.hpp"
+#include "core/assert.hpp"
 #include "core/types.hpp"
 #include "vulkan/vulkan.hpp"
 

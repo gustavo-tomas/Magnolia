@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <vector>
 
+#include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"

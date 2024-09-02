@@ -1,7 +1,6 @@
 #pragma once
 
-#include "core/logger.hpp"
-#include "core/types.hpp"
+#include "core/assert.hpp"
 #include "renderer/render_graph.hpp"
 
 namespace mag

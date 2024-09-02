@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "core/logger.hpp"
+#include "core/assert.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
 

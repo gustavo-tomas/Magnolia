@@ -2,6 +2,7 @@
 
 #include "camera/camera.hpp"
 #include "camera/controller.hpp"
+#include "core/assert.hpp"
 #include "core/event.hpp"
 #include "ecs/ecs.hpp"
 
