@@ -14,5 +14,6 @@ namespace mag
     {
         public:
             b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
+            b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
     };
 };  // namespace mag

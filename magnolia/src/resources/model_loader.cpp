@@ -107,8 +107,8 @@ namespace mag
 
         // Read vertices
         model->vertices.resize(num_vertices);
-        memcpy(model->vertices.data(), model_data, num_vertices * sizeof(model->vertices[0]));
-        model_data += num_vertices * sizeof(model->vertices[0]);
+        memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
+        model_data += VEC_SIZE_BYTES(model->vertices);
 
         // Read number of indices
         const u32 num_indices = *reinterpret_cast<u32*>(model_data);
@@ -116,8 +116,8 @@ namespace mag
 
         // Read indices
         model->indices.resize(num_indices);
-        memcpy(model->indices.data(), model_data, num_indices * sizeof(model->indices[0]));
-        model_data += num_indices * sizeof(model->indices[0]);
+        memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
+        model_data += VEC_SIZE_BYTES(model->indices);
 
         // Read number of meshes
         const u32 num_meshes = *reinterpret_cast<u32*>(model_data);
@@ -125,8 +125,8 @@ namespace mag
 
         // Read meshes
         model->meshes.resize(num_meshes);
-        memcpy(model->meshes.data(), model_data, num_meshes * sizeof(model->meshes[0]));
-        model_data += num_meshes * sizeof(model->meshes[0]);
+        memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
+        model_data += VEC_SIZE_BYTES(model->meshes);
 
         return true;
     }
@@ -183,40 +183,50 @@ namespace mag
         model_file << std::setw(4) << data;
         model_file.close();
 
-        std::ofstream binary_file(binary_file_path, std::ios::binary);
-
-        if (!binary_file)
-        {
-            LOG_ERROR("Failed to create binary model file: {0}", binary_file_path);
-            return;
-        }
-
         const u32 num_vertices = model->vertices.size();
         const u32 num_indices = model->indices.size();
         const u32 num_meshes = model->meshes.size();
 
-        // Write number of vertices
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_vertices), sizeof(num_vertices))
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-            // Write vertices
-            .write(reinterpret_cast<const char*>(model->vertices.data()), num_vertices * sizeof(model->vertices[0]));
+        Buffer buffer;
 
-        // Write number of indices
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_indices), sizeof(num_indices))
+        u64 buffer_size = 0;
+        buffer_size += sizeof(num_vertices) + VEC_SIZE_BYTES(model->vertices);
+        buffer_size += sizeof(num_indices) + VEC_SIZE_BYTES(model->indices);
+        buffer_size += sizeof(num_meshes) + VEC_SIZE_BYTES(model->meshes);
 
-            // Write indices
-            .write(reinterpret_cast<const char*>(model->indices.data()), num_indices * sizeof(model->indices[0]));
+        buffer.data.resize(buffer_size);
 
-        // Write number of meshes
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_meshes), sizeof(num_meshes))
+        u8* ptr = buffer.data.data();
 
-            // Write meshes
-            .write(reinterpret_cast<const char*>(model->meshes.data()), num_meshes * sizeof(model->meshes[0]));
+        // Write vertices
+        memcpy(ptr, &num_vertices, sizeof(num_vertices));
+        ptr += sizeof(num_vertices);
 
-        binary_file.close();
+        memcpy(ptr, model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        ptr += VEC_SIZE_BYTES(model->vertices);
+
+        // Write indices
+        memcpy(ptr, &num_indices, sizeof(num_indices));
+        ptr += sizeof(num_indices);
+
+        memcpy(ptr, model->indices.data(), VEC_SIZE_BYTES(model->indices));
+        ptr += VEC_SIZE_BYTES(model->indices);
+
+        // Write meshes
+        memcpy(ptr, &num_meshes, sizeof(num_meshes));
+        ptr += sizeof(num_meshes);
+
+        memcpy(ptr, model->meshes.data(), VEC_SIZE_BYTES(model->meshes));
+        ptr += VEC_SIZE_BYTES(model->meshes);
+
+        if (!file_system.write_binary_data(binary_file_path, buffer))
+        {
+            LOG_ERROR("Failed to create binary model file: '{0}'", binary_file_path);
+            return;
+        }
 
         model->file_path = native_model_file_path;
     }

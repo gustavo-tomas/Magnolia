@@ -35,4 +35,26 @@ namespace mag
 
         return true;
     }
+
+    b8 FileSystem::write_binary_data(const std::filesystem::path& file_path, Buffer& buffer)
+    {
+        std::ofstream file(file_path, std::ios::binary);
+
+        if (!file)
+        {
+            LOG_ERROR("Failed to open file: '{0}'", file_path.string());
+            return false;
+        }
+
+        if (buffer.get_size() == 0)
+        {
+            LOG_ERROR("Buffer is empty");
+            return false;
+        }
+
+        file.write(buffer.cast<char>(), buffer.get_size());
+        file.close();
+
+        return true;
+    }
 };  // namespace mag
