@@ -10,7 +10,7 @@ namespace mag
     class Context;
     class CommandBuffer;
 
-    class Buffer
+    class VulkanBuffer
     {
         public:
             void initialize(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
@@ -41,10 +41,10 @@ namespace mag
             void initialize(const void* data, const u64 size_bytes, const VkBufferUsageFlags usage);
             void shutdown();
 
-            const Buffer& get_buffer() const { return buffer; };
+            const VulkanBuffer& get_buffer() const { return buffer; };
 
         private:
-            Buffer buffer;
+            VulkanBuffer buffer;
     };
 
     class VertexBuffer
@@ -53,7 +53,7 @@ namespace mag
             void initialize(const void* vertices, const u64 size_bytes);
             void shutdown();
 
-            const Buffer& get_buffer() const { return gpu_buffer.get_buffer(); };
+            const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 
         private:
             GPUBuffer gpu_buffer;
@@ -65,7 +65,7 @@ namespace mag
             void initialize(const void* indices, const u64 size_bytes);
             void shutdown();
 
-            const Buffer& get_buffer() const { return gpu_buffer.get_buffer(); };
+            const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 
         private:
             GPUBuffer gpu_buffer;

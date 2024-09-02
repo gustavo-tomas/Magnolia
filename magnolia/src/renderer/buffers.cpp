@@ -5,10 +5,10 @@
 
 namespace mag
 {
-    // Buffer
+    // VulkanBuffer
     // -----------------------------------------------------------------------------------------------------------------
-    void Buffer::initialize(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
-                            const VmaAllocationCreateFlags memory_flags)
+    void VulkanBuffer::initialize(const u64 size_bytes, const VkBufferUsageFlags usage,
+                                  const VmaMemoryUsage memory_usage, const VmaAllocationCreateFlags memory_flags)
     {
         VkBufferCreateInfo buffer_create_info = {};
         buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -26,17 +26,17 @@ namespace mag
         this->size = size_bytes;
     }
 
-    void Buffer::shutdown() { vmaDestroyBuffer(get_context().get_allocator(), buffer, allocation); }
+    void VulkanBuffer::shutdown() { vmaDestroyBuffer(get_context().get_allocator(), buffer, allocation); }
 
-    void* Buffer::map_memory()
+    void* VulkanBuffer::map_memory()
     {
         VK_CHECK(VK_CAST(vmaMapMemory(get_context().get_allocator(), allocation, &mapped_region)));
         return mapped_region;
     }
 
-    void Buffer::unmap_memory() { vmaUnmapMemory(get_context().get_allocator(), allocation); }
+    void VulkanBuffer::unmap_memory() { vmaUnmapMemory(get_context().get_allocator(), allocation); }
 
-    void Buffer::copy(const void* data, const u64 size_bytes, const u64 offset)
+    void VulkanBuffer::copy(const void* data, const u64 size_bytes, const u64 offset)
     {
         ASSERT(offset + size_bytes <= size, "Size limit exceeded");
 
@@ -45,7 +45,7 @@ namespace mag
         this->unmap_memory();
     }
 
-    u64 Buffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
+    u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
 
     // GPUBuffer
     // -----------------------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ namespace mag
         auto& context = get_context();
 
         // Create staging buffer to send data to the gpu
-        Buffer staging_buffer;
+        VulkanBuffer staging_buffer;
         staging_buffer.initialize(size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 

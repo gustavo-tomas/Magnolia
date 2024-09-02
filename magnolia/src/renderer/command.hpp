@@ -27,17 +27,17 @@ namespace mag
             void draw_indexed(const u32 index_count, const u32 instance_count = 1, const u32 first_index = 0,
                               const i32 vertex_offset = 0, const u32 first_instance = 0);
 
-            void bind_vertex_buffer(const Buffer& buffer, const u64 offset = 0);
+            void bind_vertex_buffer(const VulkanBuffer& buffer, const u64 offset = 0);
 
-            void bind_index_buffer(const Buffer& buffer, const u64 offset = 0);
+            void bind_index_buffer(const VulkanBuffer& buffer, const u64 offset = 0);
 
             void bind_descriptor_set(const vk::PipelineBindPoint bind_point, const vk::PipelineLayout layout,
                                      const u32 first_set, const vk::DescriptorSet descriptor_set);
 
-            void copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
-                             const u64 dst_offset);
+            void copy_buffer(const VulkanBuffer& src, const VulkanBuffer& dst, const u64 size_bytes,
+                             const u64 src_offset, const u64 dst_offset);
 
-            void copy_buffer_to_image(const Buffer& src, const RendererImage& image);
+            void copy_buffer_to_image(const VulkanBuffer& src, const RendererImage& image);
 
             void copy_image_to_image(const vk::Image& src, const vk::Extent3D& src_extent, const vk::Image& dst,
                                      const vk::Extent3D& dst_extent);

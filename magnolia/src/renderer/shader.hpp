@@ -77,7 +77,7 @@ namespace mag
                     // One per frame in flight
                     std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
                     std::vector<vk::DescriptorSet> descriptor_sets;
-                    std::vector<Buffer> buffers;
+                    std::vector<VulkanBuffer> buffers;
             };
 
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);

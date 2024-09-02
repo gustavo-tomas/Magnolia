@@ -74,7 +74,7 @@ namespace mag
     // DescriptorBuilder
     // ---------------------------------------------------------------------------------------------------------------------
     class RendererImage;
-    class Buffer;
+    class VulkanBuffer;
     class DescriptorBuilder
     {
         public:
@@ -93,7 +93,7 @@ namespace mag
             // Helpers
             static void create_descriptor_for_buffer(const u32 binding, vk::DescriptorSet& descriptor_set,
                                                      vk::DescriptorSetLayout& descriptor_set_layout,
-                                                     const vk::DescriptorType type, const Buffer& buffer,
+                                                     const vk::DescriptorType type, const VulkanBuffer& buffer,
                                                      const u64 buffer_size, const u64 offset);
 
             static void create_descriptor_for_textures(const u32 binding,

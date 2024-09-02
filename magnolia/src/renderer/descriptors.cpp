@@ -293,7 +293,7 @@ namespace mag
 
     void DescriptorBuilder::create_descriptor_for_buffer(const u32 binding, vk::DescriptorSet& descriptor_set,
                                                          vk::DescriptorSetLayout& descriptor_set_layout,
-                                                         const vk::DescriptorType type, const Buffer& buffer,
+                                                         const vk::DescriptorType type, const VulkanBuffer& buffer,
                                                          const u64 buffer_size, const u64 offset)
     {
         // Create descriptors for this buffer

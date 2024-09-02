@@ -38,12 +38,12 @@ namespace mag
         this->command_buffer.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
-    void CommandBuffer::bind_vertex_buffer(const Buffer& buffer, const u64 offset)
+    void CommandBuffer::bind_vertex_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
         this->command_buffer.bindVertexBuffers(0, buffer.get_buffer(), offset);
     }
 
-    void CommandBuffer::bind_index_buffer(const Buffer& buffer, const u64 offset)
+    void CommandBuffer::bind_index_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
         this->command_buffer.bindIndexBuffer(buffer.get_buffer(), offset, vk::IndexType::eUint32);
     }
@@ -54,14 +54,14 @@ namespace mag
         this->command_buffer.bindDescriptorSets(bind_point, layout, first_set, descriptor_set, nullptr);
     }
 
-    void CommandBuffer::copy_buffer(const Buffer& src, const Buffer& dst, const u64 size_bytes, const u64 src_offset,
-                                    const u64 dst_offset)
+    void CommandBuffer::copy_buffer(const VulkanBuffer& src, const VulkanBuffer& dst, const u64 size_bytes,
+                                    const u64 src_offset, const u64 dst_offset)
     {
         vk::BufferCopy copy(src_offset, dst_offset, size_bytes);
         this->command_buffer.copyBuffer(src.get_buffer(), dst.get_buffer(), copy);
     }
 
-    void CommandBuffer::copy_buffer_to_image(const Buffer& src, const RendererImage& image)
+    void CommandBuffer::copy_buffer_to_image(const VulkanBuffer& src, const RendererImage& image)
     {
         const vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, 0, image.get_mip_levels(), 0, 1);
         const vk::ImageMemoryBarrier to_transfer_barrier(
