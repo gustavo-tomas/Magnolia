@@ -15,14 +15,14 @@ namespace mag
 #define MODEL_FILE_EXTENSION ".model.json"
 #define BINARY_FILE_EXTENSION ".model.bin"
 
-    using json = nlohmann::ordered_json;
-
     ModelLoader::ModelLoader() : importer(new Assimp::Importer()) {}
 
     b8 ModelLoader::load(const str& file_path, Model* model)
     {
-        const std::filesystem::path filesystem_path(file_path);
-        const str extension = filesystem_path.extension().c_str();
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        const str extension = file_system.get_file_extension(file_path);
 
         if (!is_extension_supported(extension))
         {

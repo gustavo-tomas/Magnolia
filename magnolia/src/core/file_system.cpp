@@ -95,4 +95,13 @@ namespace mag
 
         return true;
     }
+
+    str FileSystem::get_file_extension(const std::filesystem::path& file_path) const
+    {
+        return file_path.extension().c_str();
+    }
+
+    b8 FileSystem::exists(const std::filesystem::path& path) const { return std::filesystem::exists(path); }
+
+    b8 FileSystem::is_directory(const std::filesystem::path& path) const { return std::filesystem::is_directory(path); }
 };  // namespace mag
