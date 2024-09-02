@@ -13,9 +13,8 @@
 
 namespace mag
 {
-    // @TODO: might be a good ideia to store the result of the execute fn and send it to the callback
-    typedef std::function<void()> JobExecuteFn;
-    typedef std::function<void()> JobCallbackFn;
+    typedef std::function<b8()> JobExecuteFn;
+    typedef std::function<void(const b8)> JobCallbackFn;
 
     struct Job
     {
@@ -53,7 +52,9 @@ namespace mag
             std::vector<std::thread> workers;
 
             std::queue<JobCallbackFn> callback_queue;
+            std::queue<b8> execute_result_queue;
             std::mutex callback_mutex;
+            std::mutex execute_mutex;
 
             b8 running;
     };

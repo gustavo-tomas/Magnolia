@@ -37,20 +37,19 @@ namespace mag
 
         // Temporary image to load data into
         Image* transfer_image = new Image(*image);
-        b8* load_result = new b8(false);
 
         // Load in another thread
-        auto execute = [&image_loader, name, transfer_image, load_result]
+        auto execute = [&image_loader, name, transfer_image]
         {
             // If the load fails we still have valid data
-            *load_result = image_loader.load(name, transfer_image);
+            return image_loader.load(name, transfer_image);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [image, transfer_image, load_result, &renderer]
+        auto load_finished_callback = [image, transfer_image, &renderer](const b8 result)
         {
             // Update the image and the renderer image data
-            if (*load_result == true)
+            if (result == true)
             {
                 *image = *transfer_image;
                 renderer.update_image(image);
@@ -58,7 +57,6 @@ namespace mag
 
             // We can dispose of the temporary image now
             delete transfer_image;
-            delete load_result;
         };
 
         Job load_job = Job(execute, load_finished_callback);

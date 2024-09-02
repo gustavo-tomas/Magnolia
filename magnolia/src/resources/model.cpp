@@ -37,20 +37,19 @@ namespace mag
 
         // Temporary model to load data into
         Model* transfer_model = new Model(*model);
-        b8* load_result = new b8(false);
 
         // Load in another thread
-        auto execute = [&model_loader, name, transfer_model, load_result]
+        auto execute = [&model_loader, name, transfer_model]
         {
             // If the load fails we still have valid data
-            *load_result = model_loader.load(name, transfer_model);
+            return model_loader.load(name, transfer_model);
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [&renderer, model, transfer_model, load_result]
+        auto load_finished_callback = [&renderer, model, transfer_model](const b8 result)
         {
             // Update the model and renderer model data
-            if (*load_result == true)
+            if (result == true)
             {
                 *model = *transfer_model;
                 renderer.update_model(model);
@@ -58,7 +57,6 @@ namespace mag
 
             // We can dispose of the temporary model now
             delete transfer_model;
-            delete load_result;
         };
 
         Job load_job = Job(execute, load_finished_callback);
