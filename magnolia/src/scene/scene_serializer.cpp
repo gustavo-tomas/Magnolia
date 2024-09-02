@@ -109,18 +109,15 @@ namespace mag
     void SceneSerializer::deserialize(const str& file_path)
     {
         auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        // Parse instructions from the json file
-        std::ifstream file(file_path);
+        json data;
 
-        if (!file.is_open())
+        if (!file_system.read_json_data(file_path, data))
         {
-            LOG_ERROR("Failed to open scene from file: {0}", file_path);
+            LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
             return;
         }
-
-        // Parse the file
-        const json data = json::parse(file);
 
         const str scene_name = data["Scene"];
 

@@ -62,15 +62,16 @@ namespace mag
 
     b8 ModelLoader::load_native(const str& file_path, Model* model)
     {
-        std::ifstream file(file_path);
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        if (!file.is_open())
+        json data;
+
+        if (!file_system.read_json_data(file_path, data))
         {
-            LOG_ERROR("Failed to open model file: '{0}'", file_path);
+            LOG_ERROR("Failed to load native model file: '{0}'", file_path);
             return false;
         }
-
-        const json data = json::parse(file);
 
         if (!data.contains("Model") || !data.contains("File") || !data.contains("Materials"))
         {
@@ -81,9 +82,6 @@ namespace mag
         const str model_name = data["Model"];
         const str binary_file_path = data["File"];
         const std::vector<str> materials = data["Materials"];
-
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
 
         Buffer buffer;
         const b8 result = file_system.read_binary_data(binary_file_path, buffer);

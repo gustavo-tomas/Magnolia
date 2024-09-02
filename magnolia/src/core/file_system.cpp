@@ -57,4 +57,26 @@ namespace mag
 
         return true;
     }
+
+    b8 FileSystem::read_json_data(const std::filesystem::path& file_path, json& data)
+    {
+        // Parse data from the json file
+        std::ifstream file(file_path);
+
+        if (!file)
+        {
+            LOG_ERROR("Failed to open file: '{0}'", file_path.string());
+            return false;
+        }
+
+        data = json::parse(file, nullptr, false);
+
+        if (data.is_discarded())
+        {
+            LOG_ERROR("Invalid json data: '{0}'", file_path.string());
+            return false;
+        }
+
+        return true;
+    }
 };  // namespace mag

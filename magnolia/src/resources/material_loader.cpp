@@ -1,28 +1,23 @@
 #include "resources/material_loader.hpp"
 
-#include <fstream>
-
+#include "core/application.hpp"
 #include "core/logger.hpp"
-#include "nlohmann/json.hpp"
 #include "resources/material.hpp"
 
 namespace mag
 {
-    using json = nlohmann::ordered_json;
-
     b8 MaterialLoader::load(const str& name, Material* material)
     {
-        // Parse instructions from the json file
-        std::ifstream file(name);
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        if (!file.is_open())
+        json data;
+
+        if (!file_system.read_json_data(name, data))
         {
-            LOG_ERROR("Failed to open material file: '{0}'", name);
+            LOG_ERROR("Failed to load material: '{0}'", name);
             return false;
         }
-
-        // Parse the file
-        const json data = json::parse(file);
 
         if (!data.contains("Material"))
         {
