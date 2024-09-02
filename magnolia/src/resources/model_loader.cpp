@@ -38,21 +38,24 @@ namespace mag
         if (extension == ".json")
         {
             result = load_native(file_path, model);
+            if (!result)
+            {
+                LOG_ERROR("Failed to load model: {0}", file_path);
+            }
         }
 
         else
         {
             result = import_from_file(file_path, model);
+            if (!result)
+            {
+                LOG_ERROR("Failed to import model: '{0}'", file_path);
+            }
         }
 
         if (result)
         {
             LOG_SUCCESS("Loaded model: {0}", file_path);
-        }
-
-        else
-        {
-            LOG_ERROR("Failed to load model: {0}", file_path);
         }
 
         return result;
@@ -146,8 +149,15 @@ namespace mag
             initialize_mesh(m, mesh, model);
         }
 
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
-        std::filesystem::create_directories(output_directory);
+        if (!file_system.create_directories(output_directory))
+        {
+            LOG_ERROR("Failed to create directory: '{0}'", output_directory);
+            return false;
+        }
 
         initialize_materials(scene, file_path, output_directory, model);
         create_native_file(output_directory, model);

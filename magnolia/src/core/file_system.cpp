@@ -96,6 +96,16 @@ namespace mag
         return true;
     }
 
+    b8 FileSystem::create_directories(const std::filesystem::path& path) const
+    {
+        if (exists(path))
+        {
+            return true;
+        }
+
+        return std::filesystem::create_directories(path);
+    }
+
     str FileSystem::get_file_extension(const std::filesystem::path& file_path) const
     {
         return file_path.extension().c_str();
