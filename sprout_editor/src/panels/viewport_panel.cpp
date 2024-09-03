@@ -1,7 +1,5 @@
 #include "panels/viewport_panel.hpp"
 
-#include <filesystem>
-
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor.hpp"
@@ -57,18 +55,20 @@ namespace sprout
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
             {
+                auto &app = get_application();
+                auto &file_system = app.get_file_system();
+
                 const char *path = static_cast<const char *>(payload->Data);
-                const std::filesystem::path file_path(path);
-                const str extension = file_path.extension().c_str();
+                const str extension = file_system.get_file_extension(path);
 
                 // First check if the path exists
-                if (!std::filesystem::exists(path))
+                if (!file_system.exists(path))
                 {
                     LOG_ERROR("File not found: {0}", path);
                 }
 
                 // Then check if its a directory
-                else if (std::filesystem::is_directory(path))
+                else if (file_system.is_directory(path))
                 {
                     LOG_ERROR("Path is a directory: {0}", path);
                 }

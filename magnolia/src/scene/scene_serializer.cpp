@@ -1,16 +1,11 @@
 #include "scene/scene_serializer.hpp"
 
-#include <fstream>
-
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
-#include "nlohmann/json.hpp"
 
 namespace mag
 {
-    using json = nlohmann::ordered_json;
-
     json& operator<<(json& out, const vec2& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
@@ -27,13 +22,8 @@ namespace mag
 
     void SceneSerializer::serialize(const str& file_path)
     {
-        std::ofstream file(file_path);
-
-        if (!file.is_open())
-        {
-            LOG_ERROR("Failed to save scene to file: {0}", file_path);
-            return;
-        }
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
         // Serialize scene data to file
         json data;
@@ -102,25 +92,25 @@ namespace mag
             data["Entities"].push_back(entity);
         }
 
-        file << std::setw(4) << data;
-        file.close();
+        if (!file_system.write_json_data(file_path, data))
+        {
+            LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
+            return;
+        }
     }
 
     void SceneSerializer::deserialize(const str& file_path)
     {
         auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        // Parse instructions from the json file
-        std::ifstream file(file_path);
+        json data;
 
-        if (!file.is_open())
+        if (!file_system.read_json_data(file_path, data))
         {
-            LOG_ERROR("Failed to open scene from file: {0}", file_path);
+            LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
             return;
         }
-
-        // Parse the file
-        const json data = json::parse(file);
 
         const str scene_name = data["Scene"];
 

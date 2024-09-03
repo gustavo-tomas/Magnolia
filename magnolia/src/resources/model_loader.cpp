@@ -1,14 +1,11 @@
 #include "resources/model_loader.hpp"
 
-#include <fstream>
-
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
-#include "nlohmann/json.hpp"
 #include "resources/material.hpp"
 
 namespace mag
@@ -17,14 +14,14 @@ namespace mag
 #define MODEL_FILE_EXTENSION ".model.json"
 #define BINARY_FILE_EXTENSION ".model.bin"
 
-    using json = nlohmann::ordered_json;
-
     ModelLoader::ModelLoader() : importer(new Assimp::Importer()) {}
 
     b8 ModelLoader::load(const str& file_path, Model* model)
     {
-        const std::filesystem::path filesystem_path(file_path);
-        const str extension = filesystem_path.extension().c_str();
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        const str extension = file_system.get_file_extension(file_path);
 
         if (!is_extension_supported(extension))
         {
@@ -40,11 +37,19 @@ namespace mag
         if (extension == ".json")
         {
             result = load_native(file_path, model);
+            if (!result)
+            {
+                LOG_ERROR("Failed to load model: {0}", file_path);
+            }
         }
 
         else
         {
             result = import_from_file(file_path, model);
+            if (!result)
+            {
+                LOG_ERROR("Failed to import model: '{0}'", file_path);
+            }
         }
 
         if (result)
@@ -52,25 +57,21 @@ namespace mag
             LOG_SUCCESS("Loaded model: {0}", file_path);
         }
 
-        else
-        {
-            LOG_ERROR("Failed to load model: {0}", file_path);
-        }
-
         return result;
     }
 
     b8 ModelLoader::load_native(const str& file_path, Model* model)
     {
-        std::ifstream file(file_path);
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        if (!file.is_open())
+        json data;
+
+        if (!file_system.read_json_data(file_path, data))
         {
-            LOG_ERROR("Failed to open model file: '{0}'", file_path);
+            LOG_ERROR("Failed to load native model file: '{0}'", file_path);
             return false;
         }
-
-        const json data = json::parse(file);
 
         if (!data.contains("Model") || !data.contains("File") || !data.contains("Materials"))
         {
@@ -82,11 +83,12 @@ namespace mag
         const str binary_file_path = data["File"];
         const std::vector<str> materials = data["Materials"];
 
-        std::ifstream binary_file(binary_file_path, std::ios::binary);
+        Buffer buffer;
+        const b8 result = file_system.read_binary_data(binary_file_path, buffer);
 
-        if (!binary_file.is_open())
+        if (!result)
         {
-            LOG_ERROR("Failed to open model binary file: '{0}'", binary_file_path);
+            LOG_ERROR("Failed to load native model binary file: '{0}'", binary_file_path);
             return false;
         }
 
@@ -95,29 +97,34 @@ namespace mag
         model->file_path = file_path;
         model->materials = materials;
 
+        char* model_data = buffer.cast<char>();
+
         // Read number of vertices
-        u32 num_vertices = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_vertices), sizeof(num_vertices));
+        const u32 num_vertices = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read vertices
         model->vertices.resize(num_vertices);
-        binary_file.read(reinterpret_cast<char*>(model->vertices.data()), num_vertices * sizeof(model->vertices[0]));
+        memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
+        model_data += VEC_SIZE_BYTES(model->vertices);
 
         // Read number of indices
-        u32 num_indices = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_indices), sizeof(num_indices));
+        const u32 num_indices = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read indices
         model->indices.resize(num_indices);
-        binary_file.read(reinterpret_cast<char*>(model->indices.data()), num_indices * sizeof(model->indices[0]));
+        memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
+        model_data += VEC_SIZE_BYTES(model->indices);
 
         // Read number of meshes
-        u32 num_meshes = 0;
-        binary_file.read(reinterpret_cast<char*>(&num_meshes), sizeof(num_meshes));
+        const u32 num_meshes = *reinterpret_cast<u32*>(model_data);
+        model_data += sizeof(u32);
 
         // Read meshes
         model->meshes.resize(num_meshes);
-        binary_file.read(reinterpret_cast<char*>(model->meshes.data()), num_meshes * sizeof(model->meshes[0]));
+        memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
+        model_data += VEC_SIZE_BYTES(model->meshes);
 
         return true;
     }
@@ -141,8 +148,15 @@ namespace mag
             initialize_mesh(m, mesh, model);
         }
 
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
-        std::filesystem::create_directories(output_directory);
+        if (!file_system.create_directories(output_directory))
+        {
+            LOG_ERROR("Failed to create directory: '{0}'", output_directory);
+            return false;
+        }
 
         initialize_materials(scene, file_path, output_directory, model);
         create_native_file(output_directory, model);
@@ -152,18 +166,10 @@ namespace mag
 
     void ModelLoader::create_native_file(const str& output_directory, Model* model)
     {
-        // Write the data to the native file format
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str native_model_file_path = output_directory + "/" + model->name + MODEL_FILE_EXTENSION;
-
-        std::ofstream model_file(native_model_file_path);
-
-        if (!model_file.is_open())
-        {
-            LOG_ERROR("Failed to create model file: {0}", native_model_file_path);
-            return;
-        }
-
-        // Write binary model data to file
         const str binary_file_path = output_directory + "/" + model->name + BINARY_FILE_EXTENSION;
 
         json data;
@@ -171,14 +177,10 @@ namespace mag
         data["File"] = binary_file_path;
         data["Materials"] = model->materials;
 
-        model_file << std::setw(4) << data;
-        model_file.close();
-
-        std::ofstream binary_file(binary_file_path, std::ios::binary);
-
-        if (!binary_file)
+        // Write the data to the native file format
+        if (!file_system.write_json_data(native_model_file_path, data))
         {
-            LOG_ERROR("Failed to create binary model file: {0}", binary_file_path);
+            LOG_ERROR("Failed to create native model file: '{0}'", native_model_file_path);
             return;
         }
 
@@ -186,28 +188,44 @@ namespace mag
         const u32 num_indices = model->indices.size();
         const u32 num_meshes = model->meshes.size();
 
-        // Write number of vertices
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_vertices), sizeof(num_vertices))
+        Buffer buffer;
 
-            // Write vertices
-            .write(reinterpret_cast<const char*>(model->vertices.data()), num_vertices * sizeof(model->vertices[0]));
+        u64 buffer_size = 0;
+        buffer_size += sizeof(num_vertices) + VEC_SIZE_BYTES(model->vertices);
+        buffer_size += sizeof(num_indices) + VEC_SIZE_BYTES(model->indices);
+        buffer_size += sizeof(num_meshes) + VEC_SIZE_BYTES(model->meshes);
 
-        // Write number of indices
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_indices), sizeof(num_indices))
+        buffer.data.resize(buffer_size);
 
-            // Write indices
-            .write(reinterpret_cast<const char*>(model->indices.data()), num_indices * sizeof(model->indices[0]));
+        u8* ptr = buffer.data.data();
 
-        // Write number of meshes
-        binary_file
-            .write(reinterpret_cast<const char*>(&num_meshes), sizeof(num_meshes))
+        // Write vertices
+        memcpy(ptr, &num_vertices, sizeof(num_vertices));
+        ptr += sizeof(num_vertices);
 
-            // Write meshes
-            .write(reinterpret_cast<const char*>(model->meshes.data()), num_meshes * sizeof(model->meshes[0]));
+        memcpy(ptr, model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        ptr += VEC_SIZE_BYTES(model->vertices);
 
-        binary_file.close();
+        // Write indices
+        memcpy(ptr, &num_indices, sizeof(num_indices));
+        ptr += sizeof(num_indices);
+
+        memcpy(ptr, model->indices.data(), VEC_SIZE_BYTES(model->indices));
+        ptr += VEC_SIZE_BYTES(model->indices);
+
+        // Write meshes
+        memcpy(ptr, &num_meshes, sizeof(num_meshes));
+        ptr += sizeof(num_meshes);
+
+        memcpy(ptr, model->meshes.data(), VEC_SIZE_BYTES(model->meshes));
+        ptr += VEC_SIZE_BYTES(model->meshes);
+
+        // Write binary model data to file
+        if (!file_system.write_binary_data(binary_file_path, buffer))
+        {
+            LOG_ERROR("Failed to create binary model file: '{0}'", binary_file_path);
+            return;
+        }
 
         model->file_path = native_model_file_path;
     }
@@ -295,6 +313,9 @@ namespace mag
     void ModelLoader::initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
                                            Model* model)
     {
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         const str model_directory = file_path.substr(0, file_path.find_last_of('/'));
 
         model->materials.resize(ai_scene->mNumMaterials);
@@ -314,23 +335,17 @@ namespace mag
 
             model->materials[i] = material_file_path;
 
-            // Create the material file
-            std::ofstream file(material_file_path);
-
-            if (!file.is_open())
-            {
-                LOG_ERROR("Failed to create material file: {0}", material_file_path);
-                return;
-            }
-
             // Write material data to file
             json data;
             data["Material"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
             data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
 
-            file << std::setw(4) << data;
-            file.close();
+            if (!file_system.write_json_data(material_file_path, data))
+            {
+                LOG_ERROR("Failed to create material file: {0}", material_file_path);
+                continue;
+            }
         }
     }
 

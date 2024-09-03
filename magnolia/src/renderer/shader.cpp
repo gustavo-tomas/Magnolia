@@ -1,6 +1,5 @@
 #include "renderer/shader.hpp"
 
-#include <fstream>
 #include <limits>
 
 #include "core/application.hpp"
@@ -18,19 +17,16 @@ namespace mag
         auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
 
-        // Parse instructions from the json file
-        std::ifstream file(file_path);
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        ASSERT(file.is_open(), "Failed to open file: " + file_path);
-
-        // Parse the file
-        const json data = json::parse(file);
+        json data;
+        ASSERT(file_system.read_json_data(file_path, data), "Failed to load shader '" + file_path + "'");
 
         ASSERT(data.contains("Files"), "Shader '" + file_path + "' has no shader stages");
         ASSERT(data.contains("Pipeline"), "Shader '" + file_path + "' has no pipeline configuration");
 
         const str shader_name = data["Shader"];
-
         const json files = data["Files"];
 
         // Vertex and fragment shaders are necessary, the other stages are optional
@@ -65,34 +61,31 @@ namespace mag
         return shaders[file_path];
     }
 
-    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file)
+    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file_path)
     {
-        auto it = shader_modules.find(file);
+        auto it = shader_modules.find(file_path);
         if (it != shader_modules.end()) return it->second;
 
         auto& context = get_context();
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        std::ifstream file_stream(file, std::ios::ate | std::ios::binary);
-        ASSERT(file_stream.is_open(), "Failed to open file: " + file);
+        Buffer buffer;
+        ASSERT(file_system.read_binary_data(file_path, buffer), "Failed to load module: '{0}'", file_path);
 
-        const size_t file_size = static_cast<size_t>(file_stream.tellg());
-        std::vector<u32> buffer(file_size / sizeof(u32));
-        file_stream.seekg(0);
-        file_stream.read(reinterpret_cast<char*>(buffer.data()), file_size);
-        file_stream.close();
-
-        const vk::ShaderModule module = context.get_device().createShaderModule(vk::ShaderModuleCreateInfo({}, buffer));
+        const vk::ShaderModule module = context.get_device().createShaderModule(
+            vk::ShaderModuleCreateInfo({}, buffer.get_size(), buffer.cast<u32>()));
 
         // Generate reflection data for a shader
         SpvReflectShaderModule spv_module = {};
-        SpvReflectResult result = spvReflectCreateShaderModule(file_size, buffer.data(), &spv_module);
+        SpvReflectResult result = spvReflectCreateShaderModule(buffer.get_size(), buffer.cast<u32>(), &spv_module);
         VK_CHECK(VK_CAST(result));
 
-        ShaderModule* shader_module = new ShaderModule(file, module, spv_module);
+        ShaderModule* shader_module = new ShaderModule(file_path, module, spv_module);
 
-        LOG_INFO("Loaded shader module: {0}", file);
-        shader_modules[file] = std::shared_ptr<ShaderModule>(shader_module);
-        return shader_modules[file];
+        LOG_INFO("Loaded shader module: {0}", file_path);
+        shader_modules[file_path] = std::shared_ptr<ShaderModule>(shader_module);
+        return shader_modules[file_path];
     }
 
     ShaderManager::~ShaderManager()
