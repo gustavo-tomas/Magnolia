@@ -1,7 +1,5 @@
 #include "renderer/renderer_image.hpp"
 
-#include "core/logger.hpp"
-
 namespace mag
 {
     RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,

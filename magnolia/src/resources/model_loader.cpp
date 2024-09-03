@@ -6,7 +6,6 @@
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
-#include "nlohmann/json.hpp"
 #include "resources/material.hpp"
 
 namespace mag

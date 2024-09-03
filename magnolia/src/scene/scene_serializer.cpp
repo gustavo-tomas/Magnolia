@@ -3,7 +3,6 @@
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
-#include "nlohmann/json.hpp"
 
 namespace mag
 {
