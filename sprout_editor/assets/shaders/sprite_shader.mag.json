@@ -1,0 +1,19 @@
+{
+    "Shader": "Sprite",
+    "Files": [
+        "sprite.vert.spv",
+        "sprite.frag.spv"
+    ],
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        }
+    }
+}
