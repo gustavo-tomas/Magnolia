@@ -44,7 +44,6 @@ namespace mag
         return true;
     }
 
-    // O on success
     b8 ImageLoader::get_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels) const
     {
         const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width), reinterpret_cast<i32*>(height),
