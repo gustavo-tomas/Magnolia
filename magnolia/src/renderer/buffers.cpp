@@ -73,19 +73,31 @@ namespace mag
 
     // VertexBuffer
     // -----------------------------------------------------------------------------------------------------------------
-    void VertexBuffer::initialize(const void* vertices, const u64 size_bytes)
+    VertexBuffer::VertexBuffer(const void* vertices, const u64 size_bytes)
     {
         gpu_buffer.initialize(vertices, size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     }
 
-    void VertexBuffer::shutdown() { gpu_buffer.shutdown(); }
+    VertexBuffer::~VertexBuffer() { gpu_buffer.shutdown(); }
+
+    void VertexBuffer::resize(const void* vertices, const u64 size_bytes)
+    {
+        gpu_buffer.shutdown();
+        gpu_buffer.initialize(vertices, size_bytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    }
 
     // IndexBuffer
     // -----------------------------------------------------------------------------------------------------------------
-    void IndexBuffer::initialize(const void* indices, const u64 size_bytes)
+    IndexBuffer::IndexBuffer(const void* indices, const u64 size_bytes)
     {
         gpu_buffer.initialize(indices, size_bytes, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     }
 
-    void IndexBuffer::shutdown() { gpu_buffer.shutdown(); }
+    IndexBuffer::~IndexBuffer() { gpu_buffer.shutdown(); }
+
+    void IndexBuffer::resize(const void* indices, const u64 size_bytes)
+    {
+        gpu_buffer.shutdown();
+        gpu_buffer.initialize(indices, size_bytes, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    }
 };  // namespace mag

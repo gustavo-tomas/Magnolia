@@ -50,8 +50,10 @@ namespace mag
     class VertexBuffer
     {
         public:
-            void initialize(const void* vertices, const u64 size_bytes);
-            void shutdown();
+            VertexBuffer(const void* vertices, const u64 size_bytes);
+            ~VertexBuffer();
+
+            void resize(const void* vertices, const u64 size_bytes);
 
             const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 
@@ -62,8 +64,10 @@ namespace mag
     class IndexBuffer
     {
         public:
-            void initialize(const void* indices, const u64 size_bytes);
-            void shutdown();
+            IndexBuffer(const void* indices, const u64 size_bytes);
+            ~IndexBuffer();
+
+            void resize(const void* indices, const u64 size_bytes);
 
             const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
 

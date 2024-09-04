@@ -48,8 +48,8 @@ namespace mag
             std::unique_ptr<Context> context;
 
             // Model data
-            std::map<Model*, VertexBuffer> vertex_buffers;
-            std::map<Model*, IndexBuffer> index_buffers;
+            std::map<Model*, std::shared_ptr<VertexBuffer>> vertex_buffers;
+            std::map<Model*, std::shared_ptr<IndexBuffer>> index_buffers;
 
             // Image data
             std::map<Image*, std::shared_ptr<RendererImage>> images;

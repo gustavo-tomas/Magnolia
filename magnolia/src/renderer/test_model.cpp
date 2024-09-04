@@ -1,8 +1,7 @@
 #include "renderer/test_model.hpp"
 
 #include "core/application.hpp"
-#include "core/logger.hpp"
-#include "renderer/context.hpp"
+#include "renderer/buffers.hpp"
 
 namespace mag
 {
@@ -158,13 +157,6 @@ namespace mag
             vertices.push_back(line_end);
         }
 
-        vbo.initialize(vertices.data(), VEC_SIZE_BYTES(vertices));
-    }
-
-    Line::~Line()
-    {
-        get_context().get_device().waitIdle();
-
-        vbo.shutdown();
+        vbo = std::make_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
     }
 };  // namespace mag

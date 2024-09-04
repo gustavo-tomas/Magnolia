@@ -78,8 +78,8 @@ namespace mag
         auto& command_buffer = context->get_curr_frame().command_buffer;
 
         // Bind buffers
-        command_buffer.bind_vertex_buffer(vbo_it->second.get_buffer());
-        command_buffer.bind_index_buffer(ibo_it->second.get_buffer());
+        command_buffer.bind_vertex_buffer(vbo_it->second->get_buffer());
+        command_buffer.bind_index_buffer(ibo_it->second->get_buffer());
     }
 
     void Renderer::update_model(Model* model)
@@ -93,11 +93,8 @@ namespace mag
             return;
         }
 
-        vertex_buffers[model].shutdown();
-        index_buffers[model].shutdown();
-
-        vertex_buffers[model].initialize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
-        index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
+        vertex_buffers[model]->resize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model]->resize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
     }
 
     void Renderer::upload_model(Model* model)
@@ -111,8 +108,8 @@ namespace mag
             return;
         }
 
-        vertex_buffers[model].initialize(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
-        index_buffers[model].initialize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
+        vertex_buffers[model] = std::make_shared<VertexBuffer>(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model] = std::make_shared<IndexBuffer>(model->indices.data(), VEC_SIZE_BYTES(model->indices));
     }
 
     void Renderer::remove_model(Model* model)
@@ -125,9 +122,6 @@ namespace mag
             LOG_ERROR("Tried to remove invalid model '{0}'", static_cast<void*>(model));
             return;
         }
-
-        vbo_it->second.shutdown();
-        ibo_it->second.shutdown();
 
         vertex_buffers.erase(vbo_it);
         index_buffers.erase(ibo_it);
