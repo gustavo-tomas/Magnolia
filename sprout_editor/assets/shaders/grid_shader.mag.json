@@ -1,9 +1,9 @@
 {
     "Shader": "Grid",
-    "Files": {
-        "Vertex": "grid.vert.spv",
-        "Fragment": "grid.frag.spv"
-    },
+    "Files": [
+        "grid.vert.spv",
+        "grid.frag.spv"
+    ],
     "Pipeline": {
         "InputAssembly": {
             "Topology": "Triangle"

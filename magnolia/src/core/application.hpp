@@ -14,6 +14,7 @@
 #include "resources/material_loader.hpp"
 #include "resources/model.hpp"
 #include "resources/model_loader.hpp"
+#include "resources/shader_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
@@ -47,6 +48,7 @@ namespace mag
             TextureManager& get_texture_manager() { return *texture_loader; };
             MaterialManager& get_material_manager() { return *material_manager; };
             ModelManager& get_model_manager() { return *model_manager; };
+            ShaderLoader& get_shader_loader() { return *shader_loader; };
             ShaderManager& get_shader_manager() { return *shader_manager; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
 
@@ -61,6 +63,7 @@ namespace mag
             std::unique_ptr<ImageLoader> image_loader;
             std::unique_ptr<MaterialLoader> material_loader;
             std::unique_ptr<ModelLoader> model_loader;
+            std::unique_ptr<ShaderLoader> shader_loader;
             std::unique_ptr<TextureManager> texture_loader;
             std::unique_ptr<MaterialManager> material_manager;
             std::unique_ptr<ModelManager> model_manager;

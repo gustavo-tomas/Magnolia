@@ -1,7 +1,6 @@
 #include "passes/scene_pass.hpp"
 
 #include "core/application.hpp"
-#include "core/logger.hpp"
 #include "editor.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
@@ -22,10 +21,10 @@ namespace sprout
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass", size)
     {
         auto& app = get_application();
-        auto& shader_loader = app.get_shader_manager();
+        auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        mesh_shader = shader_loader.load("sprout_editor/assets/shaders/mesh_shader.mag.json");
+        mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
@@ -103,10 +102,10 @@ namespace sprout
     PhysicsPass::PhysicsPass(const uvec2& size) : RenderGraphPass("PhysicsPass", size)
     {
         auto& app = get_application();
-        auto& shader_loader = app.get_shader_manager();
+        auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        physics_line_shader = shader_loader.load("sprout_editor/assets/shaders/physics_line_shader.mag.json");
+        physics_line_shader = shader_manager.get("sprout_editor/assets/shaders/physics_line_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
@@ -160,10 +159,10 @@ namespace sprout
     GridPass::GridPass(const uvec2& size) : RenderGraphPass("GridPass", size)
     {
         auto& app = get_application();
-        auto& shader_loader = app.get_shader_manager();
+        auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        grid_shader = shader_loader.load("sprout_editor/assets/shaders/grid_shader.mag.json");
+        grid_shader = shader_manager.get("sprout_editor/assets/shaders/grid_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);

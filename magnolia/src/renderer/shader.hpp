@@ -5,44 +5,49 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
-#include "nlohmann/json.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
 {
     using namespace mag::math;
-    using json = nlohmann::ordered_json;
 
     class Pipeline;
     struct Image;
     struct Material;
 
-    class ShaderModule
+    struct ShaderModule
     {
-        public:
-            ShaderModule(const str& file, const vk::ShaderModule& module, const SpvReflectShaderModule& reflection)
-                : module(module), spv_module(reflection), file(file)
-            {
-            }
+            str file_path = "";
 
-            ~ShaderModule() = default;
-
-            const str& get_file() const { return file; };
-            const vk::ShaderModule& get_handle() const { return module; };
-            const SpvReflectShaderModule& get_reflection() const { return spv_module; };
-
-        private:
             vk::ShaderModule module = {};
             SpvReflectShaderModule spv_module = {};
+    };
 
-            str file = {};
+    struct ShaderConfiguration
+    {
+            str name = "";
+            str file_path = "";
+
+            std::vector<ShaderModule> shader_modules;
+
+            str topology;
+            str polygon_mode;
+            str cull_mode;
+
+            b8 color_blend_enabled;
+            str color_blend_op;
+            str alpha_blend_op;
+            str src_color_blend_factor;
+            str dst_color_blend_factor;
+            str src_alpha_blend_factor;
+            str dst_alpha_blend_factor;
     };
 
     class Shader
     {
         public:
-            Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data);
+            Shader(const ShaderConfiguration& shader_configuration);
             ~Shader();
 
             void bind();
@@ -51,8 +56,7 @@ namespace mag
             void set_texture(const str& name, Image* texture);
             void set_material(const str& name, Material* material);
 
-            // @TODO: this is temporary. We want to avoid needing to pass modules around
-            const std::vector<std::shared_ptr<ShaderModule>>& get_modules() const { return modules; };
+            const ShaderConfiguration& get_shader_configuration() const { return configuration; }
 
             const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const
             {
@@ -83,7 +87,7 @@ namespace mag
             void add_attribute(const vk::Format format, const u32 size, const u32 offset);
             void bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set);
 
-            std::vector<std::shared_ptr<ShaderModule>> modules;
+            ShaderConfiguration configuration;
             std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
@@ -102,14 +106,9 @@ namespace mag
     class ShaderManager
     {
         public:
-            ShaderManager() = default;
-            ~ShaderManager();
-
-            std::shared_ptr<Shader> load(const str& file_path);
+            std::shared_ptr<Shader> get(const str& file_path);
 
         private:
-            std::shared_ptr<ShaderModule> load_module(const str& file);
-            std::map<str, std::shared_ptr<ShaderModule>> shader_modules;
             std::map<str, std::shared_ptr<Shader>> shaders;
     };
 };  // namespace mag

@@ -50,6 +50,10 @@ namespace mag
         model_loader = std::make_unique<ModelLoader>();
         LOG_SUCCESS("ModelLoader initialized");
 
+        // Create the shader loader
+        shader_loader = std::make_unique<ShaderLoader>();
+        LOG_SUCCESS("ShaderLoader initialized");
+
         // Create the texture manager
         texture_loader = std::make_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
