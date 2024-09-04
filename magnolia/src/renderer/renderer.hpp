@@ -6,6 +6,8 @@
 #include "renderer/render_graph.hpp"
 #include "resources/image.hpp"
 
+// @TODO: refactor this API to be more consistent
+
 namespace mag
 {
     struct Model;
@@ -19,6 +21,12 @@ namespace mag
 
             void update(RenderGraph& render_graph);
             void on_event(Event& e);
+
+            void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
+                      const u32 first_instance = 0);
+
+            void draw_indexed(const u32 index_count, const u32 instance_count = 1, const u32 first_index = 0,
+                              const i32 vertex_offset = 0, const u32 first_instance = 0);
 
             // @TODO: temp?
             void bind_buffers(Model* model);

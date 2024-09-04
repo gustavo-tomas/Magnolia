@@ -41,8 +41,6 @@ namespace sprout
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& material_manager = app.get_material_manager();
-        auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
         auto& ecs = scene.get_ecs();
@@ -87,7 +85,7 @@ namespace sprout
                 mesh_shader->set_material("u_material_textures", material.get());
 
                 // Draw the mesh
-                command_buffer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 performance_results.draw_calls++;
             }
@@ -120,6 +118,7 @@ namespace sprout
         (void)render_graph;
 
         auto& app = get_application();
+        auto& renderer = app.get_renderer();
         auto& editor = get_editor();
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -146,8 +145,9 @@ namespace sprout
         physics_line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         physics_line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
+        // @TODO: command buffers shouldnt be accessible. They should be handled by the renderer.
         command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
-        command_buffer.draw(physics_debug_lines->get_vertices().size());
+        renderer.draw(physics_debug_lines->get_vertices().size());
 
         // @NOTE: not accurate but gives a good estimate
         performance_results.rendered_triangles += physics_debug_lines->get_vertices().size() / 3;
@@ -176,8 +176,8 @@ namespace sprout
     {
         (void)render_graph;
 
-        auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
@@ -191,7 +191,7 @@ namespace sprout
         grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
         // Draw the grid
-        command_buffer.draw(6);
+        renderer.draw(6);
 
         // Very accurate :)
         performance_results.rendered_triangles += 2;

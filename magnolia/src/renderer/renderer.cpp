@@ -50,6 +50,20 @@ namespace mag
         this->context->calculate_timestamp();  // Calculate after command recording ended
     }
 
+    void Renderer::draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
+                        const u32 first_instance)
+    {
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+        command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
+    }
+
+    void Renderer::draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                                const i32 vertex_offset, const u32 first_instance)
+    {
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+        command_buffer.draw_indexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+    }
+
     void Renderer::bind_buffers(Model* model)
     {
         auto vbo_it = vertex_buffers.find(model);
