@@ -25,6 +25,7 @@ namespace sprout
 
         // Shaders
         mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
+        sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
@@ -50,6 +51,7 @@ namespace sprout
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
+        auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
 
         u32 l = 0;
         LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
@@ -57,6 +59,8 @@ namespace sprout
         {
             point_lights[l++] = {light->color, light->intensity, transform->translation};
         }
+
+        // Render models
 
         mesh_shader->bind();
 
@@ -92,6 +96,39 @@ namespace sprout
 
             // @NOTE: not accurate but gives a good estimate
             performance_results.rendered_triangles += model->vertices.size() / 3;
+        }
+
+        // Render sprites
+
+        sprite_shader->bind();
+
+        sprite_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        sprite_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+
+        for (u32 i = 0; i < sprite_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(sprite_entities[i]);
+            const auto& sprite = std::get<1>(sprite_entities[i]);
+
+            const auto& sprite_tex = sprite->texture;
+            const auto& sprite_quad = sprite->quad;
+
+            const auto model_matrix = transform->get_transformation_matrix();
+
+            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
+            sprite_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
+            sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
+
+            // @TODO: command buffers should be handled by the renderer
+            auto& cmd = get_context().get_curr_frame().command_buffer;
+
+            cmd.bind_vertex_buffer(sprite_quad->get_vbo().get_buffer());
+            cmd.bind_index_buffer(sprite_quad->get_ibo().get_buffer());
+
+            renderer.draw_indexed(sprite_quad->get_indices().size(), 1, 0, 0, i);
+
+            performance_results.rendered_triangles += 2;
+            performance_results.draw_calls++;
         }
     }
 

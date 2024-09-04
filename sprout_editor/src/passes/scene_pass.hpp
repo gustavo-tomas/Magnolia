@@ -19,6 +19,7 @@ namespace sprout
 
         private:
             std::shared_ptr<Shader> mesh_shader;
+            std::shared_ptr<Shader> sprite_shader;
     };
 
     class PhysicsPass : public RenderGraphPass
