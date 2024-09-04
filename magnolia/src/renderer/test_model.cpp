@@ -1,7 +1,7 @@
 #include "renderer/test_model.hpp"
 
-#include "core/application.hpp"
 #include "renderer/buffers.hpp"
+#include "resources/material.hpp"
 
 namespace mag
 {
@@ -131,12 +131,6 @@ namespace mag
 
         // Use the default material
         model.materials.push_back(DEFAULT_MATERIAL_NAME);
-
-        // Send model data to the GPU
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
-        renderer.upload_model(&model);
     }
 
     Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)
