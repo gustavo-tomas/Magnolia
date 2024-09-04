@@ -133,6 +133,31 @@ namespace mag
         model.materials.push_back(DEFAULT_MATERIAL_NAME);
     }
 
+    Quad::Quad(const vec2 dimensions)
+    {
+        vertices.resize(4);
+
+        vertices[0].positon = vec3(-dimensions.x, dimensions.y, 0.0f);
+        vertices[1].positon = vec3(-dimensions.x, -dimensions.y, 0.0f);
+        vertices[2].positon = vec3(dimensions.x, dimensions.y, 0.0f);
+        vertices[3].positon = vec3(dimensions.x, -dimensions.y, 0.0f);
+
+        vertices[0].tex_coords = vec2(0.0f, 0.0f);
+        vertices[1].tex_coords = vec2(0.0f, 1.0f);
+        vertices[2].tex_coords = vec2(1.0f, 0.0f);
+        vertices[3].tex_coords = vec2(1.0f, 1.0f);
+
+        indices = {
+            0, 1,
+            2,  // First triangle
+            1, 3,
+            2  // Second triangle
+        };
+
+        vbo = std::make_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
+        ibo = std::make_unique<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
+    };
+
     Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)
     {
         for (u32 i = 0; i < starts.size(); i++)

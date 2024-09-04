@@ -21,6 +21,31 @@ namespace mag
             Model model;
     };
 
+    struct QuadVertex
+    {
+            vec3 positon;
+            vec2 tex_coords;
+    };
+
+    class Quad
+    {
+        public:
+            Quad(const vec2 dimensions = vec2(1.0f, 1.0f));
+
+            const VertexBuffer& get_vbo() const { return *vbo; };
+            const IndexBuffer& get_ibo() const { return *ibo; };
+
+            const std::vector<QuadVertex>& get_vertices() const { return vertices; };
+            const std::vector<u32>& get_indices() const { return indices; };
+
+        private:
+            std::unique_ptr<VertexBuffer> vbo;
+            std::unique_ptr<IndexBuffer> ibo;
+
+            std::vector<QuadVertex> vertices;
+            std::vector<u32> indices;
+    };
+
     struct LineVertex
     {
             vec3 position;
