@@ -12,98 +12,27 @@
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderManager::load(const str& file_path)
+    std::shared_ptr<Shader> ShaderManager::get(const str& file_path)
     {
         auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
 
         auto& app = get_application();
-        auto& file_system = app.get_file_system();
+        auto& shader_loader = app.get_shader_loader();
 
-        json data;
-        ASSERT(file_system.read_json_data(file_path, data), "Failed to load shader '" + file_path + "'");
+        ShaderConfiguration shader_configuration;
 
-        ASSERT(data.contains("Files"), "Shader '" + file_path + "' has no shader stages");
-        ASSERT(data.contains("Pipeline"), "Shader '" + file_path + "' has no pipeline configuration");
-
-        const str shader_name = data["Shader"];
-        const json files = data["Files"];
-
-        // Vertex and fragment shaders are necessary, the other stages are optional
-        ASSERT(files.contains("Vertex") && files.contains("Fragment"), "Missing vertex or fragment shaders");
-
-        // @TODO: cleanup
-        str shader_folder = "shaders/";
+        if (!shader_loader.load(file_path, &shader_configuration))
         {
-            // Shaders
-            const std::filesystem::path cwd = std::filesystem::current_path();
-            const str last_folder = cwd.filename().string();
-            str system = "linux";
-
-// @TODO: clean this up (maybe use a filesystem class)
-#if defined(_WIN32)
-            system = "windows";
-#endif
-            if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
+            LOG_ERROR("Failed to load shader: '{0}'", file_path);
+            return nullptr;
         }
-        // @TODO: cleanup
 
-        const str vertex_file_path = shader_folder + str(files["Vertex"]);
-        const str fragment_file_path = shader_folder + str(files["Fragment"]);
-
-        const auto vertex_module = load_module(vertex_file_path);
-        const auto fragment_module = load_module(fragment_file_path);
-
-        Shader* shader = new Shader({vertex_module, fragment_module}, data["Pipeline"]);
-
-        LOG_SUCCESS("Loaded shader: {0}", file_path);
-        shaders[file_path] = std::shared_ptr<Shader>(shader);
+        shaders[file_path] = std::make_shared<Shader>(shader_configuration);
         return shaders[file_path];
     }
 
-    std::shared_ptr<ShaderModule> ShaderManager::load_module(const str& file_path)
-    {
-        auto it = shader_modules.find(file_path);
-        if (it != shader_modules.end()) return it->second;
-
-        auto& context = get_context();
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
-        Buffer buffer;
-        ASSERT(file_system.read_binary_data(file_path, buffer), "Failed to load module: '{0}'", file_path);
-
-        const vk::ShaderModule module = context.get_device().createShaderModule(
-            vk::ShaderModuleCreateInfo({}, buffer.get_size(), buffer.cast<u32>()));
-
-        // Generate reflection data for a shader
-        SpvReflectShaderModule spv_module = {};
-        SpvReflectResult result = spvReflectCreateShaderModule(buffer.get_size(), buffer.cast<u32>(), &spv_module);
-        VK_CHECK(VK_CAST(result));
-
-        ShaderModule* shader_module = new ShaderModule(file_path, module, spv_module);
-
-        LOG_INFO("Loaded shader module: {0}", file_path);
-        shader_modules[file_path] = std::shared_ptr<ShaderModule>(shader_module);
-        return shader_modules[file_path];
-    }
-
-    ShaderManager::~ShaderManager()
-    {
-        auto& context = get_context();
-        context.get_device().waitIdle();
-
-        for (const auto& shader_pair : shader_modules)
-        {
-            const auto& shader = shader_pair.second;
-
-            context.get_device().destroyShaderModule(shader->get_handle());
-            spvReflectDestroyShaderModule(const_cast<SpvReflectShaderModule*>(&shader->get_reflection()));
-        }
-    }
-
-    Shader::Shader(const std::vector<std::shared_ptr<ShaderModule>>& modules, const json pipeline_data)
-        : modules(modules)
+    Shader::Shader(const ShaderConfiguration& shader_configuration) : configuration(shader_configuration)
     {
         auto& context = get_context();
         const u32 frame_count = context.get_frame_count();
@@ -111,9 +40,9 @@ namespace mag
         // Find total number of descriptor set layouts
         {
             u32 binding_count = 0;
-            for (const auto& module : modules)
+            for (const auto& module : shader_configuration.shader_modules)
             {
-                const auto& reflection = module->get_reflection();
+                const auto& reflection = module.spv_module;
                 binding_count = max(binding_count, reflection.descriptor_binding_count);
             }
 
@@ -121,9 +50,9 @@ namespace mag
         }
 
         // Initialize all uniforms
-        for (const auto& module : modules)
+        for (const auto& module : shader_configuration.shader_modules)
         {
-            const auto& reflection = module->get_reflection();
+            const auto& reflection = module.spv_module;
 
             const vk::ShaderStageFlags stage = static_cast<vk::ShaderStageFlags>(reflection.shader_stage);
 
@@ -247,19 +176,14 @@ namespace mag
             }
         }
 
-        // @TODO: hardcoded format
-        const auto color_format = vk::Format::eR16G16B16A16Sfloat;
-        const auto depth_format = vk::Format::eD32Sfloat;
-
-        // Create pipeline
-        const vk::PipelineRenderingCreateInfo pipeline_create_info =
-            vk::PipelineRenderingCreateInfo({}, color_format, depth_format);
-
-        pipeline = std::make_unique<Pipeline>(*this, pipeline_create_info, pipeline_data);
+        pipeline = std::make_unique<Pipeline>(*this);
     }
 
     Shader::~Shader()
     {
+        auto& context = get_context();
+        context.get_device().waitIdle();
+
         for (auto& uniform_p : uniforms_map)
         {
             auto& ubo = uniform_p.second;
@@ -267,6 +191,12 @@ namespace mag
             {
                 buffer.shutdown();
             }
+        }
+
+        for (const auto& shader_module : configuration.shader_modules)
+        {
+            context.get_device().destroyShaderModule(shader_module.module);
+            spvReflectDestroyShaderModule(const_cast<SpvReflectShaderModule*>(&shader_module.spv_module));
         }
     }
 

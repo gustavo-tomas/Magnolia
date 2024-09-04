@@ -2,20 +2,16 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "nlohmann/json.hpp"
 #include "renderer/shader.hpp"
 
 namespace mag
 {
     using namespace mag::math;
-    using json = nlohmann::ordered_json;
 
     class Pipeline
     {
         public:
-            Pipeline(const Shader& shader, const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info,
-                     const json pipeline_data);
-
+            Pipeline(const Shader& shader);
             ~Pipeline();
 
             void bind();
