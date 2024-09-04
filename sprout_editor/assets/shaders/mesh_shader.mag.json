@@ -1,9 +1,9 @@
 {
     "Shader": "Mesh",
-    "Files": {
-        "Vertex": "mesh.vert.spv",
-        "Fragment": "mesh.frag.spv"
-    },
+    "Files": [
+        "mesh.vert.spv",
+        "mesh.frag.spv"
+    ],
     "Pipeline": {
         "InputAssembly": {
             "Topology": "Triangle"

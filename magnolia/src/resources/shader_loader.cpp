@@ -37,14 +37,6 @@ namespace mag
         }
 
         const str shader_name = data["Shader"];
-        const json files = data["Files"];
-
-        // Vertex and fragment shaders are necessary, the other stages are optional
-        if (!files.contains("Vertex") || !files.contains("Fragment"))
-        {
-            LOG_ERROR("Shader '{0}' is missing vertex/fragment shaders");
-            return false;
-        }
 
         // @TODO: cleanup
         str shader_folder = "shaders/";
@@ -62,21 +54,41 @@ namespace mag
         }
         // @TODO: cleanup
 
-        const str vertex_file_path = shader_folder + str(files["Vertex"]);
-        const str fragment_file_path = shader_folder + str(files["Fragment"]);
+        b8 contains_vertex_stage = false;
+        b8 contains_fragment_stage = false;
 
-        ShaderModule vertex_module;
-        ShaderModule fragment_module;
-
-        if (!load_module(vertex_file_path, &vertex_module))
+        std::vector<str> shader_modules = data["Files"];
+        for (auto& shader_module_file : shader_modules)
         {
-            LOG_ERROR("Failed to load module: '{0}'", vertex_file_path);
-            return false;
+            const str shader_module_path = shader_folder + shader_module_file;
+
+            ShaderModule shader_module;
+
+            if (!load_module(shader_module_path, &shader_module))
+            {
+                LOG_ERROR("Failed to load module: '{0}'", shader_module_path);
+                return false;
+            }
+
+            if (shader_module.spv_module.shader_stage ==
+                static_cast<SpvReflectShaderStageFlagBits>(vk::ShaderStageFlagBits::eVertex))
+            {
+                contains_vertex_stage = true;
+            }
+
+            if (shader_module.spv_module.shader_stage ==
+                static_cast<SpvReflectShaderStageFlagBits>(vk::ShaderStageFlagBits::eFragment))
+            {
+                contains_fragment_stage = true;
+            }
+
+            shader->shader_modules.push_back(shader_module);
         }
 
-        if (!load_module(fragment_file_path, &fragment_module))
+        // Vertex and fragment shaders are necessary, the other stages are optional
+        if (!contains_vertex_stage || !contains_fragment_stage)
         {
-            LOG_ERROR("Failed to load module: '{0}'", fragment_file_path);
+            LOG_ERROR("Shader '{0}' is missing vertex/fragment shaders", file_path);
             return false;
         }
 
@@ -84,9 +96,6 @@ namespace mag
 
         shader->name = shader_name;
         shader->file_path = file_path;
-
-        shader->shader_modules.push_back(vertex_module);
-        shader->shader_modules.push_back(fragment_module);
 
         shader->topology = pipeline_data["InputAssembly"]["Topology"];
         shader->polygon_mode = pipeline_data["Rasterization"]["PolygonMode"];
