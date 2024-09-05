@@ -47,6 +47,21 @@ namespace mag
             }
     };
 
+    struct Image;
+    class Quad;
+    struct SpriteComponent : public Component
+    {
+            SpriteComponent(const std::shared_ptr<Image>& texture, const std::shared_ptr<Quad>& quad)
+                : texture(texture), quad(quad)
+            {
+            }
+
+            CLONE(SpriteComponent);
+
+            std::shared_ptr<Image> texture;
+            std::shared_ptr<Quad> quad;  // @TODO: idk about this
+    };
+
     // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
     // and i find that a bit weird
     struct Model;
