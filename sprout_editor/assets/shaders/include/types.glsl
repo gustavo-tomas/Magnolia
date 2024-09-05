@@ -9,9 +9,6 @@
 #define ALBEDO_TEXTURE u_material_textures[0]
 #define NORMAL_TEXTURE u_material_textures[1]
 
-// Constants
-const uint MAX_NUMBER_OF_LIGHTS = 4;
-
 // Types
 struct Light
 {

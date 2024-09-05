@@ -106,9 +106,6 @@ namespace mag
 
             CLONE(LightComponent);
 
-            // This should match the shaders max number of lights
-            static const u32 MAX_NUMBER_OF_LIGHTS = 4;
-
             vec3 color;
             f32 intensity;
     };

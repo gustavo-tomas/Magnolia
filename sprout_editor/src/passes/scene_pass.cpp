@@ -53,13 +53,6 @@ namespace sprout
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
         auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
 
-        u32 l = 0;
-        LightData point_lights[LightComponent::MAX_NUMBER_OF_LIGHTS] = {};
-        for (const auto& [transform, light] : light_entities)
-        {
-            point_lights[l++] = {light->color, light->intensity, transform->translation};
-        }
-
         // Render models
 
         mesh_shader->bind();
@@ -67,9 +60,19 @@ namespace sprout
         mesh_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         mesh_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
         mesh_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
-        mesh_shader->set_uniform("u_global", "point_lights", &point_lights);
         mesh_shader->set_uniform("u_shader", "texture_output", &editor.get_texture_output());
         mesh_shader->set_uniform("u_shader", "normal_output", &editor.get_normal_output());
+
+        u32 l = 0;
+        const u32 number_of_lights = light_entities.size();
+        mesh_shader->set_uniform("u_lights", "number_of_lights", &number_of_lights);
+
+        for (const auto& [transform, light] : light_entities)
+        {
+            LightData point_light = {light->color, light->intensity, transform->translation};
+
+            mesh_shader->set_uniform("u_lights", "lights", &point_light, sizeof(point_light) * l++);
+        }
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {

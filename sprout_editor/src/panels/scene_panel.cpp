@@ -73,10 +73,7 @@ namespace sprout
                                       new CameraComponent(Camera(vec3(0), vec3(0), 60.0f, 1.33f, 1.0f, 1000.0f)));
                 }
 
-                auto number_of_lights = ecs.get_all_components_of_type<LightComponent>().size();
-                enabled = !ecs.get_component<LightComponent>(selected_entity_id) &&
-                          number_of_lights < LightComponent::MAX_NUMBER_OF_LIGHTS;
-
+                enabled = !ecs.get_component<LightComponent>(selected_entity_id);
                 if (ImGui::MenuItem("Add Light Component", NULL, false, enabled))
                 {
                     ecs.add_component(selected_entity_id, new LightComponent());

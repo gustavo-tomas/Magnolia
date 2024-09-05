@@ -40,9 +40,9 @@ void main()
 
 	// Phong shading
 	vec3 phong_color = vec3(0);
-	for (uint i = 0; i < MAX_NUMBER_OF_LIGHTS; i++)
+	for (uint i = 0; i < u_lights.number_of_lights; i++)
 	{
-		phong_color += phong_shading(normal, in_frag_position, camera_position, u_global.point_lights[i]);
+		phong_color += phong_shading(normal, in_frag_position, camera_position, u_lights.lights[i]);
 	}
 
 	switch (u_shader.texture_output)
