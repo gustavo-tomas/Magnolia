@@ -13,6 +13,7 @@ namespace sprout
         auto &app = get_application();
         auto &editor = get_editor();
         auto &model_loader = app.get_model_loader();
+        auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
 
         // Recreate image descriptors
@@ -50,7 +51,7 @@ namespace sprout
         ImGui::SetNextItemAllowOverlap();
         ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
-        // Load models if any was draged over the viewport
+        // Load assets if any was draged over the viewport
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
@@ -73,16 +74,21 @@ namespace sprout
                     LOG_ERROR("Path is a directory: {0}", path);
                 }
 
-                // Then check if this extension is supported
-                else if (!model_loader.is_extension_supported(extension))
+                // Check if asset is an image
+                else if (image_loader.is_extension_supported(extension))
                 {
-                    LOG_ERROR("Extension not supported: {0}", extension);
+                    scene.add_sprite(path);
                 }
 
-                // Finally load the model
-                else
+                // Check if asset is a model
+                else if (model_loader.is_extension_supported(extension))
                 {
                     scene.add_model(path);
+                }
+
+                else
+                {
+                    LOG_ERROR("Extension not supported: {0}", extension);
                 }
             }
             ImGui::EndDragDropTarget();
