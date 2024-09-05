@@ -1,5 +1,7 @@
 #include "resources/image_loader.hpp"
 
+#include <set>
+
 #include "core/logger.hpp"
 #include "resources/image.hpp"
 
@@ -55,5 +57,14 @@ namespace mag
         *mip_levels = static_cast<u32>(std::floor(std::log2(std::max(*width, *height)))) + 1;
 
         return result;
+    }
+
+    b8 ImageLoader::is_extension_supported(const str& extension_with_dot)
+    {
+        // Extensions supported by stb
+        static const std::set<str> supported_formats = {".jpeg", ".png", ".tga", ".bmp", ".psd",
+                                                        ".gif",  ".hdr", ".pic", ".pnm"};
+
+        return supported_formats.contains(extension_with_dot);
     }
 };  // namespace mag
