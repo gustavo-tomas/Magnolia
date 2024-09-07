@@ -1,7 +1,6 @@
 #include "resources/image_loader.hpp"
 
-#include <set>
-
+#include "core/application.hpp"
 #include "core/logger.hpp"
 #include "resources/image.hpp"
 
@@ -18,9 +17,16 @@ namespace mag
             return false;
         }
 
-        i32 tex_width = 0, tex_height = 0, tex_channels = 0;
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
 
-        stbi_uc* pixels = stbi_load(file_path.c_str(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
+        Buffer buffer;
+        file_system.read_binary_data(file_path, buffer);
+
+        i32 tex_width = 0, tex_height = 0, tex_channels = 0;
+        stbi_uc* pixels = stbi_load_from_memory(buffer.data.data(), buffer.get_size(), &tex_width, &tex_height,
+                                                &tex_channels, STBI_rgb_alpha);
+
         if (pixels == NULL)
         {
             LOG_ERROR("Failed to load image file: {0}", file_path);
