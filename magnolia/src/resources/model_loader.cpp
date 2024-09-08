@@ -3,7 +3,6 @@
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
-#include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "resources/material.hpp"
@@ -161,7 +160,10 @@ namespace mag
         for (u32 m = 0; m < scene->mNumMeshes; m++)
         {
             const aiMesh* mesh = scene->mMeshes[m];
-            initialize_mesh(m, mesh, model);
+            if (!initialize_mesh(m, mesh, model))
+            {
+                return false;
+            }
         }
 
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
@@ -243,12 +245,37 @@ namespace mag
         model->file_path = native_model_file_path;
     }
 
-    void ModelLoader::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model)
+    b8 ModelLoader::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model* model)
     {
-        ASSERT(ai_mesh->HasFaces(), "Mesh has no faces");
-        ASSERT(ai_mesh->HasPositions(), "Mesh has no position");
-        ASSERT(ai_mesh->HasNormals(), "Mesh has no normals");
-        ASSERT(ai_mesh->HasTangentsAndBitangents(), "Mesh has no tangents/bitangents");
+        if (!ai_mesh->HasFaces())
+        {
+            LOG_ERROR("Mesh has no faces");
+            return false;
+        }
+
+        if (!ai_mesh->HasPositions())
+        {
+            LOG_ERROR("Mesh has no position");
+            return false;
+        }
+
+        if (!ai_mesh->HasTextureCoords(0))
+        {
+            LOG_ERROR("Mesh has no texture coordinates");
+            return false;
+        }
+
+        if (!ai_mesh->HasNormals())
+        {
+            LOG_ERROR("Mesh has no normals");
+            return false;
+        }
+
+        if (!ai_mesh->HasTangentsAndBitangents())
+        {
+            LOG_ERROR("Mesh has no tangents/bitangents");
+            return false;
+        }
 
         model->meshes[mesh_idx].base_index = model->indices.size();
         model->meshes[mesh_idx].base_vertex = model->vertices.size();
@@ -261,7 +288,11 @@ namespace mag
         for (u32 i = 0; i < ai_mesh->mNumFaces; i++)
         {
             const auto& face = ai_mesh->mFaces[i];
-            ASSERT(face.mNumIndices == 3, "Face is not a triangle");
+            if (face.mNumIndices != 3)
+            {
+                LOG_ERROR("Face is not a triangle");
+                return false;
+            }
 
             indices[i * 3 + 0] = face.mIndices[0];
             indices[i * 3 + 1] = face.mIndices[1];
@@ -287,6 +318,7 @@ namespace mag
 
         // Optimize
         optimize_mesh(vertices, indices, model);
+        return true;
     }
 
     void ModelLoader::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model* model)
