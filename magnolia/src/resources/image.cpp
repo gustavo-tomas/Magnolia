@@ -32,6 +32,11 @@ namespace mag
             image->pixels.resize(image->width * image->height * image->channels, image->pixels[0]);
         }
 
+        else
+        {
+            LOG_ERROR("Failed to retrieve image dimensions for '{0}'", name);
+        }
+
         // Send image data to the GPU
         renderer.upload_image(image);
 
