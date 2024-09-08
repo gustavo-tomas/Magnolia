@@ -131,13 +131,29 @@ namespace mag
 
     b8 ModelLoader::import_from_file(const str& file_path, Model* model)
     {
-        // Import the model
-        const u32 flags = aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_GenNormals |
-                          aiProcess_CalcTangentSpace | aiProcess_FlipUVs;
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs;
 
         const aiScene* scene = importer->ReadFile(file_path, flags);
-        ASSERT(scene && scene->mRootNode && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Failed to load model");
-        ASSERT(scene->HasMeshes(), "Model has no meshes");
+        if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
+        {
+            LOG_ERROR("Failed to import model '{0}'", file_path);
+            return false;
+        }
+
+        if (!scene->HasMeshes())
+        {
+            LOG_ERROR("Model has no meshes '{0}'", file_path);
+            return false;
+        }
+
+        const str error = importer->GetErrorString();
+        if (!error.empty())
+        {
+            LOG_ERROR("Importer error: {0}", error);
+        }
 
         model->name = scene->mRootNode->mName.C_Str();
         model->meshes.resize(scene->mNumMeshes);
@@ -147,9 +163,6 @@ namespace mag
             const aiMesh* mesh = scene->mMeshes[m];
             initialize_mesh(m, mesh, model);
         }
-
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
 
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
         if (!file_system.create_directories(output_directory))
