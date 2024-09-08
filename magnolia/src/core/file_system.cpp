@@ -1,13 +1,16 @@
 #include "core/file_system.hpp"
 
+#include <algorithm>
 #include <fstream>
 
 #include "core/logger.hpp"
 
 namespace mag
 {
-    b8 FileSystem::read_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const
+    b8 FileSystem::read_binary_data(const std::filesystem::path& raw_file_path, Buffer& buffer) const
     {
+        const auto file_path = get_fixed_path(raw_file_path);
+
         std::ifstream file(file_path, std::ios::binary | std::ios::ate);
 
         // Failed to open the file
@@ -36,8 +39,10 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::write_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const
+    b8 FileSystem::write_binary_data(const std::filesystem::path& raw_file_path, Buffer& buffer) const
     {
+        const auto file_path = get_fixed_path(raw_file_path);
+
         std::ofstream file(file_path, std::ios::binary);
 
         if (!file)
@@ -58,8 +63,10 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::read_json_data(const std::filesystem::path& file_path, json& data) const
+    b8 FileSystem::read_json_data(const std::filesystem::path& raw_file_path, json& data) const
     {
+        const auto file_path = get_fixed_path(raw_file_path);
+
         // Parse data from the json file
         std::ifstream file(file_path);
 
@@ -80,8 +87,10 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::write_json_data(const std::filesystem::path& file_path, json& data) const
+    b8 FileSystem::write_json_data(const std::filesystem::path& raw_file_path, json& data) const
     {
+        const auto file_path = get_fixed_path(raw_file_path);
+
         std::ofstream file(file_path);
 
         if (!file)
@@ -96,8 +105,10 @@ namespace mag
         return true;
     }
 
-    b8 FileSystem::create_directories(const std::filesystem::path& path) const
+    b8 FileSystem::create_directories(const std::filesystem::path& raw_file_path) const
     {
+        const auto path = get_fixed_path(raw_file_path);
+
         if (exists(path))
         {
             return true;
@@ -106,12 +117,32 @@ namespace mag
         return std::filesystem::create_directories(path);
     }
 
-    str FileSystem::get_file_extension(const std::filesystem::path& file_path) const
+    std::filesystem::path FileSystem::get_fixed_path(const std::filesystem::path& file_path) const
     {
+        str fixed_path = file_path.string();
+
+        // Replace backslashes
+        std::replace_if(
+            fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
+
+        return fixed_path;
+    }
+
+    str FileSystem::get_file_extension(const std::filesystem::path& raw_file_path) const
+    {
+        const auto file_path = get_fixed_path(raw_file_path);
         return file_path.extension().c_str();
     }
 
-    b8 FileSystem::exists(const std::filesystem::path& path) const { return std::filesystem::exists(path); }
+    b8 FileSystem::exists(const std::filesystem::path& raw_file_path) const
+    {
+        const auto path = get_fixed_path(raw_file_path);
+        return std::filesystem::exists(path);
+    }
 
-    b8 FileSystem::is_directory(const std::filesystem::path& path) const { return std::filesystem::is_directory(path); }
+    b8 FileSystem::is_directory(const std::filesystem::path& raw_file_path) const
+    {
+        const auto path = get_fixed_path(raw_file_path);
+        return std::filesystem::is_directory(path);
+    }
 };  // namespace mag

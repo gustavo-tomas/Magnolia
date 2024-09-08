@@ -27,6 +27,7 @@ namespace mag
             b8 create_directories(const std::filesystem::path& path) const;
 
             str get_file_extension(const std::filesystem::path& file_path) const;
+            std::filesystem::path get_fixed_path(const std::filesystem::path& file_path) const;
 
             b8 exists(const std::filesystem::path& path) const;
             b8 is_directory(const std::filesystem::path& path) const;
