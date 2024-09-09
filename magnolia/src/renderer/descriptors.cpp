@@ -226,6 +226,19 @@ namespace mag
 
     // DescriptorBuilder
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorBuilder::~DescriptorBuilder()
+    {
+        for (auto* info : buffer_infos)
+        {
+            delete info;
+        }
+
+        for (auto* info : image_infos)
+        {
+            delete info;
+        }
+    }
+
     DescriptorBuilder DescriptorBuilder::begin(DescriptorLayoutCache* layoutCache, DescriptorAllocator* allocator)
     {
         DescriptorBuilder builder;
@@ -237,14 +250,17 @@ namespace mag
 
     DescriptorBuilder& DescriptorBuilder::bind(const u32 binding, const vk::DescriptorType type,
                                                const vk::ShaderStageFlags stage_flags,
-                                               const vk::DescriptorBufferInfo& buffer_info)
+                                               const std::vector<vk::DescriptorBufferInfo>& infos)
     {
+        std::vector<vk::DescriptorBufferInfo>* p_infos = new std::vector<vk::DescriptorBufferInfo>(infos);
+        buffer_infos.push_back(p_infos);
+
         // create the descriptor binding for the layout
-        vk::DescriptorSetLayoutBinding new_binding(binding, type, 1, stage_flags);
+        vk::DescriptorSetLayoutBinding new_binding(binding, type, infos.size(), stage_flags);
         bindings.push_back(new_binding);
 
         // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, binding, {}, type, {}, buffer_info);
+        vk::WriteDescriptorSet new_write({}, binding, {}, type, {}, *p_infos);
         writes.push_back(new_write);
 
         return *this;
@@ -254,12 +270,15 @@ namespace mag
                                                const vk::ShaderStageFlags stage_flags,
                                                const std::vector<vk::DescriptorImageInfo>& infos)
     {
+        std::vector<vk::DescriptorImageInfo>* p_infos = new std::vector<vk::DescriptorImageInfo>(infos);
+        image_infos.push_back(p_infos);
+
         // create the descriptor binding for the layout
         vk::DescriptorSetLayoutBinding new_binding(binding, type, infos.size(), stage_flags);
         bindings.push_back(new_binding);
 
         // create the descriptor write
-        vk::WriteDescriptorSet new_write({}, binding, {}, type, infos);
+        vk::WriteDescriptorSet new_write({}, binding, {}, type, *p_infos);
         writes.push_back(new_write);
 
         return *this;
@@ -305,7 +324,7 @@ namespace mag
         const b8 result =
             DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
                 .bind(binding, type, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                      descriptor_buffer_info)
+                      {descriptor_buffer_info})
                 .build(descriptor_set, descriptor_set_layout);
 
         ASSERT(result, "Failed to build descriptor of type '{0}'", vk::to_string(type));

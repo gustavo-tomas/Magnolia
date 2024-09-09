@@ -78,10 +78,13 @@ namespace mag
     class DescriptorBuilder
     {
         public:
+            ~DescriptorBuilder();
+
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);
 
             DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
-                                    const vk::ShaderStageFlags stage_flags, const vk::DescriptorBufferInfo& info);
+                                    const vk::ShaderStageFlags stage_flags,
+                                    const std::vector<vk::DescriptorBufferInfo>& infos);
 
             DescriptorBuilder& bind(const u32 binding, const vk::DescriptorType type,
                                     const vk::ShaderStageFlags stage_flags,
@@ -104,6 +107,10 @@ namespace mag
         private:
             std::vector<vk::WriteDescriptorSet> writes;
             std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
+            // These need to stay alive until the build is done
+            std::vector<std::vector<vk::DescriptorBufferInfo>*> buffer_infos;
+            std::vector<std::vector<vk::DescriptorImageInfo>*> image_infos;
 
             DescriptorLayoutCache* cache = nullptr;
             DescriptorAllocator* alloc = nullptr;
