@@ -133,7 +133,7 @@ namespace mag
         auto& app = get_application();
         auto& file_system = app.get_file_system();
 
-        const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs;
+        const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes;
 
         const aiScene* scene = importer->ReadFile(file_path, flags);
         if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
@@ -281,6 +281,9 @@ namespace mag
         model->meshes[mesh_idx].base_vertex = model->vertices.size();
         model->meshes[mesh_idx].index_count = ai_mesh->mNumFaces * 3;
         model->meshes[mesh_idx].material_index = ai_mesh->mMaterialIndex;
+        model->meshes[mesh_idx].identity_aabb = {
+            vec3(ai_mesh->mAABB.mMin.x, ai_mesh->mAABB.mMin.y, ai_mesh->mAABB.mMin.z),
+            vec3(ai_mesh->mAABB.mMax.x, ai_mesh->mAABB.mMax.y, ai_mesh->mAABB.mMax.z)};
 
         std::vector<u32> indices(ai_mesh->mNumFaces * 3);
 

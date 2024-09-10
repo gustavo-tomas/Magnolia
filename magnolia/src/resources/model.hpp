@@ -19,12 +19,19 @@ namespace mag
             vec3 bitangent;
     };
 
+    struct BoundingBox
+    {
+            vec3 min;
+            vec3 max;
+    };
+
     struct Mesh
     {
             u32 base_vertex;
             u32 base_index;
             u32 index_count;
             u32 material_index;
+            BoundingBox identity_aabb;  // Bounding box without transformations
     };
 
     struct Model
