@@ -1,6 +1,5 @@
 #include "panels/settings_panel.hpp"
 
-#include "core/application.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 
 namespace sprout
@@ -18,6 +17,10 @@ namespace sprout
         ImGui::Text("Normals");
         ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);
         ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
+
+        ImGui::SeparatorText("Scene Settings");
+        ImGui::Checkbox("Show Bounding Boxes (AABB)", &enable_bounding_boxes);
+        ImGui::Checkbox("Show Physics Colliders", &enable_physics_boxes);
 
         ImGui::End();
     }

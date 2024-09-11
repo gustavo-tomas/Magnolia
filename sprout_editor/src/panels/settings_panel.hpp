@@ -14,8 +14,11 @@ namespace sprout
 
             u32& get_texture_output() { return texture_output; };
             u32& get_normal_output() { return normal_output; };
+            b8& is_bounding_box_enabled() { return enable_bounding_boxes; };
+            b8& is_physics_colliders_enabled() { return enable_physics_boxes; };
 
         private:
             u32 texture_output = 0, normal_output = 0;
+            b8 enable_bounding_boxes = true, enable_physics_boxes = true;
     };
 };  // namespace sprout

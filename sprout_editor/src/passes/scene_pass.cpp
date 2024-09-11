@@ -186,15 +186,9 @@ namespace sprout
 
         LineList total_lines;
 
-        if (app.get_window().is_key_pressed(Key::b))
-        {
-            enable_bounding_boxes = !enable_bounding_boxes;
-            enable_physics_boxes = !enable_physics_boxes;
-        }
-
         // Get lines from AABBs
 
-        if (enable_bounding_boxes)
+        if (editor.is_bounding_box_enabled())
         {
             const auto& model_entities =
                 scene.get_ecs().get_all_components_of_types<TransformComponent, ModelComponent>();
@@ -221,7 +215,7 @@ namespace sprout
 
         // Get lines from physics
 
-        if (enable_physics_boxes)
+        if (editor.is_physics_colliders_enabled())
         {
             const auto& physics_lines = physics_engine.get_line_list();
 
