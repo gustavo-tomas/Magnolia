@@ -200,6 +200,7 @@ namespace sprout
                     BoundingBox mesh_aabb;
                     mesh_aabb.min = mesh.aabb_min;
                     mesh_aabb.max = mesh.aabb_max;
+                    mesh_aabb = mesh_aabb.get_transformed_bounding_box(transform->get_transformation_matrix());
 
                     // Skip rendering if not visible
                     if (!camera.is_aabb_visible(mesh_aabb))
@@ -207,7 +208,7 @@ namespace sprout
                         continue;
                     }
 
-                    const auto& line_list = mesh_aabb.get_line_list(transform->get_transformation_matrix());
+                    const auto& line_list = mesh_aabb.get_line_list(mat4(1.0f));
                     total_lines.append(line_list);
                 }
             }
