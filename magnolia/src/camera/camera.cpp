@@ -1,7 +1,6 @@
 #include "camera/camera.hpp"
 
 #include "core/types.hpp"
-#include "resources/model.hpp"
 
 namespace mag
 {

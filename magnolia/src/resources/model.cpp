@@ -64,44 +64,4 @@ namespace mag
 
         return models[name];
     }
-
-    BoundingBox BoundingBox::get_transformed_bounding_box(const mat4& transform) const
-    {
-        BoundingBox transformed_aabb;
-
-        // Remove translation influence
-        mat4 model_without_transform = transform;
-        model_without_transform[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        std::vector<vec3> vertices = {this->min,
-                                      vec3(this->min.x, this->min.y, this->max.z),
-                                      vec3(this->min.x, this->max.y, this->min.z),
-                                      vec3(this->min.x, this->max.y, this->max.z),
-                                      vec3(this->max.x, this->min.y, this->min.z),
-                                      vec3(this->max.x, this->min.y, this->max.z),
-                                      vec3(this->max.x, this->max.y, this->min.z),
-                                      this->max};
-
-        // Transform all vertices
-        for (auto& vertex : vertices)
-        {
-            vertex = model_without_transform * vec4(vertex, 1.0f);
-        }
-
-        // Recalculate min and max
-        transformed_aabb.min = vertices[0];
-        transformed_aabb.max = vertices[0];
-
-        for (const auto& vertex : vertices)
-        {
-            transformed_aabb.min = math::min(transformed_aabb.min, vertex);
-            transformed_aabb.max = math::max(transformed_aabb.max, vertex);
-        }
-
-        // Re-apply translation
-        transformed_aabb.min = translate(vec3(transform[3])) * vec4(transformed_aabb.min, 1.0f);
-        transformed_aabb.max = translate(vec3(transform[3])) * vec4(transformed_aabb.max, 1.0f);
-
-        return transformed_aabb;
-    }
 };  // namespace mag

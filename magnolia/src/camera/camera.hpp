@@ -6,8 +6,6 @@ namespace mag
 {
     using namespace math;
 
-    struct BoundingBox;
-
     class Camera
     {
         public:
