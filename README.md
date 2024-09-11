@@ -35,3 +35,5 @@ python3 build.py debug
 - [[WickedEngine](https://wickedengine.net/)] ECS and other graphics systems
 - [[Kohi](https://github.com/travisvroman/kohi)] Rendering systems, native data file formats
 - [[Scion2D](https://github.com/dwjclark11/Scion2D)] Lua scripting
+- [[podgorskiy](https://gist.github.com/podgorskiy/e698d18879588ada9014768e3e82a644)] Frustum culling
+- [[Inigo Quilez](https://iquilezles.org/articles/frustumcorrect/)] Frustum culling algorithm
