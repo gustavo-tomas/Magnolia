@@ -166,6 +166,10 @@ namespace mag
             }
         }
 
+        // Sort meshes by ascending order of material index
+        std::sort(model->meshes.begin(), model->meshes.end(),
+                  [](const Mesh& a, const Mesh& b) { return a.material_index < b.material_index; });
+
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
         if (!file_system.create_directories(output_directory))
         {

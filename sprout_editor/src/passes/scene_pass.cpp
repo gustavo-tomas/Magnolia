@@ -85,6 +85,7 @@ namespace sprout
 
             renderer.bind_buffers(model.get());
 
+            i32 last_material_idx = -1;
             for (auto& mesh : model->meshes)
             {
                 // @TODO: improve AABB calculation performance. I think its not a terrible ideia to apply the transform
@@ -102,9 +103,14 @@ namespace sprout
                     continue;
                 }
 
-                // Set the material
-                const auto& material = material_manager.get(model->materials[mesh.material_index]);
-                mesh_shader->set_material("u_material_textures", material.get());
+                // Set the material. The meshes are sorted by material index (see model loader), so we draw all meshes
+                // with the same material before swapping to the next one.
+                if (last_material_idx != static_cast<i32>(mesh.material_index))
+                {
+                    last_material_idx = mesh.material_index;
+                    const auto& material = material_manager.get(model->materials[mesh.material_index]);
+                    mesh_shader->set_material("u_material_textures", material.get());
+                }
 
                 // Draw the mesh
                 renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
