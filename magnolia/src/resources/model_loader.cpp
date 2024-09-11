@@ -281,9 +281,8 @@ namespace mag
         model->meshes[mesh_idx].base_vertex = model->vertices.size();
         model->meshes[mesh_idx].index_count = ai_mesh->mNumFaces * 3;
         model->meshes[mesh_idx].material_index = ai_mesh->mMaterialIndex;
-        model->meshes[mesh_idx].identity_aabb = {
-            vec3(ai_mesh->mAABB.mMin.x, ai_mesh->mAABB.mMin.y, ai_mesh->mAABB.mMin.z),
-            vec3(ai_mesh->mAABB.mMax.x, ai_mesh->mAABB.mMax.y, ai_mesh->mAABB.mMax.z)};
+        model->meshes[mesh_idx].aabb_min = {ai_mesh->mAABB.mMin.x, ai_mesh->mAABB.mMin.y, ai_mesh->mAABB.mMin.z};
+        model->meshes[mesh_idx].aabb_max = {ai_mesh->mAABB.mMax.x, ai_mesh->mAABB.mMax.y, ai_mesh->mAABB.mMax.z};
 
         std::vector<u32> indices(ai_mesh->mNumFaces * 3);
 

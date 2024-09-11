@@ -91,10 +91,13 @@ namespace sprout
                 // and use a dirty flag to recalculate the bounding box.
 
                 // Calculate transformed aabbs
-                const auto& transformed_aabb = mesh.identity_aabb.get_transformed_bounding_box(model_matrix);
+                BoundingBox mesh_aabb;
+                mesh_aabb.min = mesh.aabb_min;
+                mesh_aabb.max = mesh.aabb_max;
+                mesh_aabb = mesh_aabb.get_transformed_bounding_box(model_matrix);
 
                 // Skip rendering if not visible
-                if (!camera.is_aabb_visible(transformed_aabb))
+                if (!camera.is_aabb_visible(mesh_aabb))
                 {
                     continue;
                 }
@@ -183,26 +186,48 @@ namespace sprout
 
         LineList total_lines;
 
+        if (app.get_window().is_key_pressed(Key::b))
+        {
+            enable_bounding_boxes = !enable_bounding_boxes;
+            enable_physics_boxes = !enable_physics_boxes;
+        }
+
         // Get lines from AABBs
 
-        const auto& model_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, ModelComponent>();
-
-        for (const auto& [transform, model_c] : model_entities)
+        if (enable_bounding_boxes)
         {
-            for (const auto& mesh : model_c->model->meshes)
+            const auto& model_entities =
+                scene.get_ecs().get_all_components_of_types<TransformComponent, ModelComponent>();
+
+            for (const auto& [transform, model_c] : model_entities)
             {
-                const auto& line_list = mesh.identity_aabb.get_line_list(transform->get_transformation_matrix());
-                total_lines.append(line_list);
+                for (const auto& mesh : model_c->model->meshes)
+                {
+                    BoundingBox mesh_aabb;
+                    mesh_aabb.min = mesh.aabb_min;
+                    mesh_aabb.max = mesh.aabb_max;
+
+                    const auto& line_list = mesh_aabb.get_line_list(transform->get_transformation_matrix());
+                    total_lines.append(line_list);
+                }
             }
         }
 
         // Get lines from physics
 
-        const auto& physics_lines = physics_engine.get_line_list();
-
-        if (!physics_lines.starts.empty())
+        if (enable_physics_boxes)
         {
-            total_lines.append(physics_lines);
+            const auto& physics_lines = physics_engine.get_line_list();
+
+            if (!physics_lines.starts.empty())
+            {
+                total_lines.append(physics_lines);
+            }
+        }
+
+        if (total_lines.starts.empty())
+        {
+            return;
         }
 
         lines = std::make_unique<Line>(total_lines.starts, total_lines.ends, total_lines.colors);

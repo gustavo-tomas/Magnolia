@@ -25,7 +25,8 @@ namespace mag
             u32 base_index;
             u32 index_count;
             u32 material_index;
-            BoundingBox identity_aabb;  // Bounding box without transformations
+            vec3 aabb_min;
+            vec3 aabb_max;
     };
 
     struct Model

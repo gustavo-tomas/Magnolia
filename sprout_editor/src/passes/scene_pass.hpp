@@ -29,6 +29,10 @@ namespace sprout
 
             virtual void on_render(RenderGraph& render_graph) override;
 
+            // @TODO: make this buttons in the editor
+            inline static b8 enable_bounding_boxes = true;
+            inline static b8 enable_physics_boxes = true;
+
         private:
             std::shared_ptr<Shader> line_shader;
             std::unique_ptr<Line> lines;
