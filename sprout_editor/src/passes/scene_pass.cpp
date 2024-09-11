@@ -80,13 +80,25 @@ namespace sprout
             const auto& model = std::get<1>(model_entities[i])->model;
 
             // @TODO: hardcoded data offset (should the shader deal with this automagically?)
-            auto model_matrix = transform->get_transformation_matrix();
+            const auto& model_matrix = transform->get_transformation_matrix();
             mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
             renderer.bind_buffers(model.get());
 
             for (auto& mesh : model->meshes)
             {
+                // @TODO: improve AABB calculation performance. I think its not a terrible ideia to apply the transform
+                // and use a dirty flag to recalculate the bounding box.
+
+                // Calculate transformed aabbs
+                const auto& transformed_aabb = mesh.identity_aabb.get_transformed_bounding_box(model_matrix);
+
+                // Skip rendering if not visible
+                if (!camera.is_aabb_visible(transformed_aabb))
+                {
+                    continue;
+                }
+
                 // Set the material
                 const auto& material = material_manager.get(model->materials[mesh.material_index]);
                 mesh_shader->set_material("u_material_textures", material.get());
@@ -94,11 +106,10 @@ namespace sprout
                 // Draw the mesh
                 renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
+                // @NOTE: not accurate but gives a good estimate
                 performance_results.draw_calls++;
+                performance_results.rendered_triangles += mesh.index_count / 3;
             }
-
-            // @NOTE: not accurate but gives a good estimate
-            performance_results.rendered_triangles += model->vertices.size() / 3;
         }
 
         // Render sprites
@@ -135,15 +146,15 @@ namespace sprout
         }
     }
 
-    // PhysicsPass -----------------------------------------------------------------------------------------------------
+    // LinePass -----------------------------------------------------------------------------------------------------
 
-    PhysicsPass::PhysicsPass(const uvec2& size) : RenderGraphPass("PhysicsPass", size)
+    LinePass::LinePass(const uvec2& size) : RenderGraphPass("LinePass", size)
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        physics_line_shader = shader_manager.get("sprout_editor/assets/shaders/physics_line_shader.mag.json");
+        line_shader = shader_manager.get("sprout_editor/assets/shaders/line_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
@@ -153,7 +164,7 @@ namespace sprout
         pass.depth_clear_value = {1.0f};
     }
 
-    void PhysicsPass::on_render(RenderGraph& render_graph)
+    void LinePass::on_render(RenderGraph& render_graph)
     {
         (void)render_graph;
 
@@ -168,29 +179,45 @@ namespace sprout
 
         performance_results = {};
 
-        // Draw debug lines for physics
+        lines.reset(nullptr);
 
-        physics_debug_lines.reset();
-        physics_debug_lines = nullptr;
-        auto& debug_lines = physics_engine.get_line_list();
-        if (debug_lines.starts.empty())
+        LineList total_lines;
+
+        // Get lines from AABBs
+
+        const auto& model_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, ModelComponent>();
+
+        for (const auto& [transform, model_c] : model_entities)
         {
-            return;
+            for (const auto& mesh : model_c->model->meshes)
+            {
+                const auto& line_list = mesh.identity_aabb.get_line_list(transform->get_transformation_matrix());
+                total_lines.append(line_list);
+            }
         }
 
-        physics_debug_lines = std::make_unique<Line>(debug_lines.starts, debug_lines.ends, debug_lines.colors);
+        // Get lines from physics
 
-        physics_line_shader->bind();
+        const auto& physics_lines = physics_engine.get_line_list();
 
-        physics_line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-        physics_line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        if (!physics_lines.starts.empty())
+        {
+            total_lines.append(physics_lines);
+        }
+
+        lines = std::make_unique<Line>(total_lines.starts, total_lines.ends, total_lines.colors);
+
+        line_shader->bind();
+
+        line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
         // @TODO: command buffers shouldnt be accessible. They should be handled by the renderer.
-        command_buffer.bind_vertex_buffer(physics_debug_lines->get_vbo().get_buffer());
-        renderer.draw(physics_debug_lines->get_vertices().size());
+        command_buffer.bind_vertex_buffer(lines->get_vbo().get_buffer());
+        renderer.draw(lines->get_vertices().size());
 
         // @NOTE: not accurate but gives a good estimate
-        performance_results.rendered_triangles += physics_debug_lines->get_vertices().size() / 3;
+        performance_results.rendered_triangles += lines->get_vertices().size() / 3;
         performance_results.draw_calls++;
     }
 

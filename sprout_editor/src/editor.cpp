@@ -228,7 +228,7 @@ namespace sprout
         // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
 
         ScenePass *scene_pass = new ScenePass(viewport_size);
-        PhysicsPass *physics_pass = new PhysicsPass(viewport_size);
+        LinePass *line_pass = new LinePass(viewport_size);
         GridPass *grid_pass = new GridPass(viewport_size);
         EditorPass *editor_pass = new EditorPass(size);
 
@@ -236,7 +236,7 @@ namespace sprout
         // render_graph->set_output_attachment("OutputColor");
 
         render_graph->add_pass(scene_pass);
-        render_graph->add_pass(physics_pass);
+        render_graph->add_pass(line_pass);
         render_graph->add_pass(grid_pass);
         render_graph->add_pass(editor_pass);
 

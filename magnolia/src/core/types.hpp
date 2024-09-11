@@ -79,12 +79,27 @@ namespace mag
             return result;
         }
 
-        // Axis Aligned Bounding Box. Also has a helper method to resize the bounding box after a transformation.
+        // Sequence of lines. Starts, ends and colors size must match.
+        struct LineList
+        {
+                std::vector<vec3> starts, ends, colors;
+
+                void append(const LineList& lines)
+                {
+                    starts.insert(starts.begin(), lines.starts.begin(), lines.starts.end());
+                    ends.insert(ends.begin(), lines.ends.begin(), lines.ends.end());
+                    colors.insert(colors.begin(), lines.colors.begin(), lines.colors.end());
+                }
+        };
+
+        // Axis Aligned Bounding Box
+        // @TODO: DRY helper methods
         struct BoundingBox
         {
                 vec3 min;
                 vec3 max;
 
+                // Helper method to calculate bounding box after a transformation.
                 BoundingBox get_transformed_bounding_box(const mat4& transform) const
                 {
                     BoundingBox transformed_aabb;
@@ -124,6 +139,51 @@ namespace mag
 
                     return transformed_aabb;
                 }
+
+                // Helper method to get the list of edges.
+                LineList get_line_list(const mat4& transform) const
+                {
+                    const BoundingBox transformed_aabb = get_transformed_bounding_box(transform);
+
+                    const vec3& min_p = transformed_aabb.min;
+                    const vec3& max_p = transformed_aabb.max;
+
+                    // Generate the box corners
+                    std::vector<vec3> corners(8);
+
+                    corners[0] = min_p;
+                    corners[1] = vec3(min_p.x, min_p.y, max_p.z);
+                    corners[2] = vec3(min_p.x, max_p.y, min_p.z);
+                    corners[3] = vec3(min_p.x, max_p.y, max_p.z);
+                    corners[4] = vec3(max_p.x, min_p.y, min_p.z);
+                    corners[5] = vec3(max_p.x, min_p.y, max_p.z);
+                    corners[6] = vec3(max_p.x, max_p.y, min_p.z);
+                    corners[7] = max_p;
+
+                    // Generate the box edges
+                    std::vector<std::pair<u32, u32>> edges;
+
+                    edges = {
+                        {0, 1}, {1, 3}, {3, 2}, {2, 0},  // Bottom face
+                        {4, 5}, {5, 7}, {7, 6}, {6, 4},  // Top face
+                        {0, 4}, {1, 5}, {2, 6}, {3, 7},  // Vertical edges
+                        // {0, 7}                           // Diagonal
+                    };
+
+                    // Orange color
+                    const vec3 color = vec3(0.99, 0.68, 0.01);
+
+                    LineList lines;
+
+                    for (auto& [start, end] : edges)
+                    {
+                        lines.starts.push_back(corners[start]);
+                        lines.ends.push_back(corners[end]);
+                        lines.colors.push_back(color);
+                    }
+
+                    return lines;
+                };
         };
     };  // namespace math
 };      // namespace mag
