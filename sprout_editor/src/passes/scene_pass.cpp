@@ -207,6 +207,12 @@ namespace sprout
                     mesh_aabb.min = mesh.aabb_min;
                     mesh_aabb.max = mesh.aabb_max;
 
+                    // Skip rendering if not visible
+                    if (!camera.is_aabb_visible(mesh_aabb))
+                    {
+                        continue;
+                    }
+
                     const auto& line_list = mesh_aabb.get_line_list(transform->get_transformation_matrix());
                     total_lines.append(line_list);
                 }
