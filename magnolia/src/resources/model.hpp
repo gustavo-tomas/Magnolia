@@ -23,6 +23,8 @@ namespace mag
     {
             vec3 min;
             vec3 max;
+
+            BoundingBox get_transformed_bounding_box(const mat4& transform) const;
     };
 
     struct Mesh
