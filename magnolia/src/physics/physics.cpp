@@ -140,7 +140,7 @@ namespace mag
         dynamics_world->debugDrawWorld();
     }
 
-    const DebugLineList& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
+    const LineList& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
 
     void PhysicsDebugDraw::reset_lines()
     {

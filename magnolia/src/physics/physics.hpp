@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
 #include "ecs/components.hpp"
@@ -10,7 +8,6 @@
 namespace mag
 {
     class PhysicsDebugDraw;
-    struct DebugLineList;
 
     class PhysicsEngine
     {
@@ -23,7 +20,7 @@ namespace mag
 
             void update(const f32 dt);
 
-            const DebugLineList& get_line_list() const;
+            const LineList& get_line_list() const;
 
         private:
             void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
@@ -41,18 +38,13 @@ namespace mag
             Scene* scene;
     };
 
-    struct DebugLineList
-    {
-            std::vector<vec3> starts, ends, colors;
-    };
-
     // @TODO: finish debug draw
     class PhysicsDebugDraw : public btIDebugDraw
     {
         public:
             void reset_lines();
 
-            const DebugLineList& get_line_list() const { return line_list; };
+            const LineList& get_line_list() const { return line_list; };
 
             virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
             virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
@@ -79,6 +71,6 @@ namespace mag
             virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
 
         private:
-            DebugLineList line_list;
+            LineList line_list;
     };
 };  // namespace mag

@@ -1,5 +1,5 @@
 {
-    "Shader": "PhysicsLineShader",
+    "Shader": "LineShader",
     "Files": [
         "color.vert.spv",
         "color.frag.spv"

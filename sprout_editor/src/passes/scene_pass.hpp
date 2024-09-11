@@ -22,16 +22,16 @@ namespace sprout
             std::shared_ptr<Shader> sprite_shader;
     };
 
-    class PhysicsPass : public RenderGraphPass
+    class LinePass : public RenderGraphPass
     {
         public:
-            PhysicsPass(const uvec2& size);
+            LinePass(const uvec2& size);
 
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            std::shared_ptr<Shader> physics_line_shader;
-            std::unique_ptr<Line> physics_debug_lines;
+            std::shared_ptr<Shader> line_shader;
+            std::unique_ptr<Line> lines;
     };
 
     class GridPass : public RenderGraphPass
