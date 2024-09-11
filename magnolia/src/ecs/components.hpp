@@ -83,7 +83,7 @@ namespace mag
             vec3 dimensions;
 
             // Storage for physics engine use
-            void* internal;
+            void* internal = nullptr;
     };
 
     struct RigidBodyComponent : public Component
@@ -95,7 +95,7 @@ namespace mag
             f32 mass;
 
             // Storage for physics engine use
-            void* internal;
+            void* internal = nullptr;
 
             b8 is_dynamic() const { return mass != 0.0f; }
     };
