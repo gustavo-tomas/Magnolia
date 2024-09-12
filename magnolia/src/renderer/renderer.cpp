@@ -15,23 +15,6 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
-    Renderer::~Renderer()
-    {
-        context->get_device().waitIdle();
-
-        for (const auto& vertex_buffer_p : vertex_buffers)
-        {
-            auto* model = vertex_buffer_p.first;
-            remove_model(model);
-        }
-
-        for (const auto& images_p : images)
-        {
-            auto* image = images_p.first;
-            remove_image(image);
-        }
-    }
-
     void Renderer::update(RenderGraph& render_graph)
     {
         this->context->begin_frame();
