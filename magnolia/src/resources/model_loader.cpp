@@ -133,7 +133,8 @@ namespace mag
         auto& app = get_application();
         auto& file_system = app.get_file_system();
 
-        const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes;
+        const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes |
+                          aiProcess_PreTransformVertices;
 
         const aiScene* scene = importer->ReadFile(file_path, flags);
         if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
