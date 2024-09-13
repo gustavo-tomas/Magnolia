@@ -138,7 +138,7 @@ namespace mag
         const aiScene* scene = importer->ReadFile(file_path, flags);
         if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
         {
-            LOG_ERROR("Failed to import model '{0}'", file_path);
+            LOG_ERROR("Failed to import model '{0}': {1}", file_path, importer->GetErrorString());
             return false;
         }
 
@@ -146,12 +146,6 @@ namespace mag
         {
             LOG_ERROR("Model has no meshes '{0}'", file_path);
             return false;
-        }
-
-        const str error = importer->GetErrorString();
-        if (!error.empty())
-        {
-            LOG_ERROR("Importer error: {0}", error);
         }
 
         model->name = scene->mRootNode->mName.C_Str();
