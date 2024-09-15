@@ -76,13 +76,15 @@ def shaders(system):
   for shader_file in shader_files:
     input_path = os.path.join(shader_dir, shader_file)
     output_path = os.path.join(output_dir, f"{shader_file}.spv")
+    include_path = "magnolia/assets/shaders"
+
     print(f"Compiling {input_path}")
 
     if system == "linux":
-      assert os.system(f"ext/linux/glslc {input_path} -o {output_path}") == 0
+      assert os.system(f"ext/linux/glslc -I{include_path} {input_path} -o {output_path}") == 0
     
     elif system == "windows":
-      assert os.system(f"ext\\windows\\glslc.exe {input_path} -o {output_path}") == 0
+      assert os.system(f"ext\\windows\\glslc.exe -I{include_path} {input_path} -o {output_path}") == 0
   return
 
 def main():
