@@ -4,6 +4,7 @@
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 namespace sprout
 {
@@ -55,8 +56,32 @@ namespace sprout
         {
             const str tab_id = "##" + std::to_string(i);
 
+            // Edit scene name
+            static u32 edited_scene_index = INVALID_ID;
+
             if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str()))
             {
+                // Start editing field
+                if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered())
+                {
+                    edited_scene_index = i;
+                }
+
+                // Tab changed or lost focus -> quit editing
+                if (edited_scene_index != i || !ImGui::IsWindowFocused())
+                {
+                    edited_scene_index = INVALID_ID;
+                }
+
+                str name = open_scenes[i]->get_name();
+
+                if (edited_scene_index == i &&
+                    ImGui::InputText("##SceneNameClicked", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+                {
+                    open_scenes[i]->set_name(name);
+                    edited_scene_index = INVALID_ID;
+                }
+
                 editor.set_selected_scene_index(i);
 
                 viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
