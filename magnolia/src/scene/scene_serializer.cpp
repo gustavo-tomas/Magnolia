@@ -113,6 +113,7 @@ namespace mag
         }
 
         const str scene_name = data["Scene"];
+        scene.set_name(scene_name);
 
         LOG_INFO("Deserializing scene '{0}'", scene_name);
 

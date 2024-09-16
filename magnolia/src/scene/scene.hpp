@@ -32,6 +32,8 @@ namespace mag
 
             void remove_entity(const u32 id);
 
+            void set_name(const str& name) { this->name = name; };
+
             SceneState get_scene_state() const { return current_state; };
 
             const str& get_name() const { return name; };
