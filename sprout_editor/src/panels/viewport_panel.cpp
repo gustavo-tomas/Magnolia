@@ -15,6 +15,7 @@ namespace sprout
         auto &model_loader = app.get_model_loader();
         auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
+        auto &open_scenes = editor.get_open_scenes();
 
         // Recreate image descriptors
         if (viewport_image_descriptor != nullptr)
@@ -46,53 +47,76 @@ namespace sprout
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
-        viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
+        // Tabs displaying the project scenes
 
-        ImGui::SetNextItemAllowOverlap();
-        ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+        ImGui::BeginTabBar("Scenes");
 
-        // Load assets if any was draged over the viewport
-        if (ImGui::BeginDragDropTarget())
+        for (u32 i = 0; i < open_scenes.size(); i++)
         {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+            const str tab_id = "##" + std::to_string(i);
+
+            if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str()))
             {
-                auto &app = get_application();
-                auto &file_system = app.get_file_system();
+                editor.set_selected_scene_index(i);
 
-                const char *path = static_cast<const char *>(payload->Data);
-                const str extension = file_system.get_file_extension(path);
+                viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
-                // First check if the path exists
-                if (!file_system.exists(path))
+                ImGui::SetNextItemAllowOverlap();
+                ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+
+                // Load assets if any was draged over the viewport
+                if (ImGui::BeginDragDropTarget())
                 {
-                    LOG_ERROR("File not found: {0}", path);
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+                    {
+                        auto &app = get_application();
+                        auto &file_system = app.get_file_system();
+
+                        const char *path = static_cast<const char *>(payload->Data);
+                        const str extension = file_system.get_file_extension(path);
+
+                        // First check if the path exists
+                        if (!file_system.exists(path))
+                        {
+                            LOG_ERROR("File not found: {0}", path);
+                        }
+
+                        // Then check if its a directory
+                        else if (file_system.is_directory(path))
+                        {
+                            LOG_ERROR("Path is a directory: {0}", path);
+                        }
+
+                        // Check if asset is an image
+                        else if (image_loader.is_extension_supported(extension))
+                        {
+                            scene.add_sprite(path);
+                        }
+
+                        // Check if asset is a model
+                        else if (model_loader.is_extension_supported(extension))
+                        {
+                            scene.add_model(path);
+                        }
+
+                        else
+                        {
+                            LOG_ERROR("Extension not supported: {0}", extension);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
                 }
 
-                // Then check if its a directory
-                else if (file_system.is_directory(path))
-                {
-                    LOG_ERROR("Path is a directory: {0}", path);
-                }
-
-                // Check if asset is an image
-                else if (image_loader.is_extension_supported(extension))
-                {
-                    scene.add_sprite(path);
-                }
-
-                // Check if asset is a model
-                else if (model_loader.is_extension_supported(extension))
-                {
-                    scene.add_model(path);
-                }
-
-                else
-                {
-                    LOG_ERROR("Extension not supported: {0}", extension);
-                }
+                ImGui::EndTabItem();
             }
-            ImGui::EndDragDropTarget();
         }
+
+        if (ImGui::TabItemButton(ICON_FA_PLUS, ImGuiTabItemFlags_Trailing))
+        {
+            editor.add_scene(new Scene());
+        }
+
+        ImGui::EndTabBar();
 
         // Render gizmos for selected model
         if (!editor.is_disabled() && selected_entity_id != INVALID_ID)

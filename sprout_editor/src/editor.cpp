@@ -116,8 +116,6 @@ namespace sprout
     {
         auto &context = get_context();
 
-        active_scene.reset();
-
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
@@ -132,7 +130,8 @@ namespace sprout
         SceneSerializer scene_serializer(*scene);
         scene_serializer.deserialize("sprout_editor/assets/scenes/test_scene.mag.json");
 
-        set_active_scene(scene);
+        add_scene(scene);
+        set_active_scene(0);
     }
 
     void Editor::on_update(const f32 dt)
@@ -144,21 +143,22 @@ namespace sprout
         auto &renderer = app.get_renderer();
         auto &physics_engine = app.get_physics_engine();
 
-        if (!scene_queue.empty())
+        if (selected_scene_index != next_scene_index)
         {
-            set_active_scene(scene_queue.front());
-            scene_queue.clear();
+            set_active_scene(next_scene_index);
         }
+
+        auto &active_scene = get_active_scene();
 
         // @TODO: this is a hack. We want to resize the editor viewport but we want to decouple the application from the
         // rest of the engine. We should find a better solution to handle application side events.
         const auto &viewport_size = viewport_panel->get_viewport_size();
-        active_scene->on_viewport_resize(viewport_size);
+        active_scene.on_viewport_resize(viewport_size);
         this->on_viewport_resize(viewport_size);
 
         physics_engine.update(dt);
 
-        active_scene->update(dt);
+        active_scene.update(dt);
 
         if (menu_bar->quit_requested())
         {
@@ -181,7 +181,7 @@ namespace sprout
         dispatcher.dispatch<NativeEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
 
-        active_scene->on_event(e);
+        get_active_scene().on_event(e);
         menu_bar->on_event(e);
         viewport_panel->on_event(e);
     }
@@ -206,18 +206,30 @@ namespace sprout
         build_render_graph(window_size, new_viewport_size);
     }
 
-    void Editor::enqueue_scene(Scene *scene) { scene_queue.push_back(scene); }
+    void Editor::add_scene(Scene *scene) { open_scenes.emplace_back(scene); }
 
-    void Editor::set_active_scene(Scene *scene)
+    void Editor::set_active_scene(const u32 index)
     {
+        auto &active_scene = get_active_scene();
+        if (active_scene.get_scene_state() == SceneState::Runtime)
+        {
+            get_active_scene().stop_runtime();
+        }
+
+        selected_scene_index = math::clamp(index, 0u, static_cast<u32>(open_scenes.size() - 1));
+
         auto &app = get_application();
         auto &physics_engine = app.get_physics_engine();
 
-        active_scene = std::unique_ptr<Scene>(scene);
-        physics_engine.on_simulation_start(scene);
+        physics_engine.on_simulation_start(open_scenes[selected_scene_index].get());
     }
 
     void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
+
+    void Editor::set_selected_scene_index(const u32 index)
+    {
+        next_scene_index = math::clamp(index, 0u, static_cast<u32>(open_scenes.size() - 1));
+    }
 
     b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
 

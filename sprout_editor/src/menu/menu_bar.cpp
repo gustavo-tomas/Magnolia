@@ -113,7 +113,7 @@ namespace sprout
 
         scene_file_path = std::filesystem::path();
 
-        get_editor().enqueue_scene(scene);
+        get_editor().add_scene(scene);
 
         LOG_SUCCESS("Create new scene '{0}'", scene->get_name());
     }
@@ -156,7 +156,7 @@ namespace sprout
 
                         scene_file_path = file_path;
 
-                        editor.enqueue_scene(scene);
+                        editor.add_scene(scene);
 
                         LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
                     }
