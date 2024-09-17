@@ -33,15 +33,19 @@ namespace sprout
             virtual void on_update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
-            void enqueue_scene(Scene* scene);
+            void add_scene(Scene* scene);
+            void close_scene(const std::shared_ptr<Scene>& scene);
 
             void set_input_disabled(const b8 disable);
+            void set_selected_scene_index(const u32 index);
 
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
-            Scene& get_active_scene() { return *active_scene; };
+            Scene& get_active_scene() { return *open_scenes[selected_scene_index]; };
             RenderGraph& get_render_graph() { return *render_graph; };
+            const std::vector<std::shared_ptr<Scene>>& get_open_scenes() const { return open_scenes; };
+            u32 get_selected_scene_index() const { return selected_scene_index; };
 
             // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
             u32& get_texture_output() { return settings_panel->get_texture_output(); };
@@ -58,9 +62,10 @@ namespace sprout
 
             void on_sdl_event(NativeEvent& e);
             void on_resize(WindowResizeEvent& e);
+            void on_quit(QuitEvent& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 
-            void set_active_scene(Scene* scene);
+            void set_active_scene(const u32 index);
             void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
             EventCallback event_callback;
@@ -77,8 +82,11 @@ namespace sprout
             std::unique_ptr<SettingsPanel> settings_panel;
 
             std::unique_ptr<RenderGraph> render_graph;
-            std::unique_ptr<Scene> active_scene;
-            std::vector<Scene*> scene_queue;
+            std::vector<std::shared_ptr<Scene>> open_scenes;
+            std::vector<u32> open_scenes_marked_for_deletion;
+
+            u32 selected_scene_index = 0;
+            u32 next_scene_index = 0;
 
             uvec2 curr_viewport_size;
             b8 disabled = false;

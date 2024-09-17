@@ -4,6 +4,7 @@
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 namespace sprout
 {
@@ -15,6 +16,7 @@ namespace sprout
         auto &model_loader = app.get_model_loader();
         auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
+        auto &open_scenes = editor.get_open_scenes();
 
         // Recreate image descriptors
         if (viewport_image_descriptor != nullptr)
@@ -46,53 +48,108 @@ namespace sprout
 
         ImGui::Begin(ICON_FA_TV " Viewport", NULL, window_flags);
 
-        viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
+        // Tabs displaying the project scenes
 
-        ImGui::SetNextItemAllowOverlap();
-        ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+        ImGui::BeginTabBar("Scenes");
 
-        // Load assets if any was draged over the viewport
-        if (ImGui::BeginDragDropTarget())
+        for (u32 i = 0; i < open_scenes.size(); i++)
         {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+            const str tab_id = "##" + std::to_string(i);
+
+            // Edit scene name
+            static u32 edited_scene_index = INVALID_ID;
+
+            b8 open = true;
+            if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str(), &open))
             {
-                auto &app = get_application();
-                auto &file_system = app.get_file_system();
-
-                const char *path = static_cast<const char *>(payload->Data);
-                const str extension = file_system.get_file_extension(path);
-
-                // First check if the path exists
-                if (!file_system.exists(path))
+                // Start editing field
+                if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered())
                 {
-                    LOG_ERROR("File not found: {0}", path);
+                    edited_scene_index = i;
                 }
 
-                // Then check if its a directory
-                else if (file_system.is_directory(path))
+                // Tab changed or lost focus -> quit editing
+                if (edited_scene_index != i || !ImGui::IsWindowFocused())
                 {
-                    LOG_ERROR("Path is a directory: {0}", path);
+                    edited_scene_index = INVALID_ID;
                 }
 
-                // Check if asset is an image
-                else if (image_loader.is_extension_supported(extension))
+                str name = open_scenes[i]->get_name();
+
+                if (edited_scene_index == i &&
+                    ImGui::InputText("##SceneNameClicked", &name, ImGuiInputTextFlags_EnterReturnsTrue))
                 {
-                    scene.add_sprite(path);
+                    open_scenes[i]->set_name(name);
+                    edited_scene_index = INVALID_ID;
                 }
 
-                // Check if asset is a model
-                else if (model_loader.is_extension_supported(extension))
+                editor.set_selected_scene_index(i);
+
+                viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
+
+                ImGui::SetNextItemAllowOverlap();
+                ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+
+                // Load assets if any was draged over the viewport
+                if (ImGui::BeginDragDropTarget())
                 {
-                    scene.add_model(path);
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+                    {
+                        auto &app = get_application();
+                        auto &file_system = app.get_file_system();
+
+                        const char *path = static_cast<const char *>(payload->Data);
+                        const str extension = file_system.get_file_extension(path);
+
+                        // First check if the path exists
+                        if (!file_system.exists(path))
+                        {
+                            LOG_ERROR("File not found: {0}", path);
+                        }
+
+                        // Then check if its a directory
+                        else if (file_system.is_directory(path))
+                        {
+                            LOG_ERROR("Path is a directory: {0}", path);
+                        }
+
+                        // Check if asset is an image
+                        else if (image_loader.is_extension_supported(extension))
+                        {
+                            scene.add_sprite(path);
+                        }
+
+                        // Check if asset is a model
+                        else if (model_loader.is_extension_supported(extension))
+                        {
+                            scene.add_model(path);
+                        }
+
+                        else
+                        {
+                            LOG_ERROR("Extension not supported: {0}", extension);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
                 }
 
-                else
-                {
-                    LOG_ERROR("Extension not supported: {0}", extension);
-                }
+                ImGui::EndTabItem();
             }
-            ImGui::EndDragDropTarget();
+
+            // Tab was closed, save the scene (one tab must always stay open).
+            if (!open && open_scenes.size() > 1)
+            {
+                editor.close_scene(open_scenes[i]);
+                continue;
+            }
         }
+
+        if (ImGui::TabItemButton(ICON_FA_PLUS, ImGuiTabItemFlags_Trailing))
+        {
+            editor.add_scene(new Scene());
+        }
+
+        ImGui::EndTabBar();
 
         // Render gizmos for selected model
         if (!editor.is_disabled() && selected_entity_id != INVALID_ID)
