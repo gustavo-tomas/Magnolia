@@ -28,7 +28,7 @@ namespace sprout
             }
 
             // File
-            if (ImGui::BeginMenu((str(ICON_FA_FILE) + " File").c_str()))
+            if (ImGui::BeginMenu((str(ICON_FA_FILE) + " Scene").c_str()))
             {
                 // New
                 if (ImGui::MenuItem("New", "Ctrl+N"))
@@ -92,8 +92,10 @@ namespace sprout
 
     void MenuBar::save_active_scene_as()
     {
+        auto& scene = get_editor().get_active_scene();
+
         IGFD::FileDialogConfig config;
-        config.fileName = "untitled.mag.json";
+        config.fileName = scene.get_name() + ".mag.json";
 
         ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
         set_dialog_action(DialogAction::Save);
