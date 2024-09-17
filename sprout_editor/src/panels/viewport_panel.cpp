@@ -59,7 +59,8 @@ namespace sprout
             // Edit scene name
             static u32 edited_scene_index = INVALID_ID;
 
-            if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str()))
+            b8 open = true;
+            if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str(), &open))
             {
                 // Start editing field
                 if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered())
@@ -133,6 +134,13 @@ namespace sprout
                 }
 
                 ImGui::EndTabItem();
+            }
+
+            // Tab was closed, save the scene (one tab must always stay open).
+            if (!open && open_scenes.size() > 1)
+            {
+                editor.close_scene(open_scenes[i]);
+                continue;
             }
         }
 

@@ -34,6 +34,7 @@ namespace sprout
             virtual void on_event(Event& e) override;
 
             void add_scene(Scene* scene);
+            void close_scene(const std::shared_ptr<Scene>& scene);
 
             void set_input_disabled(const b8 disable);
             void set_selected_scene_index(const u32 index);
@@ -82,6 +83,7 @@ namespace sprout
 
             std::unique_ptr<RenderGraph> render_graph;
             std::vector<std::shared_ptr<Scene>> open_scenes;
+            std::vector<u32> open_scenes_marked_for_deletion;
 
             u32 selected_scene_index = 0;
             u32 next_scene_index = 0;

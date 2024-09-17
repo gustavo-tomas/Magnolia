@@ -143,6 +143,18 @@ namespace sprout
         auto &renderer = app.get_renderer();
         auto &physics_engine = app.get_physics_engine();
 
+        // Delete closed scenes from back to front
+        for (i32 i = open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
+        {
+            const u32 pos = open_scenes_marked_for_deletion[i];
+
+            open_scenes.erase(open_scenes.begin() + pos);
+            open_scenes_marked_for_deletion.erase(open_scenes_marked_for_deletion.begin() + i);
+
+            set_selected_scene_index(pos);
+            set_active_scene(pos);
+        }
+
         if (selected_scene_index != next_scene_index)
         {
             set_active_scene(next_scene_index);
@@ -195,13 +207,9 @@ namespace sprout
         (void)e;
 
         // Save open scenes
-        for (auto &scene : open_scenes)
+        for (const auto &scene : open_scenes)
         {
-            // @TODO: hardcoded path
-            const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
-
-            SceneSerializer serializer(*scene);
-            serializer.serialize(file_path);
+            close_scene(scene);
         }
     }
 
@@ -226,6 +234,29 @@ namespace sprout
     }
 
     void Editor::add_scene(Scene *scene) { open_scenes.emplace_back(scene); }
+
+    void Editor::close_scene(const std::shared_ptr<Scene> &scene)
+    {
+        const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
+
+        SceneSerializer serializer(*scene);
+        serializer.serialize(file_path);
+
+        // @TODO: linear search but w e. It is unlikely that this will hinder the performance
+        u32 idx = INVALID_ID;
+        for (u32 i = 0; i < open_scenes.size(); i++)
+        {
+            if (open_scenes[i] == scene)
+            {
+                idx = i;
+                open_scenes_marked_for_deletion.push_back(idx);
+                break;
+            }
+        }
+
+        // Sort to avoid problems during deletion
+        std::sort(open_scenes_marked_for_deletion.begin(), open_scenes_marked_for_deletion.end());
+    }
 
     void Editor::set_active_scene(const u32 index)
     {
