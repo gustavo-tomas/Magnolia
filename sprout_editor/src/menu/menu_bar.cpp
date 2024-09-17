@@ -156,6 +156,8 @@ namespace sprout
 
                         scene_file_path = file_path;
 
+                        // @TODO: Check if scene isnt already opened.
+
                         editor.add_scene(scene);
 
                         LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
