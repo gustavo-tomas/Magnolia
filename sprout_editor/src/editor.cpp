@@ -128,7 +128,7 @@ namespace sprout
     {
         Scene *scene = new Scene();
         SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize("sprout_editor/assets/scenes/test_scene.mag.json");
+        scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
 
         add_scene(scene);
         set_active_scene(0);
@@ -180,10 +180,29 @@ namespace sprout
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<NativeEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
+        dispatcher.dispatch<QuitEvent>(BIND_FN(Editor::on_quit));
 
         get_active_scene().on_event(e);
         menu_bar->on_event(e);
         viewport_panel->on_event(e);
+    }
+
+    // @TODO: use file dialogs to ask about saving files when the file dialog is implemented. For now this is a
+    // temporary solution to avoid losing work after closing. Also the scene names must be different form one another or
+    // else the files will be overwritten.
+    void Editor::on_quit(QuitEvent &e)
+    {
+        (void)e;
+
+        // Save open scenes
+        for (auto &scene : open_scenes)
+        {
+            // @TODO: hardcoded path
+            const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
+
+            SceneSerializer serializer(*scene);
+            serializer.serialize(file_path);
+        }
     }
 
     void Editor::on_sdl_event(NativeEvent &e) { ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<const SDL_Event *>(e.e)); }

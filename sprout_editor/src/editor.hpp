@@ -61,6 +61,7 @@ namespace sprout
 
             void on_sdl_event(NativeEvent& e);
             void on_resize(WindowResizeEvent& e);
+            void on_quit(QuitEvent& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 
             void set_active_scene(const u32 index);

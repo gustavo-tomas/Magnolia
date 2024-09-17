@@ -26,7 +26,7 @@
                 "Fov": 60.0,
                 "Near": 1.0,
                 "Far": 10000.0,
-                "AspectRatio": 1.6537866592407227
+                "AspectRatio": 1.7285945415496826
             },
             "ScriptComponent": {
                 "FilePath": "sprout_editor/assets/scripts/example_lua_script.lua"
