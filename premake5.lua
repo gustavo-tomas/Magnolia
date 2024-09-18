@@ -135,7 +135,7 @@ project "magnolia"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "MAG_RELEASE", "MAG_ASSERTIONS_ENABLED" } -- @TODO: fix this
+        defines { "MAG_RELEASE" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"

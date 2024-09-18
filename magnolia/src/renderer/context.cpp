@@ -503,6 +503,8 @@ namespace mag
 
         ASSERT(false, "Failed to get supported format for Tiling: " + vk::to_string(tiling) +
                           ", Features: " + vk::to_string(features));
+
+        return candidates[0];
     }
 
     vk::Format Context::get_supported_depth_format() const
