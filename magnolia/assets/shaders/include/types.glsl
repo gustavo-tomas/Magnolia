@@ -9,6 +9,8 @@
 #define ALBEDO_TEXTURE u_material_textures[0]
 #define NORMAL_TEXTURE u_material_textures[1]
 
+const float PI = 3.1415926535;
+
 // Types
 struct Light
 {
