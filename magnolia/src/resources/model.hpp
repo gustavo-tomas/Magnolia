@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vulkan/vulkan.hpp>
 
+#include "core/math.hpp"
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"

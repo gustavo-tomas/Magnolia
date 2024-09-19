@@ -5,6 +5,7 @@
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
+#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag

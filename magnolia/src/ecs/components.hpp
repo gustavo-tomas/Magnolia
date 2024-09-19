@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "camera/camera.hpp"
+#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag

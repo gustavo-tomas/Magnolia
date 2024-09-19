@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"
+#include "core/math.hpp"
 #include "core/types.hpp"
 #include "core/window.hpp"
 #include "renderer/command.hpp"

@@ -9,6 +9,7 @@
 
 #include "core/event.hpp"
 #include "core/keys.hpp"
+#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag
