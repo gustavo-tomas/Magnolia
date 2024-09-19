@@ -23,55 +23,55 @@ namespace mag
         const WindowOptions window_options = {BIND_FN(Application::on_event), options.size, options.position,
                                               options.title};
 
-        window = std::make_unique<Window>(window_options);
+        window = create_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
         // Create the renderer
-        renderer = std::make_unique<Renderer>(*window);
+        renderer = create_unique<Renderer>(*window);
         LOG_SUCCESS("Renderer initialized");
 
         // Create the file system
-        file_system = std::make_unique<FileSystem>();
+        file_system = create_unique<FileSystem>();
         LOG_SUCCESS("FileSystem initialized");
 
         // Create the job system
-        job_system = std::make_unique<JobSystem>(std::thread::hardware_concurrency());
+        job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
         LOG_SUCCESS("JobSystem initialized");
 
         // Create the image loader
-        image_loader = std::make_unique<ImageLoader>();
+        image_loader = create_unique<ImageLoader>();
         LOG_SUCCESS("ImageLoader initialized");
 
         // Create the material loader
-        material_loader = std::make_unique<MaterialLoader>();
+        material_loader = create_unique<MaterialLoader>();
         LOG_SUCCESS("MaterialLoader initialized");
 
         // Create the model loader
-        model_loader = std::make_unique<ModelLoader>();
+        model_loader = create_unique<ModelLoader>();
         LOG_SUCCESS("ModelLoader initialized");
 
         // Create the shader loader
-        shader_loader = std::make_unique<ShaderLoader>();
+        shader_loader = create_unique<ShaderLoader>();
         LOG_SUCCESS("ShaderLoader initialized");
 
         // Create the texture manager
-        texture_loader = std::make_unique<TextureManager>();
+        texture_loader = create_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
 
         // Create the material manager
-        material_manager = std::make_unique<MaterialManager>();
+        material_manager = create_unique<MaterialManager>();
         LOG_SUCCESS("MaterialManager initialized");
 
         // Create the model manager
-        model_manager = std::make_unique<ModelManager>();
+        model_manager = create_unique<ModelManager>();
         LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager
-        shader_manager = std::make_unique<ShaderManager>();
+        shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
         // Create the physics engine
-        physics_engine = std::make_unique<PhysicsEngine>();
+        physics_engine = create_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
 
         // Create the scripting engine

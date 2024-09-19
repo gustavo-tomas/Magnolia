@@ -6,7 +6,7 @@ namespace mag
 {
 #define DEFAULT_TEXTURE_NAME "magnolia/assets/images/DefaultAlbedoSeamless.png"
 
-    std::shared_ptr<Image> TextureManager::get(const str& name)
+    ref<Image> TextureManager::get(const str& name)
     {
         // Texture found
         auto it = textures.find(name);
@@ -23,7 +23,7 @@ namespace mag
         // Create a new texture
         Image* image = new Image();
 
-        textures[name] = std::shared_ptr<Image>(image);
+        textures[name] = ref<Image>(image);
 
         // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
         if (image_loader.get_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
@@ -70,5 +70,5 @@ namespace mag
         return textures[name];
     }
 
-    std::shared_ptr<Image> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
+    ref<Image> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
 };  // namespace mag

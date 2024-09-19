@@ -44,9 +44,9 @@ namespace mag
     class ModelManager
     {
         public:
-            std::shared_ptr<Model> get(const str& name);
+            ref<Model> get(const str& name);
 
         private:
-            std::map<str, std::shared_ptr<Model>> models;
+            std::map<str, ref<Model>> models;
     };
 };  // namespace mag

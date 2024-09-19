@@ -34,7 +34,7 @@ namespace mag
             btSequentialImpulseConstraintSolver* solver = nullptr;
             btDiscreteDynamicsWorld* dynamics_world = nullptr;
 
-            std::unique_ptr<PhysicsDebugDraw> physics_debug_draw;
+            unique<PhysicsDebugDraw> physics_debug_draw;
             Scene* scene;
     };
 

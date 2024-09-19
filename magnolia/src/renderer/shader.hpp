@@ -93,7 +93,7 @@ namespace mag
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
-            std::unique_ptr<Pipeline> pipeline;
+            unique<Pipeline> pipeline;
 
             u32 location = 0;
             u32 stride = 0;
@@ -107,9 +107,9 @@ namespace mag
     class ShaderManager
     {
         public:
-            std::shared_ptr<Shader> get(const str& file_path);
+            ref<Shader> get(const str& file_path);
 
         private:
-            std::map<str, std::shared_ptr<Shader>> shaders;
+            std::map<str, ref<Shader>> shaders;
     };
 };  // namespace mag

@@ -35,6 +35,6 @@ namespace mag
 
             const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
 
-            std::unique_ptr<Assimp::Importer> importer;
+            unique<Assimp::Importer> importer;
     };
 };  // namespace mag

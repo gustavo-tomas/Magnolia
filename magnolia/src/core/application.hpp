@@ -56,19 +56,19 @@ namespace mag
             void on_window_close(WindowCloseEvent& e);
             void on_quit(QuitEvent& e);
 
-            std::unique_ptr<Window> window;
-            std::unique_ptr<Renderer> renderer;
-            std::unique_ptr<FileSystem> file_system;
-            std::unique_ptr<JobSystem> job_system;
-            std::unique_ptr<ImageLoader> image_loader;
-            std::unique_ptr<MaterialLoader> material_loader;
-            std::unique_ptr<ModelLoader> model_loader;
-            std::unique_ptr<ShaderLoader> shader_loader;
-            std::unique_ptr<TextureManager> texture_loader;
-            std::unique_ptr<MaterialManager> material_manager;
-            std::unique_ptr<ModelManager> model_manager;
-            std::unique_ptr<ShaderManager> shader_manager;
-            std::unique_ptr<PhysicsEngine> physics_engine;
+            unique<Window> window;
+            unique<Renderer> renderer;
+            unique<FileSystem> file_system;
+            unique<JobSystem> job_system;
+            unique<ImageLoader> image_loader;
+            unique<MaterialLoader> material_loader;
+            unique<ModelLoader> model_loader;
+            unique<ShaderLoader> shader_loader;
+            unique<TextureManager> texture_loader;
+            unique<MaterialManager> material_manager;
+            unique<ModelManager> model_manager;
+            unique<ShaderManager> shader_manager;
+            unique<PhysicsEngine> physics_engine;
 
             std::vector<Layer*> layers;
 

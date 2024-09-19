@@ -20,10 +20,10 @@ namespace mag
     class TextureManager
     {
         public:
-            std::shared_ptr<Image> get(const str& name);
-            std::shared_ptr<Image> get_default();
+            ref<Image> get(const str& name);
+            ref<Image> get_default();
 
         private:
-            std::map<str, std::shared_ptr<Image>> textures;
+            std::map<str, ref<Image>> textures;
     };
 };  // namespace mag

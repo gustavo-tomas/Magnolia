@@ -40,10 +40,10 @@ namespace mag
     class MaterialManager
     {
         public:
-            std::shared_ptr<Material> get(const str& name);
-            std::shared_ptr<Material> get_default();
+            ref<Material> get(const str& name);
+            ref<Material> get_default();
 
         private:
-            std::map<str, std::shared_ptr<Material>> materials;
+            std::map<str, ref<Material>> materials;
     };
 };  // namespace mag

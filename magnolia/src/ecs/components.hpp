@@ -52,15 +52,12 @@ namespace mag
     class Quad;
     struct SpriteComponent : public Component
     {
-            SpriteComponent(const std::shared_ptr<Image>& texture, const std::shared_ptr<Quad>& quad)
-                : texture(texture), quad(quad)
-            {
-            }
+            SpriteComponent(const ref<Image>& texture, const ref<Quad>& quad) : texture(texture), quad(quad) {}
 
             CLONE(SpriteComponent);
 
-            std::shared_ptr<Image> texture;
-            std::shared_ptr<Quad> quad;  // @TODO: idk about this
+            ref<Image> texture;
+            ref<Quad> quad;  // @TODO: idk about this
     };
 
     // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
@@ -68,11 +65,11 @@ namespace mag
     struct Model;
     struct ModelComponent : public Component
     {
-            ModelComponent(const std::shared_ptr<Model>& model) : model(model) {}
+            ModelComponent(const ref<Model>& model) : model(model) {}
 
             CLONE(ModelComponent);
 
-            std::shared_ptr<Model> model;
+            ref<Model> model;
     };
 
     struct BoxColliderComponent : public Component

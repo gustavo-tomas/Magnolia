@@ -12,7 +12,7 @@
 
 namespace mag
 {
-    std::shared_ptr<Shader> ShaderManager::get(const str& file_path)
+    ref<Shader> ShaderManager::get(const str& file_path)
     {
         auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
@@ -28,7 +28,7 @@ namespace mag
             return nullptr;
         }
 
-        shaders[file_path] = std::make_shared<Shader>(shader_configuration);
+        shaders[file_path] = create_ref<Shader>(shader_configuration);
         return shaders[file_path];
     }
 
@@ -155,7 +155,7 @@ namespace mag
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
                         auto& descriptor_set_layout = uniforms_map[scope].descriptor_set_layouts[f];
 
-                        std::vector<std::shared_ptr<RendererImage>> textures;
+                        std::vector<ref<RendererImage>> textures;
                         for (u32 sampler_idx = 0; sampler_idx < descriptor_binding.count; sampler_idx++)
                         {
                             textures.push_back(renderer.get_renderer_image(default_texture.get()));
@@ -176,7 +176,7 @@ namespace mag
             }
         }
 
-        pipeline = std::make_unique<Pipeline>(*this);
+        pipeline = create_unique<Pipeline>(*this);
     }
 
     Shader::~Shader()
@@ -290,7 +290,7 @@ namespace mag
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
 
-            std::vector<std::shared_ptr<RendererImage>> renderer_textures;
+            std::vector<ref<RendererImage>> renderer_textures;
             for (const auto& texture_p : material->textures)
             {
                 const auto& texture_name = texture_p.second;

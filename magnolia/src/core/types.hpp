@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 namespace mag
@@ -42,6 +43,26 @@ namespace mag
     static_assert(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
     static_assert(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
+
+    // Shorthands for smart pointers
+    // (see Hazel: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Base.h)
+    template <typename T>
+    using unique = std::unique_ptr<T>;
+
+    template <typename T>
+    using ref = std::shared_ptr<T>;
+
+    template <typename T, typename... Args>
+    constexpr unique<T> create_unique(Args&&... args)
+    {
+        return std::make_unique<T>(std::forward<Args>(args)...);
+    }
+
+    template <typename T, typename... Args>
+    constexpr ref<T> create_ref(Args&&... args)
+    {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
 
 // Common macros
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0])) /* Vector size in bytes */

@@ -26,7 +26,7 @@ namespace mag
 #define INVALID_ID 1e9
 
         public:
-            using Entity = std::vector<std::unique_ptr<Component>>;
+            using Entity = std::vector<unique<Component>>;
 
             ECS(const u32 max_entity_id = 10'000)
             {

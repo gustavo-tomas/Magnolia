@@ -340,8 +340,8 @@ namespace mag
         }
 
         // Descriptors
-        this->descriptor_layout_cache = std::make_unique<DescriptorLayoutCache>();
-        this->descriptor_allocator = std::make_unique<DescriptorAllocator>();
+        this->descriptor_layout_cache = create_unique<DescriptorLayoutCache>();
+        this->descriptor_allocator = create_unique<DescriptorAllocator>();
     }
 
     Context::~Context()

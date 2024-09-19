@@ -55,7 +55,7 @@ namespace mag
         auto& app = get_application();
         auto& physics_engine = app.get_physics_engine();
 
-        runtime_ecs = std::make_unique<ECS>(*ecs);
+        runtime_ecs = create_unique<ECS>(*ecs);
         current_state = SceneState::Runtime;
 
         physics_engine.on_simulation_start(this);
@@ -214,7 +214,7 @@ namespace mag
         auto& texture_manager = app.get_texture_manager();
 
         const auto sprite = texture_manager.get(path);
-        const auto quad = std::make_shared<Quad>(vec2(sprite->width, sprite->height));
+        const auto quad = create_ref<Quad>(vec2(sprite->width, sprite->height));
 
         // Scale down the dimensions to fit better in the screen
         const f32 scale_factor = 40.0f / sprite->height;

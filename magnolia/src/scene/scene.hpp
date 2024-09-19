@@ -69,10 +69,10 @@ namespace mag
             void update_editor(const f32 dt);
 
             str name;
-            std::unique_ptr<ECS> ecs;
-            std::unique_ptr<ECS> runtime_ecs;
-            std::unique_ptr<Camera> camera;
-            std::unique_ptr<EditorCameraController> camera_controller;
+            unique<ECS> ecs;
+            unique<ECS> runtime_ecs;
+            unique<Camera> camera;
+            unique<EditorCameraController> camera_controller;
 
             SceneState current_state = SceneState::Editor;
             std::vector<u32> entity_deletion_queue;

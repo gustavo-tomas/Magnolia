@@ -100,7 +100,7 @@ namespace mag
                                                      const u64 buffer_size, const u64 offset);
 
             static void create_descriptor_for_textures(const u32 binding,
-                                                       const std::vector<std::shared_ptr<RendererImage>>& textures,
+                                                       const std::vector<ref<RendererImage>>& textures,
                                                        vk::DescriptorSet& descriptor_set,
                                                        vk::DescriptorSetLayout& descriptor_set_layout);
 

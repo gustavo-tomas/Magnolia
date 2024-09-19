@@ -7,7 +7,7 @@ namespace mag
 {
 #define DEFAULT_MODEL_NAME "magnolia/assets/models/DefaultCube.model.json"
 
-    std::shared_ptr<Model> ModelManager::get(const str& name)
+    ref<Model> ModelManager::get(const str& name)
     {
         auto it = models.find(name);
         if (it != models.end())
@@ -23,7 +23,7 @@ namespace mag
         // Create a new model
         Model* model = new Model();
 
-        models[name] = std::shared_ptr<Model>(model);
+        models[name] = ref<Model>(model);
 
         // Create placeholder model with cube data
         Cube placeholder;

@@ -15,7 +15,7 @@ namespace mag
     struct State
     {
             std::set<str> loaded_scripts;
-            std::unique_ptr<sol::state> lua;
+            unique<sol::state> lua;
     };
 
     static State* state = nullptr;
@@ -30,7 +30,7 @@ namespace mag
         state->lua.reset();
         state->loaded_scripts.clear();
 
-        state->lua = std::make_unique<sol::state>();
+        state->lua = create_unique<sol::state>();
 
         auto& lua = *state->lua;
 

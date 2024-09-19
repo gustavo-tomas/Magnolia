@@ -132,7 +132,7 @@ namespace mag
             {
                 attachment[i].curr_layout = vk::ImageLayout::eUndefined;
                 attachment[i].texture =
-                    std::make_shared<RendererImage>(image_extent, image_format, image_usage, image_aspect);
+                    create_ref<RendererImage>(image_extent, image_format, image_usage, image_aspect);
             }
         }
 

@@ -4,7 +4,7 @@
 
 namespace mag
 {
-    std::shared_ptr<Material> MaterialManager::get(const str& name)
+    ref<Material> MaterialManager::get(const str& name)
     {
         auto it = materials.find(name);
         if (it != materials.end())
@@ -22,7 +22,7 @@ namespace mag
         material->textures[TextureSlot::Albedo] = "magnolia/assets/images/DefaultAlbedoSeamless.png";
         material->textures[TextureSlot::Normal] = "magnolia/assets/images/DefaultNormal.png";
 
-        materials[name] = std::shared_ptr<Material>(material);
+        materials[name] = ref<Material>(material);
 
         // Temporary material to load data into
         Material* transfer_material = new Material(*material);
@@ -55,5 +55,5 @@ namespace mag
         return materials[name];
     }
 
-    std::shared_ptr<Material> MaterialManager::get_default() { return get(DEFAULT_MATERIAL_NAME); }
+    ref<Material> MaterialManager::get_default() { return get(DEFAULT_MATERIAL_NAME); }
 };  // namespace mag

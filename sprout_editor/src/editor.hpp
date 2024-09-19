@@ -34,7 +34,7 @@ namespace sprout
             virtual void on_event(Event& e) override;
 
             void add_scene(Scene* scene);
-            void close_scene(const std::shared_ptr<Scene>& scene);
+            void close_scene(const ref<Scene>& scene);
 
             void set_input_disabled(const b8 disable);
             void set_selected_scene_index(const u32 index);
@@ -44,7 +44,7 @@ namespace sprout
 
             Scene& get_active_scene() { return *open_scenes[selected_scene_index]; };
             RenderGraph& get_render_graph() { return *render_graph; };
-            const std::vector<std::shared_ptr<Scene>>& get_open_scenes() const { return open_scenes; };
+            const std::vector<ref<Scene>>& get_open_scenes() const { return open_scenes; };
             u32 get_selected_scene_index() const { return selected_scene_index; };
 
             // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
@@ -71,18 +71,18 @@ namespace sprout
             EventCallback event_callback;
             vk::DescriptorPool descriptor_pool;
 
-            std::unique_ptr<MenuBar> menu_bar;
-            std::unique_ptr<ContentBrowserPanel> content_browser_panel;
-            std::unique_ptr<ViewportPanel> viewport_panel;
-            std::unique_ptr<ScenePanel> scene_panel;
-            std::unique_ptr<MaterialsPanel> material_panel;
-            std::unique_ptr<PropertiesPanel> properties_panel;
-            std::unique_ptr<StatusPanel> status_panel;
-            std::unique_ptr<CameraPanel> camera_panel;
-            std::unique_ptr<SettingsPanel> settings_panel;
+            unique<MenuBar> menu_bar;
+            unique<ContentBrowserPanel> content_browser_panel;
+            unique<ViewportPanel> viewport_panel;
+            unique<ScenePanel> scene_panel;
+            unique<MaterialsPanel> material_panel;
+            unique<PropertiesPanel> properties_panel;
+            unique<StatusPanel> status_panel;
+            unique<CameraPanel> camera_panel;
+            unique<SettingsPanel> settings_panel;
 
-            std::unique_ptr<RenderGraph> render_graph;
-            std::vector<std::shared_ptr<Scene>> open_scenes;
+            unique<RenderGraph> render_graph;
+            std::vector<ref<Scene>> open_scenes;
             std::vector<u32> open_scenes_marked_for_deletion;
 
             u32 selected_scene_index = 0;

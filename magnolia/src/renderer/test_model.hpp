@@ -39,8 +39,8 @@ namespace mag
             const std::vector<u32>& get_indices() const { return indices; };
 
         private:
-            std::unique_ptr<VertexBuffer> vbo;
-            std::unique_ptr<IndexBuffer> ibo;
+            unique<VertexBuffer> vbo;
+            unique<IndexBuffer> ibo;
 
             std::vector<QuadVertex> vertices;
             std::vector<u32> indices;
@@ -61,7 +61,7 @@ namespace mag
             const std::vector<LineVertex>& get_vertices() const { return vertices; };
 
         private:
-            std::unique_ptr<VertexBuffer> vbo;
+            unique<VertexBuffer> vbo;
             std::vector<LineVertex> vertices;
     };
     // @TODO: testing

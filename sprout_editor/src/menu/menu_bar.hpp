@@ -45,7 +45,7 @@ namespace sprout
 
             DialogAction current_action = DialogAction::None;
 
-            std::unique_ptr<InfoMenu> info_menu;
+            unique<InfoMenu> info_menu;
             b8 quit = false;
             str scene_file_path = "";
     };

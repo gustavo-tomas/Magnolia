@@ -18,8 +18,8 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            std::shared_ptr<Shader> mesh_shader;
-            std::shared_ptr<Shader> sprite_shader;
+            ref<Shader> mesh_shader;
+            ref<Shader> sprite_shader;
     };
 
     class LinePass : public RenderGraphPass
@@ -30,8 +30,8 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            std::shared_ptr<Shader> line_shader;
-            std::unique_ptr<Line> lines;
+            ref<Shader> line_shader;
+            unique<Line> lines;
     };
 
     class GridPass : public RenderGraphPass
@@ -42,6 +42,6 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            std::shared_ptr<Shader> grid_shader;
+            ref<Shader> grid_shader;
     };
 };  // namespace sprout

@@ -39,7 +39,7 @@ namespace mag
     struct Attachment
     {
             AttachmentDescription description;
-            std::shared_ptr<RendererImage> texture;
+            ref<RendererImage> texture;
             vk::ImageLayout curr_layout;
     };
 

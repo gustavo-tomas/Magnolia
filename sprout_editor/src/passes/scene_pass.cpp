@@ -237,7 +237,7 @@ namespace sprout
             return;
         }
 
-        lines = std::make_unique<Line>(total_lines.starts, total_lines.ends, total_lines.colors);
+        lines = create_unique<Line>(total_lines.starts, total_lines.ends, total_lines.colors);
 
         line_shader->bind();
 

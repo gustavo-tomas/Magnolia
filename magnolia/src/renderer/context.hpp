@@ -114,8 +114,8 @@ namespace mag
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};
-            std::unique_ptr<DescriptorLayoutCache> descriptor_layout_cache;
-            std::unique_ptr<DescriptorAllocator> descriptor_allocator;
+            unique<DescriptorLayoutCache> descriptor_layout_cache;
+            unique<DescriptorAllocator> descriptor_allocator;
 
             CommandBuffer submit_command_buffer;
     };

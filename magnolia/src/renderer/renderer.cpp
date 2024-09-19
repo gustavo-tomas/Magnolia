@@ -11,7 +11,7 @@ namespace mag
     {
         // Create context
         const ContextCreateOptions context_options = {.window = window};
-        context = std::make_unique<Context>(context_options);
+        context = create_unique<Context>(context_options);
         LOG_SUCCESS("Context initialized");
     }
 
@@ -91,8 +91,8 @@ namespace mag
             return;
         }
 
-        vertex_buffers[model] = std::make_shared<VertexBuffer>(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
-        index_buffers[model] = std::make_shared<IndexBuffer>(model->indices.data(), VEC_SIZE_BYTES(model->indices));
+        vertex_buffers[model] = create_ref<VertexBuffer>(model->vertices.data(), VEC_SIZE_BYTES(model->vertices));
+        index_buffers[model] = create_ref<IndexBuffer>(model->indices.data(), VEC_SIZE_BYTES(model->indices));
     }
 
     void Renderer::remove_model(Model* model)
@@ -110,7 +110,7 @@ namespace mag
         index_buffers.erase(ibo_it);
     }
 
-    std::shared_ptr<RendererImage> Renderer::get_renderer_image(Image* image)
+    ref<RendererImage> Renderer::get_renderer_image(Image* image)
     {
         auto it = images.find(image);
 
@@ -136,7 +136,7 @@ namespace mag
         it->second->set_pixels(image->pixels);
     }
 
-    std::shared_ptr<RendererImage> Renderer::upload_image(Image* image)
+    ref<RendererImage> Renderer::upload_image(Image* image)
     {
         auto it = images.find(image);
 
@@ -151,11 +151,11 @@ namespace mag
         // @TODO: check for supported formats
         const vk::Format format = vk::Format::eR8G8B8A8Srgb;
 
-        images[image] = std::make_shared<RendererImage>(
-            extent, image->pixels, format,
-            vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
-                vk::ImageUsageFlagBits::eTransferDst,
-            vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+        images[image] =
+            create_ref<RendererImage>(extent, image->pixels, format,
+                                      vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
+                                          vk::ImageUsageFlagBits::eTransferDst,
+                                      vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
 
         return images[image];
     }

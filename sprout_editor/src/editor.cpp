@@ -93,14 +93,14 @@ namespace sprout
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        menu_bar = std::make_unique<MenuBar>();
-        content_browser_panel = std::make_unique<ContentBrowserPanel>();
-        viewport_panel = std::make_unique<ViewportPanel>();
-        scene_panel = std::make_unique<ScenePanel>();
-        material_panel = std::make_unique<MaterialsPanel>();
-        status_panel = std::make_unique<StatusPanel>();
-        camera_panel = std::make_unique<CameraPanel>();
-        settings_panel = std::make_unique<SettingsPanel>();
+        menu_bar = create_unique<MenuBar>();
+        content_browser_panel = create_unique<ContentBrowserPanel>();
+        viewport_panel = create_unique<ViewportPanel>();
+        scene_panel = create_unique<ScenePanel>();
+        material_panel = create_unique<MaterialsPanel>();
+        status_panel = create_unique<StatusPanel>();
+        camera_panel = create_unique<CameraPanel>();
+        settings_panel = create_unique<SettingsPanel>();
 
         // Initialize render graph
         auto &app = get_application();
@@ -235,7 +235,7 @@ namespace sprout
 
     void Editor::add_scene(Scene *scene) { open_scenes.emplace_back(scene); }
 
-    void Editor::close_scene(const std::shared_ptr<Scene> &scene)
+    void Editor::close_scene(const ref<Scene> &scene)
     {
         const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
 

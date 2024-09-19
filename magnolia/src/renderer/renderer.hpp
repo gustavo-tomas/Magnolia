@@ -29,14 +29,14 @@ namespace mag
 
             // @TODO: temp?
             void bind_buffers(Model* model);
-            std::shared_ptr<RendererImage> get_renderer_image(Image* image);
+            ref<RendererImage> get_renderer_image(Image* image);
             // @TODO: temp?
 
             void upload_model(Model* model);
             void remove_model(Model* model);
             void update_model(Model* model);
 
-            std::shared_ptr<RendererImage> upload_image(Image* image);
+            ref<RendererImage> upload_image(Image* image);
             void remove_image(Image* image);
             void update_image(Image* image);
 
@@ -44,13 +44,13 @@ namespace mag
             void on_resize(WindowResizeEvent& e);
 
             Window& window;
-            std::unique_ptr<Context> context;
+            unique<Context> context;
 
             // Model data
-            std::map<Model*, std::shared_ptr<VertexBuffer>> vertex_buffers;
-            std::map<Model*, std::shared_ptr<IndexBuffer>> index_buffers;
+            std::map<Model*, ref<VertexBuffer>> vertex_buffers;
+            std::map<Model*, ref<IndexBuffer>> index_buffers;
 
             // Image data
-            std::map<Image*, std::shared_ptr<RendererImage>> images;
+            std::map<Image*, ref<RendererImage>> images;
     };
 };  // namespace mag

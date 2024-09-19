@@ -154,8 +154,8 @@ namespace mag
             2  // Second triangle
         };
 
-        vbo = std::make_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
-        ibo = std::make_unique<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
+        vbo = create_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
+        ibo = create_unique<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
     };
 
     Line::Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors)
@@ -176,6 +176,6 @@ namespace mag
             vertices.push_back(line_end);
         }
 
-        vbo = std::make_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
+        vbo = create_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
     }
 };  // namespace mag
