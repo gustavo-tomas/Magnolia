@@ -6,10 +6,14 @@
 
 namespace mag
 {
+    // @TODO: transform this into a resource and load using the file system. use loadFontData to load a font from memory
+
     Font::Font(const std::filesystem::path &file_path)
     {
         if (msdfgen::FreetypeHandle *ft = msdfgen::initializeFreetype())
         {
+            // msdfgen::loadFontData(FreetypeHandle * library, const byte *data, int length);
+
             const char *font_str = file_path.c_str();
             if (msdfgen::FontHandle *font = msdfgen::loadFont(ft, font_str))
             {
