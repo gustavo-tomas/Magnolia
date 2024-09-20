@@ -61,8 +61,8 @@ workspace "magnolia"
 
         "png", -- @TODO: package this
         "freetype", -- @TODO: package this
-		"msdfgen", -- @TODO: package this
 		"msdfatlasgen", -- @TODO: package this
+		"msdfgen", -- @TODO: package this
         "lua5.4" -- @TODO: package this
     }
 
@@ -565,6 +565,11 @@ project "msdfatlasgen"
 		"libs/msdf_atlas_gen/msdfgen",
         "libs/msdf_atlas_gen/msdf-atlas-gen",
         "libs/msdf_atlas_gen/artery-font-format"
+    }
+
+    links
+    {
+        "msdfgen"
     }
 
     filter "system:linux"
