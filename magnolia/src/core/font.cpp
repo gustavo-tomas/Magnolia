@@ -1,8 +1,12 @@
 #include "core/font.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#include "msdf_atlas_gen/msdf-atlas-gen/msdf-atlas-gen.h"
+#pragma GCC diagnostic pop
+
 #include "msdf_atlas_gen/msdfgen/msdfgen-ext.h"
 #include "msdf_atlas_gen/msdfgen/msdfgen.h"
-// #include "msdf-atlas-gen/msdf-atlas-gen.h"
 
 namespace mag
 {
