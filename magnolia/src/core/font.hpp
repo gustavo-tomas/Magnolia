@@ -6,13 +6,22 @@
 #include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#include "msdf_atlas_gen/msdf-atlas-gen/msdf-atlas-gen.h"
+#pragma GCC diagnostic pop
+
 // This implementation was based on the cherno's implementation: https://www.youtube.com/watch?v=iMuiim9loOg
 
 // @TODO: pls cleanup before merging ty x0x0
 
 namespace mag
 {
-    struct InternalFontData;
+    struct InternalFontData
+    {
+            msdf_atlas::FontGeometry FontGeometry;
+            std::vector<msdf_atlas::GlyphGeometry> Glyphs;
+    };
 
     class Font
     {

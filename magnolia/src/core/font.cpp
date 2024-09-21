@@ -7,23 +7,9 @@
 #include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#include "msdf_atlas_gen/msdf-atlas-gen/msdf-atlas-gen.h"
-#pragma GCC diagnostic pop
-
-#include "msdf_atlas_gen/msdfgen/msdfgen-ext.h"
-#include "msdf_atlas_gen/msdfgen/msdfgen.h"
-
 namespace mag
 {
     // @TODO: transform this into a resource and load using the file system. use loadFontData to load a font from memory
-
-    struct InternalFontData
-    {
-            msdf_atlas::FontGeometry FontGeometry;
-            std::vector<msdf_atlas::GlyphGeometry> Glyphs;
-    };
 
     template <typename T, typename S, i32 N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
     static ref<RendererImage> CreateAndCacheAtlas(const str& fontName, f32 fontSize,
