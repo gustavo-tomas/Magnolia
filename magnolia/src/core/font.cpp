@@ -14,8 +14,8 @@ namespace mag
     template <typename T, typename S, i32 N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
     static ref<RendererImage> CreateAndCacheAtlas(const str& fontName, f32 fontSize,
                                                   const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
-                                                  const msdf_atlas::FontGeometry& fontGeometry, uint32_t width,
-                                                  uint32_t height, Image* image)
+                                                  const msdf_atlas::FontGeometry& fontGeometry, const u32 width,
+                                                  const u32 height, Image& image)
     {
         (void)fontName;
         (void)fontSize;
@@ -32,23 +32,21 @@ namespace mag
                                                                                                            height);
         generator.setAttributes(attributes);
         generator.setThreadCount(8);  // @TODO: hardcoded
-        generator.generate(glyphs.data(), (i32)glyphs.size());
+        generator.generate(glyphs.data(), static_cast<i32>(glyphs.size()));
 
-        msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
+        msdfgen::BitmapConstRef<T, N> bitmap = generator.atlasStorage();
 
-        const u64 channels = 4;  // @TODO: check if error here
-        const u64 image_size = bitmap.width * bitmap.height * channels;
-        const u64 true_image_size = bitmap.width * bitmap.height * channels;
+        const u64 image_size = bitmap.width * bitmap.height * N;
 
-        image = new Image();
-        image->width = bitmap.width;
-        image->height = bitmap.height;
-        image->channels = channels;
-        image->mip_levels = 1;
-        image->pixels.resize(image_size);
-        image->pixels.insert(image->pixels.begin(), (u8*)bitmap.pixels, (u8*)bitmap.pixels + true_image_size);
+        image.width = bitmap.width;
+        image.height = bitmap.height;
+        image.channels = N;
+        image.mip_levels = 1;
+        image.format = ImageFormat::Unorm;
+        image.pixels = std::vector<u8>(reinterpret_cast<const u8*>(bitmap.pixels),
+                                       reinterpret_cast<const u8*>(bitmap.pixels) + image_size);
 
-        return renderer.upload_image(image);
+        return renderer.upload_image(&image);
     }
 
     Font::Font(const std::filesystem::path& file_path) : internal_data(new InternalFontData())
@@ -67,7 +65,7 @@ namespace mag
 
         struct CharsetRange
         {
-                uint32_t Begin, End;
+                u32 Begin, End;
         };
 
         // From imgui_draw.cpp
@@ -76,18 +74,18 @@ namespace mag
         msdf_atlas::Charset charset;
         for (CharsetRange range : charsetRanges)
         {
-            for (uint32_t c = range.Begin; c <= range.End; c++) charset.add(c);
+            for (u32 c = range.Begin; c <= range.End; c++) charset.add(c);
         }
 
-        f64 fontScale = 1.0;
+        const f64 fontScale = 1.0;
         internal_data->FontGeometry = msdf_atlas::FontGeometry(&internal_data->Glyphs);
         i32 glyphsLoaded = internal_data->FontGeometry.loadCharset(font, fontScale, charset);
         LOG_INFO("Loaded {0} glyphs from font (out of {1})", glyphsLoaded, charset.size());
 
-        f64 emSize = 40.0;
+        f64 emSize = 64.0;
 
         msdf_atlas::TightAtlasPacker atlasPacker;
-        atlasPacker.setPixelRange(2.0);
+        atlasPacker.setPixelRange(PIXEL_RANGE);
         atlasPacker.setMiterLimit(1.0);
         atlasPacker.setScale(emSize);
 
@@ -99,42 +97,25 @@ namespace mag
         emSize = atlasPacker.getScale();
 
         // Edge coloring
-        if (true)
         {
 #define DEFAULT_ANGLE_THRESHOLD 3.0
 #define LCG_MULTIPLIER 6364136223846793005ull
 #define LCG_INCREMENT 1442695040888963407ull
-#define THREAD_COUNT 8
-            // if MSDF || MTSDF
 
             u64 coloringSeed = 0;
-            b8 expensiveColoring = false;
-            if (expensiveColoring)
+            u64 glyphSeed = coloringSeed;
+
+            for (msdf_atlas::GlyphGeometry& glyph : internal_data->Glyphs)
             {
-                msdf_atlas::Workload(
-                    [&glyphs = internal_data->Glyphs, &coloringSeed](i32 i, i32 threadNo) -> b8
-                    {
-                        (void)threadNo;
-                        u64 glyphSeed = (LCG_MULTIPLIER * (coloringSeed ^ i) + LCG_INCREMENT) * !!coloringSeed;
-                        glyphs[i].edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
-                        return true;
-                    },
-                    internal_data->Glyphs.size())
-                    .finish(THREAD_COUNT);
-            }
-            else
-            {
-                u64 glyphSeed = coloringSeed;
-                for (msdf_atlas::GlyphGeometry& glyph : internal_data->Glyphs)
-                {
-                    glyphSeed *= LCG_MULTIPLIER;
-                    glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
-                }
+                glyphSeed *= LCG_MULTIPLIER;
+                glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
             }
         }
 
+        atlas_image = new Image();
         m_AtlasTexture = CreateAndCacheAtlas<u8, f32, 4, msdf_atlas::mtsdfGenerator>(
-            "Test", (f32)emSize, internal_data->Glyphs, internal_data->FontGeometry, width, height, atlas_image);
+            file_path, static_cast<f32>(emSize), internal_data->Glyphs, internal_data->FontGeometry, width, height,
+            *atlas_image);
 
         msdfgen::destroyFont(font);
         msdfgen::deinitializeFreetype(ft);

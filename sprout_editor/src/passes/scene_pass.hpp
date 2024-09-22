@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "renderer/render_graph.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/test_model.hpp"
@@ -18,8 +16,11 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
+            void draw_string(const f64 LineSpacing, const f64 Kerning);
+
             ref<Shader> mesh_shader;
             ref<Shader> sprite_shader;
+            ref<Shader> text_shader;
     };
 
     class LinePass : public RenderGraphPass
