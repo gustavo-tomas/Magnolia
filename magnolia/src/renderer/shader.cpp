@@ -224,6 +224,9 @@ namespace mag
         auto& block = ubo.descriptor_binding.block;
         auto& buffer = ubo.buffers[curr_frame_number];
 
+        // @TODO: we dont need to search the offset and size every time we want to set an uniform. We can just cache
+        // them in a nice cute map :)
+
         u64 offset = 0;
         u64 size = 0;
         for (u32 i = 0; i < block.member_count; i++)
@@ -235,6 +238,13 @@ namespace mag
                 size = member.size;
                 break;
             }
+        }
+
+        // Uniform not found
+        if (size == 0)
+        {
+            LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
+            return;
         }
 
         buffer.copy(data, size, offset + data_offset);
