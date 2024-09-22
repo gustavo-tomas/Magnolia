@@ -149,7 +149,22 @@ namespace mag
         const vk::Extent3D extent(image->width, image->height, 1);
 
         // @TODO: check for supported formats
-        const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+        vk::Format format = vk::Format::eR8G8B8A8Srgb;
+
+        if (image->format == ImageFormat::Srgb)
+        {
+            format = vk::Format::eR8G8B8A8Srgb;
+        }
+
+        else if (image->format == ImageFormat::Unorm)
+        {
+            format = vk::Format::eR8G8B8A8Unorm;
+        }
+
+        else
+        {
+            LOG_ERROR("Invalid image format: '{0}'", static_cast<u32>(image->format));
+        }
 
         images[image] =
             create_ref<RendererImage>(extent, image->pixels, format,
