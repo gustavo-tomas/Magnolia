@@ -101,6 +101,13 @@ namespace mag
                 uniforms_map[scope].buffers.resize(frame_count);
                 uniforms_map[scope].descriptor_binding = descriptor_binding;
 
+                // Store a pointer to each block member
+                for (u32 i = 0; i < descriptor_binding.block.member_count; i++)
+                {
+                    const auto& member = &uniforms_map[scope].descriptor_binding.block.members[i];
+                    uniforms_map[scope].members_cache[member->name] = member;
+                }
+
                 // Create buffer for ubos
                 if (type == vk::DescriptorType::eUniformBuffer)
                 {
@@ -221,35 +228,23 @@ namespace mag
         const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& ubo = uniforms_map[scope];
-        auto& block = ubo.descriptor_binding.block;
+        auto& members_cache = ubo.members_cache;
         auto& buffer = ubo.buffers[curr_frame_number];
 
-        // @TODO: we dont need to search the offset and size every time we want to set an uniform. We can just cache
-        // them in a nice cute map :)
-
-        u64 offset = 0;
-        u64 size = 0;
-        for (u32 i = 0; i < block.member_count; i++)
+        auto it = members_cache.find(name);
+        if (it != members_cache.end())
         {
-            const auto& member = block.members[i];
-            if (strcmp(member.name, name.c_str()) == 0)
-            {
-                offset = member.offset;
-                size = member.size;
-                break;
-            }
-        }
+            const u64 offset = it->second->offset;
+            const u64 size = it->second->size;
 
-        // Uniform not found
-        if (size == 0)
-        {
-            LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
+            buffer.copy(data, size, offset + data_offset);
+
+            bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
             return;
         }
 
-        buffer.copy(data, size, offset + data_offset);
-
-        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+        // Uniform not found
+        LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
     }
 
     void Shader::set_texture(const str& name, Image* texture)
