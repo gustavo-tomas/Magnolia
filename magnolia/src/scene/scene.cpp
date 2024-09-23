@@ -196,6 +196,17 @@ namespace mag
     //     // // build_render_graph(draw_size);
     // }
 
+    void Scene::add_text(const str& path)
+    {
+        auto& app = get_application();
+        auto& font_manager = app.get_font_manager();
+
+        const str text = "Lorem Ipsum";
+        const auto entity = ecs->create_entity();
+        ecs->add_component(entity, new TransformComponent());
+        ecs->add_component(entity, new TextComponent(text, font_manager.get(path)));
+    }
+
     void Scene::add_model(const str& path)
     {
         auto& app = get_application();

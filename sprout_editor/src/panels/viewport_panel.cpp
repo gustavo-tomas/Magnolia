@@ -15,6 +15,7 @@ namespace sprout
         auto &editor = get_editor();
         auto &model_loader = app.get_model_loader();
         auto &image_loader = app.get_image_loader();
+        auto &font_loader = app.get_font_loader();
         auto &scene = editor.get_active_scene();
         auto &open_scenes = editor.get_open_scenes();
 
@@ -123,6 +124,12 @@ namespace sprout
                         else if (model_loader.is_extension_supported(extension))
                         {
                             scene.add_model(path);
+                        }
+
+                        // Check if asset is a font
+                        else if (font_loader.is_extension_supported(extension))
+                        {
+                            scene.add_text(path);
                         }
 
                         else

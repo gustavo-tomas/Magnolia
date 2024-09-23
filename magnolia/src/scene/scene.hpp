@@ -29,6 +29,7 @@ namespace mag
 
             void add_model(const str& path);
             void add_sprite(const str& path);
+            void add_text(const str& path);
 
             void remove_entity(const u32 id);
 
