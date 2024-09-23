@@ -252,8 +252,8 @@ namespace sprout
             quadMin += vec2(x, y);
             quadMax += vec2(x, y);
 
-            f64 texelWidth = 1.0f / fontAtlas->get_extent().width;
-            f64 texelHeight = 1.0f / fontAtlas->get_extent().height;
+            const f64 texelWidth = 1.0f / fontAtlas->get_extent().width;
+            const f64 texelHeight = 1.0f / fontAtlas->get_extent().height;
 
             texCoordMin *= vec2(texelWidth, texelHeight);
             texCoordMax *= vec2(texelWidth, texelHeight);
