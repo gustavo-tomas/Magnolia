@@ -13,6 +13,7 @@ namespace mag
             ~FontLoader();
 
             b8 load(const str& file_path, Font* font);
+            b8 is_extension_supported(const str& extension_with_dot);
 
         private:
             void* freetype = nullptr;

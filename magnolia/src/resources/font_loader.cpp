@@ -149,4 +149,6 @@ namespace mag
 
         return true;
     }
+
+    b8 FontLoader::is_extension_supported(const str& extension_with_dot) { return extension_with_dot == ".ttf"; }
 };  // namespace mag
