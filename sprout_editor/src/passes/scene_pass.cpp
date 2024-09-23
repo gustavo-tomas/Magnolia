@@ -1,12 +1,12 @@
 #include "passes/scene_pass.hpp"
 
 #include "core/application.hpp"
-#include "core/font.hpp"
 #include "editor.hpp"
 #include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/type_conversions.hpp"
+#include "resources/font.hpp"
 #include "resources/material.hpp"
 
 namespace sprout
@@ -170,7 +170,11 @@ namespace sprout
 
     void ScenePass::draw_string(const f64 LineSpacing, const f64 Kerning)
     {
-        const auto& font = Font::get_default();
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& font_manager = app.get_font_manager();
+
+        const auto& font = font_manager.get_default();
 
         static unique<VertexBuffer> vbo = nullptr;
         static unique<IndexBuffer> ibo = nullptr;
@@ -178,9 +182,9 @@ namespace sprout
         std::vector<TextVertex> vertices;
         std::vector<u32> indices;
 
-        const auto& fontGeometry = font->internal_data->FontGeometry;
+        const auto& fontGeometry = font->font_geometry;
         const auto& metrics = fontGeometry.getMetrics();
-        const auto& fontAtlas = font->m_AtlasTexture;
+        const auto& fontAtlas = renderer.get_renderer_image(&font->atlas_image);
 
         f64 x = 0.0;
         f64 fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
@@ -323,7 +327,7 @@ namespace sprout
             text_shader->set_uniform("u_text_info", "color", value_ptr(vec4(1, 0, 1, 1)));
             text_shader->set_uniform("u_text_info", "pixel_range", &pixel_range);
 
-            text_shader->set_texture("u_atlas_texture", font->atlas_image);
+            text_shader->set_texture("u_atlas_texture", &font->atlas_image);
 
             // @TODO: command buffers should be handled by the renderer
             auto& cmd = get_context().get_curr_frame().command_buffer;
