@@ -1,9 +1,6 @@
 #pragma once
 
-#include <memory>
-
 #include "camera/camera.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -116,6 +113,24 @@ namespace mag
             CLONE(CameraComponent);
 
             Camera camera;
+    };
+
+    class Font;
+    struct TextComponent : public Component
+    {
+            TextComponent(const str& text, const ref<Font>& font, const vec4& color = vec4(1), const f32 kerning = 0,
+                          const f32 line_spacing = 0)
+                : text(text), color(color), kerning(kerning), line_spacing(line_spacing), font(font)
+            {
+            }
+
+            CLONE(TextComponent);
+
+            str text;
+            vec4 color;
+            f32 kerning;
+            f32 line_spacing;
+            ref<Font> font;
     };
 
     class Script;
