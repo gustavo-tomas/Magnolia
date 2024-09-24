@@ -102,9 +102,9 @@ namespace mag
                 uniforms_map[scope].descriptor_binding = descriptor_binding;
 
                 // Store a pointer to each block member
-                for (u32 i = 0; i < descriptor_binding.block.member_count; i++)
+                for (u32 m = 0; m < descriptor_binding.block.member_count; m++)
                 {
-                    const auto& member = &uniforms_map[scope].descriptor_binding.block.members[i];
+                    const auto& member = &uniforms_map[scope].descriptor_binding.block.members[m];
                     uniforms_map[scope].members_cache[member->name] = member;
                 }
 
