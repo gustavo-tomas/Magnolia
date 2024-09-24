@@ -1,6 +1,8 @@
 #include "panels/properties_panel.hpp"
 
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui/imgui_stdlib.h"
+#include "resources/font.hpp"
 #include "resources/model.hpp"
 
 namespace sprout
@@ -119,6 +121,7 @@ namespace sprout
             }
         }
 
+        // Rigidbody
         if (auto component = ecs.get_component<RigidBodyComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
@@ -127,6 +130,7 @@ namespace sprout
             }
         }
 
+        // Camera
         if (auto component = ecs.get_component<CameraComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
@@ -144,6 +148,39 @@ namespace sprout
             }
         }
 
+        // Text
+        if (auto component = ecs.get_component<TextComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                const f32 left_offset = 100.0f;
+
+                ImGui::TextWrapped("Font");
+                ImGui::SameLine(left_offset);
+                ImGui::Text("%s", component->font->file_path.c_str());
+
+                editable_field<f32>("Kerning", component->kerning, 0.0f, 0.0f, 10.0f);
+                editable_field<f32>("Line Spacing", component->line_spacing, 0.0f, 0.0f, 10.0f);
+
+                const ImGuiColorEditFlags flags = ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoAlpha;
+
+                ImGui::TextWrapped("Color");
+                ImGui::SameLine(left_offset);
+                ImGui::ColorEdit4("##TextColor", value_ptr(component->color), flags);
+
+                str input_str = component->text;
+                input_str.resize(1000);
+
+                ImGui::TextWrapped("Text");
+                ImGui::SameLine(left_offset);
+                if (ImGui::InputTextMultiline("##InputText", &input_str, {0, 0}))
+                {
+                    component->text = input_str;
+                }
+            }
+        }
+
+        // Script
         if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
