@@ -159,7 +159,7 @@ namespace sprout
 
         // Render text
 
-        draw_string(0, 0);
+        draw_string(app.get_font_manager().get_default(), "Lorem Ipsum Bla Bla", vec4(1), 0, 0, math::scale(vec3(10)));
     }
 
     struct TextVertex
@@ -168,13 +168,11 @@ namespace sprout
             vec2 tex_coords;
     };
 
-    void ScenePass::draw_string(const f64 LineSpacing, const f64 Kerning)
+    void ScenePass::draw_string(const ref<Font>& font, const str& text, const vec4& color, const f64 LineSpacing,
+                                const f64 Kerning, const mat4& transform)
     {
         auto& app = get_application();
         auto& renderer = app.get_renderer();
-        auto& font_manager = app.get_font_manager();
-
-        const auto& font = font_manager.get_default();
 
         static unique<VertexBuffer> vbo = nullptr;
         static unique<IndexBuffer> ibo = nullptr;
@@ -192,13 +190,7 @@ namespace sprout
 
         const f64 spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
 
-        f32 scale = 1;
-        vec3 translation = vec3(-10, 0, 0);
-        mat4 transform = translate(mat4(1.0f), translation) * math::scale(mat4(1.0f), vec3(scale));
-
         const f64 pixel_range = PIXEL_RANGE;
-
-        const str text = "The Quick Brown Fox Jumps Over The Lazy Dog.\nThe Quick Brown Fox Jumps Over The Lazy Dog.";
 
         for (u32 i = 0; i < text.size(); i++)
         {
@@ -324,7 +316,7 @@ namespace sprout
             // @TODO: hardcoded data offset (should the shader deal with this automagically?)
             // text_shader->set_uniform("u_instance", "models", value_ptr(model_matrix));
 
-            text_shader->set_uniform("u_text_info", "color", value_ptr(vec4(1, 0, 1, 1)));
+            text_shader->set_uniform("u_text_info", "color", value_ptr(color));
             text_shader->set_uniform("u_text_info", "pixel_range", &pixel_range);
 
             text_shader->set_texture("u_atlas_texture", &font->atlas_image);
