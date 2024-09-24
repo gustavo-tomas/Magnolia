@@ -8,6 +8,63 @@ namespace sprout
 #define MIN_VALUE -1'000'000'000
 #define MAX_VALUE +1'000'000'000
 
+    template <typename T>
+    void editable_field(const str &field_name, T &value, const T &reset_value, const T &min_value, const T &max_value)
+    {
+        const char *format = "%.3f";
+        const f32 left_offset = 100.0f;
+        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+        T editable_value = value;
+
+        ImGui::Text("%s", field_name.c_str());
+        ImGui::SameLine(left_offset);
+
+        const str label = str("##") + field_name.c_str();
+
+        // Select input according to the T type
+
+        b8 input = false;
+
+        if constexpr (std::is_same_v<T, f32>)
+        {
+            input = ImGui::InputFloat(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags);
+        }
+
+        else if constexpr (std::is_same_v<T, f64>)
+        {
+            input = ImGui::InputDouble(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags);
+        }
+
+        else if constexpr (std::is_same_v<T, vec2>)
+        {
+            input = ImGui::InputFloat2(label.c_str(), value_ptr(editable_value), format, input_flags);
+        }
+
+        else if constexpr (std::is_same_v<T, vec3>)
+        {
+            input = ImGui::InputFloat3(label.c_str(), value_ptr(editable_value), format, input_flags);
+        }
+
+        else if constexpr (std::is_same_v<T, vec4>)
+        {
+            input = ImGui::InputFloat4(label.c_str(), value_ptr(editable_value), format, input_flags);
+        }
+
+        if (input)
+        {
+            value = clamp(editable_value, min_value, max_value);
+        }
+
+        // Reset
+        const str reset_label = str(ICON_FA_CIRCLE) + label;
+        ImGui::SameLine();
+        if (ImGui::Button(reset_label.c_str()))
+        {
+            value = reset_value;
+        }
+    }
+
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
@@ -20,9 +77,9 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Translation", transform->translation, vec3(0), vec3(MIN_VALUE), vec3(MAX_VALUE));
-                editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
-                editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MAX_VALUE));
+                editable_field<vec3>("Translation", transform->translation, vec3(0), vec3(MIN_VALUE), vec3(MAX_VALUE));
+                editable_field<vec3>("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
+                editable_field<vec3>("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MAX_VALUE));
             }
         }
 
@@ -49,7 +106,7 @@ namespace sprout
                 ImGui::SameLine(left_offset);
                 ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
 
-                editable_field("Intensity", light->intensity, 1.0f, 0.0f, MAX_VALUE);
+                editable_field<f32>("Intensity", light->intensity, 1.0f, 0.0f, MAX_VALUE);
             }
         }
 
@@ -58,7 +115,7 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MAX_VALUE));
+                editable_field<vec3>("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MAX_VALUE));
             }
         }
 
@@ -66,7 +123,7 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Mass", component->mass, 1.0f, 0.0f, MAX_VALUE);
+                editable_field<f32>("Mass", component->mass, 1.0f, 0.0f, MAX_VALUE);
             }
         }
 
@@ -78,9 +135,9 @@ namespace sprout
                 f32 far = component->camera.get_far();
                 f32 fov = component->camera.get_fov();
 
-                editable_field("Near", near, 1.0f, 0.1f, MAX_VALUE);
-                editable_field("Far", far, 1.0f, 0.1f, MAX_VALUE);
-                editable_field("Fov", fov, 60.0f, 30.0f, 120.0f);
+                editable_field<f32>("Near", near, 1.0f, 0.1f, MAX_VALUE);
+                editable_field<f32>("Far", far, 1.0f, 0.1f, MAX_VALUE);
+                editable_field<f32>("Fov", fov, 60.0f, 30.0f, 120.0f);
 
                 component->camera.set_near_far({near, far});
                 component->camera.set_fov(fov);
@@ -97,59 +154,5 @@ namespace sprout
 
     end:
         ImGui::End();
-    }
-
-    void PropertiesPanel::editable_field(const str &field_name, vec3 &value, const vec3 &reset_value,
-                                         const vec3 &min_value, const vec3 &max_value)
-    {
-        const char *format = "%.2f";
-        const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
-        vec3 editable_value = value;
-
-        ImGui::Text("%s", field_name.c_str());
-        ImGui::SameLine(left_offset);
-
-        const str label = str("##") + field_name.c_str();
-        if (ImGui::InputFloat3(label.c_str(), value_ptr(editable_value), format, input_flags))
-        {
-            value = clamp(editable_value, min_value, max_value);
-        }
-
-        // Reset
-        const str reset_label = str(ICON_FA_CIRCLE) + label;
-        ImGui::SameLine();
-        if (ImGui::Button(reset_label.c_str()))
-        {
-            value = reset_value;
-        }
-    }
-
-    void PropertiesPanel::editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
-                                         const f32 max_value)
-    {
-        const char *format = "%.2f";
-        const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-
-        f32 editable_value = value;
-
-        ImGui::Text("%s", field_name.c_str());
-        ImGui::SameLine(left_offset);
-
-        const str label = str("##") + field_name.c_str();
-        if (ImGui::InputFloat(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags))
-        {
-            value = clamp(editable_value, min_value, max_value);
-        }
-
-        // Reset
-        const str reset_label = str(ICON_FA_CIRCLE) + label;
-        ImGui::SameLine();
-        if (ImGui::Button(reset_label.c_str()))
-        {
-            value = reset_value;
-        }
     }
 };  // namespace sprout
