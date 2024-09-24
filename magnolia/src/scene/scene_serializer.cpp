@@ -165,9 +165,9 @@ namespace mag
                 if (entity.contains("ModelComponent"))
                 {
                     const auto& component = entity["ModelComponent"];
-                    const str file_path = component["FilePath"];
+                    const str model_file_path = component["FilePath"];
 
-                    const auto& model = app.get_model_manager().get(file_path);
+                    const auto& model = app.get_model_manager().get(model_file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
                 }
@@ -223,9 +223,25 @@ namespace mag
                 {
                     const auto& component = entity["ScriptComponent"];
 
-                    const str file_path = component["FilePath"];
+                    const str script_file_path = component["FilePath"];
 
-                    ecs.add_component(entity_id, new ScriptComponent(file_path));
+                    ecs.add_component(entity_id, new ScriptComponent(script_file_path));
+                }
+
+                if (entity.contains("TextComponent"))
+                {
+                    const auto& component = entity["TextComponent"];
+
+                    const str font = component["Font"];
+                    const str text = component["Text"];
+                    const f32 kerning = component["Kerning"];
+                    const f32 line_spacing = component["LineSpacing"];
+
+                    vec4 color;
+                    for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
+
+                    ecs.add_component(entity_id, new TextComponent(text, app.get_font_manager().get(font), color,
+                                                                   kerning, line_spacing));
                 }
             }
         }

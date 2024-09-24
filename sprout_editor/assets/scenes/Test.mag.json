@@ -104,8 +104,8 @@
             },
             "TransformComponent": {
                 "Translation": [
-                    0.0,
-                    0.0,
+                    -50.0,
+                    50.0,
                     0.0
                 ],
                 "Rotation": [
@@ -114,9 +114,9 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    10.0,
+                    10.0,
+                    10.0
                 ]
             },
             "TextComponent": {
