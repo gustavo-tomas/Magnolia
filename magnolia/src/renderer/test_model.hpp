@@ -32,8 +32,8 @@ namespace mag
         public:
             Quad(const vec2 dimensions = vec2(1.0f, 1.0f));
 
-            const VertexBuffer& get_vbo() const { return *vbo; };
-            const IndexBuffer& get_ibo() const { return *ibo; };
+            VertexBuffer& get_vbo() { return *vbo; };
+            IndexBuffer& get_ibo() { return *ibo; };
 
             const std::vector<QuadVertex>& get_vertices() const { return vertices; };
             const std::vector<u32>& get_indices() const { return indices; };
@@ -57,7 +57,7 @@ namespace mag
         public:
             Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors);
 
-            const VertexBuffer& get_vbo() const { return *vbo; };
+            VertexBuffer& get_vbo() { return *vbo; };
             const std::vector<LineVertex>& get_vertices() const { return vertices; };
 
         private:

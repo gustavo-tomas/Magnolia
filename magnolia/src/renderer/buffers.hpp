@@ -41,7 +41,7 @@ namespace mag
             void initialize(const void* data, const u64 size_bytes, const VkBufferUsageFlags usage);
             void shutdown();
 
-            const VulkanBuffer& get_buffer() const { return buffer; };
+            VulkanBuffer& get_buffer() { return buffer; };
 
         private:
             VulkanBuffer buffer;
@@ -55,7 +55,7 @@ namespace mag
 
             void resize(const void* vertices, const u64 size_bytes);
 
-            const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
 
         private:
             GPUBuffer gpu_buffer;
@@ -69,7 +69,7 @@ namespace mag
 
             void resize(const void* indices, const u64 size_bytes);
 
-            const VulkanBuffer& get_buffer() const { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
 
         private:
             GPUBuffer gpu_buffer;

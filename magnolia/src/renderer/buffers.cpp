@@ -60,7 +60,8 @@ namespace mag
 
         staging_buffer.copy(data, size_bytes);
 
-        buffer.initialize(size_bytes, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, 0);
+        buffer.initialize(size_bytes, usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,
+                          VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
         // Copy data from the staging buffer to the gpu buffer
         context.submit_commands_immediate([=, this](CommandBuffer cmd)
