@@ -17,16 +17,23 @@ namespace mag
 
         VmaAllocationCreateInfo allocation_create_info = {};
         allocation_create_info.usage = memory_usage;
-        allocation_create_info.flags = memory_flags;
+        allocation_create_info.flags = memory_flags | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
         VK_CHECK(VK_CAST(vmaCreateBuffer(get_context().get_allocator(), &buffer_create_info, &allocation_create_info,
                                          &vk_buffer, &allocation, nullptr)));
 
         this->buffer = vk::Buffer(vk_buffer);
         this->size = size_bytes;
+
+        // Use persistent mapping
+        this->map_memory();
     }
 
-    void VulkanBuffer::shutdown() { vmaDestroyBuffer(get_context().get_allocator(), buffer, allocation); }
+    void VulkanBuffer::shutdown()
+    {
+        this->unmap_memory();
+        vmaDestroyBuffer(get_context().get_allocator(), buffer, allocation);
+    }
 
     void* VulkanBuffer::map_memory()
     {
@@ -39,10 +46,7 @@ namespace mag
     void VulkanBuffer::copy(const void* data, const u64 size_bytes, const u64 offset)
     {
         ASSERT(offset + size_bytes <= size, "Size limit exceeded");
-
-        this->map_memory();
         memcpy(static_cast<char*>(mapped_region) + offset, data, size_bytes);
-        this->unmap_memory();
     }
 
     u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
