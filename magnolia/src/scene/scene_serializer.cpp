@@ -6,17 +6,20 @@
 
 namespace mag
 {
-    json& operator<<(json& out, const vec2& v)
+    template <typename T>
+    json& insert_value(json& out, const T& v)
     {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        if constexpr (std::is_same_v<T, vec2> || std::is_same_v<T, vec3> || std::is_same_v<T, vec4>)
+        {
+            for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        }
+
         return out;
     }
 
-    json& operator<<(json& out, const vec3& v)
-    {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
-        return out;
-    }
+    json& operator<<(json& out, const vec2& v) { return insert_value<vec2>(out, v); }
+    json& operator<<(json& out, const vec3& v) { return insert_value<vec3>(out, v); }
+    json& operator<<(json& out, const vec4& v) { return insert_value<vec4>(out, v); }
 
     SceneSerializer::SceneSerializer(Scene& scene) : scene(scene) {}
 
@@ -87,6 +90,15 @@ namespace mag
             if (auto component = ecs.get_component<ScriptComponent>(entity_id))
             {
                 entity["ScriptComponent"]["FilePath"] = component->file_path;
+            }
+
+            if (auto component = ecs.get_component<TextComponent>(entity_id))
+            {
+                entity["TextComponent"]["Font"] = component->font->file_path;
+                entity["TextComponent"]["Color"] << component->color;
+                entity["TextComponent"]["Kerning"] = component->kerning;
+                entity["TextComponent"]["LineSpacing"] = component->line_spacing;
+                entity["TextComponent"]["Text"] = component->text;
             }
 
             data["Entities"].push_back(entity);

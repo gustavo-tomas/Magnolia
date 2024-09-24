@@ -73,6 +73,8 @@ namespace mag
             return false;
         }
 
+        font->file_path = file_path;
+
         auto& app = get_application();
         auto& file_system = app.get_file_system();
 

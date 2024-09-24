@@ -17,6 +17,7 @@ namespace mag
 
     struct Font
     {
+            str file_path = "";
             Image atlas_image;
 
             msdf_atlas::FontGeometry font_geometry;
