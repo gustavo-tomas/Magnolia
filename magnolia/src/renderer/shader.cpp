@@ -98,7 +98,6 @@ namespace mag
 
                 uniforms_map[scope].descriptor_set_layouts.resize(frame_count);
                 uniforms_map[scope].descriptor_sets.resize(frame_count);
-                uniforms_map[scope].buffers.resize(frame_count);
                 uniforms_map[scope].descriptor_binding = descriptor_binding;
 
                 // Store a pointer to each block member
@@ -111,6 +110,8 @@ namespace mag
                 // Create buffer for ubos
                 if (type == vk::DescriptorType::eUniformBuffer)
                 {
+                    uniforms_map[scope].buffers.resize(frame_count);
+
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
@@ -131,6 +132,8 @@ namespace mag
                 // @TODO: hardcoded size
                 else if (type == vk::DescriptorType::eStorageBuffer)
                 {
+                    uniforms_map[scope].buffers.resize(frame_count);
+
                     const u64 BUFFER_SIZE = sizeof(mat4) * 10'000;
                     for (u32 f = 0; f < frame_count; f++)
                     {
