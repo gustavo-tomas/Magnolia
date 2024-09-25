@@ -23,14 +23,14 @@ namespace mag
 
     struct QuadVertex
     {
-            vec3 positon;
+            vec3 position;
             vec2 tex_coords;
     };
 
     class Quad
     {
         public:
-            Quad(const vec2 dimensions = vec2(1.0f, 1.0f));
+            Quad(const vec2& dimensions = vec2(1.0f, 1.0f));
 
             VertexBuffer& get_vbo() { return *vbo; };
             IndexBuffer& get_ibo() { return *ibo; };

@@ -133,14 +133,14 @@ namespace mag
         model.materials.push_back(DEFAULT_MATERIAL_NAME);
     }
 
-    Quad::Quad(const vec2 dimensions)
+    Quad::Quad(const vec2& dimensions)
     {
         vertices.resize(4);
 
-        vertices[0].positon = vec3(-dimensions.x, dimensions.y, 0.0f);
-        vertices[1].positon = vec3(-dimensions.x, -dimensions.y, 0.0f);
-        vertices[2].positon = vec3(dimensions.x, dimensions.y, 0.0f);
-        vertices[3].positon = vec3(dimensions.x, -dimensions.y, 0.0f);
+        vertices[0].position = vec3(-dimensions.x, dimensions.y, 0.0f);
+        vertices[1].position = vec3(-dimensions.x, -dimensions.y, 0.0f);
+        vertices[2].position = vec3(dimensions.x, dimensions.y, 0.0f);
+        vertices[3].position = vec3(dimensions.x, -dimensions.y, 0.0f);
 
         vertices[0].tex_coords = vec2(0.0f, 0.0f);
         vertices[1].tex_coords = vec2(0.0f, 1.0f);
