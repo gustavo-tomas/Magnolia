@@ -161,12 +161,6 @@ namespace sprout
         draw_string(app.get_font_manager().get_default(), "Lorem Ipsum Bla Bla", vec4(1), 0, 0, math::scale(vec3(10)));
     }
 
-    struct TextVertex
-    {
-            vec3 positon;
-            vec2 tex_coords;
-    };
-
     void ScenePass::draw_string(const ref<Font>& font, const str& text, const vec4& color, const f64 LineSpacing,
                                 const f64 Kerning, const mat4& transform)
     {
@@ -176,7 +170,7 @@ namespace sprout
         static unique<VertexBuffer> vbo = nullptr;
         static unique<IndexBuffer> ibo = nullptr;
 
-        std::vector<TextVertex> vertices;
+        std::vector<QuadVertex> vertices;
         std::vector<u32> indices;
 
         const auto& fontGeometry = font->font_geometry;
@@ -249,22 +243,22 @@ namespace sprout
             texCoordMin *= vec2(texelWidth, texelHeight);
             texCoordMax *= vec2(texelWidth, texelHeight);
 
-            TextVertex v0, v1, v2, v3;
+            QuadVertex v0, v1, v2, v3;
 
             // Bottom left
-            v0.positon = transform * vec4(quadMin, 0.0f, 1.0f);
+            v0.position = transform * vec4(quadMin, 0.0f, 1.0f);
             v0.tex_coords = texCoordMin;
 
             // Top left
-            v1.positon = transform * vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+            v1.position = transform * vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
             v1.tex_coords = {texCoordMin.x, texCoordMax.y};
 
             // Top right
-            v2.positon = transform * vec4(quadMax, 0.0f, 1.0f);
+            v2.position = transform * vec4(quadMax, 0.0f, 1.0f);
             v2.tex_coords = texCoordMax;
 
             // Bottom right
-            v3.positon = transform * vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+            v3.position = transform * vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
             v3.tex_coords = {texCoordMax.x, texCoordMin.y};
 
             u32 offset = vertices.size();
