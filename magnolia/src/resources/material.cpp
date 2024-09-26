@@ -19,8 +19,8 @@ namespace mag
         // Create a new material
         Material* material = new Material();
         material->name = "Placeholder";
-        material->textures[TextureSlot::Albedo] = "magnolia/assets/images/DefaultAlbedoSeamless.png";
-        material->textures[TextureSlot::Normal] = "magnolia/assets/images/DefaultNormal.png";
+        material->textures[TextureSlot::Albedo] = "sprout_editor/assets/images/DefaultAlbedoSeamless.png";
+        material->textures[TextureSlot::Normal] = "sprout_editor/assets/images/DefaultNormal.png";
 
         materials[name] = ref<Material>(material);
 

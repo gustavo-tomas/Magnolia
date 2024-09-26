@@ -7,7 +7,7 @@
 
 namespace mag
 {
-#define DEFAULT_MATERIAL_NAME "magnolia/assets/materials/default_material.mat.json"
+#define DEFAULT_MATERIAL_NAME "sprout_editor/assets/materials/default_material.mat.json"
 
     enum class TextureSlot
     {

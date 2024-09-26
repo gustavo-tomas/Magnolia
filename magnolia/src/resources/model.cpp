@@ -5,7 +5,7 @@
 
 namespace mag
 {
-#define DEFAULT_MODEL_NAME "magnolia/assets/models/DefaultCube.model.json"
+#define DEFAULT_MODEL_NAME "sprout_editor/assets/models/default_cube/DefaultCube.model.json"
 
     ref<Model> ModelManager::get(const str& name)
     {

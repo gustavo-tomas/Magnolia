@@ -4,7 +4,7 @@
 
 namespace mag
 {
-#define DEFAULT_TEXTURE_NAME "magnolia/assets/images/DefaultAlbedoSeamless.png"
+#define DEFAULT_TEXTURE_NAME "sprout_editor/assets/images/DefaultAlbedoSeamless.png"
 
     ref<Image> TextureManager::get(const str& name)
     {

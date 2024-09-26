@@ -1,7 +1,7 @@
 {
     "Material": "DefaultMaterial",
     "Textures": {
-        "Albedo": "magnolia/assets/images/DefaultAlbedoSeamless.png",
-        "Normal": "magnolia/assets/images/DefaultNormal.png"
+        "Albedo": "sprout_editor/assets/images/DefaultAlbedoSeamless.png",
+        "Normal": "sprout_editor/assets/images/DefaultNormal.png"
     }
 }

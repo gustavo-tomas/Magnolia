@@ -45,7 +45,7 @@ namespace mag
                "Failed to get extensions: " + str(SDL_GetError()));
 
         // Set application icon
-        const str file = "magnolia/assets/images/application_icon.bmp";
+        const str file = "sprout_editor/assets/images/application_icon.bmp";
 
         SDL_Surface* icon = SDL_LoadBMP(file.c_str());
 

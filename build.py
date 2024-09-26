@@ -76,7 +76,7 @@ def shaders(system):
   for shader_file in shader_files:
     input_path = os.path.join(shader_dir, shader_file)
     output_path = os.path.join(output_dir, f"{shader_file}.spv")
-    include_path = "magnolia/assets/shaders"
+    include_path = "sprout_editor/assets/shaders"
 
     print(f"Compiling {input_path}")
 

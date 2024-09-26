@@ -4,6 +4,6 @@
     "Materials": [
         "sprout_editor/assets/models/lightbulb/native/Lamp.mat.json",
         "sprout_editor/assets/models/lightbulb/native/LampCover.mat.json",
-        "magnolia/assets/materials/default_material.mat.json"
+        "sprout_editor/assets/materials/default_material.mat.json"
     ]
 }
