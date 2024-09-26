@@ -96,8 +96,11 @@ namespace mag::math
 
         LineList lines;
 
-        for (const auto& [start, end] : edges)
+        for (const auto& edge : edges)
         {
+            const auto& start = edge.first;
+            const auto& end = edge.second;
+
             lines.starts.push_back(corners[start]);
             lines.ends.push_back(corners[end]);
             lines.colors.push_back(color);

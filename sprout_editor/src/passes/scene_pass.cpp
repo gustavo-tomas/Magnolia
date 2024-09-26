@@ -118,7 +118,6 @@ namespace sprout
                 // Draw the mesh
                 renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
-                // @NOTE: not accurate but gives a good estimate
                 performance_results.draw_calls++;
                 performance_results.rendered_triangles += mesh.index_count / 3;
             }

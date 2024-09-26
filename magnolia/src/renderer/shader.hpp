@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <vulkan/vulkan.hpp>
 
 #include "core/math.hpp"
@@ -78,6 +77,9 @@ namespace mag
             struct UBO
             {
                     SpvReflectDescriptorBinding descriptor_binding;
+
+                    // Cache of the uniform members
+                    std::map<str, SpvReflectBlockVariable*> members_cache;
 
                     // One per frame in flight
                     std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;

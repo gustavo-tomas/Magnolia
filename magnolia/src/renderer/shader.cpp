@@ -98,12 +98,20 @@ namespace mag
 
                 uniforms_map[scope].descriptor_set_layouts.resize(frame_count);
                 uniforms_map[scope].descriptor_sets.resize(frame_count);
-                uniforms_map[scope].buffers.resize(frame_count);
                 uniforms_map[scope].descriptor_binding = descriptor_binding;
+
+                // Store a pointer to each block member
+                for (u32 m = 0; m < descriptor_binding.block.member_count; m++)
+                {
+                    const auto& member = &uniforms_map[scope].descriptor_binding.block.members[m];
+                    uniforms_map[scope].members_cache[member->name] = member;
+                }
 
                 // Create buffer for ubos
                 if (type == vk::DescriptorType::eUniformBuffer)
                 {
+                    uniforms_map[scope].buffers.resize(frame_count);
+
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
@@ -124,6 +132,8 @@ namespace mag
                 // @TODO: hardcoded size
                 else if (type == vk::DescriptorType::eStorageBuffer)
                 {
+                    uniforms_map[scope].buffers.resize(frame_count);
+
                     const u64 BUFFER_SIZE = sizeof(mat4) * 10'000;
                     for (u32 f = 0; f < frame_count; f++)
                     {
@@ -221,25 +231,23 @@ namespace mag
         const u32 curr_frame_number = context.get_curr_frame_number();
 
         auto& ubo = uniforms_map[scope];
-        auto& block = ubo.descriptor_binding.block;
+        auto& members_cache = ubo.members_cache;
         auto& buffer = ubo.buffers[curr_frame_number];
 
-        u64 offset = 0;
-        u64 size = 0;
-        for (u32 i = 0; i < block.member_count; i++)
+        auto it = members_cache.find(name);
+        if (it != members_cache.end())
         {
-            const auto& member = block.members[i];
-            if (strcmp(member.name, name.c_str()) == 0)
-            {
-                offset = member.offset;
-                size = member.size;
-                break;
-            }
+            const u64 offset = it->second->offset;
+            const u64 size = it->second->size;
+
+            buffer.copy(data, size, offset + data_offset);
+
+            bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+            return;
         }
 
-        buffer.copy(data, size, offset + data_offset);
-
-        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+        // Uniform not found
+        LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
     }
 
     void Shader::set_texture(const str& name, Image* texture)
