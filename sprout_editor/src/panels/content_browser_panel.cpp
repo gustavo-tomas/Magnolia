@@ -56,7 +56,15 @@ namespace sprout
 
         ImGui::Columns(column_count, 0, false);
 
-        for (auto& directory_entry : std::filesystem::directory_iterator(current_directory))
+        // Sort filesystem entries
+        std::set<std::filesystem::directory_entry> sorted_entries;
+
+        for (const auto& directory_entry : std::filesystem::directory_iterator(current_directory))
+        {
+            sorted_entries.insert(directory_entry);
+        }
+
+        for (const auto& directory_entry : sorted_entries)
         {
             const auto& path = directory_entry.path();
             const str filename_string = path.filename().string();
