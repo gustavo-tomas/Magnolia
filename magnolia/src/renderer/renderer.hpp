@@ -11,7 +11,8 @@
 namespace mag
 {
     struct Model;
-    struct Material;
+    struct TextComponent;
+    struct QuadVertex;
 
     class Renderer
     {
@@ -29,6 +30,7 @@ namespace mag
 
             // @TODO: temp?
             void bind_buffers(Model* model);
+            void bind_buffers(TextComponent* text_c);
             ref<RendererImage> get_renderer_image(Image* image);
             // @TODO: temp?
 
@@ -40,15 +42,20 @@ namespace mag
             void remove_image(Image* image);
             void update_image(Image* image);
 
+            void upload_text(TextComponent* text_c, const std::vector<QuadVertex>& vertices,
+                             const std::vector<u32>& indices);
+
+            void remove_text(TextComponent* text_c);
+
         private:
             void on_resize(WindowResizeEvent& e);
 
             Window& window;
             unique<Context> context;
 
-            // Model data
-            std::map<Model*, ref<VertexBuffer>> vertex_buffers;
-            std::map<Model*, ref<IndexBuffer>> index_buffers;
+            // Buffer data
+            std::map<void*, ref<VertexBuffer>> vertex_buffers;
+            std::map<void*, ref<IndexBuffer>> index_buffers;
 
             // Image data
             std::map<Image*, ref<RendererImage>> images;

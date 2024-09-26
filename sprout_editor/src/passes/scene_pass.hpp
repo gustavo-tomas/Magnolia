@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ecs/components.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/test_model.hpp"
-#include "resources/font.hpp"
 
 namespace sprout
 {
@@ -17,8 +17,7 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            void draw_string(const ref<Font>& font, const str& text, const vec4& color, const f64 LineSpacing,
-                             const f64 Kerning, const mat4& transform);
+            void draw_text(TextComponent* text_c, const mat4& transform);
 
             ref<Shader> mesh_shader;
             ref<Shader> sprite_shader;

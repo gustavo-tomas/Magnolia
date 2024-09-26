@@ -55,6 +55,7 @@ namespace sprout
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
         auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
+        auto text_entities = ecs.get_all_components_of_types<TransformComponent, TextComponent>();
 
         // Render models
 
@@ -158,110 +159,109 @@ namespace sprout
 
         // Render text
 
-        draw_string(app.get_font_manager().get_default(), "Lorem Ipsum Bla Bla", vec4(1), 0, 0, math::scale(vec3(10)));
+        for (const auto& [transform, text_c] : text_entities)
+        {
+            draw_text(text_c, transform->get_transformation_matrix());
+        }
     }
 
-    void ScenePass::draw_string(const ref<Font>& font, const str& text, const vec4& color, const f64 LineSpacing,
-                                const f64 Kerning, const mat4& transform)
+    void ScenePass::draw_text(TextComponent* text_c, const mat4& transform)
     {
         auto& app = get_application();
         auto& renderer = app.get_renderer();
 
-        static unique<VertexBuffer> vbo = nullptr;
-        static unique<IndexBuffer> ibo = nullptr;
-
         std::vector<QuadVertex> vertices;
         std::vector<u32> indices;
 
-        const auto& fontGeometry = font->font_geometry;
-        const auto& metrics = fontGeometry.getMetrics();
-        const auto& fontAtlas = renderer.get_renderer_image(&font->atlas_image);
+        const auto& font_geometry = text_c->font->font_geometry;
+        const auto& metrics = font_geometry.getMetrics();
+        const auto& font_atlas = renderer.get_renderer_image(&text_c->font->atlas_image);
 
         f64 x = 0.0;
-        f64 fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+        f64 fs_scale = 1.0 / (metrics.ascenderY - metrics.descenderY);
         f64 y = 0.0;
 
-        const f64 spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+        const f64 space_glyph_advance = font_geometry.getGlyph(' ')->getAdvance();
 
         const f64 pixel_range = PIXEL_RANGE;
 
-        for (u32 i = 0; i < text.size(); i++)
+        for (u32 i = 0; i < text_c->text.size(); i++)
         {
-            char character = text[i];
+            char character = text_c->text[i];
             if (character == '\r') continue;
 
             if (character == '\n')
             {
                 x = 0;
-                y -= fsScale * metrics.lineHeight + LineSpacing;
+                y -= fs_scale * metrics.lineHeight + text_c->line_spacing;
                 continue;
             }
 
             if (character == ' ')
             {
-                f64 advance = spaceGlyphAdvance;
-                if (i < text.size() - 1)
+                f64 advance = space_glyph_advance;
+                if (i < text_c->text.size() - 1)
                 {
-                    char nextCharacter = text[i + 1];
-                    f64 dAdvance;
-                    fontGeometry.getAdvance(dAdvance, character, nextCharacter);
-                    advance = (f64)dAdvance;
+                    char next_character = text_c->text[i + 1];
+                    f64 d_advance;
+                    font_geometry.getAdvance(d_advance, character, next_character);
+                    advance = static_cast<f64>(d_advance);
                 }
 
-                x += fsScale * advance + Kerning;
+                x += fs_scale * advance + text_c->kerning;
                 continue;
             }
 
             if (character == '\t')
             {
                 // @TODO: is this right?
-                x += 4.0f * (fsScale * spaceGlyphAdvance + Kerning);
+                x += 4.0f * (fs_scale * space_glyph_advance + text_c->kerning);
                 continue;
             }
 
-            auto glyph = fontGeometry.getGlyph(character);
-            if (!glyph) glyph = fontGeometry.getGlyph('?');
+            auto glyph = font_geometry.getGlyph(character);
+            if (!glyph) glyph = font_geometry.getGlyph('?');
             if (!glyph) return;
 
             f64 al, ab, ar, at;
             glyph->getQuadAtlasBounds(al, ab, ar, at);
-            vec2 texCoordMin((f64)al, (f64)ab);
-            vec2 texCoordMax((f64)ar, (f64)at);
+            vec2 tex_coord_min((f64)al, (f64)ab);
+            vec2 tex_coord_max((f64)ar, (f64)at);
 
             f64 pl, pb, pr, pt;
             glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-            vec2 quadMin((f64)pl, (f64)pb);
-            vec2 quadMax((f64)pr, (f64)pt);
+            vec2 quad_min((f64)pl, (f64)pb);
+            vec2 quad_max((f64)pr, (f64)pt);
 
-            quadMin *= fsScale, quadMax *= fsScale;
-            quadMin += vec2(x, y);
-            quadMax += vec2(x, y);
+            quad_min *= fs_scale, quad_max *= fs_scale;
+            quad_min += vec2(x, y);
+            quad_max += vec2(x, y);
 
-            const f64 texelWidth = 1.0f / fontAtlas->get_extent().width;
-            const f64 texelHeight = 1.0f / fontAtlas->get_extent().height;
+            const f64 texel_width = 1.0f / font_atlas->get_extent().width;
+            const f64 texel_height = 1.0f / font_atlas->get_extent().height;
 
-            texCoordMin *= vec2(texelWidth, texelHeight);
-            texCoordMax *= vec2(texelWidth, texelHeight);
+            tex_coord_min *= vec2(texel_width, texel_height);
+            tex_coord_max *= vec2(texel_width, texel_height);
 
             QuadVertex v0, v1, v2, v3;
 
             // Bottom left
-            v0.position = transform * vec4(quadMin, 0.0f, 1.0f);
-            v0.tex_coords = texCoordMin;
+            v0.position = transform * vec4(quad_min, 0.0f, 1.0f);
+            v0.tex_coords = tex_coord_min;
 
             // Top left
-            v1.position = transform * vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
-            v1.tex_coords = {texCoordMin.x, texCoordMax.y};
+            v1.position = transform * vec4(quad_min.x, quad_max.y, 0.0f, 1.0f);
+            v1.tex_coords = {tex_coord_min.x, tex_coord_max.y};
 
             // Top right
-            v2.position = transform * vec4(quadMax, 0.0f, 1.0f);
-            v2.tex_coords = texCoordMax;
+            v2.position = transform * vec4(quad_max, 0.0f, 1.0f);
+            v2.tex_coords = tex_coord_max;
 
             // Bottom right
-            v3.position = transform * vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
-            v3.tex_coords = {texCoordMax.x, texCoordMin.y};
+            v3.position = transform * vec4(quad_max.x, quad_min.y, 0.0f, 1.0f);
+            v3.tex_coords = {tex_coord_max.x, tex_coord_min.y};
 
-            u32 offset = vertices.size();
+            const u32 offset = vertices.size();
 
             vertices.push_back(v3);
             vertices.push_back(v2);
@@ -275,21 +275,19 @@ namespace sprout
             indices.push_back(3 + offset);
             indices.push_back(0 + offset);
 
-            if (i < text.size() - 1)
+            if (i < text_c->text.size() - 1)
             {
                 f64 advance = glyph->getAdvance();
-                char nextCharacter = text[i + 1];
-                fontGeometry.getAdvance(advance, character, nextCharacter);
+                char next_character = text_c->text[i + 1];
+                font_geometry.getAdvance(advance, character, next_character);
 
-                x += fsScale * advance + Kerning;
+                x += fs_scale * advance + text_c->kerning;
             }
         }
 
-        if (!vbo)
-        {
-            vbo = create_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
-            ibo = create_unique<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
-        }
+        // @TODO: one of the ugliest hacks known to man
+
+        renderer.upload_text(text_c, vertices, indices);
 
         // render
         {
@@ -304,21 +302,12 @@ namespace sprout
             text_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
             text_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-            // const auto model_matrix = mat4(1.0f);
-
-            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
-            // text_shader->set_uniform("u_instance", "models", value_ptr(model_matrix));
-
-            text_shader->set_uniform("u_text_info", "color", value_ptr(color));
+            text_shader->set_uniform("u_text_info", "color", value_ptr(text_c->color));
             text_shader->set_uniform("u_text_info", "pixel_range", &pixel_range);
 
-            text_shader->set_texture("u_atlas_texture", &font->atlas_image);
+            text_shader->set_texture("u_atlas_texture", &text_c->font->atlas_image);
 
-            // @TODO: command buffers should be handled by the renderer
-            auto& cmd = get_context().get_curr_frame().command_buffer;
-
-            cmd.bind_vertex_buffer(vbo->get_buffer());
-            cmd.bind_index_buffer(ibo->get_buffer());
+            renderer.bind_buffers(text_c);
 
             renderer.draw_indexed(indices.size());
         }
