@@ -232,7 +232,6 @@ namespace mag
 
         auto& ubo = uniforms_map[scope];
         auto& members_cache = ubo.members_cache;
-        auto& buffer = ubo.buffers[curr_frame_number];
 
         auto it = members_cache.find(name);
         if (it != members_cache.end())
@@ -240,6 +239,7 @@ namespace mag
             const u64 offset = it->second->offset;
             const u64 size = it->second->size;
 
+            auto& buffer = ubo.buffers[curr_frame_number];
             buffer.copy(data, size, offset + data_offset);
 
             bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
