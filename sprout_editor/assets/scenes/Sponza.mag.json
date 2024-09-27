@@ -9,7 +9,7 @@
                 "Translation": [
                     -1050.0,
                     550.0,
-                    -160.0
+                    -175.0
                 ],
                 "Rotation": [
                     0.0,
@@ -39,7 +39,7 @@
             "TransformComponent": {
                 "Translation": [
                     550.0,
-                    250.0,
+                    450.0,
                     0.0
                 ],
                 "Rotation": [
@@ -73,7 +73,75 @@
             "TransformComponent": {
                 "Translation": [
                     150.0,
-                    250.0,
+                    450.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "Sphere",
+                "FilePath": "sprout_editor/assets/models/lightbulb/native/Sphere.model.json"
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 500.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Light3"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    -350.0,
+                    450.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "Sphere",
+                "FilePath": "sprout_editor/assets/models/lightbulb/native/Sphere.model.json"
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 500.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Light4"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    -850.0,
+                    450.0,
                     0.0
                 ],
                 "Rotation": [
