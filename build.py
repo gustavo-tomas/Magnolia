@@ -58,8 +58,12 @@ def lint(system):
 # ----- Shaders -----
 def shaders(system):
   bar = "/"
+  glslc_exe = "glslc"
+
   if system == "windows":
     bar = "\\"
+    glslc_exe = "glslc.exe"
+
   shader_dir = f"sprout_editor{bar}assets{bar}shaders"
   output_dir = f"build{bar}{system}{bar}shaders"
 
@@ -80,11 +84,9 @@ def shaders(system):
 
     print(f"Compiling {input_path}")
 
-    if system == "linux":
-      assert os.system(f"ext/linux/glslc -I{include_path} {input_path} -o {output_path}") == 0
-    
-    elif system == "windows":
-      assert os.system(f"ext\\windows\\glslc.exe -I{include_path} {input_path} -o {output_path}") == 0
+    # @TODO: we cant use -O flags to optimize yet. Some data (for example the descriptor binding name) is still
+    # needed to set uniform variables.
+    assert os.system(f"ext{bar}{system}{bar}{glslc_exe} -I{include_path} {input_path} -o {output_path}") == 0
   return
 
 def main():
