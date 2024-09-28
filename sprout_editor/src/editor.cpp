@@ -151,8 +151,19 @@ namespace sprout
             open_scenes.erase(open_scenes.begin() + pos);
             open_scenes_marked_for_deletion.erase(open_scenes_marked_for_deletion.begin() + i);
 
-            set_selected_scene_index(pos);
-            set_active_scene(pos);
+            if (pos < selected_scene_index)
+            {
+                selected_scene_index =
+                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+            }
+
+            else if (pos == selected_scene_index)
+            {
+                selected_scene_index =
+                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+
+                set_active_scene(selected_scene_index);
+            }
         }
 
         if (selected_scene_index != next_scene_index)
