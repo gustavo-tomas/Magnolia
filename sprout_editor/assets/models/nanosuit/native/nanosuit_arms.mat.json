@@ -1,5 +1,6 @@
 {
-    "Material": "nanosuit_arms",
+    "Type": "Material",
+    "Name": "nanosuit_arms",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/nanosuit/nanosuit_arms_d.tga",
         "Normal": "sprout_editor/assets/models/nanosuit/nanosuit_arms_n.tga"

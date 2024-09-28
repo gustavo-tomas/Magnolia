@@ -27,7 +27,8 @@ namespace mag
 
         // Serialize scene data to file
         json data;
-        data["Scene"] = scene.get_name();
+        data["Type"] = "Scene";
+        data["Name"] = scene.get_name();
 
         auto& ecs = scene.get_ecs();
         for (const auto entity_id : ecs.get_entities_ids())
@@ -112,7 +113,7 @@ namespace mag
             return;
         }
 
-        const str scene_name = data["Scene"];
+        const str scene_name = data["Name"];
         scene.set_name(scene_name);
 
         LOG_INFO("Deserializing scene '{0}'", scene_name);

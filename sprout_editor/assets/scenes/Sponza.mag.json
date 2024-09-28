@@ -1,5 +1,6 @@
 {
-    "Scene": "Sponza",
+    "Type": "Scene",
+    "Name": "Sponza",
     "Entities": [
         {
             "NameComponent": {
