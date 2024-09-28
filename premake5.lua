@@ -238,7 +238,7 @@ end
 -- Get number of cores (linux only)
 function number_of_cores()
     result = tonumber(execute_command("nproc"))
-    print("Number of cores:", result)
+    print(string.format("(Premake) Number of cores: %d", result))
     return result
 end
 
