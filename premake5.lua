@@ -128,14 +128,14 @@ project "magnolia"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "MAG_RELEASE" }
+        defines { "NDEBUG", "MAG_RELEASE" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -202,14 +202,14 @@ project "sprout_editor"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "MAG_RELEASE", "MAG_ASSERTIONS_ENABLED" } -- @TODO: fix this
+        defines { "NDEBUG", "MAG_RELEASE" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
