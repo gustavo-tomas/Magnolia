@@ -2,6 +2,7 @@
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
+#include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
@@ -121,6 +122,30 @@ namespace sprout
                             scene.add_sprite(path);
                         }
 
+                        // Check if asset is a json file
+                        else if (extension == ".json")
+                        {
+                            json data;
+                            if (!file_system.read_json_data(path, data) || !data.contains("Type"))
+                            {
+                                goto end_drag_drop_target;
+                            }
+
+                            const str type = data["Type"];
+
+                            if (type == "Model")
+                            {
+                                scene.add_model(path);
+                            }
+
+                            else if (type == "Material")
+                            {
+                                // @TODO: make a material viewer or similar
+                                // For now, do nothing
+                                LOG_WARNING("Asset is a material. No action was performed.");
+                            }
+                        }
+
                         // Check if asset is a model that needs to be imported
                         else if (importer.is_extension_supported(extension))
                         {
@@ -131,18 +156,14 @@ namespace sprout
                             }
                         }
 
-                        // @TODO: this should check if json is a model or material, etc
-                        // Check if asset is a native model
-                        else if (extension == ".json")
-                        {
-                            scene.add_model(path);
-                        }
-
                         else
                         {
                             LOG_ERROR("Extension not supported: {0}", extension);
                         }
                     }
+
+                end_drag_drop_target:
+
                     ImGui::EndDragDropTarget();
                 }
 
