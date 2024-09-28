@@ -5,6 +5,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
+#include "tools/model_importer.hpp"
 
 namespace sprout
 {
@@ -13,7 +14,6 @@ namespace sprout
     {
         auto &app = get_application();
         auto &editor = get_editor();
-        auto &model_loader = app.get_model_loader();
         auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
         auto &open_scenes = editor.get_open_scenes();
@@ -101,6 +101,8 @@ namespace sprout
                         const char *path = static_cast<const char *>(payload->Data);
                         const str extension = file_system.get_file_extension(path);
 
+                        ModelImporter importer;
+
                         // First check if the path exists
                         if (!file_system.exists(path))
                         {
@@ -119,8 +121,19 @@ namespace sprout
                             scene.add_sprite(path);
                         }
 
-                        // Check if asset is a model
-                        else if (model_loader.is_extension_supported(extension))
+                        // Check if asset is a model that needs to be imported
+                        else if (importer.is_extension_supported(extension))
+                        {
+                            str imported_model_path = "";
+                            if (importer.import(path, imported_model_path))
+                            {
+                                scene.add_model(imported_model_path);
+                            }
+                        }
+
+                        // @TODO: this should check if json is a model or material, etc
+                        // Check if asset is a native model
+                        else if (extension == ".json")
                         {
                             scene.add_model(path);
                         }
