@@ -6,6 +6,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
+#include "scene/scene_serializer.hpp"
 #include "tools/model_importer.hpp"
 
 namespace sprout
@@ -116,12 +117,6 @@ namespace sprout
                             LOG_ERROR("Path is a directory: {0}", path);
                         }
 
-                        // Check if asset is an image
-                        else if (image_loader.is_extension_supported(extension))
-                        {
-                            scene.add_sprite(path);
-                        }
-
                         // Check if asset is a json file
                         else if (extension == ".json")
                         {
@@ -136,6 +131,16 @@ namespace sprout
                             if (type == "Model")
                             {
                                 scene.add_model(path);
+                            }
+
+                            else if (type == "Scene")
+                            {
+                                Scene *new_scene = new Scene();
+
+                                SceneSerializer serializer(*new_scene);
+                                serializer.deserialize(path);
+
+                                editor.add_scene(new_scene);
                             }
 
                             else if (type == "Material")
@@ -154,6 +159,12 @@ namespace sprout
                             {
                                 scene.add_model(imported_model_path);
                             }
+                        }
+
+                        // Check if asset is an image
+                        else if (image_loader.is_extension_supported(extension))
+                        {
+                            scene.add_sprite(path);
                         }
 
                         else

@@ -1,5 +1,6 @@
 {
-    "Scene": "Test",
+    "Type": "Scene",
+    "Name": "Test",
     "Entities": [
         {
             "NameComponent": {
