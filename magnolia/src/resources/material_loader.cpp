@@ -19,7 +19,7 @@ namespace mag
             return false;
         }
 
-        if (!data.contains("Material"))
+        if (!data.contains("Name"))
         {
             LOG_ERROR("Material file '{0}' has no name", name);
             return false;
@@ -31,7 +31,7 @@ namespace mag
             return false;
         }
 
-        const str material_name = data["Material"];
+        const str material_name = data["Name"];
 
         const json textures = data["Textures"];
 

@@ -1,5 +1,6 @@
 {
-    "Model": "Nanosuit.obj",
+    "Type": "Model",
+    "Name": "Nanosuit.obj",
     "File": "sprout_editor/assets/models/nanosuit/native/Nanosuit.obj.model.bin",
     "Materials": [
         "sprout_editor/assets/models/nanosuit/native/DefaultMaterial.mat.json",

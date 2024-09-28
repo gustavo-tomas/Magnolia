@@ -1,5 +1,6 @@
 {
-    "Material": "fabric_d",
+    "Type": "Material",
+    "Name": "fabric_d",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_fabric_blue_diff.png",
         "Normal": "sprout_editor/assets/images/DefaultNormal.png"

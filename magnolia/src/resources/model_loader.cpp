@@ -21,13 +21,13 @@ namespace mag
             return false;
         }
 
-        if (!data.contains("Model") || !data.contains("File") || !data.contains("Materials"))
+        if (!data.contains("Name") || !data.contains("File") || !data.contains("Materials"))
         {
             LOG_ERROR("Model file '{0}' has incomplete fields", file_path);
             return false;
         }
 
-        const str model_name = data["Model"];
+        const str model_name = data["Name"];
         const str binary_file_path = data["File"];
         const std::vector<str> materials = data["Materials"];
 

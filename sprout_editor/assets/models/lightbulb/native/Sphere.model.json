@@ -1,5 +1,6 @@
 {
-    "Model": "Sphere",
+    "Type": "Model",
+    "Name": "Sphere",
     "File": "sprout_editor/assets/models/lightbulb/native/Sphere.model.bin",
     "Materials": [
         "sprout_editor/assets/models/lightbulb/native/Lamp.mat.json",

@@ -73,7 +73,8 @@ namespace mag
         const str binary_file_path = output_directory + "/" + model.name + BINARY_FILE_EXTENSION;
 
         json data;
-        data["Model"] = model.name;
+        data["Type"] = "Model";
+        data["Name"] = model.name;
         data["File"] = binary_file_path;
         data["Materials"] = model.materials;
 
@@ -270,7 +271,8 @@ namespace mag
 
             // Write material data to file
             json data;
-            data["Material"] = material_name;
+            data["Type"] = "Material";
+            data["Name"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
             data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
 

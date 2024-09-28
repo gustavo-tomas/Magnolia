@@ -1,5 +1,6 @@
 {
-    "Material": "arch",
+    "Type": "Material",
+    "Name": "arch",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_arch_diff.png",
         "Normal": "sprout_editor/assets/images/DefaultNormal.png"

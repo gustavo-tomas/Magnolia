@@ -1,5 +1,6 @@
 {
-    "Material": "Material__47",
+    "Type": "Material",
+    "Name": "Material__47",
     "Textures": {
         "Albedo": "sprout_editor/assets/images/DefaultAlbedoSeamless.png",
         "Normal": "sprout_editor/assets/images/DefaultNormal.png"
