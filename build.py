@@ -4,20 +4,41 @@ import platform
 import shutil
 import multiprocessing
 
+# @TODO: lord have mercy
+system = ""
+bar = ""
+executable_extension = ""
+
+def check_system():
+  global system
+  global bar
+  global executable_extension
+
+  supported_systems = ["windows", "linux"]
+  system = platform.system().lower()
+
+  print(f"System: {system}\n")
+  assert system in supported_systems, f"System '{system}' is not supported\n"
+
+  if system == "linux":
+    bar = "/"
+    executable_extension = ""
+
+  elif system == "windows":
+    bar = "\\"
+    executable_extension = ".exe"
+
+  return
+
 # ----- Helpers -----
 def get_number_of_cores():
   return multiprocessing.cpu_count()
 
 # ----- Build -----
 def build(system, configuration):
-  # @TODO: lord have mercy
-  executable = f"premake5"
-  bar = "/"
-  if system == "windows":
-    executable += ".exe"
-    bar = "\\"
-
+  executable = f"premake5" + executable_extension
   number_of_cores = get_number_of_cores()
+
   print(f"(Python) Number of cores: {number_of_cores}")
   assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j{number_of_cores}") == 0
 
@@ -33,9 +54,6 @@ def build(system, configuration):
 
 # ----- Run -----
 def run(system, configuration):
-  bar = "/"
-  if system == "windows":
-    bar = "\\"
   assert os.system(f"build{bar}{system}{bar}sprout{bar}sprout_{configuration}") == 0
   return
 
@@ -51,19 +69,13 @@ def format():
   return
 
 # ----- Lint -----
-def lint(system):
-  assert os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
+def lint():
+  os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
   return
 
 # ----- Shaders -----
 def shaders(system):
-  bar = "/"
-  glslc_exe = "glslc"
-
-  if system == "windows":
-    bar = "\\"
-    glslc_exe = "glslc.exe"
-
+  glslc_exe = "glslc" + executable_extension
   shader_dir = f"sprout_editor{bar}assets{bar}shaders"
   output_dir = f"build{bar}{system}{bar}shaders"
 
@@ -92,18 +104,14 @@ def shaders(system):
 def main():
 
   # Check for system support
-  supported_systems = ["windows", "linux"]
-  system = platform.system().lower()
-
-  print(f"System: {system}\n")
-  assert system in supported_systems, f"System '{system}' is not supported\n"
+  check_system()
 
   format()
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
     shaders(system)
-    lint(system)
+    lint()
     build(system, configuration)
     run(system, configuration)
   
@@ -116,7 +124,7 @@ def main():
 
     if command == "build":
       shaders(system)
-      lint(system)
+      lint()
       build(system, configuration)
     
     elif command == "run":
@@ -126,7 +134,7 @@ def main():
       clean(configuration)
 
     elif command == "lint":
-      lint(system)
+      lint()
 
     else:
       print(f"Invalid command: '{command}'")
