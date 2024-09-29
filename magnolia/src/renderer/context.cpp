@@ -478,8 +478,8 @@ namespace mag
         }
 
         // Convert to ms
-        timestamp = {static_cast<f64>(result.value.begin) * timestamp_period * 1e-6,
-                     static_cast<f64>(result.value.end) * timestamp_period * 1e-6};
+        timestamp.average = static_cast<f64>(result.value.end) * timestamp_period * 1e-6 -
+                            static_cast<f64>(result.value.begin) * timestamp_period * 1e-6;
     }
 
     vk::Format Context::get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,

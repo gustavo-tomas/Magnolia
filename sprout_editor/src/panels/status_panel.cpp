@@ -2,6 +2,7 @@
 
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "tools/profiler.hpp"
 
 namespace sprout
 {
@@ -12,18 +13,27 @@ namespace sprout
         auto &editor = get_editor();
         const auto &context = get_context();
 
+        // @TODO: make a nice graph to show this statistics
         // Frame times
         {
-            // Display frame rate
-            const auto &io = ImGui::GetIO();
-            const f32 frame_rate = io.Framerate;
-            const f32 frame_duration = 1000.0f / frame_rate;
+            const auto &profiler = ProfilerManager::get();
+            const auto &results = profiler.get_results();
 
-            const Timestamp &timestamp = context.get_timestamp();
+            // GPU timestamp
+            const ProfileResult &gpu_timestamp = context.get_timestamp();
+
+            // CPU timestamp
+            const ProfileResult &cpu_timestamp =
+                results.contains("Application") ? results.at("Application") : ProfileResult{};
 
             ImGui::SeparatorText("Frame Time");
-            ImGui::Text("CPU: %.3f ms/frame - %lf fps", frame_duration, frame_rate);
-            ImGui::Text("GPU: %.3f ms/frame", timestamp.end - timestamp.begin);
+            ImGui::Text("CPU: %.3f ms/frame (%lf fps)", cpu_timestamp.average, 1000.0 / cpu_timestamp.average);
+            ImGui::Text("GPU: %.3f ms/frame", gpu_timestamp.average);
+
+            for (const auto &[name, result] : results)
+            {
+                ImGui::Text("%s: %.3f ms/frame", name.c_str(), result.average);
+            }
         }
 
         // Render passes data
