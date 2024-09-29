@@ -238,6 +238,6 @@ namespace mag
         auto current_time = std::chrono::system_clock::now();
         std::chrono::duration<f64> elapsed_seconds = current_time - start_time;
 
-        return elapsed_seconds.count();
+        return elapsed_seconds.count() * 1000.0;
     }
 };  // namespace mag
