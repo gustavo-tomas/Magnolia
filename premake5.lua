@@ -121,21 +121,21 @@ project "magnolia"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-Werror" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_RELEASE" }
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -195,21 +195,21 @@ project "sprout_editor"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-Werror" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_RELEASE" }
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
