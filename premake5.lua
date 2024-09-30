@@ -34,6 +34,7 @@ workspace "magnolia"
         "libs/assimp/include",
         "libs/imgui",
         "libs/imguizmo",
+        "libs/implot",
         "libs/glm",
         "libs/stb",
         "libs/spirv_reflect",
@@ -48,7 +49,7 @@ workspace "magnolia"
 
     lib_links = 
     {
-        "fmt", "imgui", "imguizmo", "imgui_file_dialog", "assimp", "meshoptimizer", 
+        "fmt", "imgui", "imguizmo", "imgui_file_dialog", "implot", "assimp", "meshoptimizer", 
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "BulletLinearMath",
@@ -484,6 +485,35 @@ project "imgui_file_dialog"
         "libs/imgui_file_dialog/ImGuiFileDialog.h",
         "libs/imgui_file_dialog/ImGuiFileDialogConfig.h",
         "libs/imgui_file_dialog/ImGuiFileDialog.cpp"
+    }
+
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        staticruntime "on"
+
+-- implot --------------------------------------------------------------------------------------------------------------
+project "implot"
+    kind "staticlib"
+    language "c++"
+    cppdialect "c++20"
+
+    targetdir (libdir)
+    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
+
+    includedirs { ".", "libs/implot", "libs/imgui" }
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\implot 2>NUL")
+    end
+
+    files
+    {
+        "libs/implot/implot.h",
+        "libs/implot/implot_internal.h",
+        "libs/implot/implot.cpp",
+        "libs/implot/implot_items.cpp",
+        "libs/implot/implot_demo.cpp"
     }
 
     filter "system:linux"

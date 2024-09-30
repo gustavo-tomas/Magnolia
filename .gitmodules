@@ -47,3 +47,6 @@
 	path = libs/sol2
 	url = https://github.com/ThePhD/sol2.git
 	branch = main
+[submodule "libs/implot"]
+	path = libs/implot
+	url = https://github.com/epezent/implot.git
