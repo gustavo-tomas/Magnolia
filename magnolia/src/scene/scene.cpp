@@ -221,7 +221,7 @@ namespace mag
         const vec2 sprite_scale = vec2(scale_factor);
 
         const auto entity = ecs->create_entity();
-        ecs->add_component(entity, new SpriteComponent(sprite, quad));
+        ecs->add_component(entity, new SpriteComponent(sprite, quad, path));
         ecs->add_component(entity, new TransformComponent(vec3(0), vec3(0), vec3(sprite_scale, 1)));
     }
 

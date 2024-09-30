@@ -3,6 +3,7 @@
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
+#include "renderer/test_model.hpp"
 
 namespace mag
 {
@@ -58,6 +59,19 @@ namespace mag
                 {
                     entity["ModelComponent"]["Name"] = component->model->name;
                     entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                }
+            }
+
+            if (auto component = ecs.get_component<SpriteComponent>(entity_id))
+            {
+                if (component->texture_file_path.empty())
+                {
+                    LOG_WARNING("Sprite has no file path and will not be serialized");
+                }
+
+                else
+                {
+                    entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
                 }
             }
 
@@ -159,6 +173,17 @@ namespace mag
                     const auto& model = app.get_model_manager().get(file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
+                }
+
+                if (entity.contains("SpriteComponent"))
+                {
+                    const auto& component = entity["SpriteComponent"];
+                    const str file_path = component["FilePath"];
+
+                    const auto& sprite = app.get_texture_manager().get(file_path);
+                    const auto quad = create_ref<Quad>(vec2(sprite->width, sprite->height));
+
+                    ecs.add_component(entity_id, new SpriteComponent(sprite, quad, file_path));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

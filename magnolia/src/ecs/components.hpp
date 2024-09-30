@@ -52,12 +52,16 @@ namespace mag
     class Quad;
     struct SpriteComponent : public Component
     {
-            SpriteComponent(const ref<Image>& texture, const ref<Quad>& quad) : texture(texture), quad(quad) {}
+            SpriteComponent(const ref<Image>& texture, const ref<Quad>& quad, const str& texture_file_path)
+                : texture(texture), quad(quad), texture_file_path(texture_file_path)
+            {
+            }
 
             CLONE(SpriteComponent);
 
             ref<Image> texture;
-            ref<Quad> quad;  // @TODO: idk about this
+            ref<Quad> quad;         // @TODO: idk about this
+            str texture_file_path;  // @TODO: this is not ideal
     };
 
     // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
