@@ -5,6 +5,7 @@
 #include "renderer/context.hpp"
 #include "renderer/render_graph_conversions.hpp"
 #include "renderer/type_conversions.hpp"
+#include "tools/profiler.hpp"
 
 // @TODO: reimplement missing features:
 // - Multisampling
@@ -151,6 +152,8 @@ namespace mag
         // Execute passes
         for (auto* render_pass : passes)
         {
+            SCOPED_PROFILE(render_pass->get_name());
+
             execute_render_pass(render_pass);
 
             // Transition layout

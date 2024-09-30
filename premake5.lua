@@ -34,6 +34,7 @@ workspace "magnolia"
         "libs/assimp/include",
         "libs/imgui",
         "libs/imguizmo",
+        "libs/implot",
         "libs/glm",
         "libs/stb",
         "libs/spirv_reflect",
@@ -48,7 +49,7 @@ workspace "magnolia"
 
     lib_links = 
     {
-        "fmt", "imgui", "imguizmo", "imgui_file_dialog", "assimp", "meshoptimizer", 
+        "fmt", "imgui", "imguizmo", "imgui_file_dialog", "implot", "assimp", "meshoptimizer", 
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "BulletLinearMath",
@@ -121,21 +122,21 @@ project "magnolia"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-Werror" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_RELEASE" }
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -195,21 +196,21 @@ project "sprout_editor"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-Werror" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_PROFILE" }
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Werror" }
-        defines { "NDEBUG", "MAG_RELEASE" }
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -484,6 +485,35 @@ project "imgui_file_dialog"
         "libs/imgui_file_dialog/ImGuiFileDialog.h",
         "libs/imgui_file_dialog/ImGuiFileDialogConfig.h",
         "libs/imgui_file_dialog/ImGuiFileDialog.cpp"
+    }
+
+    filter "system:linux"
+        pic "on"
+        systemversion "latest"
+        staticruntime "on"
+
+-- implot --------------------------------------------------------------------------------------------------------------
+project "implot"
+    kind "staticlib"
+    language "c++"
+    cppdialect "c++20"
+
+    targetdir (libdir)
+    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
+
+    includedirs { ".", "libs/implot", "libs/imgui" }
+
+    if os.host() == "windows" then
+        os.execute("mkdir build\\windows\\implot 2>NUL")
+    end
+
+    files
+    {
+        "libs/implot/implot.h",
+        "libs/implot/implot_internal.h",
+        "libs/implot/implot.cpp",
+        "libs/implot/implot_items.cpp",
+        "libs/implot/implot_demo.cpp"
     }
 
     filter "system:linux"

@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "scripting/scripting_engine.hpp"
+#include "tools/profiler.hpp"
 
 namespace mag
 {
@@ -102,6 +103,8 @@ namespace mag
             curr_time = window->get_time();
             dt = curr_time - last_time;
             last_time = curr_time;
+
+            SCOPED_PROFILE("Application");
 
             window->update();
 

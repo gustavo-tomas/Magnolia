@@ -7,6 +7,7 @@
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
@@ -50,6 +51,7 @@ namespace sprout
         // Initialize imgui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImPlot::CreateContext();
 
         auto &io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -119,6 +121,7 @@ namespace sprout
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
+        ImPlot::DestroyContext();
         ImGui::DestroyContext();
 
         context.get_device().destroyDescriptorPool(descriptor_pool);
