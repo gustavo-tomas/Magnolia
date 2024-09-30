@@ -37,7 +37,7 @@ namespace mag
     class ScopedProfiler
     {
         public:
-            ScopedProfiler(const str& name, const f64 time_interval_ms = 1000);
+            ScopedProfiler(const str& name, const f64 time_interval_ms = 100);
             ~ScopedProfiler();
 
         private:
