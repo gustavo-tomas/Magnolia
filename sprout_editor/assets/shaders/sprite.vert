@@ -1,3 +1,5 @@
+// Check this (billboarding): https://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/
+
 #version 460
 
 #include "sprite.include.glsl"
