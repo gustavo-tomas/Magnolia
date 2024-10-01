@@ -29,7 +29,7 @@ void main()
 	vec3 position = vec3(sprite_quad[gl_VertexIndex] * sprite_size, 0);
 	mat4 model_matrix = sprite.model;
 
-	if (constant_size > 0)
+	if (always_face_camera > 0)
 	{
 		vec3 camera_right = {VIEW_MATRIX[0][0], VIEW_MATRIX[1][0], VIEW_MATRIX[2][0]};
 		vec3 camera_up = {VIEW_MATRIX[0][1], VIEW_MATRIX[1][1], VIEW_MATRIX[2][1]};
