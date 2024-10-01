@@ -28,14 +28,32 @@ void main()
 
 	vec3 position = vec3(sprite_quad[gl_VertexIndex] * sprite_size, 0);
 	mat4 model_matrix = sprite.model;
+	vec3 sprite_center = vec3(model_matrix[3]);
 
-	if (always_face_camera > 0)
+	// Scale the sprite as the distance increases
+	if (constant_size == 1)
+	{
+		vec3 camera_position = vec3(inverse(VIEW_MATRIX)[3]);
+
+		float distance = length(camera_position - sprite_center);
+
+		vec2 scale = vec2(length(vec3(model_matrix[0])), length(vec3(model_matrix[1])));
+
+		vec2 scaled_size = sprite_size * distance * scale;
+
+		position = vec3(sprite_quad[gl_VertexIndex] * scaled_size, 0);
+	}
+
+	// Align the position to the camera vectors
+	if (always_face_camera == 1)
 	{
 		vec3 camera_right = {VIEW_MATRIX[0][0], VIEW_MATRIX[1][0], VIEW_MATRIX[2][0]};
 		vec3 camera_up = {VIEW_MATRIX[0][1], VIEW_MATRIX[1][1], VIEW_MATRIX[2][1]};
-		vec3 sprite_center = vec3(model_matrix[3]);
 
 		position = sprite_center + camera_right * position.x + camera_up * position.y;
+
+		// @TODO: Remove model rotation
+		//
 	}
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * model_matrix * vec4(position, 1.0);

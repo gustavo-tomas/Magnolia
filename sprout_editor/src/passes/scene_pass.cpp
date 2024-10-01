@@ -128,9 +128,6 @@ namespace sprout
 
         // Render sprites
 
-        // @TODO: Make gizmo sprites always face the camera and always have a set size (maybe optional parameters in the
-        // ecs).
-
         sprite_shader->bind();
 
         sprite_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
