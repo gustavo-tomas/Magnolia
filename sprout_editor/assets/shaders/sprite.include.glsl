@@ -12,7 +12,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 struct Sprite
 {
     mat4 model;
-    vec2 size;
+    vec4 size_const_face;
 };
 
 // Instance buffer

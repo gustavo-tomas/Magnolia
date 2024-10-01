@@ -20,7 +20,7 @@ namespace sprout
     struct alignas(16) SpriteData
     {
             mat4 model;
-            vec2 size;
+            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
     };
     // @TODO: temporary
 
@@ -146,7 +146,8 @@ namespace sprout
 
             const auto model_matrix = transform->get_transformation_matrix();
             const SpriteData sprite_data = {.model = model_matrix,
-                                            .size = {sprite->texture->width, sprite->texture->height}};
+                                            .size_const_face = {sprite->texture->width, sprite->texture->height,
+                                                                sprite->constant_size, sprite->always_face_camera}};
 
             sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
