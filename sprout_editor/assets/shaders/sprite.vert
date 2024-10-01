@@ -50,7 +50,7 @@ void main()
 		vec3 camera_right = {VIEW_MATRIX[0][0], VIEW_MATRIX[1][0], VIEW_MATRIX[2][0]};
 		vec3 camera_up = {VIEW_MATRIX[0][1], VIEW_MATRIX[1][1], VIEW_MATRIX[2][1]};
 
-		position = sprite_center + camera_right * position.x + camera_up * position.y;
+		position = camera_right * position.x + camera_up * position.y;
 
 		// @NOTE: We remove the model rotation in the c++ side
 	}
