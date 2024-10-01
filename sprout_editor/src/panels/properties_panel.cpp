@@ -37,6 +37,25 @@ namespace sprout
             }
         }
 
+        // Sprite
+        if (auto component = ecs.get_component<SpriteComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::TextWrapped("File Path: %s", component->texture_file_path.c_str());
+
+                if (ImGui::RadioButton("Face Camera", component->always_face_camera))
+                {
+                    component->always_face_camera = !component->always_face_camera;
+                }
+
+                if (ImGui::RadioButton("Constant Size", component->constant_size))
+                {
+                    component->constant_size = !component->constant_size;
+                }
+            }
+        }
+
         // Light
         if (auto light = ecs.get_component<LightComponent>(selected_entity_id))
         {
