@@ -18,19 +18,19 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    0.01,
+                    0.01,
+                    0.01
                 ]
+            },
+            "SpriteComponent": {
+                "FilePath": "sprout_editor/assets/images/video-solid.png"
             },
             "CameraComponent": {
                 "Fov": 60.0,
                 "Near": 1.0,
                 "Far": 10000.0,
                 "AspectRatio": 1.7285945415496826
-            },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/video-solid.png"
             },
             "ScriptComponent": {
                 "FilePath": "sprout_editor/assets/scripts/example_lua_script.lua"
@@ -84,8 +84,8 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
+                    0.01,
+                    0.01,
                     1.0
                 ]
             },
