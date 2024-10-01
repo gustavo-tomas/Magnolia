@@ -1,9 +1,6 @@
 #pragma once
 
-#include <memory>
-
 #include "camera/camera.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -52,15 +49,14 @@ namespace mag
     class Quad;
     struct SpriteComponent : public Component
     {
-            SpriteComponent(const ref<Image>& texture, const ref<Quad>& quad, const str& texture_file_path)
-                : texture(texture), quad(quad), texture_file_path(texture_file_path)
+            SpriteComponent(const ref<Image>& texture, const str& texture_file_path)
+                : texture(texture), texture_file_path(texture_file_path)
             {
             }
 
             CLONE(SpriteComponent);
 
             ref<Image> texture;
-            ref<Quad> quad;         // @TODO: idk about this
             str texture_file_path;  // @TODO: this is not ideal
     };
 

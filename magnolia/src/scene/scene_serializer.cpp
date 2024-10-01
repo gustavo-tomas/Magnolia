@@ -181,9 +181,8 @@ namespace mag
                     const str file_path = component["FilePath"];
 
                     const auto& sprite = app.get_texture_manager().get(file_path);
-                    const auto quad = create_ref<Quad>(vec2(sprite->width, sprite->height));
 
-                    ecs.add_component(entity_id, new SpriteComponent(sprite, quad, file_path));
+                    ecs.add_component(entity_id, new SpriteComponent(sprite, file_path));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

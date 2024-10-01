@@ -29,6 +29,9 @@
                 "Far": 10000.0,
                 "AspectRatio": 1.7285945415496826
             },
+            "SpriteComponent": {
+                "FilePath": "sprout_editor/assets/images/video-solid.png"
+            },
             "ScriptComponent": {
                 "FilePath": "sprout_editor/assets/scripts/example_lua_script.lua"
             }
@@ -81,14 +84,13 @@
                     0.0
                 ],
                 "Scale": [
-                    10.0,
-                    10.0,
-                    10.0
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             },
-            "ModelComponent": {
-                "Name": "Sphere",
-                "FilePath": "sprout_editor/assets/models/lightbulb/native/Sphere.model.json"
+            "SpriteComponent": {
+                "FilePath": "sprout_editor/assets/images/lightbulb-regular.png"
             },
             "LightComponent": {
                 "Color": [

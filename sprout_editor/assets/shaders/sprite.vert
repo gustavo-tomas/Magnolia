@@ -2,13 +2,27 @@
 
 #include "sprite.include.glsl"
 
-layout (location = 0) in vec3 in_position;
-layout (location = 1) in vec2 in_tex_coords;
-
 layout (location = 0) out vec2 out_tex_coords;
+
+vec2 sprite_quad[6] = vec2[]
+(
+	vec2(-1,  1), vec2(-1, -1), vec2( 1,  1),
+	vec2( 1,  1), vec2(-1, -1), vec2( 1, -1)
+);
+
+vec2 tex_coords[6] = vec2[]
+(
+	vec2(0, 0), vec2(0, 1), vec2(1, 0),
+	vec2(1, 0), vec2(0, 1), vec2(1, 1)
+);
 
 void main()
 {
-	gl_Position = PROJ_MATRIX * VIEW_MATRIX * MODEL_MATRIX * vec4(in_position, 1.0);
-	out_tex_coords = in_tex_coords;
+	Sprite sprite = u_instance.sprites[gl_InstanceIndex];
+
+	vec3 position = vec3(sprite_quad[gl_VertexIndex] * sprite.size, 0);
+	mat4 model_matrix = sprite.model;
+
+	gl_Position = PROJ_MATRIX * VIEW_MATRIX * model_matrix * vec4(position, 1.0);
+	out_tex_coords = tex_coords[gl_VertexIndex];
 }
