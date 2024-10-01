@@ -139,12 +139,21 @@ namespace sprout
             const auto& transform = std::get<0>(sprite_entities[i]);
             const auto& sprite = std::get<1>(sprite_entities[i]);
 
+            // Remove rotation if sprite is aligned to the camera
+            const vec3 model_rotation = transform->rotation;
+            if (sprite->always_face_camera)
+            {
+                transform->rotation = vec3(0);
+            }
+
             const auto& sprite_tex = sprite->texture;
 
             const auto model_matrix = transform->get_transformation_matrix();
             const SpriteData sprite_data = {.model = model_matrix,
                                             .size_const_face = {sprite->texture->width, sprite->texture->height,
                                                                 sprite->constant_size, sprite->always_face_camera}};
+
+            transform->rotation = model_rotation;
 
             sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());

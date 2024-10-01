@@ -52,8 +52,7 @@ void main()
 
 		position = sprite_center + camera_right * position.x + camera_up * position.y;
 
-		// @TODO: Remove model rotation
-		//
+		// @NOTE: We remove the model rotation in the c++ side
 	}
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * model_matrix * vec4(position, 1.0);
