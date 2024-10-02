@@ -227,10 +227,17 @@ namespace sprout
             if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
             {
-                const b8 result = math::decompose_simple(transform_matrix, transform->scale, transform->rotation,
-                                                         transform->translation);
+                vec3 translation, rotation, scale;
+                const b8 result = math::decompose_simple(transform_matrix, scale, rotation, translation);
 
-                if (!result)
+                if (result)
+                {
+                    transform->translation = translation;
+                    transform->rotation = rotation;
+                    transform->scale = scale;
+                }
+
+                else
                 {
                     LOG_ERROR("Failed to decompose transformation matrix");
                 }
