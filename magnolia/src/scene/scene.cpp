@@ -128,6 +128,14 @@ namespace mag
         entity_deletion_queue.clear();
 
         camera_controller->update(dt);
+
+        // Update camera transforms
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
+        {
+            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(transform->rotation);
+        }
     }
 
     void Scene::update_runtime(const f32 dt)
