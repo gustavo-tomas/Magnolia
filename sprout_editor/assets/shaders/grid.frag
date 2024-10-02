@@ -1,10 +1,9 @@
 #version 460
 
-layout (location = 0) in vec2 in_near_far;
-layout (location = 1) in vec3 in_near_point;
-layout (location = 2) in vec3 in_far_point;
-layout (location = 3) in mat4 in_view;
-layout (location = 7) in mat4 in_projection;
+#include "grid.include.glsl"
+
+layout (location = 0) in vec3 in_near_point;
+layout (location = 1) in vec3 in_far_point;
 
 layout (location = 0) out vec4 out_color;
 
@@ -31,15 +30,15 @@ vec4 grid(vec3 frag_pos_3D, float scale)
 
 float compute_depth(vec3 pos)
 {
-    vec4 clip_space_pos = in_projection * in_view * vec4(pos.xyz, 1.0);
+    vec4 clip_space_pos = PROJ_MATRIX * VIEW_MATRIX * vec4(pos.xyz, 1.0);
     return (clip_space_pos.z / clip_space_pos.w);
 }
 
 float compute_linear_depth(vec3 pos)
 {
-    float near = in_near_far.x;
-    float far = in_near_far.y;
-    vec4 clip_space_pos = in_projection * in_view * vec4(pos.xyz, 1.0);
+    float near = NEAR_FAR.x;
+    float far = NEAR_FAR.y;
+    vec4 clip_space_pos = PROJ_MATRIX * VIEW_MATRIX * vec4(pos.xyz, 1.0);
 
     // put back between -1 and 1
     float clip_space_depth = (clip_space_pos.z / clip_space_pos.w) * 2.0 - 1.0;
