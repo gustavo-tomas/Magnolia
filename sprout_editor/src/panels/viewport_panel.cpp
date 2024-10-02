@@ -154,6 +154,7 @@ namespace sprout
                         // Check if asset is a model that needs to be imported
                         else if (importer.is_extension_supported(extension))
                         {
+                            // @TODO: do this in another thread
                             str imported_model_path = "";
                             if (importer.import(path, imported_model_path))
                             {
