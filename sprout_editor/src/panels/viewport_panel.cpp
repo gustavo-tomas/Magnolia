@@ -209,10 +209,6 @@ namespace sprout
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
 
-            // Convert from LH to RH coordinates (flip Y)
-            const mat4 scale_matrix = scale(mat4(1.0f), vec3(1, -1, 1));
-            view = scale_matrix * view;
-
             auto viewport_min_region = ImGui::GetWindowContentRegionMin();
             auto viewport_max_region = ImGui::GetWindowContentRegionMax();
             auto viewport_offset = ImGui::GetWindowPos();
