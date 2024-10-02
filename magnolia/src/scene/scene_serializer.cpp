@@ -72,6 +72,8 @@ namespace mag
                 else
                 {
                     entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
+                    entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
+                    entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
                 }
             }
 
@@ -179,11 +181,13 @@ namespace mag
                 {
                     const auto& component = entity["SpriteComponent"];
                     const str file_path = component["FilePath"];
+                    const b8 constant_size = component["ConstantSize"].get<b8>();
+                    const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
                     const auto& sprite = app.get_texture_manager().get(file_path);
-                    const auto quad = create_ref<Quad>(vec2(sprite->width, sprite->height));
 
-                    ecs.add_component(entity_id, new SpriteComponent(sprite, quad, file_path));
+                    ecs.add_component(entity_id,
+                                      new SpriteComponent(sprite, file_path, constant_size, always_face_camera));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

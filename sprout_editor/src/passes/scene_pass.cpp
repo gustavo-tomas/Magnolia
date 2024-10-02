@@ -16,6 +16,12 @@ namespace sprout
             f32 intensity;  // 4 bytes  (1 x 4)
             vec3 position;  // 12 bytes (3 x 4)
     };
+
+    struct alignas(16) SpriteData
+    {
+            mat4 model;
+            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
+    };
     // @TODO: temporary
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass", size)
@@ -126,28 +132,33 @@ namespace sprout
 
         sprite_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         sprite_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        sprite_shader->set_uniform("u_global", "screen_size", value_ptr(pass.size));
 
         for (u32 i = 0; i < sprite_entities.size(); i++)
         {
             const auto& transform = std::get<0>(sprite_entities[i]);
             const auto& sprite = std::get<1>(sprite_entities[i]);
 
+            // Remove rotation if sprite is aligned to the camera
+            const vec3 model_rotation = transform->rotation;
+            if (sprite->always_face_camera)
+            {
+                transform->rotation = vec3(0);
+            }
+
             const auto& sprite_tex = sprite->texture;
-            const auto& sprite_quad = sprite->quad;
 
             const auto model_matrix = transform->get_transformation_matrix();
+            const SpriteData sprite_data = {.model = model_matrix,
+                                            .size_const_face = {sprite->texture->width, sprite->texture->height,
+                                                                sprite->constant_size, sprite->always_face_camera}};
 
-            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
-            sprite_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
+            transform->rotation = model_rotation;
+
+            sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
 
-            // @TODO: command buffers should be handled by the renderer
-            auto& cmd = get_context().get_curr_frame().command_buffer;
-
-            cmd.bind_vertex_buffer(sprite_quad->get_vbo().get_buffer());
-            cmd.bind_index_buffer(sprite_quad->get_ibo().get_buffer());
-
-            renderer.draw_indexed(sprite_quad->get_indices().size(), 1, 0, 0, i);
+            renderer.draw(6, 1, 0, i);
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
