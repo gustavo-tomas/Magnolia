@@ -30,7 +30,7 @@ namespace sprout
             void on_key_press(KeyPressEvent& e);
 
             b8 viewport_window_active = false;
-            uvec2 viewport_size = {1, 1};
+            uvec2 viewport_size = {1, 1}, viewport_position = {0, 0};
             vk::DescriptorSet viewport_image_descriptor = {};
             ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
     };

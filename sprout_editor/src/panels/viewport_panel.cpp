@@ -92,6 +92,9 @@ namespace sprout
                 ImGui::SetNextItemAllowOverlap();
                 ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
+                const auto image_pos = ImGui::GetItemRectMin();
+                viewport_position = {image_pos.x, image_pos.y};
+
                 // Load assets if any was draged over the viewport
                 if (ImGui::BeginDragDropTarget())
                 {
@@ -210,17 +213,8 @@ namespace sprout
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
 
-            auto viewport_min_region = ImGui::GetWindowContentRegionMin();
-            auto viewport_max_region = ImGui::GetWindowContentRegionMax();
-            auto viewport_offset = ImGui::GetWindowPos();
-
-            vec2 viewport_bounds[2] = {
-                {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y},
-                {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y}};
-
             ImGuizmo::SetDrawlist();
-            ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
-                              viewport_bounds[1].y - viewport_bounds[0].y);
+            ImGuizmo::SetRect(viewport_position.x, viewport_position.y, viewport_size.x, viewport_size.y);
 
             mat4 transform_matrix = transform->get_transformation_matrix();
 
