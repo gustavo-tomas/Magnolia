@@ -43,49 +43,24 @@ namespace mag
         return result;
     }
 
-    // @TODO;
-    void FileDialog::notify()
+    void FileDialog::notify(const str& title, const str& message, const DialogIcon icon)
     {
-        // Notification
-        pfd::notify("Important Notification", "This is ' a message, pay \" attention \\ to it!", pfd::icon::info);
+        pfd::notify(title, message, static_cast<pfd::icon>(icon));
     }
 
-    // @TODO;
-    void FileDialog::message()
+    DialogButton FileDialog::message(const str& title, const str& message, const DialogChoice choice,
+                                     const DialogIcon icon) const
     {
-        // Message box with nice message
-        auto m =
-            pfd::message("Personal Message", "You are an amazing person, don't let anyone make you think otherwise.",
-                         pfd::choice::yes_no_cancel, pfd::icon::warning);
+        auto m = pfd::message(title, message, static_cast<pfd::choice>(choice), static_cast<pfd::icon>(icon));
 
-        // Optional: do something while waiting for user action
-        for (int i = 0; i < 10 && !m.ready(1000); ++i) std::cout << "Waited 1 second for user input...\n";
-
-        // Do something according to the selected button
-        switch (m.result())
-        {
-            case pfd::button::yes:
-                std::cout << "User agreed.\n";
-                break;
-
-            case pfd::button::no:
-                std::cout << "User disagreed.\n";
-                break;
-
-            case pfd::button::cancel:
-                std::cout << "User freaked out.\n";
-                break;
-
-            default:
-                break;  // Should not happen
-        }
+        return static_cast<DialogButton>(m.result());
     }
 
-    // @TODO;
-    void FileDialog::select_folder()
+    str FileDialog::select_folder(const str& title) const
     {
-        // Directory selection
-        auto dir = pfd::select_folder("Select any directory", pfd::path::home()).result();
-        std::cout << "Selected dir: " << dir << "\n";
+        auto dir = pfd::select_folder(title, std::filesystem::current_path());
+
+        const auto result = dir.result();
+        return result;
     }
 };  // namespace mag
