@@ -17,9 +17,9 @@ namespace mag
 
     void Camera::calculate_view()
     {
-        const quat pitch_rotation = angleAxis(radians(rotation.x), vec3(1.0f, 0.0f, 0.0f));
-        const quat yaw_rotation = angleAxis(radians(rotation.y), vec3(0.0f, -1.0f, 0.0f));
-        const quat roll_rotation = angleAxis(radians(rotation.z), vec3(0.0f, 0.0f, -1.0f));
+        const quat pitch_rotation = angleAxis(radians(rotation.x), vec3(1, 0, 0));
+        const quat yaw_rotation = angleAxis(radians(rotation.y), vec3(0, 1, 0));
+        const quat roll_rotation = angleAxis(radians(rotation.z), vec3(0, 0, 1));
 
         this->rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
         const mat4 translation = translate(mat4(1.0f), position);
