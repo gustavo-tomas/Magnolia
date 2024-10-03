@@ -183,6 +183,8 @@ namespace sprout
         pass.depth_clear_value = {1.0f};
     }
 
+    LineList get_camera_gizmo(const Camera& camera);
+
     void LinePass::on_render(RenderGraph& render_graph)
     {
         (void)render_graph;
@@ -242,6 +244,19 @@ namespace sprout
             }
         }
 
+        // Get lines from camera gizmos (show in editor only)
+
+        if (scene.get_scene_state() == SceneState::Editor)
+        {
+            const auto& camera_entities =
+                scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();
+
+            for (const auto& [transform, camera_c] : camera_entities)
+            {
+                total_lines.append(get_camera_gizmo(camera_c->camera));
+            }
+        }
+
         if (total_lines.starts.empty())
         {
             return;
@@ -261,6 +276,90 @@ namespace sprout
         // @NOTE: not accurate but gives a good estimate
         performance_results.rendered_triangles += lines->get_vertices().size() / 3;
         performance_results.draw_calls++;
+    }
+
+    // Create a smaller model with fixed size to represent the camera
+    LineList get_camera_gizmo(const Camera& camera)
+    {
+        Camera dummy_camera = camera;
+        dummy_camera.set_near_far({0.1, 10.0f});
+
+        // Get frustum corners
+        std::vector<vec3> corners = dummy_camera.get_frustum().get_points();
+
+        LineList camera_lines;
+
+        const vec3 color = vec3(0.65, 0, 0.65);
+
+        // L/R = Left/Right, T/B = Top/Bottom, N/F = Near/Far
+
+        // Near quad (middle point of the diagonal of the near quad)
+        const vec3 near_quad_position = (corners[3] + corners[0]) / vec3(2.0);
+
+        // Far quad
+        {
+            // LBF - LTF
+            camera_lines.starts.push_back(corners[4]);
+            camera_lines.ends.push_back(corners[5]);
+            camera_lines.colors.push_back(color);
+
+            // LTF - RTF
+            camera_lines.starts.push_back(corners[5]);
+            camera_lines.ends.push_back(corners[7]);
+            camera_lines.colors.push_back(color);
+
+            // RTF - RBF
+            camera_lines.starts.push_back(corners[7]);
+            camera_lines.ends.push_back(corners[6]);
+            camera_lines.colors.push_back(color);
+
+            // RBF - LBF
+            camera_lines.starts.push_back(corners[6]);
+            camera_lines.ends.push_back(corners[4]);
+            camera_lines.colors.push_back(color);
+        }
+
+        // Conections
+        {
+            // LBN - LBF
+            camera_lines.starts.push_back(near_quad_position);
+            camera_lines.ends.push_back(corners[4]);
+            camera_lines.colors.push_back(color);
+
+            // LTN - LTF
+            camera_lines.starts.push_back(near_quad_position);
+            camera_lines.ends.push_back(corners[5]);
+            camera_lines.colors.push_back(color);
+
+            // RTN - RTF
+            camera_lines.starts.push_back(near_quad_position);
+            camera_lines.ends.push_back(corners[7]);
+            camera_lines.colors.push_back(color);
+
+            // RBN - RBF
+            camera_lines.starts.push_back(near_quad_position);
+            camera_lines.ends.push_back(corners[6]);
+            camera_lines.colors.push_back(color);
+        }
+
+        // Top triangle
+        {
+            const f32 top_displacement = 4.0f;
+            const vec3 middle = (corners[5] + corners[7]) / vec3(2.0);
+            const vec3 triangle_top_point = middle + dummy_camera.get_up() * top_displacement;
+            const vec3 triangle_left_point = (corners[5] + middle) / vec3(2.0);
+            const vec3 triangle_right_point = (corners[7] + middle) / vec3(2.0);
+
+            camera_lines.starts.push_back(triangle_left_point);
+            camera_lines.ends.push_back(triangle_top_point);
+            camera_lines.colors.push_back(color);
+
+            camera_lines.starts.push_back(triangle_right_point);
+            camera_lines.ends.push_back(triangle_top_point);
+            camera_lines.colors.push_back(color);
+        }
+
+        return camera_lines;
     }
 
     // GridPass --------------------------------------------------------------------------------------------------------
