@@ -79,6 +79,9 @@ namespace mag
         ScriptingEngine::initialize();
         LOG_SUCCESS("ScriptingEngine initialized");
 
+        file_dialog = create_unique<FileDialog>();
+        LOG_SUCCESS("FileDialog initialized");
+
         running = true;
     }
 
