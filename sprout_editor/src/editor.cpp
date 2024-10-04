@@ -12,6 +12,7 @@
 #include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
+#include "platform/file_dialog.hpp"
 #include "project/project.hpp"
 #include "scene/scene_serializer.hpp"
 
@@ -155,6 +156,17 @@ namespace sprout
     {
         (void)dt;
 
+        if (!running)
+        {
+            // Close all scenes
+            for (const auto &scene : open_scenes)
+            {
+                close_scene(scene);
+            }
+
+            return;
+        }
+
         auto &app = get_application();
         auto &window = app.get_window();
         auto &renderer = app.get_renderer();
@@ -220,6 +232,7 @@ namespace sprout
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<NativeEvent>(BIND_FN(Editor::on_sdl_event));
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
+        dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Editor::on_window_close));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Editor::on_quit));
 
         get_active_scene().on_event(e);
@@ -227,18 +240,16 @@ namespace sprout
         viewport_panel->on_event(e);
     }
 
-    // @TODO: use file dialogs to ask about saving files when the file dialog is implemented. For now this is a
-    // temporary solution to avoid losing work after closing. Also the scene names must be different form one another or
-    // else the files will be overwritten.
     void Editor::on_quit(QuitEvent &e)
     {
         (void)e;
+        running = false;
+    }
 
-        // Save open scenes
-        for (const auto &scene : open_scenes)
-        {
-            close_scene(scene);
-        }
+    void Editor::on_window_close(WindowCloseEvent &e)
+    {
+        (void)e;
+        running = false;
     }
 
     void Editor::on_sdl_event(NativeEvent &e) { ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<const SDL_Event *>(e.e)); }
@@ -265,10 +276,26 @@ namespace sprout
 
     void Editor::close_scene(const ref<Scene> &scene)
     {
-        const str file_path = Project::get_asset_directory() / "scenes" / (scene->get_name() + ".mag.json");
+        const str suggested_file_path = Project::get_asset_directory() / (scene->get_name() + ".mag.json");
 
-        SceneSerializer serializer(*scene);
-        serializer.serialize(file_path);
+        auto &app = get_application();
+        auto &file_dialog = app.get_file_dialog();
+
+        // @TODO: check if scene was modified before saving, or we will save unmodified scenes all the time
+        const auto answer = file_dialog.message("Save scene?", "Save Scene " + scene->get_name(), DialogChoice::YesNo,
+                                                DialogIcon::Question);
+
+        if (answer == DialogButton::Yes)
+        {
+            const str file_path =
+                file_dialog.save_file("Save Scene", suggested_file_path, {"Scene Files (.mag.json)", "*.mag.json"});
+
+            if (!file_path.empty())
+            {
+                SceneSerializer serializer(*scene);
+                serializer.serialize(file_path);
+            }
+        }
 
         // @TODO: linear search but w e. It is unlikely that this will hinder the performance
         u32 idx = INVALID_ID;

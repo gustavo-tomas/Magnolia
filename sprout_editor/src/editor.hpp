@@ -63,6 +63,7 @@ namespace sprout
             void on_sdl_event(NativeEvent& e);
             void on_resize(WindowResizeEvent& e);
             void on_quit(QuitEvent& e);
+            void on_window_close(WindowCloseEvent& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 
             void set_active_scene(const u32 index);
@@ -90,6 +91,7 @@ namespace sprout
 
             uvec2 curr_viewport_size;
             b8 disabled = false;
+            b8 running = true;
     };
 
     Editor& get_editor();
