@@ -10,6 +10,7 @@
 #include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
+#include "project/project.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
@@ -96,7 +97,6 @@ namespace sprout
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
         menu_bar = create_unique<MenuBar>();
-        content_browser_panel = create_unique<ContentBrowserPanel>();
         viewport_panel = create_unique<ViewportPanel>();
         scene_panel = create_unique<ScenePanel>();
         material_panel = create_unique<MaterialsPanel>();
@@ -129,9 +129,13 @@ namespace sprout
 
     void Editor::on_attach()
     {
+        // @TODO: ask user what project they want to open on startup
+        auto project = Project::load_project("sprout_editor/project/Test.proj.json");
+        content_browser_panel = create_unique<ContentBrowserPanel>(Project::get_asset_directory());
+
         Scene *scene = new Scene();
         SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
+        scene_serializer.deserialize(project->get_asset_path(project->get_config().start_scene));
 
         add_scene(scene);
         set_active_scene(0);

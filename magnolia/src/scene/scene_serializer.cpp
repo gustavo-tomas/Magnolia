@@ -3,6 +3,7 @@
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
+#include "project/project.hpp"
 #include "renderer/test_model.hpp"
 
 namespace mag
@@ -170,7 +171,7 @@ namespace mag
                 if (entity.contains("ModelComponent"))
                 {
                     const auto& component = entity["ModelComponent"];
-                    const str file_path = component["FilePath"];
+                    const str file_path = Project::get_asset_path(component["FilePath"]);
 
                     const auto& model = app.get_model_manager().get(file_path);
 
@@ -180,7 +181,7 @@ namespace mag
                 if (entity.contains("SpriteComponent"))
                 {
                     const auto& component = entity["SpriteComponent"];
-                    const str file_path = component["FilePath"];
+                    const str file_path = Project::get_asset_path(component["FilePath"]);
                     const b8 constant_size = component["ConstantSize"].get<b8>();
                     const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
@@ -241,7 +242,7 @@ namespace mag
                 {
                     const auto& component = entity["ScriptComponent"];
 
-                    const str file_path = component["FilePath"];
+                    const str file_path = Project::get_asset_path(component["FilePath"]);
 
                     ecs.add_component(entity_id, new ScriptComponent(file_path));
                 }

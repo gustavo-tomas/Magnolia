@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include <filesystem>
 
 #include "imgui.h"
 #include "renderer/renderer_image.hpp"
@@ -12,12 +12,15 @@ namespace sprout
     class ContentBrowserPanel
     {
         public:
-            ContentBrowserPanel();
+            ContentBrowserPanel(const std::filesystem::path& base_directory);
             ~ContentBrowserPanel() = default;
 
             void render(const ImGuiWindowFlags window_flags);
 
         private:
+            std::filesystem::path base_directory;
+            std::filesystem::path current_directory;
+
             ref<RendererImage> folder_image, file_image;
             vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
     };

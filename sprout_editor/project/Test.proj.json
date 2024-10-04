@@ -1,0 +1,6 @@
+{
+    "Type": "Project",
+    "Name": "Test",
+    "AssetDirectory": "assets",
+    "StartScene": "scenes/Simple.mag.json"
+}

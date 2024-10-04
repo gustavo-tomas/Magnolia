@@ -9,7 +9,8 @@
 
 namespace sprout
 {
-    ContentBrowserPanel::ContentBrowserPanel()
+    ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& base_directory)
+        : base_directory(base_directory), current_directory(base_directory)
     {
         auto& app = get_application();
         auto& renderer = app.get_renderer();
@@ -33,9 +34,6 @@ namespace sprout
     void ContentBrowserPanel::render(const ImGuiWindowFlags window_flags)
     {
         ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
-
-        const std::filesystem::path base_directory = std::filesystem::path("sprout_editor/assets");
-        static std::filesystem::path current_directory = base_directory;
 
         // Traverse directories
         if (current_directory != std::filesystem::path(base_directory))
