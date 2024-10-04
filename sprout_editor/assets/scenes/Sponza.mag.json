@@ -23,11 +23,6 @@
                     0.01
                 ]
             },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/video-solid.png",
-                "ConstantSize": true,
-                "AlwaysFaceCamera": true
-            },
             "CameraComponent": {
                 "Fov": 60.0,
                 "Near": 1.0,
@@ -59,11 +54,6 @@
                     0.01
                 ]
             },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/lightbulb-regular.png",
-                "ConstantSize": true,
-                "AlwaysFaceCamera": true
-            },
             "LightComponent": {
                 "Color": [
                     1.0,
@@ -93,11 +83,6 @@
                     0.01,
                     0.01
                 ]
-            },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/lightbulb-regular.png",
-                "ConstantSize": true,
-                "AlwaysFaceCamera": true
             },
             "LightComponent": {
                 "Color": [
@@ -129,11 +114,6 @@
                     0.01
                 ]
             },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/lightbulb-regular.png",
-                "ConstantSize": true,
-                "AlwaysFaceCamera": true
-            },
             "LightComponent": {
                 "Color": [
                     1.0,
@@ -163,11 +143,6 @@
                     0.01,
                     0.01
                 ]
-            },
-            "SpriteComponent": {
-                "FilePath": "sprout_editor/assets/images/lightbulb-regular.png",
-                "ConstantSize": true,
-                "AlwaysFaceCamera": true
             },
             "LightComponent": {
                 "Color": [

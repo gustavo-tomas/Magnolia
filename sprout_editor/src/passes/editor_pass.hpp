@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ecs/components.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/shader.hpp"
 #include "renderer/test_model.hpp"
@@ -16,26 +17,21 @@ namespace sprout
             virtual void on_render(RenderGraph& render_graph) override;
     };
 
-    class LinePass : public RenderGraphPass
+    class GizmoPass : public RenderGraphPass
     {
         public:
-            LinePass(const uvec2& size);
+            GizmoPass(const uvec2& size);
 
             virtual void on_render(RenderGraph& render_graph) override;
 
         private:
-            ref<Shader> line_shader;
+            void render_sprites();
+            void render_sprite(TransformComponent* transform, const ref<Image>& sprite, const u32 instance);
+            void render_lines();
+            void render_grid();
+
+            ref<Shader> line_shader, grid_shader, sprite_shader;
+            ref<Image> camera_sprite, light_sprite;
             unique<Line> lines;
-    };
-
-    class GridPass : public RenderGraphPass
-    {
-        public:
-            GridPass(const uvec2& size);
-
-            virtual void on_render(RenderGraph& render_graph) override;
-
-        private:
-            ref<Shader> grid_shader;
     };
 };  // namespace sprout

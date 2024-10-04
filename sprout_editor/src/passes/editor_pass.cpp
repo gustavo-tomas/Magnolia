@@ -74,15 +74,31 @@ namespace sprout
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd.get_handle());
     }
 
-    // LinePass -----------------------------------------------------------------------------------------------------
+    // GizmoPass -------------------------------------------------------------------------------------------------------
 
-    LinePass::LinePass(const uvec2& size) : RenderGraphPass("LinePass", size)
+    // @TODO: temporary
+    struct alignas(16) SpriteData
+    {
+            mat4 model;
+            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
+    };
+    // @TODO: temporary
+
+    LineList get_camera_gizmo(const Camera& camera);
+
+    GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass", size)
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
         line_shader = shader_manager.get("sprout_editor/assets/shaders/line_shader.mag.json");
+        grid_shader = shader_manager.get("sprout_editor/assets/shaders/grid_shader.mag.json");
+        sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
+
+        // Sprites
+        camera_sprite = app.get_texture_manager().get("sprout_editor/assets/images/video-solid.png");
+        light_sprite = app.get_texture_manager().get("sprout_editor/assets/images/lightbulb-regular.png");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
@@ -92,12 +108,19 @@ namespace sprout
         pass.depth_clear_value = {1.0f};
     }
 
-    LineList get_camera_gizmo(const Camera& camera);
-
-    void LinePass::on_render(RenderGraph& render_graph)
+    void GizmoPass::on_render(RenderGraph& render_graph)
     {
         (void)render_graph;
 
+        performance_results = {};
+
+        render_lines();
+        render_sprites();
+        render_grid();
+    }
+
+    void GizmoPass::render_lines()
+    {
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& editor = get_editor();
@@ -106,8 +129,6 @@ namespace sprout
         auto& physics_engine = app.get_physics_engine();
         auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
-
-        performance_results = {};
 
         lines.reset(nullptr);
 
@@ -184,6 +205,91 @@ namespace sprout
 
         // @NOTE: not accurate but gives a good estimate
         performance_results.rendered_triangles += lines->get_vertices().size() / 3;
+        performance_results.draw_calls++;
+    }
+
+    void GizmoPass::render_grid()
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
+        const auto& camera = scene.get_camera();
+
+        performance_results = {};
+
+        grid_shader->bind();
+
+        grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
+
+        // Draw the grid
+        renderer.draw(6);
+
+        // Very accurate :)
+        performance_results.rendered_triangles += 2;
+        performance_results.draw_calls++;
+    }
+
+    void GizmoPass::render_sprites()
+    {
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
+        const auto& camera = scene.get_camera();
+
+        // Render gizmos
+
+        sprite_shader->bind();
+
+        sprite_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        sprite_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        sprite_shader->set_uniform("u_global", "screen_size", value_ptr(pass.size));
+
+        u32 offset = scene.get_ecs().get_all_components_of_types<TransformComponent, SpriteComponent>().size();
+
+        const auto& camera_entities =
+            scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();
+
+        for (u32 i = 0; i < camera_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(camera_entities[i]);
+            render_sprite(transform, camera_sprite, offset + i);
+        }
+
+        offset += camera_entities.size();
+
+        const auto& light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
+
+        for (u32 i = 0; i < light_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(light_entities[i]);
+            render_sprite(transform, light_sprite, offset + i);
+        }
+    }
+
+    void GizmoPass::render_sprite(TransformComponent* transform, const ref<Image>& sprite, const u32 instance)
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+
+        // Remove rotation if sprite is aligned to the camera
+        const vec3 model_rotation = transform->rotation;
+
+        transform->rotation = vec3(0);
+
+        const auto model_matrix = transform->get_transformation_matrix();
+        const SpriteData sprite_data = {.model = model_matrix,
+                                        .size_const_face = {sprite->width, sprite->height, true, true}};
+
+        transform->rotation = model_rotation;
+
+        sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * instance);
+        sprite_shader->set_texture("u_sprite_texture", sprite.get());
+
+        renderer.draw(6, 1, 0, instance);
+
+        performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;
     }
 
@@ -269,49 +375,5 @@ namespace sprout
         }
 
         return camera_lines;
-    }
-
-    // GridPass --------------------------------------------------------------------------------------------------------
-
-    GridPass::GridPass(const uvec2& size) : RenderGraphPass("GridPass", size)
-    {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
-        // Shaders
-        grid_shader = shader_manager.get("sprout_editor/assets/shaders/grid_shader.mag.json");
-
-        add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
-        add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
-
-        pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.3, 0.3, 1.0));
-        pass.depth_clear_value = {1.0f};
-    }
-
-    void GridPass::on_render(RenderGraph& render_graph)
-    {
-        (void)render_graph;
-
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-        auto& editor = get_editor();
-        auto& scene = editor.get_active_scene();
-        const auto& camera = scene.get_camera();
-
-        performance_results = {};
-
-        grid_shader->bind();
-
-        grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-        grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
-        grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
-
-        // Draw the grid
-        renderer.draw(6);
-
-        // Very accurate :)
-        performance_results.rendered_triangles += 2;
-        performance_results.draw_calls++;
     }
 };  // namespace sprout
