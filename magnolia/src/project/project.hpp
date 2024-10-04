@@ -31,6 +31,12 @@ namespace mag
                 return get_project_directory() / active_project->config.asset_directory;
             }
 
+            static std::filesystem::path get_asset_path(const std::filesystem::path& path)
+            {
+                ASSERT(active_project, "No active project");
+                return get_asset_directory() / path;
+            }
+
             static std::shared_ptr<Project> get_active() { return active_project; };
 
             ProjectConfig& get_config() { return config; };
