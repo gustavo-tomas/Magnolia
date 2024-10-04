@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <vector>
 
 #include "core/types.hpp"
@@ -40,13 +41,14 @@ namespace mag
         public:
             FileDialog();
 
-            str open_file(const str& title, const std::vector<str>& filters = {"All Files", "*"}) const;
-            str save_file(const str& title, const str& file_name,
+            str open_file(const str& title, const std::filesystem::path& directory,
+                          const std::vector<str>& filters = {"All Files", "*"}) const;
+            str save_file(const str& title, const std::filesystem::path& file_path,
                           const std::vector<str>& filters = {"All Files", "*"}) const;
 
             void notify(const str& title, const str& message, const DialogIcon icon);
             DialogButton message(const str& title, const str& message, const DialogChoice choice,
                                  const DialogIcon icon) const;
-            str select_folder(const str& title) const;
+            str select_folder(const str& title, const std::filesystem::path& path) const;
     };
 };  // namespace mag

@@ -6,6 +6,7 @@
 #include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "project/project.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
@@ -90,8 +91,9 @@ namespace sprout
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
 
-        const str& file_path = file_dialog.save_file("Save Scene As...", scene.get_name() + ".mag.json",
-                                                     {"Scene Files (.mag.json)", "*.mag.json"});
+        const str& file_path =
+            file_dialog.save_file("Save Scene As...", Project::get_asset_path(scene.get_name() + ".mag.json"),
+                                  {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {
@@ -108,7 +110,8 @@ namespace sprout
         auto& file_dialog = app.get_file_dialog();
         auto& editor = get_editor();
 
-        const str file_path = file_dialog.open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
+        const str file_path = file_dialog.open_file("Open Scene", Project::get_asset_directory(),
+                                                    {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {

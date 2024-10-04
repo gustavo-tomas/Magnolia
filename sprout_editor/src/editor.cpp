@@ -1,5 +1,7 @@
 #include "editor.hpp"
 
+#include <filesystem>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
@@ -129,9 +131,17 @@ namespace sprout
 
     void Editor::on_attach()
     {
-        // @TODO: ask user what project they want to open on startup
-        auto project = Project::load_project("sprout_editor/project/Test.proj.json");
+        auto &app = get_application();
+
+        // @TODO: this is a temporary solution. Use a launcher or similar to manage projects.
+        const str file_path =
+            app.get_file_dialog().open_file("Select Project", std::filesystem::current_path() / "sprout_editor",
+                                            {"Project Files (.proj.json)", "*.proj.json"});
+
+        auto project = Project::load_project(file_path);
         content_browser_panel = create_unique<ContentBrowserPanel>(Project::get_asset_directory());
+
+        app.get_window().set_title(project->get_config().name + " - Magnolia Engine");
 
         Scene *scene = new Scene();
         SceneSerializer scene_serializer(*scene);
@@ -255,7 +265,7 @@ namespace sprout
 
     void Editor::close_scene(const ref<Scene> &scene)
     {
-        const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
+        const str file_path = Project::get_asset_directory() / "scenes" / (scene->get_name() + ".mag.json");
 
         SceneSerializer serializer(*scene);
         serializer.serialize(file_path);

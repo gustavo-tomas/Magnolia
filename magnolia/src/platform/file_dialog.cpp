@@ -1,7 +1,5 @@
 #include "platform/file_dialog.hpp"
 
-#include <filesystem>
-
 #include "core/logger.hpp"
 #include "portable-file-dialogs/portable-file-dialogs.h"
 
@@ -22,9 +20,10 @@ namespace mag
         }
     }
 
-    str FileDialog::open_file(const str& title, const std::vector<str>& filters) const
+    str FileDialog::open_file(const str& title, const std::filesystem::path& directory,
+                              const std::vector<str>& filters) const
     {
-        auto f = pfd::open_file(title, std::filesystem::current_path(), filters, pfd::opt::multiselect);
+        auto f = pfd::open_file(title, directory, filters, pfd::opt::multiselect);
 
         const auto result = f.result();
         if (result.empty())
@@ -35,9 +34,10 @@ namespace mag
         return result.front();
     }
 
-    str FileDialog::save_file(const str& title, const str& file_name, const std::vector<str>& filters) const
+    str FileDialog::save_file(const str& title, const std::filesystem::path& file_path,
+                              const std::vector<str>& filters) const
     {
-        auto f = pfd::save_file(title, std::filesystem::current_path() / file_name, filters);
+        auto f = pfd::save_file(title, file_path, filters);
 
         const auto result = f.result();
         return result;
@@ -56,9 +56,9 @@ namespace mag
         return static_cast<DialogButton>(m.result());
     }
 
-    str FileDialog::select_folder(const str& title) const
+    str FileDialog::select_folder(const str& title, const std::filesystem::path& path) const
     {
-        auto dir = pfd::select_folder(title, std::filesystem::current_path());
+        auto dir = pfd::select_folder(title, path);
 
         const auto result = dir.result();
         return result;
