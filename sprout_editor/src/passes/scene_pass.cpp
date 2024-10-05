@@ -2,9 +2,8 @@
 
 #include "core/application.hpp"
 #include "editor.hpp"
-#include "renderer/buffers.hpp"
-#include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
+#include "renderer/test_model.hpp"
 #include "renderer/type_conversions.hpp"
 #include "resources/font.hpp"
 #include "resources/material.hpp"
