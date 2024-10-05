@@ -104,7 +104,7 @@ namespace mag
         {
             // Calculate dt
             curr_time = window->get_time();
-            dt = curr_time - last_time;
+            dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
 
             SCOPED_PROFILE("Application");
