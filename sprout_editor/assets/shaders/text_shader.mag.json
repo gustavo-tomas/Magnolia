@@ -1,0 +1,19 @@
+{
+    "Shader": "Text",
+    "Files": [
+        "text.vert.spv",
+        "text.frag.spv"
+    ],
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        }
+    }
+}

@@ -7,17 +7,20 @@
 
 namespace mag
 {
-    json& operator<<(json& out, const vec2& v)
+    template <typename T>
+    json& insert_value(json& out, const T& v)
     {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        if constexpr (std::is_same_v<T, vec2> || std::is_same_v<T, vec3> || std::is_same_v<T, vec4>)
+        {
+            for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        }
+
         return out;
     }
 
-    json& operator<<(json& out, const vec3& v)
-    {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
-        return out;
-    }
+    json& operator<<(json& out, const vec2& v) { return insert_value<vec2>(out, v); }
+    json& operator<<(json& out, const vec3& v) { return insert_value<vec3>(out, v); }
+    json& operator<<(json& out, const vec4& v) { return insert_value<vec4>(out, v); }
 
     SceneSerializer::SceneSerializer(Scene& scene) : scene(scene) {}
 
@@ -106,6 +109,15 @@ namespace mag
                 entity["ScriptComponent"]["FilePath"] = component->file_path;
             }
 
+            if (auto component = ecs.get_component<TextComponent>(entity_id))
+            {
+                entity["TextComponent"]["Font"] = component->font->file_path;
+                entity["TextComponent"]["Color"] << component->color;
+                entity["TextComponent"]["Kerning"] = component->kerning;
+                entity["TextComponent"]["LineSpacing"] = component->line_spacing;
+                entity["TextComponent"]["Text"] = component->text;
+            }
+
             data["Entities"].push_back(entity);
         }
 
@@ -170,9 +182,9 @@ namespace mag
                 if (entity.contains("ModelComponent"))
                 {
                     const auto& component = entity["ModelComponent"];
-                    const str file_path = component["FilePath"];
+                    const str model_file_path = component["FilePath"];
 
-                    const auto& model = app.get_model_manager().get(file_path);
+                    const auto& model = app.get_model_manager().get(model_file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
                 }
@@ -241,9 +253,25 @@ namespace mag
                 {
                     const auto& component = entity["ScriptComponent"];
 
-                    const str file_path = component["FilePath"];
+                    const str script_file_path = component["FilePath"];
 
-                    ecs.add_component(entity_id, new ScriptComponent(file_path));
+                    ecs.add_component(entity_id, new ScriptComponent(script_file_path));
+                }
+
+                if (entity.contains("TextComponent"))
+                {
+                    const auto& component = entity["TextComponent"];
+
+                    const str font = component["Font"];
+                    const str text = component["Text"];
+                    const f32 kerning = component["Kerning"];
+                    const f32 line_spacing = component["LineSpacing"];
+
+                    vec4 color;
+                    for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
+
+                    ecs.add_component(entity_id, new TextComponent(text, app.get_font_manager().get(font), color,
+                                                                   kerning, line_spacing));
                 }
             }
         }

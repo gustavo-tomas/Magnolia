@@ -10,6 +10,8 @@
 #include "platform/file_dialog.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "resources/font.hpp"
+#include "resources/font_loader.hpp"
 #include "resources/image_loader.hpp"
 #include "resources/material.hpp"
 #include "resources/material_loader.hpp"
@@ -46,11 +48,13 @@ namespace mag
             ImageLoader& get_image_loader() { return *image_loader; };
             MaterialLoader& get_material_loader() { return *material_loader; };
             ModelLoader& get_model_loader() { return *model_loader; };
-            TextureManager& get_texture_manager() { return *texture_loader; };
+            ShaderLoader& get_shader_loader() { return *shader_loader; };
+            FontLoader& get_font_loader() { return *font_loader; };
+            TextureManager& get_texture_manager() { return *texture_manager; };
             MaterialManager& get_material_manager() { return *material_manager; };
             ModelManager& get_model_manager() { return *model_manager; };
-            ShaderLoader& get_shader_loader() { return *shader_loader; };
             ShaderManager& get_shader_manager() { return *shader_manager; };
+            FontManager& get_font_manager() { return *font_manager; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
             FileDialog& get_file_dialog() { return *file_dialog; };
 
@@ -66,10 +70,12 @@ namespace mag
             unique<MaterialLoader> material_loader;
             unique<ModelLoader> model_loader;
             unique<ShaderLoader> shader_loader;
-            unique<TextureManager> texture_loader;
+            unique<FontLoader> font_loader;
+            unique<TextureManager> texture_manager;
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
+            unique<FontManager> font_manager;
             unique<PhysicsEngine> physics_engine;
             unique<FileDialog> file_dialog;
 

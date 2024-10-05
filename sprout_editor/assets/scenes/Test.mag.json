@@ -94,6 +94,40 @@
                 ],
                 "Intensity": 100.0
             }
+        },
+        {
+            "NameComponent": {
+                "Name": "Text"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    -50.0,
+                    50.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "TextComponent": {
+                "Font": "sprout_editor/assets/fonts/Roboto/Roboto-Regular.ttf",
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Kerning": 0.0,
+                "LineSpacing": 0.0,
+                "Text": "Lorem Ipsum"
+            }
         }
     ]
 }

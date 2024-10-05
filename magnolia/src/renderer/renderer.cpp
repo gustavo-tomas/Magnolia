@@ -2,7 +2,9 @@
 
 #include "core/assert.hpp"
 #include "core/logger.hpp"
+#include "ecs/components.hpp"
 #include "renderer/buffers.hpp"
+#include "renderer/test_model.hpp"
 #include "resources/model.hpp"
 
 namespace mag
@@ -55,6 +57,24 @@ namespace mag
         if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
         {
             LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+            return;
+        }
+
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+
+        // Bind buffers
+        command_buffer.bind_vertex_buffer(vbo_it->second->get_buffer());
+        command_buffer.bind_index_buffer(ibo_it->second->get_buffer());
+    }
+
+    void Renderer::bind_buffers(TextComponent* text_c)
+    {
+        auto vbo_it = vertex_buffers.find(text_c);
+        auto ibo_it = index_buffers.find(text_c);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Text '{0}' was not uploaded to the GPU", static_cast<void*>(text_c));
             return;
         }
 
@@ -149,7 +169,22 @@ namespace mag
         const vk::Extent3D extent(image->width, image->height, 1);
 
         // @TODO: check for supported formats
-        const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+        vk::Format format = vk::Format::eR8G8B8A8Srgb;
+
+        if (image->format == ImageFormat::Srgb)
+        {
+            format = vk::Format::eR8G8B8A8Srgb;
+        }
+
+        else if (image->format == ImageFormat::Unorm)
+        {
+            format = vk::Format::eR8G8B8A8Unorm;
+        }
+
+        else
+        {
+            LOG_ERROR("Invalid image format: '{0}'", static_cast<u32>(image->format));
+        }
 
         images[image] =
             create_ref<RendererImage>(extent, image->pixels, format,
@@ -171,6 +206,38 @@ namespace mag
         }
 
         images.erase(it);
+    }
+
+    void Renderer::upload_text(TextComponent* text_c, const std::vector<QuadVertex>& vertices,
+                               const std::vector<u32>& indices)
+    {
+        auto vbo_it = vertex_buffers.find(text_c);
+        auto ibo_it = index_buffers.find(text_c);
+
+        if (vbo_it != vertex_buffers.end() || ibo_it != index_buffers.end())
+        {
+            vertex_buffers[text_c]->resize(vertices.data(), VEC_SIZE_BYTES(vertices));
+            index_buffers[text_c]->resize(indices.data(), VEC_SIZE_BYTES(indices));
+            return;
+        }
+
+        vertex_buffers[text_c] = create_ref<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
+        index_buffers[text_c] = create_ref<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
+    }
+
+    void Renderer::remove_text(TextComponent* text_c)
+    {
+        auto vbo_it = vertex_buffers.find(text_c);
+        auto ibo_it = index_buffers.find(text_c);
+
+        if (vbo_it == vertex_buffers.end() || ibo_it == index_buffers.end())
+        {
+            LOG_ERROR("Tried to remove invalid text '{0}'", static_cast<void*>(text_c));
+            return;
+        }
+
+        vertex_buffers.erase(vbo_it);
+        index_buffers.erase(ibo_it);
     }
 
     void Renderer::on_event(Event& e)

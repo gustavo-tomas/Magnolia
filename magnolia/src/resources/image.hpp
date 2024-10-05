@@ -1,19 +1,25 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "core/types.hpp"
 
 namespace mag
 {
+    enum class ImageFormat
+    {
+        Srgb,
+        Unorm
+    };
+
     struct Image
     {
             u8 channels = 4;
             u32 width = 64;
             u32 height = 64;
             u32 mip_levels = 1;
+            ImageFormat format = ImageFormat::Srgb;
             std::vector<u8> pixels = std::vector<u8>(64 * 64 * 4, 153);
     };
 

@@ -55,8 +55,12 @@ namespace mag
         shader_loader = create_unique<ShaderLoader>();
         LOG_SUCCESS("ShaderLoader initialized");
 
+        // Create the font loader
+        font_loader = create_unique<FontLoader>();
+        LOG_SUCCESS("FontLoader initialized");
+
         // Create the texture manager
-        texture_loader = create_unique<TextureManager>();
+        texture_manager = create_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
 
         // Create the material manager
@@ -70,6 +74,10 @@ namespace mag
         // Create the shader manager
         shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
+
+        // Create the font manager
+        font_manager = create_unique<FontManager>();
+        LOG_SUCCESS("FontManager initialized");
 
         // Create the physics engine
         physics_engine = create_unique<PhysicsEngine>();

@@ -44,6 +44,9 @@
 	path = libs/sol2
 	url = https://github.com/ThePhD/sol2.git
 	branch = main
+[submodule "libs/msdf_atlas_gen"]
+	path = libs/msdf_atlas_gen
+	url = https://github.com/gustavo-tomas/msdf-atlas-gen.git
 [submodule "libs/implot"]
 	path = libs/implot
 	url = https://github.com/epezent/implot.git
