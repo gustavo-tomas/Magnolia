@@ -12,6 +12,7 @@ namespace mag
     {
         Unknown = SDLK_UNKNOWN,
         Return = SDLK_RETURN,
+        Enter = Return,
         Escape = SDLK_ESCAPE,
         Backspace = SDLK_BACKSPACE,
         Tab = SDLK_TAB,
