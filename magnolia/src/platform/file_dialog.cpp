@@ -7,22 +7,25 @@
 
 namespace mag
 {
-    FileDialog::FileDialog()
+    b8 FileDialog::initialize()
     {
 #if defined(MAG_DEBUG)
         pfd::settings::verbose(true);
-        pfd::settings::rescan();
 #endif
 
         // Check that a backend is available
         if (!pfd::settings::available())
         {
             LOG_ERROR("Portable File Dialogs are not available on this platform.");
-            return;
+            return false;
         }
+
+        return true;
     }
 
-    str FileDialog::open_file(const str& title, const std::vector<str>& filters) const
+    void FileDialog::shutdown() {}
+
+    str FileDialog::open_file(const str& title, const std::vector<str>& filters)
     {
         auto f = pfd::open_file(title, std::filesystem::current_path(), filters, pfd::opt::multiselect);
 
@@ -35,7 +38,7 @@ namespace mag
         return result.front();
     }
 
-    str FileDialog::save_file(const str& title, const str& file_name, const std::vector<str>& filters) const
+    str FileDialog::save_file(const str& title, const str& file_name, const std::vector<str>& filters)
     {
         auto f = pfd::save_file(title, std::filesystem::current_path() / file_name, filters);
 
@@ -49,14 +52,14 @@ namespace mag
     }
 
     DialogButton FileDialog::message(const str& title, const str& message, const DialogChoice choice,
-                                     const DialogIcon icon) const
+                                     const DialogIcon icon)
     {
         auto m = pfd::message(title, message, static_cast<pfd::choice>(choice), static_cast<pfd::icon>(icon));
 
         return static_cast<DialogButton>(m.result());
     }
 
-    str FileDialog::select_folder(const str& title) const
+    str FileDialog::select_folder(const str& title)
     {
         auto dir = pfd::select_folder(title, std::filesystem::current_path());
 

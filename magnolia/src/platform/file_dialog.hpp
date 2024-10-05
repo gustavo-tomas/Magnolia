@@ -38,15 +38,17 @@ namespace mag
     class FileDialog
     {
         public:
-            FileDialog();
+            static b8 initialize();
 
-            str open_file(const str& title, const std::vector<str>& filters = {"All Files", "*"}) const;
-            str save_file(const str& title, const str& file_name,
-                          const std::vector<str>& filters = {"All Files", "*"}) const;
+            static void shutdown();
 
-            void notify(const str& title, const str& message, const DialogIcon icon);
-            DialogButton message(const str& title, const str& message, const DialogChoice choice,
-                                 const DialogIcon icon) const;
-            str select_folder(const str& title) const;
+            static str open_file(const str& title, const std::vector<str>& filters = {"All Files", "*"});
+            static str save_file(const str& title, const str& file_name,
+                                 const std::vector<str>& filters = {"All Files", "*"});
+
+            static void notify(const str& title, const str& message, const DialogIcon icon);
+            static DialogButton message(const str& title, const str& message, const DialogChoice choice,
+                                        const DialogIcon icon);
+            static str select_folder(const str& title);
     };
 };  // namespace mag

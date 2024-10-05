@@ -6,6 +6,7 @@
 #include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "platform/file_dialog.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
@@ -85,12 +86,10 @@ namespace sprout
 
     void MenuBar::save_active_scene_as()
     {
-        auto& app = get_application();
-        auto& file_dialog = app.get_file_dialog();
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
 
-        const str& file_path = file_dialog.save_file("Save Scene As...", scene.get_name() + ".mag.json",
+        const str& file_path = FileDialog::save_file("Save Scene As...", scene.get_name() + ".mag.json",
                                                      {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
@@ -104,11 +103,9 @@ namespace sprout
 
     void MenuBar::open_scene()
     {
-        auto& app = get_application();
-        auto& file_dialog = app.get_file_dialog();
         auto& editor = get_editor();
 
-        const str file_path = file_dialog.open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
+        const str file_path = FileDialog::open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {

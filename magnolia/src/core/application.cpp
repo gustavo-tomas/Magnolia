@@ -1,6 +1,7 @@
 #include "core/application.hpp"
 
 #include "core/logger.hpp"
+#include "platform/file_dialog.hpp"
 #include "scripting/scripting_engine.hpp"
 #include "tools/profiler.hpp"
 
@@ -79,8 +80,11 @@ namespace mag
         ScriptingEngine::initialize();
         LOG_SUCCESS("ScriptingEngine initialized");
 
-        file_dialog = create_unique<FileDialog>();
-        LOG_SUCCESS("FileDialog initialized");
+        // Initialize file dialogs
+        if (FileDialog::initialize())
+        {
+            LOG_SUCCESS("FileDialog initialized");
+        }
 
         running = true;
     }
@@ -93,6 +97,7 @@ namespace mag
             delete layer;
         }
 
+        FileDialog::shutdown();
         ScriptingEngine::shutdown();
     }
 
