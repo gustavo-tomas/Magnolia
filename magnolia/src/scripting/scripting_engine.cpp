@@ -1,6 +1,6 @@
 #include "scripting/scripting_engine.hpp"
 
-#include "core/assert.hpp"
+#include "core/application.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"
@@ -79,15 +79,27 @@ namespace mag
     {
         if (state->loaded_scripts.contains(file_path)) return;
 
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        Buffer buffer;
+        if (!file_system.read_binary_data(file_path, buffer))
+        {
+            return;
+        }
+
         auto& lua = *state->lua;
 
-        auto res = lua.script_file(file_path);
-
-        // @TODO: this probably shouldnt crash the application
+        auto res = lua.load_buffer(buffer.cast<const char>(), buffer.get_size());
         if (!res.valid())
         {
-            ASSERT(false, "Invalid script: '{0}'", file_path);
+            LOG_ERROR("Invalid script: '{0}'", file_path);
+            return;
         }
+
+        // Run the loaded script
+        sol::function script = res;
+        script();
 
         state->loaded_scripts.insert(file_path);
     }

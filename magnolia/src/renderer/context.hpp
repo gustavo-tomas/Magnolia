@@ -4,12 +4,12 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
 #include "core/window.hpp"
 #include "renderer/command.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/frame.hpp"
+#include "tools/profiler.hpp"
 #include "vk_mem_alloc.h"
 
 // Graphics macros
@@ -23,12 +23,6 @@ namespace mag
             Window& window;
             str application_name = "Magnolia";
             str engine_name = "Magnolia";
-    };
-
-    struct Timestamp
-    {
-            f64 begin = 0;
-            f64 end = 0;
     };
 
     class Context
@@ -61,7 +55,7 @@ namespace mag
             const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
             const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
             const VmaAllocator& get_allocator() const { return this->allocator; };
-            const Timestamp& get_timestamp() const { return this->timestamp; };
+            const ProfileResult& get_timestamp() const { return this->timestamp; };
             const u32& get_curr_frame_number() const { return this->frame_provider.get_current_frame_number(); };
 
             const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
@@ -110,7 +104,7 @@ namespace mag
             const u32 query_count = 2;
             b8 is_query_supported = {};
             f32 timestamp_period = {};
-            Timestamp timestamp = {};
+            ProfileResult timestamp = {};
 
             FrameProvider frame_provider;
             VmaAllocator allocator = {};

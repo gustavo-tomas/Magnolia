@@ -128,6 +128,14 @@ namespace mag
         entity_deletion_queue.clear();
 
         camera_controller->update(dt);
+
+        // Update camera transforms
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
+        {
+            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(transform->rotation);
+        }
     }
 
     void Scene::update_runtime(const f32 dt)
@@ -225,15 +233,10 @@ namespace mag
         auto& texture_manager = app.get_texture_manager();
 
         const auto sprite = texture_manager.get(path);
-        const auto quad = create_ref<Quad>(vec2(sprite->width, sprite->height));
-
-        // Scale down the dimensions to fit better in the screen
-        const f32 scale_factor = 40.0f / sprite->height;
-        const vec2 sprite_scale = vec2(scale_factor);
 
         const auto entity = ecs->create_entity();
-        ecs->add_component(entity, new SpriteComponent(sprite, quad));
-        ecs->add_component(entity, new TransformComponent(vec3(0), vec3(0), vec3(sprite_scale, 1)));
+        ecs->add_component(entity, new SpriteComponent(sprite, path));
+        ecs->add_component(entity, new TransformComponent());
     }
 
     void Scene::remove_entity(const u32 id)

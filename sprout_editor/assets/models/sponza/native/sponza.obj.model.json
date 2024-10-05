@@ -1,5 +1,6 @@
 {
-    "Model": "sponza.obj",
+    "Type": "Model",
+    "Name": "sponza.obj",
     "File": "sprout_editor/assets/models/sponza/native/sponza.obj.model.bin",
     "Materials": [
         "sprout_editor/assets/models/sponza/native/DefaultMaterial.mat.json",

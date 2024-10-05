@@ -227,12 +227,19 @@ namespace mag
 
     void Shader::set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset)
     {
+        auto uniform_it = uniforms_map.find(scope);
+        if (uniform_it == uniforms_map.end())
+        {
+            // Uniform not found
+            LOG_ERROR("Uniform scope '{0}' not found", scope);
+            return;
+        }
+
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto& ubo = uniforms_map[scope];
+        auto& ubo = uniform_it->second;
         auto& members_cache = ubo.members_cache;
-        auto& buffer = ubo.buffers[curr_frame_number];
 
         auto it = members_cache.find(name);
         if (it != members_cache.end())
@@ -240,6 +247,7 @@ namespace mag
             const u64 offset = it->second->offset;
             const u64 size = it->second->size;
 
+            auto& buffer = ubo.buffers[curr_frame_number];
             buffer.copy(data, size, offset + data_offset);
 
             bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
@@ -252,13 +260,21 @@ namespace mag
 
     void Shader::set_texture(const str& name, Image* texture)
     {
+        auto it = uniforms_map.find(name);
+        if (it == uniforms_map.end())
+        {
+            // Uniform not found
+            LOG_ERROR("Uniform texture '{0}' not found", name);
+            return;
+        }
+
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& context = get_context();
 
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto& ubo = uniforms_map[name];
+        auto& ubo = it->second;
 
         // Create descriptor for this texture
         if (texture_descriptor_sets.count(texture) == 0)
@@ -281,6 +297,14 @@ namespace mag
 
     void Shader::set_material(const str& name, Material* material)
     {
+        auto it = uniforms_map.find(name);
+        if (it == uniforms_map.end())
+        {
+            // Uniform not found
+            LOG_ERROR("Uniform material '{0}' not found", name);
+            return;
+        }
+
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& texture_manager = app.get_texture_manager();
@@ -288,7 +312,7 @@ namespace mag
 
         const u32 curr_frame_number = context.get_curr_frame_number();
 
-        auto& ubo = uniforms_map[name];
+        auto& ubo = it->second;
 
         // @TODO: this blocks the main thread and should be paralelized when the renderer supports it.
         // Create/Update descriptor for this material

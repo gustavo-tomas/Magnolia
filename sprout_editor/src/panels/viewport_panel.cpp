@@ -2,9 +2,12 @@
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
+#include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
+#include "scene/scene_serializer.hpp"
+#include "tools/model_importer.hpp"
 
 namespace sprout
 {
@@ -13,7 +16,6 @@ namespace sprout
     {
         auto &app = get_application();
         auto &editor = get_editor();
-        auto &model_loader = app.get_model_loader();
         auto &image_loader = app.get_image_loader();
         auto &font_loader = app.get_font_loader();
         auto &scene = editor.get_active_scene();
@@ -91,6 +93,9 @@ namespace sprout
                 ImGui::SetNextItemAllowOverlap();
                 ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
 
+                const auto image_pos = ImGui::GetItemRectMin();
+                viewport_position = {image_pos.x, image_pos.y};
+
                 // Load assets if any was draged over the viewport
                 if (ImGui::BeginDragDropTarget())
                 {
@@ -101,6 +106,8 @@ namespace sprout
 
                         const char *path = static_cast<const char *>(payload->Data);
                         const str extension = file_system.get_file_extension(path);
+
+                        ModelImporter importer;
 
                         // First check if the path exists
                         if (!file_system.exists(path))
@@ -114,16 +121,55 @@ namespace sprout
                             LOG_ERROR("Path is a directory: {0}", path);
                         }
 
+                        // Check if asset is a json file
+                        else if (extension == ".json")
+                        {
+                            json data;
+                            if (!file_system.read_json_data(path, data) || !data.contains("Type"))
+                            {
+                                goto end_drag_drop_target;
+                            }
+
+                            const str type = data["Type"];
+
+                            if (type == "Model")
+                            {
+                                scene.add_model(path);
+                            }
+
+                            else if (type == "Scene")
+                            {
+                                Scene *new_scene = new Scene();
+
+                                SceneSerializer serializer(*new_scene);
+                                serializer.deserialize(path);
+
+                                editor.add_scene(new_scene);
+                            }
+
+                            else if (type == "Material")
+                            {
+                                // @TODO: make a material viewer or similar
+                                // For now, do nothing
+                                LOG_WARNING("Asset is a material. No action was performed.");
+                            }
+                        }
+
+                        // Check if asset is a model that needs to be imported
+                        else if (importer.is_extension_supported(extension))
+                        {
+                            // @TODO: do this in another thread
+                            str imported_model_path = "";
+                            if (importer.import(path, imported_model_path))
+                            {
+                                scene.add_model(imported_model_path);
+                            }
+                        }
+
                         // Check if asset is an image
                         else if (image_loader.is_extension_supported(extension))
                         {
                             scene.add_sprite(path);
-                        }
-
-                        // Check if asset is a model
-                        else if (model_loader.is_extension_supported(extension))
-                        {
-                            scene.add_model(path);
                         }
 
                         // Check if asset is a font
@@ -137,6 +183,9 @@ namespace sprout
                             LOG_ERROR("Extension not supported: {0}", extension);
                         }
                     }
+
+                end_drag_drop_target:
+
                     ImGui::EndDragDropTarget();
                 }
 
@@ -171,31 +220,25 @@ namespace sprout
             mat4 view = camera.get_view();
             const mat4 &proj = camera.get_projection();
 
-            // Convert from LH to RH coordinates (flip Y)
-            const mat4 scale_matrix = scale(mat4(1.0f), vec3(1, -1, 1));
-            view = scale_matrix * view;
-
-            auto viewport_min_region = ImGui::GetWindowContentRegionMin();
-            auto viewport_max_region = ImGui::GetWindowContentRegionMax();
-            auto viewport_offset = ImGui::GetWindowPos();
-
-            vec2 viewport_bounds[2] = {
-                {viewport_min_region.x + viewport_offset.x, viewport_min_region.y + viewport_offset.y},
-                {viewport_max_region.x + viewport_offset.x, viewport_max_region.y + viewport_offset.y}};
-
             ImGuizmo::SetDrawlist();
-            ImGuizmo::SetRect(viewport_bounds[0].x, viewport_bounds[0].y, viewport_bounds[1].x - viewport_bounds[0].x,
-                              viewport_bounds[1].y - viewport_bounds[0].y);
+            ImGuizmo::SetRect(viewport_position.x, viewport_position.y, viewport_size.x, viewport_size.y);
 
             mat4 transform_matrix = transform->get_transformation_matrix();
 
             if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
             {
-                const b8 result = math::decompose_simple(transform_matrix, transform->scale, transform->rotation,
-                                                         transform->translation);
+                vec3 translation, rotation, scale;
+                const b8 result = math::decompose_simple(transform_matrix, scale, rotation, translation);
 
-                if (!result)
+                if (result)
+                {
+                    transform->translation = translation;
+                    transform->rotation = rotation;
+                    transform->scale = scale;
+                }
+
+                else
                 {
                     LOG_ERROR("Failed to decompose transformation matrix");
                 }

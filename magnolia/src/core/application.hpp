@@ -7,6 +7,7 @@
 #include "core/layer.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
+#include "platform/file_dialog.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/font.hpp"
@@ -55,6 +56,7 @@ namespace mag
             ShaderManager& get_shader_manager() { return *shader_manager; };
             FontManager& get_font_manager() { return *font_manager; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
+            FileDialog& get_file_dialog() { return *file_dialog; };
 
         private:
             void on_window_close(WindowCloseEvent& e);
@@ -75,6 +77,7 @@ namespace mag
             unique<ShaderManager> shader_manager;
             unique<FontManager> font_manager;
             unique<PhysicsEngine> physics_engine;
+            unique<FileDialog> file_dialog;
 
             std::vector<Layer*> layers;
 

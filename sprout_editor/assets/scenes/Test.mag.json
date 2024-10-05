@@ -1,5 +1,6 @@
 {
-    "Scene": "Test",
+    "Type": "Scene",
+    "Name": "Test",
     "Entities": [
         {
             "NameComponent": {
@@ -17,9 +18,9 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    0.01,
+                    0.01,
+                    0.01
                 ]
             },
             "CameraComponent": {
@@ -80,14 +81,10 @@
                     0.0
                 ],
                 "Scale": [
-                    10.0,
-                    10.0,
-                    10.0
+                    0.01,
+                    0.01,
+                    0.01
                 ]
-            },
-            "ModelComponent": {
-                "Name": "Sphere",
-                "FilePath": "sprout_editor/assets/models/lightbulb/native/Sphere.model.json"
             },
             "LightComponent": {
                 "Color": [

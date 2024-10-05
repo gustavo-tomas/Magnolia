@@ -7,6 +7,7 @@
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
@@ -50,6 +51,7 @@ namespace sprout
         // Initialize imgui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImPlot::CreateContext();
 
         auto &io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -119,6 +121,7 @@ namespace sprout
         ImGui_ImplVulkan_DestroyFontsTexture();
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplSDL2_Shutdown();
+        ImPlot::DestroyContext();
         ImGui::DestroyContext();
 
         context.get_device().destroyDescriptorPool(descriptor_pool);
@@ -151,8 +154,19 @@ namespace sprout
             open_scenes.erase(open_scenes.begin() + pos);
             open_scenes_marked_for_deletion.erase(open_scenes_marked_for_deletion.begin() + i);
 
-            set_selected_scene_index(pos);
-            set_active_scene(pos);
+            if (pos < selected_scene_index)
+            {
+                selected_scene_index =
+                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+            }
+
+            else if (pos == selected_scene_index)
+            {
+                selected_scene_index =
+                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+
+                set_active_scene(selected_scene_index);
+            }
         }
 
         if (selected_scene_index != next_scene_index)
@@ -290,16 +304,14 @@ namespace sprout
         // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
 
         ScenePass *scene_pass = new ScenePass(viewport_size);
-        LinePass *line_pass = new LinePass(viewport_size);
-        GridPass *grid_pass = new GridPass(viewport_size);
+        GizmoPass *gizmo_pass = new GizmoPass(viewport_size);
         EditorPass *editor_pass = new EditorPass(size);
 
         render_graph->set_output_attachment("EditorOutputColor");
         // render_graph->set_output_attachment("OutputColor");
 
         render_graph->add_pass(scene_pass);
-        render_graph->add_pass(line_pass);
-        render_graph->add_pass(grid_pass);
+        render_graph->add_pass(gizmo_pass);
         render_graph->add_pass(editor_pass);
 
         render_graph->build();

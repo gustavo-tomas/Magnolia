@@ -11,7 +11,6 @@ end
 
 function on_update(entity, dt)
     transform_component = entity:get_transform()
-    camera_component = entity:get_camera()
 
     local direction = vec3(0)
     local speed = 50.0
@@ -29,7 +28,4 @@ function on_update(entity, dt)
     end
 
     transform_component.translation = transform_component.translation + direction * speed
-    camera_component.camera:set_position(transform_component.translation)
-
-    print("POS:", camera_component.camera:get_position())
 end

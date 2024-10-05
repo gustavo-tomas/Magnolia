@@ -1,6 +1,6 @@
 # Magnolia
 
-![screenshot](magnolia/assets/screenshots/magnolia_v0.5.0.png)
+![screenshot](sprout_editor/assets/screenshots/magnolia_v0.6.0.png)
 > Current state of the engine
 
 > Windows build is still in development (for now is linux only)!
@@ -37,3 +37,4 @@ python3 build.py debug
 - [[Scion2D](https://github.com/dwjclark11/Scion2D)] Lua scripting
 - [[podgorskiy](https://gist.github.com/podgorskiy/e698d18879588ada9014768e3e82a644)] Frustum culling
 - [[Inigo Quilez](https://iquilezles.org/articles/frustumcorrect/)] Frustum culling algorithm
+- [[OpenGLTutorial](https://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/)] Billboarding

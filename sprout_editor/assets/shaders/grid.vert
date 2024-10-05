@@ -1,21 +1,9 @@
 #version 460
 
-#include "include/types.glsl"
+#include "grid.include.glsl"
 
-layout (location = 0) out vec2 out_near_far;
-layout (location = 1) out vec3 out_near_point;
-layout (location = 2) out vec3 out_far_point;
-layout (location = 3) out mat4 out_view;
-layout (location = 7) out mat4 out_projection;
-
-// Global buffer
-layout (set = 0, binding = 0) uniform GlobalBuffer
-{
-    // Camera
-    mat4 view;
-    mat4 projection;
-    vec2 near_far;
-} u_global;
+layout (location = 0) out vec3 out_near_point;
+layout (location = 1) out vec3 out_far_point;
 
 // Grid position are in xy clipped space
 vec3 grid_plane[6] = vec3[]
@@ -35,10 +23,6 @@ void main()
     vec3 p = grid_plane[gl_VertexIndex].xyz;
     out_near_point = unproject_point(p.x, p.y, 0.0, VIEW_MATRIX, PROJ_MATRIX).xyz;
     out_far_point = unproject_point(p.x, p.y, 1.0, VIEW_MATRIX, PROJ_MATRIX).xyz;
-    
-    out_view = VIEW_MATRIX;
-    out_projection = PROJ_MATRIX;
-    out_near_far = NEAR_FAR;
 
     gl_Position = vec4(p, 1.0); // using directly the clipped coordinates
 }

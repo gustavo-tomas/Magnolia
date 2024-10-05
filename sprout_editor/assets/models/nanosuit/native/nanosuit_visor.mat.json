@@ -1,5 +1,6 @@
 {
-    "Material": "nanosuit_visor",
+    "Type": "Material",
+    "Name": "nanosuit_visor",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/nanosuit/nanosuit_visor_d.tga",
         "Normal": "sprout_editor/assets/models/nanosuit/nanosuit_visor_n.tga"

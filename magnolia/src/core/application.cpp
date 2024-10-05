@@ -2,6 +2,7 @@
 
 #include "core/logger.hpp"
 #include "scripting/scripting_engine.hpp"
+#include "tools/profiler.hpp"
 
 namespace mag
 {
@@ -86,6 +87,9 @@ namespace mag
         ScriptingEngine::initialize();
         LOG_SUCCESS("ScriptingEngine initialized");
 
+        file_dialog = create_unique<FileDialog>();
+        LOG_SUCCESS("FileDialog initialized");
+
         running = true;
     }
 
@@ -108,8 +112,10 @@ namespace mag
         {
             // Calculate dt
             curr_time = window->get_time();
-            dt = curr_time - last_time;
+            dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
+
+            SCOPED_PROFILE("Application");
 
             window->update();
 

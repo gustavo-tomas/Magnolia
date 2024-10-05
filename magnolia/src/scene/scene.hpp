@@ -54,6 +54,7 @@ namespace mag
                 }
 
                 ASSERT(false, "No runtime camera!");
+                return *camera;
             };
 
             ECS& get_ecs()

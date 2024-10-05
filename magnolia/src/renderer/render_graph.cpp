@@ -5,6 +5,7 @@
 #include "renderer/context.hpp"
 #include "renderer/render_graph_conversions.hpp"
 #include "renderer/type_conversions.hpp"
+#include "tools/profiler.hpp"
 
 // @TODO: reimplement missing features:
 // - Multisampling
@@ -151,6 +152,8 @@ namespace mag
         // Execute passes
         for (auto* render_pass : passes)
         {
+            SCOPED_PROFILE(render_pass->get_name());
+
             execute_render_pass(render_pass);
 
             // Transition layout
@@ -245,8 +248,11 @@ namespace mag
         }
 
         const vk::Rect2D render_area = vk::Rect2D({}, vec_to_vk_extent(pass.size));
-        const vk::Viewport viewport(0, 0, render_area.extent.width, render_area.extent.height, 0.0f, 1.0f);
         const vk::Rect2D scissor = render_area;
+
+        // Flip the viewport along the Y axis
+        const vk::Viewport viewport(0, render_area.extent.height, render_area.extent.width,
+                                    -static_cast<i32>(render_area.extent.height), 0.0f, 1.0f);
 
         pass.rendering_info =
             vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, &pass.depth_attachment, {});

@@ -45,7 +45,7 @@ namespace mag
                "Failed to get extensions: " + str(SDL_GetError()));
 
         // Set application icon
-        const str file = "magnolia/assets/images/application_icon.bmp";
+        const str file = "sprout_editor/assets/images/application_icon.bmp";
 
         SDL_Surface* icon = SDL_LoadBMP(file.c_str());
 
@@ -238,6 +238,6 @@ namespace mag
         auto current_time = std::chrono::system_clock::now();
         std::chrono::duration<f64> elapsed_seconds = current_time - start_time;
 
-        return elapsed_seconds.count();
+        return elapsed_seconds.count() * 1000.0;
     }
 };  // namespace mag

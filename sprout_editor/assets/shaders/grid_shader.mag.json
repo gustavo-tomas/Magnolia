@@ -10,7 +10,7 @@
         },
         "Rasterization": {
             "PolygonMode": "Fill",
-            "CullMode": "Back"
+            "CullMode": "None"
         },
         "ColorBlend": {
             "Enabled": true,

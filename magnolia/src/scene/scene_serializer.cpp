@@ -3,6 +3,7 @@
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
+#include "renderer/test_model.hpp"
 
 namespace mag
 {
@@ -30,7 +31,8 @@ namespace mag
 
         // Serialize scene data to file
         json data;
-        data["Scene"] = scene.get_name();
+        data["Type"] = "Scene";
+        data["Name"] = scene.get_name();
 
         auto& ecs = scene.get_ecs();
         for (const auto entity_id : ecs.get_entities_ids())
@@ -60,6 +62,21 @@ namespace mag
                 {
                     entity["ModelComponent"]["Name"] = component->model->name;
                     entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                }
+            }
+
+            if (auto component = ecs.get_component<SpriteComponent>(entity_id))
+            {
+                if (component->texture_file_path.empty())
+                {
+                    LOG_WARNING("Sprite has no file path and will not be serialized");
+                }
+
+                else
+                {
+                    entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
+                    entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
+                    entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
                 }
             }
 
@@ -124,7 +141,7 @@ namespace mag
             return;
         }
 
-        const str scene_name = data["Scene"];
+        const str scene_name = data["Name"];
         scene.set_name(scene_name);
 
         LOG_INFO("Deserializing scene '{0}'", scene_name);
@@ -170,6 +187,19 @@ namespace mag
                     const auto& model = app.get_model_manager().get(model_file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
+                }
+
+                if (entity.contains("SpriteComponent"))
+                {
+                    const auto& component = entity["SpriteComponent"];
+                    const str file_path = component["FilePath"];
+                    const b8 constant_size = component["ConstantSize"].get<b8>();
+                    const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
+
+                    const auto& sprite = app.get_texture_manager().get(file_path);
+
+                    ecs.add_component(entity_id,
+                                      new SpriteComponent(sprite, file_path, constant_size, always_face_camera));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

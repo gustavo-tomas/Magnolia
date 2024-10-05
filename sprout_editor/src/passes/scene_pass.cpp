@@ -18,6 +18,12 @@ namespace sprout
             f32 intensity;  // 4 bytes  (1 x 4)
             vec3 position;  // 12 bytes (3 x 4)
     };
+
+    struct alignas(16) SpriteData
+    {
+            mat4 model;
+            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
+    };
     // @TODO: temporary
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass", size)
@@ -130,28 +136,33 @@ namespace sprout
 
         sprite_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         sprite_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        sprite_shader->set_uniform("u_global", "screen_size", value_ptr(pass.size));
 
         for (u32 i = 0; i < sprite_entities.size(); i++)
         {
             const auto& transform = std::get<0>(sprite_entities[i]);
             const auto& sprite = std::get<1>(sprite_entities[i]);
 
+            // Remove rotation if sprite is aligned to the camera
+            const vec3 model_rotation = transform->rotation;
+            if (sprite->always_face_camera)
+            {
+                transform->rotation = vec3(0);
+            }
+
             const auto& sprite_tex = sprite->texture;
-            const auto& sprite_quad = sprite->quad;
 
             const auto model_matrix = transform->get_transformation_matrix();
+            const SpriteData sprite_data = {.model = model_matrix,
+                                            .size_const_face = {sprite->texture->width, sprite->texture->height,
+                                                                sprite->constant_size, sprite->always_face_camera}};
 
-            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
-            sprite_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
+            transform->rotation = model_rotation;
+
+            sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
 
-            // @TODO: command buffers should be handled by the renderer
-            auto& cmd = get_context().get_curr_frame().command_buffer;
-
-            cmd.bind_vertex_buffer(sprite_quad->get_vbo().get_buffer());
-            cmd.bind_index_buffer(sprite_quad->get_ibo().get_buffer());
-
-            renderer.draw_indexed(sprite_quad->get_indices().size(), 1, 0, 0, i);
+            renderer.draw(6, 1, 0, i);
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
@@ -311,147 +322,5 @@ namespace sprout
 
             renderer.draw_indexed(indices.size());
         }
-    }
-
-    // LinePass -----------------------------------------------------------------------------------------------------
-
-    LinePass::LinePass(const uvec2& size) : RenderGraphPass("LinePass", size)
-    {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
-        // Shaders
-        line_shader = shader_manager.get("sprout_editor/assets/shaders/line_shader.mag.json");
-
-        add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
-        add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
-
-        pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.3, 1.0));
-        pass.depth_clear_value = {1.0f};
-    }
-
-    void LinePass::on_render(RenderGraph& render_graph)
-    {
-        (void)render_graph;
-
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-        auto& editor = get_editor();
-        auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
-        auto& physics_engine = app.get_physics_engine();
-        auto& scene = editor.get_active_scene();
-        const auto& camera = scene.get_camera();
-
-        performance_results = {};
-
-        lines.reset(nullptr);
-
-        LineList total_lines;
-
-        // Get lines from AABBs
-
-        if (editor.is_bounding_box_enabled())
-        {
-            const auto& model_entities =
-                scene.get_ecs().get_all_components_of_types<TransformComponent, ModelComponent>();
-
-            for (const auto& [transform, model_c] : model_entities)
-            {
-                for (const auto& mesh : model_c->model->meshes)
-                {
-                    BoundingBox mesh_aabb;
-                    mesh_aabb.min = mesh.aabb_min;
-                    mesh_aabb.max = mesh.aabb_max;
-                    mesh_aabb = mesh_aabb.get_transformed_bounding_box(transform->get_transformation_matrix());
-
-                    // Skip rendering if not visible
-                    if (!camera.is_aabb_visible(mesh_aabb))
-                    {
-                        continue;
-                    }
-
-                    const auto& line_list = mesh_aabb.get_line_list(mat4(1.0f));
-                    total_lines.append(line_list);
-                }
-            }
-        }
-
-        // Get lines from physics
-
-        if (editor.is_physics_colliders_enabled())
-        {
-            const auto& physics_lines = physics_engine.get_line_list();
-
-            if (!physics_lines.starts.empty())
-            {
-                total_lines.append(physics_lines);
-            }
-        }
-
-        if (total_lines.starts.empty())
-        {
-            return;
-        }
-
-        lines = create_unique<Line>(total_lines.starts, total_lines.ends, total_lines.colors);
-
-        line_shader->bind();
-
-        line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-        line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
-
-        // @TODO: command buffers shouldnt be accessible. They should be handled by the renderer.
-        command_buffer.bind_vertex_buffer(lines->get_vbo().get_buffer());
-        renderer.draw(lines->get_vertices().size());
-
-        // @NOTE: not accurate but gives a good estimate
-        performance_results.rendered_triangles += lines->get_vertices().size() / 3;
-        performance_results.draw_calls++;
-    }
-
-    // GridPass --------------------------------------------------------------------------------------------------------
-
-    GridPass::GridPass(const uvec2& size) : RenderGraphPass("GridPass", size)
-    {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
-        // Shaders
-        grid_shader = shader_manager.get("sprout_editor/assets/shaders/grid_shader.mag.json");
-
-        add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
-        add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
-
-        pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.3, 0.3, 1.0));
-        pass.depth_clear_value = {1.0f};
-    }
-
-    void GridPass::on_render(RenderGraph& render_graph)
-    {
-        (void)render_graph;
-
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-        auto& editor = get_editor();
-        auto& scene = editor.get_active_scene();
-        const auto& camera = scene.get_camera();
-
-        performance_results = {};
-
-        grid_shader->bind();
-
-        grid_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
-        grid_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
-        grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
-
-        // Draw the grid
-        renderer.draw(6);
-
-        // Very accurate :)
-        performance_results.rendered_triangles += 2;
-        performance_results.draw_calls++;
     }
 };  // namespace sprout

@@ -1,7 +1,0 @@
-{
-    "Model": "DefaultCube",
-    "File": "magnolia/assets/models/DefaultCube.model.bin",
-    "Materials": [
-        "magnolia/assets/materials/default_material.mat.json"
-    ]
-}

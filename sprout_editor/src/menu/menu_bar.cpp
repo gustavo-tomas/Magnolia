@@ -6,7 +6,6 @@
 #include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "imgui_file_dialog/ImGuiFileDialog.h"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
@@ -15,63 +14,57 @@ namespace sprout
 
     void MenuBar::render(const ImGuiWindowFlags window_flags)
     {
-        // Display open dialogs
-        display_dialog();
+        const b8 menu_bar_open = ImGui::BeginMainMenuBar();
 
-        if (ImGui::BeginMainMenuBar())
+        if (!menu_bar_open)
         {
-            // Dont do anything if a dialog is still open
-            if (current_action != DialogAction::None)
-            {
-                ImGui::EndMainMenuBar();
-                return;
-            }
-
-            // File
-            if (ImGui::BeginMenu((str(ICON_FA_FILE) + " Scene").c_str()))
-            {
-                // New
-                if (ImGui::MenuItem("New", "Ctrl+N"))
-                {
-                    new_scene();
-                }
-
-                // Save
-                if (ImGui::MenuItem("Save", "Ctrl+S"))
-                {
-                    save_active_scene();
-                }
-
-                // Save As
-                if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
-                {
-                    save_active_scene_as();
-                }
-
-                // Load
-                if (ImGui::MenuItem("Open", "Ctrl+O"))
-                {
-                    open_scene();
-                }
-
-                // Quit
-                if (ImGui::MenuItem("Quit", "Ctrl+Q"))
-                {
-                    quit_application();
-                }
-
-                ImGui::EndMenu();
-            }
-
-            // Info panel
-            if (ImGui::BeginMenu((str(ICON_FA_CIRCLE_INFO) + " Info").c_str()))
-            {
-                info_menu->render(window_flags);
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMainMenuBar();
+            return;
         }
+
+        // File
+        if (ImGui::BeginMenu((str(ICON_FA_FILE) + " Scene").c_str()))
+        {
+            // New
+            if (ImGui::MenuItem("New", "Ctrl+N"))
+            {
+                new_scene();
+            }
+
+            // Save
+            if (ImGui::MenuItem("Save", "Ctrl+S"))
+            {
+                save_active_scene();
+            }
+
+            // Save As
+            if (ImGui::MenuItem("Save As", "Ctrl+Shift+S"))
+            {
+                save_active_scene_as();
+            }
+
+            // Load
+            if (ImGui::MenuItem("Open", "Ctrl+O"))
+            {
+                open_scene();
+            }
+
+            // Quit
+            if (ImGui::MenuItem("Quit", "Ctrl+Q"))
+            {
+                quit_application();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        // Info panel
+        if (ImGui::BeginMenu((str(ICON_FA_CIRCLE_INFO) + " Info").c_str()))
+        {
+            info_menu->render(window_flags);
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
     }
 
     void MenuBar::save_active_scene()
@@ -92,27 +85,54 @@ namespace sprout
 
     void MenuBar::save_active_scene_as()
     {
-        auto& scene = get_editor().get_active_scene();
+        auto& app = get_application();
+        auto& file_dialog = app.get_file_dialog();
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
 
-        IGFD::FileDialogConfig config;
-        config.fileName = scene.get_name() + ".mag.json";
+        const str& file_path = file_dialog.save_file("Save Scene As...", scene.get_name() + ".mag.json",
+                                                     {"Scene Files (.mag.json)", "*.mag.json"});
 
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Scene", ".mag.json", config);
-        set_dialog_action(DialogAction::Save);
+        if (!file_path.empty())
+        {
+            scene_file_path = file_path;
+            save_active_scene();
+
+            LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
+        }
     }
 
     void MenuBar::open_scene()
     {
-        IGFD::FileDialogConfig config;
+        auto& app = get_application();
+        auto& file_dialog = app.get_file_dialog();
+        auto& editor = get_editor();
 
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Open Scene", ".mag.json", config);
-        set_dialog_action(DialogAction::Open);
+        const str file_path = file_dialog.open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
+
+        if (!file_path.empty())
+        {
+            auto* scene = new Scene();
+
+            SceneSerializer scene_serializer(*scene);
+            scene_serializer.deserialize(file_path);
+
+            scene_file_path = file_path;
+
+            // @TODO: Check if scene isnt already opened.
+
+            editor.add_scene(scene);
+
+            LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
+        }
     }
 
     void MenuBar::new_scene()
     {
         auto* scene = new Scene();
 
+        // @TODO: this is incorrect and can possibly overwrite the path of an open scene.
+        // This is old code and should be updated to handle multiple open scenes.
         scene_file_path = std::filesystem::path();
 
         get_editor().add_scene(scene);
@@ -121,60 +141,6 @@ namespace sprout
     }
 
     void MenuBar::quit_application() { quit = true; }
-
-    void MenuBar::display_dialog()
-    {
-        auto& editor = get_editor();
-
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
-        {
-            if (ImGuiFileDialog::Instance()->IsOk())
-            {
-                switch (current_action)
-                {
-                    case DialogAction::Save:
-                    {
-                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
-
-                        auto& scene = editor.get_active_scene();
-
-                        SceneSerializer scene_serializer(scene);
-                        scene_serializer.serialize(file_path);
-
-                        scene_file_path = file_path;
-
-                        LOG_SUCCESS("Saved scene '{0}' to {1}", scene.get_name(), file_path);
-                    }
-                    break;
-
-                    case DialogAction::Open:
-                    {
-                        const str file_path = ImGuiFileDialog::Instance()->GetFilePathName();
-
-                        auto* scene = new Scene();
-
-                        SceneSerializer scene_serializer(*scene);
-                        scene_serializer.deserialize(file_path);
-
-                        scene_file_path = file_path;
-
-                        // @TODO: Check if scene isnt already opened.
-
-                        editor.add_scene(scene);
-
-                        LOG_SUCCESS("Loaded scene '{0}' from {1}", scene->get_name(), file_path);
-                    }
-                    break;
-
-                    default:
-                        break;
-                }
-            }
-
-            set_dialog_action(DialogAction::None);
-            ImGuiFileDialog::Instance()->Close();
-        }
-    }
 
     void MenuBar::on_event(Event& e)
     {
