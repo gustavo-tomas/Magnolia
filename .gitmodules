@@ -50,3 +50,6 @@
 [submodule "libs/portable-file-dialogs"]
 	path = libs/portable-file-dialogs
 	url = https://github.com/samhocevar/portable-file-dialogs.git
+[submodule "libs/lua"]
+	path = libs/lua
+	url = https://github.com/gustavo-tomas/lua.git
