@@ -121,7 +121,7 @@ namespace sprout
     void PropertiesPanel::editable_field(const str &field_name, vec3 &value, const vec3 &reset_value,
                                          const vec3 &min_value, const vec3 &max_value)
     {
-        const char *format = "%.2f";
+        const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
         const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 
@@ -148,7 +148,7 @@ namespace sprout
     void PropertiesPanel::editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
                                          const f32 max_value)
     {
-        const char *format = "%.2f";
+        const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
         const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 

@@ -55,7 +55,7 @@ namespace mag
             uvec2 get_size() const;
             f64 get_time() const;  // Ms since start
             SDL_Window* get_handle() const { return handle; };
-            const std::vector<const char*>& get_instance_extensions() const { return extensions; };
+            const std::vector<const c8*>& get_instance_extensions() const { return extensions; };
 
         private:
             b8 is_flag_set(const u32 flag) const;
@@ -65,7 +65,7 @@ namespace mag
             SDL_Window* handle = {};
             u32 update_counter = {};
             b8 ignore_mouse_motion_events = {};
-            std::vector<const char*> extensions;
+            std::vector<const c8*> extensions;
 
             std::unordered_map<Key, b8> key_state;
             std::unordered_map<Key, u32> key_update;

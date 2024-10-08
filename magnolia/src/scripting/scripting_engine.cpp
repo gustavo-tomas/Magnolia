@@ -90,7 +90,7 @@ namespace mag
 
         auto& lua = *state->lua;
 
-        auto res = lua.load_buffer(buffer.cast<const char>(), buffer.get_size());
+        auto res = lua.load_buffer(buffer.cast<const c8>(), buffer.get_size());
         if (!res.valid())
         {
             LOG_ERROR("Invalid script: '{0}'", file_path);

@@ -33,7 +33,7 @@ namespace mag
 
         buffer.data.resize(size);
 
-        file.read(buffer.cast<char>(), size);
+        file.read(buffer.cast<c8>(), size);
         file.close();
 
         return true;
@@ -57,7 +57,7 @@ namespace mag
             return false;
         }
 
-        file.write(buffer.cast<char>(), buffer.get_size());
+        file.write(buffer.cast<c8>(), buffer.get_size());
         file.close();
 
         return true;

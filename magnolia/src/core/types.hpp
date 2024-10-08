@@ -22,6 +22,10 @@ namespace mag
     typedef float f32;
     typedef double f64;
 
+    // Chars
+    typedef char c8;
+    typedef unsigned char uc8;
+
     // Bool
     typedef bool b8;
 
@@ -41,6 +45,9 @@ namespace mag
 
     static_assert(sizeof(f32) == 4, "Expected f32 to be 4 bytes.");
     static_assert(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
+
+    static_assert(sizeof(c8) == 1, "Expected c8 to be 1 bytes.");
+    static_assert(sizeof(uc8) == 1, "Expected uc8 to be 1 bytes.");
 
     static_assert(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
 

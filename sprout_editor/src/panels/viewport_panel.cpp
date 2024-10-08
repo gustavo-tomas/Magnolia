@@ -103,7 +103,7 @@ namespace sprout
                         auto &app = get_application();
                         auto &file_system = app.get_file_system();
 
-                        const char *path = static_cast<const char *>(payload->Data);
+                        const c8 *path = static_cast<const c8 *>(payload->Data);
                         const str extension = file_system.get_file_extension(path);
 
                         ModelImporter importer;

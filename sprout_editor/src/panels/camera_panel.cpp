@@ -8,7 +8,7 @@ namespace sprout
     {
         ImGui::Begin(ICON_FA_CAMERA " Camera", NULL, window_flags);
 
-        const char* format = "%.2f";
+        const c8* format = "%.2f";
         const f32 left_offset = 100.0f;
         const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
 

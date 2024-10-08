@@ -21,7 +21,7 @@ namespace sprout
     using namespace mag;
 
     // ImGui drag and drop types
-    inline const char* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
+    inline const c8* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
     class Editor : public Layer
     {

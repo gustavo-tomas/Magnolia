@@ -45,7 +45,7 @@ namespace mag
         model->file_path = file_path;
         model->materials = materials;
 
-        char* model_data = buffer.cast<char>();
+        c8* model_data = buffer.cast<c8>();
 
         // Read number of vertices
         const u32 num_vertices = *reinterpret_cast<u32*>(model_data);

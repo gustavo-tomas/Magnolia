@@ -65,17 +65,17 @@ namespace mag
 
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
-        std::vector<const char*> instance_extensions;
-        std::vector<const char*> device_extensions = {
+        std::vector<const c8*> instance_extensions;
+        std::vector<const c8*> device_extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
-        std::vector<const char*> validation_layers;
+        std::vector<const c8*> validation_layers;
 
         const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
         const u32 api_version = VK_API_VERSION_1_3;
         const u32 frame_count = 3;  // 3 for triple buffering
 
-        const std::vector<const char*> window_extensions = options.window.get_instance_extensions();
+        const std::vector<const c8*> window_extensions = options.window.get_instance_extensions();
         instance_extensions.insert(instance_extensions.begin(), window_extensions.begin(), window_extensions.end());
 
         // Validation only on debug

@@ -59,9 +59,9 @@ namespace mag
                 return;
             }
 
-            virtual void reportErrorWarning(const char* warning_string) override { LOG_ERROR("{0}", warning_string); }
+            virtual void reportErrorWarning(const c8* warning_string) override { LOG_ERROR("{0}", warning_string); }
 
-            virtual void draw3dText(const btVector3& location, const char* text_string) override
+            virtual void draw3dText(const btVector3& location, const c8* text_string) override
             {
                 (void)location;
                 LOG_ERROR("3D text not supported: {0}", text_string);

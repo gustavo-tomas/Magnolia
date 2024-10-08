@@ -46,7 +46,7 @@ namespace mag
     void VulkanBuffer::copy(const void* data, const u64 size_bytes, const u64 offset)
     {
         ASSERT(offset + size_bytes <= size, "Size limit exceeded");
-        memcpy(static_cast<char*>(mapped_region) + offset, data, size_bytes);
+        memcpy(static_cast<c8*>(mapped_region) + offset, data, size_bytes);
     }
 
     u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
