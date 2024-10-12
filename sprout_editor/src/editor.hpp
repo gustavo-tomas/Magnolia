@@ -1,9 +1,7 @@
 #pragma once
 
-#include <memory>
+#include <magnolia.hpp>
 
-#include "core/event.hpp"
-#include "core/layer.hpp"
 #include "menu/menu_bar.hpp"
 #include "panels/camera_panel.hpp"
 #include "panels/content_browser_panel.hpp"
@@ -23,13 +21,12 @@ namespace sprout
     // ImGui drag and drop types
     inline const c8* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
 
-    class Editor : public Layer
+    class Editor : public Application
     {
         public:
-            Editor(const EventCallback& event_callback);
+            Editor(const mag::ApplicationOptions& options);
             ~Editor();
 
-            virtual void on_attach() override;
             virtual void on_update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
@@ -68,7 +65,6 @@ namespace sprout
             void set_active_scene(const u32 index);
             void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
-            EventCallback event_callback;
             vk::DescriptorPool descriptor_pool;
 
             unique<MenuBar> menu_bar;

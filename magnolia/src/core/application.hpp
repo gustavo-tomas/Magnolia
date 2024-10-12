@@ -4,7 +4,6 @@
 
 #include "core/event.hpp"
 #include "core/file_system.hpp"
-#include "core/layer.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
@@ -33,10 +32,11 @@ namespace mag
             explicit Application(const ApplicationOptions& options);
             virtual ~Application();
 
+            // The main function will call this, not the user
             void run();
-            void on_event(Event& e);
 
-            void push_layer(Layer* layer);
+            virtual void on_event(Event& e) = 0;
+            virtual void on_update(const f32 dt) = 0;
 
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
@@ -52,7 +52,12 @@ namespace mag
             ShaderManager& get_shader_manager() { return *shader_manager; };
             PhysicsEngine& get_physics_engine() { return *physics_engine; };
 
+        protected:
+            // Process events from the user application
+            void process_user_application_event(Event& e);
+
         private:
+            void process_event(Event& e);
             void on_window_close(WindowCloseEvent& e);
             void on_quit(QuitEvent& e);
 
@@ -69,8 +74,6 @@ namespace mag
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
             unique<PhysicsEngine> physics_engine;
-
-            std::vector<Layer*> layers;
 
             b8 running;
     };

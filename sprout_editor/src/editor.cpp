@@ -1,9 +1,9 @@
 #include "editor.hpp"
 
+#include <core/entry_point.hpp>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
-#include "core/application.hpp"
-#include "core/assert.hpp"
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
@@ -11,6 +11,14 @@
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
 #include "scene/scene_serializer.hpp"
+
+mag::Application *mag::create_application()
+{
+    mag::ApplicationOptions options;
+    options.title = "Sprout";
+
+    return new sprout::Editor(options);
+}
 
 namespace sprout
 {
@@ -22,7 +30,7 @@ namespace sprout
         return *editor;
     }
 
-    Editor::Editor(const EventCallback &event_callback) : event_callback(event_callback)
+    Editor::Editor(const ApplicationOptions &options) : Application(options)
     {
         editor = this;
 
@@ -112,6 +120,13 @@ namespace sprout
         curr_viewport_size = window_size;
 
         build_render_graph(window_size, get_viewport_size());
+
+        Scene *scene = new Scene();
+        SceneSerializer scene_serializer(*scene);
+        scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
+
+        add_scene(scene);
+        set_active_scene(0);
     }
 
     Editor::~Editor()
@@ -125,16 +140,6 @@ namespace sprout
         ImGui::DestroyContext();
 
         context.get_device().destroyDescriptorPool(descriptor_pool);
-    }
-
-    void Editor::on_attach()
-    {
-        Scene *scene = new Scene();
-        SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
-
-        add_scene(scene);
-        set_active_scene(0);
     }
 
     void Editor::on_update(const f32 dt)
@@ -189,7 +194,7 @@ namespace sprout
         if (menu_bar->quit_requested())
         {
             auto event = QuitEvent();
-            event_callback(event);
+            process_user_application_event(event);
         }
 
         // Alternate between Fullscreen and Windowed

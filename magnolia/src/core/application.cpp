@@ -22,7 +22,7 @@ namespace mag
         // Remember that smart pointers are destroyed in the reverse order of creation
 
         // Create the window
-        const WindowOptions window_options = {BIND_FN(Application::on_event), options.size, options.position,
+        const WindowOptions window_options = {BIND_FN(Application::process_event), options.size, options.position,
                                               options.title};
 
         window = create_unique<Window>(window_options);
@@ -91,12 +91,6 @@ namespace mag
 
     Application::~Application()
     {
-        for (auto* layer : layers)
-        {
-            layer->on_detach();
-            delete layer;
-        }
-
         FileDialog::shutdown();
         ScriptingEngine::shutdown();
     }
@@ -125,32 +119,25 @@ namespace mag
 
             job_system->process_callbacks();
 
-            for (auto* layer : layers)
-            {
-                layer->on_update(dt);
-            }
+            // Update the user application
+            on_update(dt);
         }
     }
 
-    void Application::push_layer(Layer* layer)
+    void Application::process_event(Event& e)
     {
-        layers.push_back(layer);
-        layer->on_attach();
-    }
-
-    void Application::on_event(Event& e)
-    {
+        // Process the event internally
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
 
         renderer->on_event(e);
 
-        for (auto* layer : layers)
-        {
-            layer->on_event(e);
-        }
+        // Send event to be processed by the user application
+        on_event(e);
     }
+
+    void Application::process_user_application_event(Event& e) { process_event(e); }
 
     void Application::on_quit(QuitEvent& e)
     {

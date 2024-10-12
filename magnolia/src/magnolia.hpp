@@ -4,5 +4,7 @@
 
 #include "core/application.hpp"
 #include "core/assert.hpp"
+#include "core/event.hpp"
 #include "core/logger.hpp"
+#include "core/types.hpp"
 #include "scene/scriptable_entity.hpp"
