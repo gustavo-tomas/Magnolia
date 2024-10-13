@@ -17,6 +17,7 @@ mag::Application *mag::create_application()
 {
     mag::ApplicationOptions options;
     options.title = "Sprout";
+    options.window_icon = "sprout_editor/assets/images/application_icon.bmp";
 
     return new sprout::Editor(options);
 }

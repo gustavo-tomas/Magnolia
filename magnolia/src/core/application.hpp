@@ -24,6 +24,7 @@ namespace mag
             uvec2 size = WindowOptions::MAX_SIZE;
             ivec2 position = WindowOptions::CENTER_POS;
             str title = "Magnolia";
+            str window_icon = "";
     };
 
     class Application

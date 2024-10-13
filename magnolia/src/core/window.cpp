@@ -44,20 +44,9 @@ namespace mag
         ASSERT(SDL_Vulkan_GetInstanceExtensions(this->handle, &count, extensions.data()),
                "Failed to get extensions: " + str(SDL_GetError()));
 
-        // Set application icon
-        const str file = "sprout_editor/assets/images/application_icon.bmp";
-
-        SDL_Surface* icon = SDL_LoadBMP(file.c_str());
-
-        if (!icon)
+        if (!options.window_icon.empty())
         {
-            LOG_ERROR("Failed to load application icon: {0}", str(SDL_GetError()));
-        }
-
-        else
-        {
-            SDL_SetWindowIcon(handle, icon);
-            SDL_FreeSurface(icon);
+            set_window_icon(options.window_icon);
         }
     }
 
@@ -189,6 +178,22 @@ namespace mag
     {
         const u32 flags = SDL_GetWindowFlags(this->handle);
         return (flag & flags);
+    }
+
+    b8 Window::set_window_icon(const str& bmp_file) const
+    {
+        SDL_Surface* icon = SDL_LoadBMP(bmp_file.c_str());
+
+        if (!icon)
+        {
+            LOG_ERROR("Failed to load application icon: {0}", str(SDL_GetError()));
+            return false;
+        }
+
+        SDL_SetWindowIcon(handle, icon);
+        SDL_FreeSurface(icon);
+
+        return true;
     }
 
     void Window::set_capture_mouse(b8 capture)

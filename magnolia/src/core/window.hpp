@@ -25,6 +25,7 @@ namespace mag
             uvec2 size = MAX_SIZE;
             ivec2 position = CENTER_POS;
             str title = "Magnolia";
+            str window_icon = "";
     };
 
     class Window
@@ -39,6 +40,7 @@ namespace mag
 
             void sleep(const u32 ms);
 
+            b8 set_window_icon(const str& bmp_file) const;
             void set_capture_mouse(b8 capture);
             void set_title(const str& title);
             void set_resizable(const b8 resizable);

@@ -23,7 +23,7 @@ namespace mag
 
         // Create the window
         const WindowOptions window_options = {BIND_FN(Application::process_event), options.size, options.position,
-                                              options.title};
+                                              options.title, options.window_icon};
 
         window = create_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
