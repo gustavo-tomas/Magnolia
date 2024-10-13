@@ -2,7 +2,7 @@
     "Type": "Material",
     "Name": "DefaultMaterial",
     "Textures": {
-        "Albedo": "sprout_editor/assets/images/DefaultAlbedoSeamless.png",
-        "Normal": "sprout_editor/assets/images/DefaultNormal.png"
+        "Albedo": "__mag_default_albedo_texture__",
+        "Normal": "__mag_default_normal_texture__"
     }
 }

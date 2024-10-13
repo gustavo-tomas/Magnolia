@@ -1,13 +1,15 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "core/types.hpp"
 
 namespace mag
 {
+#define DEFAULT_ALBEDO_TEXTURE_NAME "__mag_default_albedo_texture__"
+#define DEFAULT_NORMAL_TEXTURE_NAME "__mag_default_normal_texture__"
+
     struct Image
     {
             u8 channels = 4;
@@ -20,6 +22,8 @@ namespace mag
     class TextureManager
     {
         public:
+            TextureManager();
+
             ref<Image> get(const str& name);
             ref<Image> get_default();
 

@@ -1,13 +1,12 @@
 #pragma once
 
 #include <map>
-#include <memory>
 
 #include "core/types.hpp"
 
 namespace mag
 {
-#define DEFAULT_MATERIAL_NAME "sprout_editor/assets/materials/default_material.mat.json"
+#define DEFAULT_MATERIAL_NAME "__mag_default_material__"
 
     enum class TextureSlot
     {
@@ -40,6 +39,8 @@ namespace mag
     class MaterialManager
     {
         public:
+            MaterialManager();
+
             ref<Material> get(const str& name);
             ref<Material> get_default();
 

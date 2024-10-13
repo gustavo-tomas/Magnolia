@@ -1,9 +1,18 @@
 #include "resources/material.hpp"
 
 #include "core/application.hpp"
+#include "resources/image.hpp"
 
 namespace mag
 {
+    MaterialManager::MaterialManager()
+    {
+        materials[DEFAULT_MATERIAL_NAME] = create_ref<Material>();
+        materials[DEFAULT_MATERIAL_NAME]->name = "Default";
+        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
+        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
+    }
+
     ref<Material> MaterialManager::get(const str& name)
     {
         auto it = materials.find(name);
@@ -17,11 +26,7 @@ namespace mag
         auto& material_loader = app.get_material_loader();
 
         // Create a new material
-        Material* material = new Material();
-        material->name = "Placeholder";
-        material->textures[TextureSlot::Albedo] = "sprout_editor/assets/images/DefaultAlbedoSeamless.png";
-        material->textures[TextureSlot::Normal] = "sprout_editor/assets/images/DefaultNormal.png";
-
+        Material* material = new Material(*materials[DEFAULT_MATERIAL_NAME]);
         materials[name] = ref<Material>(material);
 
         // Temporary material to load data into
@@ -55,5 +60,5 @@ namespace mag
         return materials[name];
     }
 
-    ref<Material> MaterialManager::get_default() { return get(DEFAULT_MATERIAL_NAME); }
+    ref<Material> MaterialManager::get_default() { return materials[DEFAULT_MATERIAL_NAME]; }
 };  // namespace mag
