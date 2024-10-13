@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "core/types.hpp"
@@ -20,6 +19,8 @@ namespace mag
     class TextureManager
     {
         public:
+            TextureManager();
+
             ref<Image> get(const str& name);
             ref<Image> get_default();
 

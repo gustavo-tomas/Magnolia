@@ -4,7 +4,16 @@
 
 namespace mag
 {
-#define DEFAULT_TEXTURE_NAME "sprout_editor/assets/images/DefaultAlbedoSeamless.png"
+#define DEFAULT_TEXTURE_NAME "__mag_default_texture__"
+
+    TextureManager::TextureManager()
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+
+        textures[DEFAULT_TEXTURE_NAME] = create_ref<Image>();
+        renderer.upload_image(textures[DEFAULT_TEXTURE_NAME].get());
+    }
 
     ref<Image> TextureManager::get(const str& name)
     {
@@ -70,5 +79,5 @@ namespace mag
         return textures[name];
     }
 
-    ref<Image> TextureManager::get_default() { return get(DEFAULT_TEXTURE_NAME); }
+    ref<Image> TextureManager::get_default() { return textures[DEFAULT_TEXTURE_NAME]; }
 };  // namespace mag
