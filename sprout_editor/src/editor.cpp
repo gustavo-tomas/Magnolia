@@ -4,6 +4,7 @@
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "core/application.hpp"
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
@@ -22,18 +23,10 @@ mag::Application *mag::create_application()
 
 namespace sprout
 {
-    static Editor *editor = nullptr;
-
-    Editor &get_editor()
-    {
-        ASSERT(editor != nullptr, "Editor is null");
-        return *editor;
-    }
+    Editor &get_editor() { return static_cast<Editor &>(get_application()); }
 
     Editor::Editor(const ApplicationOptions &options) : Application(options)
     {
-        editor = this;
-
         auto &context = get_context();
         auto &device = context.get_device();
 

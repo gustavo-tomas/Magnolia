@@ -42,7 +42,7 @@ namespace mag
     class EventDispatcher
     {
         public:
-            EventDispatcher(Event& event) : event(event) {}
+            explicit EventDispatcher(Event& event) : event(event) {}
 
             // F will be deduced by the compiler
             template <typename T, typename F>
@@ -77,7 +77,7 @@ namespace mag
 
     struct KeyPressEvent : public Event
     {
-            KeyPressEvent(const Key key) : key(key) {}
+            explicit KeyPressEvent(const Key key) : key(key) {}
 
             EVENT_CLASS_TYPE(KeyPress);
 
@@ -86,7 +86,7 @@ namespace mag
 
     struct KeyReleaseEvent : public Event
     {
-            KeyReleaseEvent(const Key key) : key(key) {}
+            explicit KeyReleaseEvent(const Key key) : key(key) {}
 
             EVENT_CLASS_TYPE(KeyRelease);
 
@@ -118,7 +118,7 @@ namespace mag
 
     struct MousePressEvent : public Event
     {
-            MousePressEvent(const Button button) : button(button) {}
+            explicit MousePressEvent(const Button button) : button(button) {}
 
             EVENT_CLASS_TYPE(MousePress);
 
@@ -127,7 +127,7 @@ namespace mag
 
     struct NativeEvent : public Event
     {
-            NativeEvent(const void* e) : e(e) {}
+            explicit NativeEvent(const void* e) : e(e) {}
 
             EVENT_CLASS_TYPE(NativeEvent);
 
