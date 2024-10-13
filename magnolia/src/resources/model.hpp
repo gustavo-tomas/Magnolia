@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <vector>
 
 #include "core/math.hpp"
@@ -9,6 +8,8 @@
 
 namespace mag
 {
+#define DEFAULT_MODEL_NAME "__mag_default_model__"
+
     using namespace math;
 
     struct Vertex
@@ -44,7 +45,10 @@ namespace mag
     class ModelManager
     {
         public:
+            ModelManager();
+
             ref<Model> get(const str& name);
+            ref<Model> get_default();
 
         private:
             std::map<str, ref<Model>> models;

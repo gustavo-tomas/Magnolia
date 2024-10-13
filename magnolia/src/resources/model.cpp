@@ -5,7 +5,21 @@
 
 namespace mag
 {
-#define DEFAULT_MODEL_NAME "sprout_editor/assets/models/default_cube/DefaultCube.model.json"
+    ModelManager::ModelManager()
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+
+        models[DEFAULT_MODEL_NAME] = create_ref<Model>();
+        models[DEFAULT_MODEL_NAME]->name = "Default";
+        models[DEFAULT_MODEL_NAME]->meshes = Cube().get_model().meshes;
+        models[DEFAULT_MODEL_NAME]->vertices = Cube().get_model().vertices;
+        models[DEFAULT_MODEL_NAME]->indices = Cube().get_model().indices;
+        models[DEFAULT_MODEL_NAME]->materials = Cube().get_model().materials;
+
+        // Send model data to the GPU
+        renderer.upload_model(models[DEFAULT_MODEL_NAME].get());
+    }
 
     ref<Model> ModelManager::get(const str& name)
     {
@@ -21,16 +35,8 @@ namespace mag
         auto& renderer = app.get_renderer();
 
         // Create a new model
-        Model* model = new Model();
-
+        Model* model = new Model(*models[DEFAULT_MODEL_NAME]);
         models[name] = ref<Model>(model);
-
-        // Create placeholder model with cube data
-        Cube placeholder;
-        const auto& placeholder_model = placeholder.get_model();
-
-        *model = placeholder_model;
-        model->name = "Placeholder";
 
         // Send model data to the GPU
         renderer.upload_model(model);
@@ -64,4 +70,6 @@ namespace mag
 
         return models[name];
     }
+
+    ref<Model> ModelManager::get_default() { return models[DEFAULT_MODEL_NAME]; }
 };  // namespace mag

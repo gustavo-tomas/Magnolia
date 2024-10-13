@@ -1,8 +1,0 @@
-{
-    "Type": "Model",
-    "Name": "DefaultCube",
-    "File": "sprout_editor/assets/models/default_cube/DefaultCube.model.bin",
-    "Materials": [
-        "sprout_editor/assets/materials/default_material.mat.json"
-    ]
-}
