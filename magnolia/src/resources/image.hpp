@@ -7,6 +7,9 @@
 
 namespace mag
 {
+#define DEFAULT_ALBEDO_TEXTURE_NAME "__mag_default_albedo_texture__"
+#define DEFAULT_NORMAL_TEXTURE_NAME "__mag_default_normal_texture__"
+
     struct Image
     {
             u8 channels = 4;
