@@ -1,33 +1,90 @@
 #include "physics/physics.hpp"
 
+#include "btBulletDynamicsCommon.h"
 #include "physics/type_conversions.hpp"
 
 namespace mag
 {
-    PhysicsEngine::PhysicsEngine() : physics_debug_draw(new PhysicsDebugDraw()) {}
+    struct PhysicsInternalData
+    {
+            btDefaultCollisionConfiguration* collision_configuration = nullptr;
+            btCollisionDispatcher* dispatcher = nullptr;
+            btBroadphaseInterface* overlapping_pair_cache = nullptr;
+            btSequentialImpulseConstraintSolver* solver = nullptr;
+            btDiscreteDynamicsWorld* dynamics_world = nullptr;
+    };
 
-    PhysicsEngine::~PhysicsEngine() { on_simulation_end(); }
+    // @TODO: finish debug draw
+    class PhysicsDebugDraw : public btIDebugDraw
+    {
+        public:
+            void reset_lines();
+
+            const LineList& get_line_list() const { return line_list; };
+
+            virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override;
+            virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
+                                          int lifeTime, const btVector3& color) override
+            {
+                (void)PointOnB;
+                (void)normalOnB;
+                (void)distance;
+                (void)lifeTime;
+                (void)color;
+
+                return;
+            }
+
+            virtual void reportErrorWarning(const c8* warning_string) override
+            {
+                LOG_ERROR("Physics Error: {0}", warning_string);
+            }
+
+            virtual void draw3dText(const btVector3& location, const c8* text_string) override
+            {
+                (void)location;
+                LOG_ERROR("3D text not supported: {0}", text_string);
+            }
+
+            virtual void setDebugMode(int debugMode) override { (void)debugMode; }  // @TODO: finish debug mode
+            virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
+
+        private:
+            LineList line_list;
+    };
+
+    PhysicsEngine::PhysicsEngine()
+        : internal_data(new PhysicsInternalData()), physics_debug_draw(new PhysicsDebugDraw())
+    {
+    }
+
+    PhysicsEngine::~PhysicsEngine()
+    {
+        on_simulation_end();
+        delete internal_data;
+    }
 
     void PhysicsEngine::on_simulation_start(Scene* scene)
     {
-        if (dynamics_world) on_simulation_end();
+        if (internal_data->dynamics_world) on_simulation_end();
 
         this->scene = scene;
 
-        collision_configuration = new btDefaultCollisionConfiguration();
+        internal_data->collision_configuration = new btDefaultCollisionConfiguration();
 
-        dispatcher = new btCollisionDispatcher(collision_configuration);
+        internal_data->dispatcher = new btCollisionDispatcher(internal_data->collision_configuration);
 
-        overlapping_pair_cache = new btDbvtBroadphase();
+        internal_data->overlapping_pair_cache = new btDbvtBroadphase();
 
-        solver = new btSequentialImpulseConstraintSolver();
+        internal_data->solver = new btSequentialImpulseConstraintSolver();
 
-        dynamics_world =
-            new btDiscreteDynamicsWorld(dispatcher, overlapping_pair_cache, solver, collision_configuration);
+        internal_data->dynamics_world =
+            new btDiscreteDynamicsWorld(internal_data->dispatcher, internal_data->overlapping_pair_cache,
+                                        internal_data->solver, internal_data->collision_configuration);
 
-        dynamics_world->setGravity(btVector3(0, -10, 0));
+        internal_data->dynamics_world->setGravity(btVector3(0, -10, 0));
 
-        dynamics_world->setDebugDrawer(physics_debug_draw.get());
+        internal_data->dynamics_world->setDebugDrawer(physics_debug_draw.get());
 
         auto& ecs = scene->get_ecs();
         auto objects = ecs.get_all_components_of_types<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
@@ -41,24 +98,24 @@ namespace mag
     {
         // Cleanup in the reverse order of creation/initialization
 
-        if (!dynamics_world) return;
+        if (!internal_data->dynamics_world) return;
 
-        for (i32 i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
+        for (i32 i = internal_data->dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
         {
             remove_rigid_body(i);
         }
 
-        delete dynamics_world;
-        delete solver;
-        delete overlapping_pair_cache;
-        delete dispatcher;
-        delete collision_configuration;
+        delete internal_data->dynamics_world;
+        delete internal_data->solver;
+        delete internal_data->overlapping_pair_cache;
+        delete internal_data->dispatcher;
+        delete internal_data->collision_configuration;
 
-        dynamics_world = nullptr;
-        solver = nullptr;
-        overlapping_pair_cache = nullptr;
-        dispatcher = nullptr;
-        collision_configuration = nullptr;
+        internal_data->dynamics_world = nullptr;
+        internal_data->solver = nullptr;
+        internal_data->overlapping_pair_cache = nullptr;
+        internal_data->dispatcher = nullptr;
+        internal_data->collision_configuration = nullptr;
     }
 
     void PhysicsEngine::add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
@@ -76,7 +133,7 @@ namespace mag
 
         btRigidBody* bt_rigid_body = new btRigidBody(rb_info);
 
-        dynamics_world->addRigidBody(bt_rigid_body);
+        internal_data->dynamics_world->addRigidBody(bt_rigid_body);
 
         collider.internal = shape;
         rigid_body.internal = bt_rigid_body;
@@ -84,7 +141,7 @@ namespace mag
 
     void PhysicsEngine::remove_rigid_body(const u32 index)
     {
-        btCollisionObject* obj = dynamics_world->getCollisionObjectArray()[index];
+        btCollisionObject* obj = internal_data->dynamics_world->getCollisionObjectArray()[index];
         btRigidBody* body = btRigidBody::upcast(obj);
 
         if (body && body->getMotionState())
@@ -92,7 +149,7 @@ namespace mag
             delete body->getMotionState();
         }
 
-        dynamics_world->removeCollisionObject(obj);
+        internal_data->dynamics_world->removeCollisionObject(obj);
 
         if (obj->getCollisionShape())
         {
@@ -107,12 +164,12 @@ namespace mag
         auto& ecs = scene->get_ecs();
         auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();
 
-        if (!dynamics_world) return;
+        if (!internal_data->dynamics_world) return;
 
         if (scene->get_scene_state() == SceneState::Runtime)
         {
             // @TODO: investigate the jittering that happens when maxSubSteps > 0.
-            dynamics_world->stepSimulation(dt, 0);
+            internal_data->dynamics_world->stepSimulation(dt, 0);
 
             for (i32 i = objects.size() - 1; i >= 0; i--)
             {
@@ -137,7 +194,7 @@ namespace mag
 
         // 'Draw' the debug lines before sending to the renderer
         physics_debug_draw->reset_lines();
-        dynamics_world->debugDrawWorld();
+        internal_data->dynamics_world->debugDrawWorld();
     }
 
     const LineList& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
