@@ -34,7 +34,7 @@ namespace mag
             Window(const WindowOptions& options);
             ~Window();
 
-            void update();
+            void on_update();
 
             vk::SurfaceKHR create_surface(const vk::Instance instance) const;
 

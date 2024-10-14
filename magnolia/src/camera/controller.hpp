@@ -11,8 +11,7 @@ namespace mag
             EditorCameraController(Camera& camera) : camera(camera) {}
             ~EditorCameraController() = default;
 
-            void update(const f32 dt);
-
+            void on_update(const f32 dt);
             void on_event(Event& e);
 
         private:

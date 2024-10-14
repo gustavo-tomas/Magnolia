@@ -181,9 +181,9 @@ namespace sprout
         active_scene.on_viewport_resize(viewport_size);
         this->on_viewport_resize(viewport_size);
 
-        physics_engine.update(dt);
+        physics_engine.on_update(dt);
 
-        active_scene.update(dt);
+        active_scene.on_update(dt);
 
         if (menu_bar->quit_requested())
         {
@@ -197,7 +197,7 @@ namespace sprout
             window.set_fullscreen(!window.is_fullscreen());
         }
 
-        renderer.update(get_render_graph());
+        renderer.on_update(get_render_graph());
     }
 
     void Editor::on_event(Event &e)

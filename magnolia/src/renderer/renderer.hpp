@@ -18,7 +18,7 @@ namespace mag
         public:
             Renderer(Window& window);
 
-            void update(RenderGraph& render_graph);
+            void on_update(RenderGraph& render_graph);
             void on_event(Event& e);
 
             void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,

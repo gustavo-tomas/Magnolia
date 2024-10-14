@@ -159,7 +159,7 @@ namespace mag
         delete obj;
     }
 
-    void PhysicsEngine::update(const f32 dt)
+    void PhysicsEngine::on_update(const f32 dt)
     {
         auto& ecs = scene->get_ecs();
         auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();

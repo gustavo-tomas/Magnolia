@@ -108,7 +108,7 @@ namespace mag
 
             SCOPED_PROFILE("Application");
 
-            window->update();
+            window->on_update();
 
             // Skip rendering if minimized or resizing
             if (window->is_minimized())

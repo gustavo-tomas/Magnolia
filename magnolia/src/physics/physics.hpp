@@ -17,7 +17,7 @@ namespace mag
             void on_simulation_start(Scene* scene);
             void on_simulation_end();
 
-            void update(const f32 dt);
+            void on_update(const f32 dt);
 
             const LineList& get_line_list() const;
 

@@ -33,7 +33,7 @@ namespace mag
         }
     }
 
-    void Scene::update(const f32 dt)
+    void Scene::on_update(const f32 dt)
     {
         switch (current_state)
         {
@@ -127,7 +127,7 @@ namespace mag
 
         entity_deletion_queue.clear();
 
-        camera_controller->update(dt);
+        camera_controller->on_update(dt);
 
         // Update camera transforms
         auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();

@@ -20,7 +20,7 @@ namespace mag
             Scene();
             ~Scene();
 
-            void update(const f32 dt);
+            void on_update(const f32 dt);
             void on_event(Event& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 

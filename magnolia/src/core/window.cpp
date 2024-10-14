@@ -56,7 +56,7 @@ namespace mag
         SDL_Quit();
     }
 
-    void Window::update()
+    void Window::on_update()
     {
         update_counter++;
 

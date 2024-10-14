@@ -15,7 +15,7 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
-    void Renderer::update(RenderGraph& render_graph)
+    void Renderer::on_update(RenderGraph& render_graph)
     {
         this->context->begin_frame();
         this->context->begin_timestamp();  // Performance query

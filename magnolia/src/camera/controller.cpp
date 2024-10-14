@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    void EditorCameraController::update(const f32 dt) { (void)dt; }
+    void EditorCameraController::on_update(const f32 dt) { (void)dt; }
 
     void EditorCameraController::on_event(Event& e)
     {
