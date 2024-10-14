@@ -117,6 +117,8 @@ namespace mag
                 continue;
             }
 
+            physics_engine->on_update(dt);
+
             job_system->process_callbacks();
 
             // Update the user application

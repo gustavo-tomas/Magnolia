@@ -143,7 +143,6 @@ namespace sprout
         auto &app = get_application();
         auto &window = app.get_window();
         auto &renderer = app.get_renderer();
-        auto &physics_engine = app.get_physics_engine();
 
         // Delete closed scenes from back to front
         for (i32 i = open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
@@ -180,8 +179,6 @@ namespace sprout
         const auto &viewport_size = viewport_panel->get_viewport_size();
         active_scene.on_viewport_resize(viewport_size);
         this->on_viewport_resize(viewport_size);
-
-        physics_engine.on_update(dt);
 
         active_scene.on_update(dt);
 
