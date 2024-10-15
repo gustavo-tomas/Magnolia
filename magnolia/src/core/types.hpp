@@ -72,6 +72,7 @@ namespace mag
     }
 
 // Common macros
+#define INVALID_ID 1e9
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0])) /* Vector size in bytes */
 #define MAG_TIMEOUT 1'000'000'000                                           /* 1 second in nanoseconds */
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)               /* Shortcut to bind methods */
