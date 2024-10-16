@@ -115,7 +115,7 @@ namespace sprout
 
         build_render_graph(window_size, get_viewport_size());
 
-        Scene *scene = new Scene();
+        EditorScene *scene = new EditorScene();
         SceneSerializer scene_serializer(*scene);
         scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
 
@@ -243,9 +243,9 @@ namespace sprout
         build_render_graph(window_size, new_viewport_size);
     }
 
-    void Editor::add_scene(Scene *scene) { open_scenes.emplace_back(scene); }
+    void Editor::add_scene(EditorScene *scene) { open_scenes.emplace_back(scene); }
 
-    void Editor::close_scene(const ref<Scene> &scene)
+    void Editor::close_scene(const ref<EditorScene> &scene)
     {
         const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
 
@@ -270,16 +270,16 @@ namespace sprout
 
     void Editor::set_active_scene(const u32 index)
     {
+        auto &app = get_application();
+        auto &physics_engine = app.get_physics_engine();
+
         auto &active_scene = get_active_scene();
-        if (active_scene.get_scene_state() == SceneState::Runtime)
+        if (active_scene.is_running())
         {
-            get_active_scene().stop_runtime();
+            active_scene.on_stop();
         }
 
         selected_scene_index = math::clamp(index, 0u, static_cast<u32>(open_scenes.size() - 1));
-
-        auto &app = get_application();
-        auto &physics_engine = app.get_physics_engine();
 
         physics_engine.on_simulation_start(open_scenes[selected_scene_index].get());
     }

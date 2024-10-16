@@ -2,6 +2,7 @@
 
 #include <magnolia.hpp>
 
+#include "editor_scene.hpp"
 #include "menu/menu_bar.hpp"
 #include "panels/camera_panel.hpp"
 #include "panels/content_browser_panel.hpp"
@@ -30,8 +31,8 @@ namespace sprout
             virtual void on_update(const f32 dt) override;
             virtual void on_event(Event& e) override;
 
-            void add_scene(Scene* scene);
-            void close_scene(const ref<Scene>& scene);
+            void add_scene(EditorScene* scene);
+            void close_scene(const ref<EditorScene>& scene);
 
             void set_input_disabled(const b8 disable);
             void set_selected_scene_index(const u32 index);
@@ -39,9 +40,9 @@ namespace sprout
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
-            Scene& get_active_scene() { return *open_scenes[selected_scene_index]; };
+            EditorScene& get_active_scene() { return *open_scenes[selected_scene_index]; };
             RenderGraph& get_render_graph() { return *render_graph; };
-            const std::vector<ref<Scene>>& get_open_scenes() const { return open_scenes; };
+            const std::vector<ref<EditorScene>>& get_open_scenes() const { return open_scenes; };
             u32 get_selected_scene_index() const { return selected_scene_index; };
 
             // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
@@ -78,7 +79,7 @@ namespace sprout
             unique<SettingsPanel> settings_panel;
 
             unique<RenderGraph> render_graph;
-            std::vector<ref<Scene>> open_scenes;
+            std::vector<ref<EditorScene>> open_scenes;
             std::vector<u32> open_scenes_marked_for_deletion;
 
             u32 selected_scene_index = 0;

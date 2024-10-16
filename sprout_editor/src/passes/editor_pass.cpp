@@ -176,7 +176,7 @@ namespace sprout
 
         // Get lines from camera gizmos (show in editor only)
 
-        if (scene.get_scene_state() == SceneState::Editor)
+        if (!scene.is_running())
         {
             const auto& camera_entities =
                 scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();

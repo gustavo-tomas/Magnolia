@@ -166,7 +166,7 @@ namespace mag
 
         if (!internal_data->dynamics_world) return;
 
-        if (scene->get_scene_state() == SceneState::Runtime)
+        if (scene->is_running())
         {
             // @TODO: investigate the jittering that happens when maxSubSteps > 0.
             internal_data->dynamics_world->stepSimulation(dt, 0);

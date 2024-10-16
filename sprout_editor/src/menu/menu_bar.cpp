@@ -109,7 +109,7 @@ namespace sprout
 
         if (!file_path.empty())
         {
-            auto* scene = new Scene();
+            auto* scene = new EditorScene();
 
             SceneSerializer scene_serializer(*scene);
             scene_serializer.deserialize(file_path);
@@ -126,7 +126,7 @@ namespace sprout
 
     void MenuBar::new_scene()
     {
-        auto* scene = new Scene();
+        auto* scene = new EditorScene();
 
         // @TODO: this is incorrect and can possibly overwrite the path of an open scene.
         // This is old code and should be updated to handle multiple open scenes.

@@ -35,11 +35,9 @@ namespace sprout
         {
             ImGui::Begin(ICON_FA_GAMEPAD " Runtime Controls", NULL, window_flags);
 
-            const SceneState current_state = scene.get_scene_state();
-
             // @TODO: make a prettier button
             // @NOTE: keep the runtime switch in the end
-            const str button_label = current_state == SceneState::Editor ? ICON_FA_PLAY : ICON_FA_STOP;
+            const str button_label = scene.is_running() ? ICON_FA_STOP : ICON_FA_PLAY;
             swap_state = ImGui::Button(button_label.c_str());
 
             ImGui::End();
@@ -138,7 +136,7 @@ namespace sprout
 
                             else if (type == "Scene")
                             {
-                                Scene *new_scene = new Scene();
+                                EditorScene *new_scene = new EditorScene();
 
                                 SceneSerializer serializer(*new_scene);
                                 serializer.deserialize(path);
@@ -195,7 +193,7 @@ namespace sprout
 
         if (ImGui::TabItemButton(ICON_FA_PLUS, ImGuiTabItemFlags_Trailing))
         {
-            editor.add_scene(new Scene());
+            editor.add_scene(new EditorScene());
         }
 
         ImGui::EndTabBar();
@@ -243,14 +241,14 @@ namespace sprout
         {
             if (swap_state)
             {
-                if (scene.get_scene_state() == SceneState::Editor)
+                if (scene.is_running())
                 {
-                    editor.get_active_scene().start_runtime();
+                    editor.get_active_scene().on_stop();
                 }
 
                 else
                 {
-                    editor.get_active_scene().stop_runtime();
+                    editor.get_active_scene().on_start();
                 }
             }
         }
