@@ -3,6 +3,7 @@
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "renderer/buffers.hpp"
+#include "renderer/test_model.hpp"
 #include "resources/model.hpp"
 
 namespace mag
@@ -63,6 +64,13 @@ namespace mag
         // Bind buffers
         command_buffer.bind_vertex_buffer(vbo_it->second->get_buffer());
         command_buffer.bind_index_buffer(ibo_it->second->get_buffer());
+    }
+
+    void Renderer::bind_buffers(Line* line)
+    {
+        auto& command_buffer = context->get_curr_frame().command_buffer;
+
+        command_buffer.bind_vertex_buffer(line->get_vbo().get_buffer());
     }
 
     void Renderer::update_model(Model* model)

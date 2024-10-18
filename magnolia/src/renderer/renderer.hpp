@@ -10,6 +10,7 @@
 
 namespace mag
 {
+    class Line;
     struct Model;
     struct Material;
 
@@ -29,6 +30,7 @@ namespace mag
 
             // @TODO: temp?
             void bind_buffers(Model* model);
+            void bind_buffers(Line* line);
             ref<RendererImage> get_renderer_image(Image* image);
             // @TODO: temp?
 

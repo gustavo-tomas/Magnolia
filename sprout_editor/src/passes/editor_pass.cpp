@@ -124,8 +124,6 @@ namespace sprout
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& editor = get_editor();
-        auto& context = get_context();
-        auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& physics_engine = app.get_physics_engine();
         auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
@@ -199,11 +197,9 @@ namespace sprout
         line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-        // @TODO: command buffers shouldnt be accessible. They should be handled by the renderer.
-        command_buffer.bind_vertex_buffer(lines->get_vbo().get_buffer());
+        renderer.bind_buffers(lines.get());
         renderer.draw(lines->get_vertices().size());
 
-        // @NOTE: not accurate but gives a good estimate
         performance_results.rendered_triangles += lines->get_vertices().size() / 3;
         performance_results.draw_calls++;
     }
