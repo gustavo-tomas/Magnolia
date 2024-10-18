@@ -15,7 +15,6 @@ namespace mag
 {
     using namespace mag::math;
 
-    // @TODO: errors are just logs but might be better if they are assertions
     class ECS
     {
 #define ASSERT_TYPE(T) static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component")
