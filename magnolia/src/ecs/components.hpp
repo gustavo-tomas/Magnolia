@@ -46,7 +46,6 @@ namespace mag
     };
 
     struct Image;
-    class Quad;
     struct SpriteComponent : public Component
     {
             SpriteComponent(const ref<Image>& texture, const str& texture_file_path, const b8 constant_size = false,
