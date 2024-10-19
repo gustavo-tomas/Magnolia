@@ -60,12 +60,12 @@ namespace mag
         LuaScriptingEngine::new_state();
 
         // Instantiate scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
         {
-            auto* sc = ecs->get_component<ScriptComponent>(id);
+            auto* sc = ecs->get_component<LuaScriptComponent>(id);
             if (!sc->instance)
             {
-                sc->instance = new Script();
+                sc->instance = new LuaScript();
                 sc->instance->ecs = ecs.get();
                 sc->instance->entity_id = id;
 
@@ -98,9 +98,9 @@ namespace mag
         auto& physics_engine = app.get_physics_engine();
 
         // Destroy scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
         {
-            auto* script = ecs->get_component<ScriptComponent>(id);
+            auto* script = ecs->get_component<LuaScriptComponent>(id);
             script->instance->on_destroy(*script->instance);
             delete script->instance;
             script->instance = nullptr;
@@ -146,7 +146,7 @@ namespace mag
         }
 
         // Update scripts
-        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<LuaScriptComponent>())
         {
             if (script->instance)
             {

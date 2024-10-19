@@ -37,15 +37,15 @@ namespace mag
             u32 entity_id;
     };
 
-    class Script
+    class LuaScript
     {
         private:
             friend class Scene;
             friend class LuaScriptingEngine;  // @TODO: is this a good idea?
 
-            std::function<void(Script&)> on_create;
-            std::function<void(Script&)> on_destroy;
-            std::function<void(Script&, const f32)> on_update;
+            std::function<void(LuaScript&)> on_create;
+            std::function<void(LuaScript&)> on_destroy;
+            std::function<void(LuaScript&, const f32)> on_update;
 
             template <typename T>
             T* get_component()

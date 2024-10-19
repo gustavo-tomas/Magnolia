@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    class ScriptComponent;
+    class LuaScriptComponent;
     class LuaScriptingEngine
     {
         public:
@@ -18,6 +18,6 @@ namespace mag
 
             static void load_script(const str& file_path);
 
-            static void register_entity(const ScriptComponent& sc);
+            static void register_entity(const LuaScriptComponent& sc);
     };
 };  // namespace mag

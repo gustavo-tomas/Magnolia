@@ -128,15 +128,15 @@ namespace mag
             Camera camera;
     };
 
-    class Script;
-    struct ScriptComponent : public Component
+    class LuaScript;
+    struct LuaScriptComponent : public Component
     {
-            ScriptComponent(const str& file_path) : file_path(file_path) {}
+            LuaScriptComponent(const str& file_path) : file_path(file_path) {}
 
-            CLONE(ScriptComponent);
+            CLONE(LuaScriptComponent);
 
             str file_path;
-            Script* instance = nullptr;
+            LuaScript* instance = nullptr;
     };
 
     // @TODO: finish scripting

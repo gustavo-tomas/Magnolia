@@ -106,9 +106,9 @@ namespace sprout
             }
         }
 
-        if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
+        if (auto component = ecs.get_component<LuaScriptComponent>(selected_entity_id))
         {
-            if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("LuaScript", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::TextWrapped("File Path: %s", component->file_path.c_str());
             }

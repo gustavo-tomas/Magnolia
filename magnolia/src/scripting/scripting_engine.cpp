@@ -37,17 +37,17 @@ namespace mag
         lua.open_libraries(sol::lib::base);
 
         // Register types
-        lua.new_usertype<Script>("Script", sol::constructors<Script()>(),
+        lua.new_usertype<LuaScript>("LuaScript", sol::constructors<LuaScript()>(),
 
-                                 "get_name", &Script::get_component<NameComponent>,
+                                    "get_name", &LuaScript::get_component<NameComponent>,
 
-                                 "get_transform", &Script::get_component<TransformComponent>,
+                                    "get_transform", &LuaScript::get_component<TransformComponent>,
 
-                                 "get_camera", &Script::get_component<CameraComponent>,
+                                    "get_camera", &LuaScript::get_component<CameraComponent>,
 
-                                 "entity_id", &Script::entity_id,
+                                    "entity_id", &LuaScript::entity_id,
 
-                                 "ecs", &Script::ecs);
+                                    "ecs", &LuaScript::ecs);
 
         lua.new_usertype<NameComponent>("NameComponent", sol::constructors<NameComponent(const str&)>(),
 
@@ -104,7 +104,7 @@ namespace mag
         state->loaded_scripts.insert(file_path);
     }
 
-    void LuaScriptingEngine::register_entity(const ScriptComponent& sc)
+    void LuaScriptingEngine::register_entity(const LuaScriptComponent& sc)
     {
         auto& lua = *state->lua;
 
