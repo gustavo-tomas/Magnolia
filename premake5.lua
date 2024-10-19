@@ -57,7 +57,7 @@ workspace "magnolia"
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
-    kind "staticlib"
+    kind "sharedlib"
     
     files
     {
@@ -160,7 +160,7 @@ project "sprout_editor"
 
     links
     {
-        "magnolia", "scripting", lib_links
+        "magnolia", lib_links
     }
 
     filter "system:linux"
@@ -488,7 +488,7 @@ project "meshoptimizer"
             os.execute("echo Skipping meshoptimizer compilation...")
         else
             os.execute("mkdir -p build/linux/meshoptimizer")
-            os.execute("cd build/linux/meshoptimizer && cmake -S ../../../libs/meshoptimizer -B . && make -j" .. number_of_cores())
+            os.execute("cd build/linux/meshoptimizer && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S ../../../libs/meshoptimizer -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/meshoptimizer/libmeshoptimizer.a " .. libdir .. "/libmeshoptimizer.a")
         end
     end
