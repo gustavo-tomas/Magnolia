@@ -121,6 +121,7 @@ namespace mag
                 script->entity = nullptr;
 
                 ScriptingEngine::unload_script(script->handle);
+                script->handle = nullptr;
             }
         }
 
