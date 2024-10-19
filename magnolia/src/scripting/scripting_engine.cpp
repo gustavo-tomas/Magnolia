@@ -13,6 +13,7 @@ namespace mag
 {
     void* ScriptingEngine::load_script(const str& file_path)
     {
+        // @TODO: see if we can load this from memory
         void* handle = dlopen(file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (!handle)
         {
