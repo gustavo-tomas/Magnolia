@@ -1,8 +1,5 @@
 #pragma once
 
-// @TODO: finish scripting
-#include <dlfcn.h>
-
 #include <functional>
 
 #include "camera/camera.hpp"
@@ -146,21 +143,19 @@ namespace mag
 
     struct ScriptComponent : public Component
     {
-            ScriptComponent(const str& file_path, CreateScriptFn create_entity, DestroyScriptFn destroy_entity)
-                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path)
+            ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
+                            DestroyScriptFn destroy_entity = nullptr)
+                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
             {
             }
-
-            // @TODO: finish scripting
-            ~ScriptComponent() { dlclose(handle); }
 
             CLONE(ScriptComponent);
 
             CreateScriptFn create_entity;
             DestroyScriptFn destroy_entity;
 
+            str file_path;
             void* handle = nullptr;
             ScriptableEntity* entity = nullptr;
-            str file_path;
     };
 };  // namespace mag

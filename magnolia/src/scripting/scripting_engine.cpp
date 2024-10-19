@@ -1,12 +1,55 @@
 #include "scripting/scripting_engine.hpp"
 
+// @TODO: this is unix only, create an interface for the windows build
+#include <dlfcn.h>
+
 #include "core/application.hpp"
+#include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"
 
 namespace mag
 {
+    void* ScriptingEngine::load_script(const str& file_path)
+    {
+        void* handle = dlopen(file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        if (!handle)
+        {
+            LOG_ERROR("Failed to load script '{0}': {1}", file_path, dlerror());
+            return nullptr;
+        }
+
+        return handle;
+    }
+
+    void ScriptingEngine::unload_script(void* handle)
+    {
+        if (handle)
+        {
+            dlclose(handle);
+        }
+    }
+
+    void* ScriptingEngine::get_symbol(void* handle, const str& name)
+    {
+        if (!handle)
+        {
+            LOG_ERROR("Handle is nullptr");
+            return nullptr;
+        }
+
+        void* symbol = dlsym(handle, name.c_str());
+
+        if (!symbol)
+        {
+            LOG_ERROR("Failed to load script symbols '{0}': {1}", name, dlerror());
+            return nullptr;
+        }
+
+        return symbol;
+    }
+
 #define GET_ENTITY_NAME(entity_id) "entity" + std::to_string(entity_id)
 
     // Here we assume that the sol state is persistent until a level or stage is over. There is no way to copy sol state

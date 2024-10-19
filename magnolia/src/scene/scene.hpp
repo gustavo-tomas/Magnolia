@@ -11,7 +11,7 @@ namespace mag
     {
         public:
             Scene();
-            virtual ~Scene() = default;
+            virtual ~Scene();
 
             void on_start();
             void on_stop();

@@ -9,36 +9,16 @@ namespace mag
 {
     Scene::Scene() : name("Untitled"), ecs(new ECS()) {}
 
+    Scene::~Scene()
+    {
+        if (running)
+        {
+            on_stop();
+        }
+    }
+
     // @TODO: finish scripting
     const char* script_dll = "build/linux/scripting/libscripting_debug.so";
-
-    ScriptComponent* loadScript(const str& path)
-    {
-        void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
-        if (!handle)
-        {
-            LOG_ERROR("Failed to load script '{0}': {1}", path, dlerror());
-            return nullptr;
-        }
-
-        using CreateScriptFunc = ScriptableEntity* (*)();
-        using DestroyScriptFunc = void (*)(ScriptableEntity*);
-
-        CreateScriptFn createScript = reinterpret_cast<CreateScriptFunc>(dlsym(handle, "create_script"));
-        DestroyScriptFunc destroyScript = reinterpret_cast<DestroyScriptFunc>(dlsym(handle, "destroy_script"));
-
-        if (!createScript || !destroyScript)
-        {
-            LOG_ERROR("Failed to load script symbols '{0}': {1}", path, dlerror());
-            dlclose(handle);
-            return nullptr;
-        }
-
-        ScriptComponent* script = new ScriptComponent(path, createScript, destroyScript);
-        script->handle = handle;
-
-        return script;
-    }
 
     void Scene::on_start()
     {
@@ -46,7 +26,8 @@ namespace mag
         static b8 added = false;
         if (!added)
         {
-            ecs->add_component(0, loadScript(script_dll));
+            ScriptComponent* script = new ScriptComponent(script_dll);
+            ecs->add_component(0, script);
             added = true;
         }
 
@@ -82,6 +63,30 @@ namespace mag
             auto* script = ecs->get_component<ScriptComponent>(id);
             if (!script->entity)
             {
+                void* handle = ScriptingEngine::load_script(script->file_path);
+                if (!handle)
+                {
+                    continue;
+                }
+
+                void* raw_create_script_fn = ScriptingEngine::get_symbol(handle, "create_script");
+                void* raw_destroy_script_fn = ScriptingEngine::get_symbol(handle, "destroy_script");
+
+                if (!raw_create_script_fn || !raw_destroy_script_fn)
+                {
+                    continue;
+                }
+
+                using CreateScriptFnPtr = ScriptableEntity* (*)();
+                using DestroyScriptFnPtr = void (*)(ScriptableEntity*);
+
+                CreateScriptFn create_script_fn = reinterpret_cast<CreateScriptFnPtr>(raw_create_script_fn);
+                DestroyScriptFn destroy_script_fn = reinterpret_cast<DestroyScriptFnPtr>(raw_destroy_script_fn);
+
+                script->handle = handle;
+                script->create_entity = create_script_fn;
+                script->destroy_entity = destroy_script_fn;
+
                 script->entity = script->create_entity();
                 script->entity->ecs = ecs.get();
                 script->entity->entity_id = id;
@@ -114,6 +119,8 @@ namespace mag
                 script->entity->on_destroy();
                 script->destroy_entity(script->entity);
                 script->entity = nullptr;
+
+                ScriptingEngine::unload_script(script->handle);
             }
         }
 
