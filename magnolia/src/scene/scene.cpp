@@ -9,8 +9,47 @@ namespace mag
 {
     Scene::Scene() : name("Untitled"), ecs(new ECS()) {}
 
+    // @TODO: finish scripting
+    const char* script_dll = "build/linux/scripting/libscripting_debug.so";
+
+    NativeScriptComponent* loadScript(const str& path)
+    {
+        void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        if (!handle)
+        {
+            LOG_ERROR("Failed to load script '{0}': {1}", path, dlerror());
+            return nullptr;
+        }
+
+        using CreateScriptFunc = ScriptableEntity* (*)();
+        using DestroyScriptFunc = void (*)(ScriptableEntity*);
+
+        CreateScriptFn createScript = reinterpret_cast<CreateScriptFunc>(dlsym(handle, "create_script"));
+        DestroyScriptFunc destroyScript = reinterpret_cast<DestroyScriptFunc>(dlsym(handle, "destroy_script"));
+
+        if (!createScript || !destroyScript)
+        {
+            LOG_ERROR("Failed to load script symbols '{0}': {1}", path, dlerror());
+            dlclose(handle);
+            return nullptr;
+        }
+
+        NativeScriptComponent* nsc = new NativeScriptComponent(path, createScript, destroyScript);
+        nsc->handle = handle;
+
+        return nsc;
+    }
+
     void Scene::on_start()
     {
+        // @TODO: finish scripting
+        static b8 added = false;
+        if (!added)
+        {
+            ecs->add_component(0, loadScript(script_dll));
+            added = true;
+        }
+
         on_start_internal();
 
         auto& app = get_application();
@@ -18,7 +57,7 @@ namespace mag
 
         physics_engine.on_simulation_start(this);
 
-        ScriptingEngine::new_state();
+        LuaScriptingEngine::new_state();
 
         // Instantiate scripts
         for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
@@ -30,8 +69,8 @@ namespace mag
                 sc->instance->ecs = ecs.get();
                 sc->instance->entity_id = id;
 
-                ScriptingEngine::load_script(sc->file_path);
-                ScriptingEngine::register_entity(*sc);
+                LuaScriptingEngine::load_script(sc->file_path);
+                LuaScriptingEngine::register_entity(*sc);
 
                 sc->instance->on_create(*sc->instance);
             }
@@ -41,12 +80,12 @@ namespace mag
         for (const u32 id : ecs->get_entities_with_components_of_type<NativeScriptComponent>())
         {
             auto* nsc = ecs->get_component<NativeScriptComponent>(id);
-            if (!nsc->instance)
+            if (!nsc->entity)
             {
-                nsc->instance = nsc->instanciate_script();
-                nsc->instance->ecs = ecs.get();
-                nsc->instance->entity_id = id;
-                nsc->instance->on_create();
+                nsc->entity = nsc->create_entity();
+                nsc->entity->ecs = ecs.get();
+                nsc->entity->entity_id = id;
+                nsc->entity->on_create();
             }
         }
 
@@ -70,8 +109,12 @@ namespace mag
         // Destroy native scripts
         for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
         {
-            nsc->instance->on_destroy();
-            nsc->destroy_script(nsc);
+            if (nsc->entity)
+            {
+                nsc->entity->on_destroy();
+                nsc->destroy_entity(nsc->entity);
+                nsc->entity = nullptr;
+            }
         }
 
         physics_engine.on_simulation_end();
@@ -114,9 +157,9 @@ namespace mag
         // Update native scripts
         for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
         {
-            if (nsc->instance)
+            if (nsc->entity)
             {
-                nsc->instance->on_update(dt);
+                nsc->entity->on_update(dt);
             }
         }
 

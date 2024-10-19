@@ -41,7 +41,7 @@ namespace mag
     {
         private:
             friend class Scene;
-            friend class ScriptingEngine;  // @TODO: is this a good idea?
+            friend class LuaScriptingEngine;  // @TODO: is this a good idea?
 
             std::function<void(Script&)> on_create;
             std::function<void(Script&)> on_destroy;

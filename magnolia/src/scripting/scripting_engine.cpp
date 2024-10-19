@@ -20,12 +20,12 @@ namespace mag
 
     static State* state = nullptr;
 
-    void ScriptingEngine::initialize() { state = new State(); }
+    void LuaScriptingEngine::initialize() { state = new State(); }
 
-    void ScriptingEngine::shutdown() { delete state; }
+    void LuaScriptingEngine::shutdown() { delete state; }
 
     // Warning! this unloads all registered scripts!
-    void ScriptingEngine::new_state()
+    void LuaScriptingEngine::new_state()
     {
         state->lua.reset();
         state->loaded_scripts.clear();
@@ -75,7 +75,7 @@ namespace mag
         LuaBindings::create_lua_bindings(*state->lua);
     }
 
-    void ScriptingEngine::load_script(const str& file_path)
+    void LuaScriptingEngine::load_script(const str& file_path)
     {
         if (state->loaded_scripts.contains(file_path)) return;
 
@@ -104,7 +104,7 @@ namespace mag
         state->loaded_scripts.insert(file_path);
     }
 
-    void ScriptingEngine::register_entity(const ScriptComponent& sc)
+    void LuaScriptingEngine::register_entity(const ScriptComponent& sc)
     {
         auto& lua = *state->lua;
 

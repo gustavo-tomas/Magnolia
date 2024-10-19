@@ -77,8 +77,8 @@ namespace mag
         LOG_SUCCESS("Physics initialized");
 
         // Create the scripting engine
-        ScriptingEngine::initialize();
-        LOG_SUCCESS("ScriptingEngine initialized");
+        LuaScriptingEngine::initialize();
+        LOG_SUCCESS("LuaScriptingEngine initialized");
 
         // Initialize file dialogs
         if (FileDialog::initialize())
@@ -92,7 +92,7 @@ namespace mag
     Application::~Application()
     {
         FileDialog::shutdown();
-        ScriptingEngine::shutdown();
+        LuaScriptingEngine::shutdown();
     }
 
     void Application::run()

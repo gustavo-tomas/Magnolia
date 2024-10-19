@@ -1,5 +1,3 @@
-#pragma once
-
 #include <magnolia.hpp>
 
 using namespace mag;
@@ -41,3 +39,6 @@ class CameraController : public ScriptableEntity
             LOG_SUCCESS("POS: {0}", math::to_string(camera.get_position()));
         }
 };
+
+extern "C" ScriptableEntity* create_script() { return new CameraController(); }
+extern "C" void destroy_script(ScriptableEntity* script) { delete script; }

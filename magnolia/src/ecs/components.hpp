@@ -1,5 +1,10 @@
 #pragma once
 
+// @TODO: finish scripting
+#include <dlfcn.h>
+
+#include <functional>
+
 #include "camera/camera.hpp"
 #include "core/types.hpp"
 
@@ -134,27 +139,28 @@ namespace mag
             Script* instance = nullptr;
     };
 
+    // @TODO: finish scripting
     class ScriptableEntity;
+    typedef std::function<ScriptableEntity*()> CreateScriptFn;
+    typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
+
     struct NativeScriptComponent : public Component
     {
+            NativeScriptComponent(const str& file_path, CreateScriptFn create_entity, DestroyScriptFn destroy_entity)
+                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path)
+            {
+            }
+
+            // @TODO: finish scripting
+            ~NativeScriptComponent() { dlclose(handle); }
+
             CLONE(NativeScriptComponent);
 
-            ScriptableEntity* instance = nullptr;
+            CreateScriptFn create_entity;
+            DestroyScriptFn destroy_entity;
 
-            ScriptableEntity* (*instanciate_script)();
-            void (*destroy_script)(NativeScriptComponent*);
-
-            template <typename T>
-            void bind()
-            {
-                static_assert(std::is_base_of<ScriptableEntity, T>::value, "T must be derived from ScriptableEntity");
-
-                instanciate_script = []() { return static_cast<ScriptableEntity*>(new T()); };
-                destroy_script = [](NativeScriptComponent* nsc)
-                {
-                    delete nsc->instance;
-                    nsc->instance = nullptr;
-                };
-            }
+            void* handle = nullptr;
+            ScriptableEntity* entity = nullptr;
+            str file_path;
     };
 };  // namespace mag

@@ -6,7 +6,7 @@
 namespace mag
 {
     class ScriptComponent;
-    class ScriptingEngine
+    class LuaScriptingEngine
     {
         public:
             static void initialize();
