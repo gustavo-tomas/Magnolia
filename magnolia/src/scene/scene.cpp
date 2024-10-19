@@ -12,7 +12,7 @@ namespace mag
     // @TODO: finish scripting
     const char* script_dll = "build/linux/scripting/libscripting_debug.so";
 
-    NativeScriptComponent* loadScript(const str& path)
+    ScriptComponent* loadScript(const str& path)
     {
         void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (!handle)
@@ -34,10 +34,10 @@ namespace mag
             return nullptr;
         }
 
-        NativeScriptComponent* nsc = new NativeScriptComponent(path, createScript, destroyScript);
-        nsc->handle = handle;
+        ScriptComponent* script = new ScriptComponent(path, createScript, destroyScript);
+        script->handle = handle;
 
-        return nsc;
+        return script;
     }
 
     void Scene::on_start()
@@ -62,30 +62,30 @@ namespace mag
         // Instantiate scripts
         for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
         {
-            auto* sc = ecs->get_component<LuaScriptComponent>(id);
-            if (!sc->instance)
+            auto* script = ecs->get_component<LuaScriptComponent>(id);
+            if (!script->instance)
             {
-                sc->instance = new LuaScript();
-                sc->instance->ecs = ecs.get();
-                sc->instance->entity_id = id;
+                script->instance = new LuaScript();
+                script->instance->ecs = ecs.get();
+                script->instance->entity_id = id;
 
-                LuaScriptingEngine::load_script(sc->file_path);
-                LuaScriptingEngine::register_entity(*sc);
+                LuaScriptingEngine::load_script(script->file_path);
+                LuaScriptingEngine::register_entity(*script);
 
-                sc->instance->on_create(*sc->instance);
+                script->instance->on_create(*script->instance);
             }
         }
 
         // Instantiate native scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<NativeScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
-            auto* nsc = ecs->get_component<NativeScriptComponent>(id);
-            if (!nsc->entity)
+            auto* script = ecs->get_component<ScriptComponent>(id);
+            if (!script->entity)
             {
-                nsc->entity = nsc->create_entity();
-                nsc->entity->ecs = ecs.get();
-                nsc->entity->entity_id = id;
-                nsc->entity->on_create();
+                script->entity = script->create_entity();
+                script->entity->ecs = ecs.get();
+                script->entity->entity_id = id;
+                script->entity->on_create();
             }
         }
 
@@ -107,13 +107,13 @@ namespace mag
         }
 
         // Destroy native scripts
-        for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
-            if (nsc->entity)
+            if (script->entity)
             {
-                nsc->entity->on_destroy();
-                nsc->destroy_entity(nsc->entity);
-                nsc->entity = nullptr;
+                script->entity->on_destroy();
+                script->destroy_entity(script->entity);
+                script->entity = nullptr;
             }
         }
 
@@ -155,11 +155,11 @@ namespace mag
         }
 
         // Update native scripts
-        for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
-            if (nsc->entity)
+            if (script->entity)
             {
-                nsc->entity->on_update(dt);
+                script->entity->on_update(dt);
             }
         }
 

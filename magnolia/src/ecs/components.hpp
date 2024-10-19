@@ -144,17 +144,17 @@ namespace mag
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
 
-    struct NativeScriptComponent : public Component
+    struct ScriptComponent : public Component
     {
-            NativeScriptComponent(const str& file_path, CreateScriptFn create_entity, DestroyScriptFn destroy_entity)
+            ScriptComponent(const str& file_path, CreateScriptFn create_entity, DestroyScriptFn destroy_entity)
                 : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path)
             {
             }
 
             // @TODO: finish scripting
-            ~NativeScriptComponent() { dlclose(handle); }
+            ~ScriptComponent() { dlclose(handle); }
 
-            CLONE(NativeScriptComponent);
+            CLONE(ScriptComponent);
 
             CreateScriptFn create_entity;
             DestroyScriptFn destroy_entity;
