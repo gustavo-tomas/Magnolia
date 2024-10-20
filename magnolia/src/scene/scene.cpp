@@ -167,6 +167,15 @@ namespace mag
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Scene::on_resize));
 
+        // Emit events to the native scripts
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        {
+            if (script->entity)
+            {
+                script->entity->on_event(e);
+            }
+        }
+
         on_event_internal(e);
     }
 

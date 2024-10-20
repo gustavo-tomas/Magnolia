@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include "core/event.hpp"
 #include "core/types.hpp"
 #include "ecs/ecs.hpp"
 
@@ -17,6 +18,7 @@ namespace mag
             virtual void on_create(){};
             virtual void on_destroy(){};
             virtual void on_update(const f32 dt) { (void)dt; };
+            virtual void on_event(Event& e) { (void)e; };
 
             template <typename T>
             T* get_component()
