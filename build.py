@@ -101,6 +101,15 @@ def shaders(system):
     assert os.system(f"ext{bar}{system}{bar}{glslc_exe} -I{include_path} {input_path} -o {output_path}") == 0
   return
 
+# Scripts
+def scripts(configuration):
+  number_of_cores = get_number_of_cores()
+  script_makefile = "scripts.make" # This should match the premake makefile
+  
+  print("Building scripts...")
+  assert os.system(f"cd build && make --file={script_makefile} config={configuration} -j{number_of_cores}") == 0
+  return
+
 def main():
 
   # Check for system support
@@ -135,6 +144,9 @@ def main():
 
     elif command == "lint":
       lint()
+
+    elif command == "scripts":
+      scripts(configuration)
 
     else:
       print(f"Invalid command: '{command}'")
