@@ -17,20 +17,8 @@ namespace mag
         }
     }
 
-    // @TODO: finish scripting
-    const char* script_dll = "build/linux/scripting/libscripting_debug.so";
-
     void Scene::on_start()
     {
-        // @TODO: finish scripting
-        static b8 added = false;
-        if (!added)
-        {
-            ScriptComponent* script = new ScriptComponent(script_dll);
-            ecs->add_component(0, script);
-            added = true;
-        }
-
         on_start_internal();
 
         auto& app = get_application();

@@ -208,7 +208,7 @@ project "sprout_editor"
         runtime "release"
 
 -- Scripting -----------------------------------------------------------------------------------------------------------
-project "scripting"
+project "scripts"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "sharedlib"
 

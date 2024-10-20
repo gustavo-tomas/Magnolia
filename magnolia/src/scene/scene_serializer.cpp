@@ -101,6 +101,11 @@ namespace mag
                 entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
             }
 
+            if (auto component = ecs.get_component<ScriptComponent>(entity_id))
+            {
+                entity["ScriptComponent"]["FilePath"] = component->file_path;
+            }
+
             if (auto component = ecs.get_component<LuaScriptComponent>(entity_id))
             {
                 entity["LuaScriptComponent"]["FilePath"] = component->file_path;
@@ -235,6 +240,15 @@ namespace mag
                     Camera camera = Camera(vec3(0), vec3(0), fov, aspect, near, far);
 
                     ecs.add_component(entity_id, new CameraComponent(camera));
+                }
+
+                if (entity.contains("ScriptComponent"))
+                {
+                    const auto& component = entity["ScriptComponent"];
+
+                    const str file_path = component["FilePath"];
+
+                    ecs.add_component(entity_id, new ScriptComponent(file_path));
                 }
 
                 if (entity.contains("LuaScriptComponent"))
