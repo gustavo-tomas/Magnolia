@@ -1,7 +1,10 @@
 #include "editor_scene.hpp"
 
+#include <cstdlib>
+
 #include "core/application.hpp"
 #include "core/types.hpp"
+#include "ecs/components.hpp"
 
 namespace mag
 {
@@ -42,6 +45,90 @@ namespace mag
         {
             camera_c->camera.set_position(transform->translation);
             camera_c->camera.set_rotation(transform->rotation);
+        }
+
+        auto& app = get_application();
+        auto& file_watcher = app.get_file_watcher();
+        auto& job_system = app.get_job_system();
+
+        std::vector<str> rebuild_dlls;
+
+        const auto& scripts = ecs->get_all_components_of_type<ScriptComponent>();
+        for (auto* script : scripts)
+        {
+            // Rebuild script
+            // @NOTE: this uses the python script
+            if (file_watcher.was_file_modified(script->file_path))
+            {
+                rebuild_dlls.push_back(script->file_path);
+                file_watcher.reset_file_status(script->file_path);
+            }
+        }
+
+        if (rebuild_dlls.empty())
+        {
+            return;
+        }
+
+        // Execute python script on another thread
+        auto execute = [rebuild_dlls]
+        {
+            b8 result = true;
+
+            for (const auto& script_file : rebuild_dlls)
+            {
+                LOG_INFO("Script '{0}' was modified, rebuilding DLL...", script_file);
+
+                // @TODO: cleanup
+                str configuration = "debug";
+#if defined(MAG_PROFILE)
+                configuration = "profile";
+#elif defined(MAG_RELEASE)
+                configuration = "release";
+#endif
+                // @TODO: cleanup
+
+                const str rebuild_script = "python3 build.py scripts " + configuration;
+                if (system(rebuild_script.c_str()) == 0)
+                {
+                    LOG_INFO("Finished rebuilding DLL for '{0}'", script_file);
+                }
+
+                else
+                {
+                    LOG_ERROR("Failed to rebuild DLL for '{0}'", script_file);
+                    result = false;
+                }
+            }
+
+            return result;
+        };
+
+        // Callback when finished executing
+        auto on_execute_finished = [this](const b8 result)
+        {
+            // Restart the scene if everything went ok
+            if (result)
+            {
+                this->on_stop();
+                this->on_start();
+            }
+        };
+
+        Job load_job = Job(execute, on_execute_finished);
+        job_system.add_job(load_job);
+    }
+
+    void EditorScene::on_component_added(const u32 id, Component* component)
+    {
+        (void)id;
+
+        // Add script file to file watcher if component is a script
+        const auto* script_component = dynamic_cast<ScriptComponent*>(component);
+        if (script_component)
+        {
+            auto& file_watcher = get_application().get_file_watcher();
+            file_watcher.watch_file(script_component->file_path);
         }
     }
 
