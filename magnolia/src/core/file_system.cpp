@@ -208,9 +208,11 @@ namespace mag
 
     void FileWatcher::reset_file_status(const std::filesystem::path& file_path)
     {
-        std::lock_guard<std::mutex> lock(files_mutex);
+        std::unique_lock<std::mutex> lock(files_mutex);
         if (files_on_watch.contains(file_path))
         {
+            lock.unlock();
+
             stop_watching_file(file_path);
             watch_file(file_path);
         }
