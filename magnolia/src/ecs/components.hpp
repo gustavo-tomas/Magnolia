@@ -137,6 +137,9 @@ namespace mag
     };
 
     // @TODO: finish scripting
+    // @TODO: 1. simplify reloading process (better build system)
+    // @TODO: 2. use a file watcher to rebuild modified scripts
+    // @TODO: 3. speed up script compilation
     class ScriptableEntity;
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
