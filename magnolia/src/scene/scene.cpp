@@ -7,7 +7,7 @@
 
 namespace mag
 {
-    Scene::Scene() : name("Untitled"), ecs(new ECS()) {}
+    Scene::Scene() : name("Untitled"), ecs(new ECS(10'000, BIND_FN2(Scene::on_component_added))) {}
 
     Scene::~Scene()
     {
@@ -160,6 +160,12 @@ namespace mag
         }
 
         on_update_internal(dt);
+    }
+
+    void Scene::on_component_added(const u32 id, Component* component)
+    {
+        (void)id;
+        (void)component;
     }
 
     void Scene::on_event(Event& e)

@@ -15,6 +15,8 @@ namespace mag
 {
     using namespace mag::math;
 
+    typedef std::function<void(const u32 id, Component* component)> ComponentAddedCallbackFn;
+
     class ECS
     {
 #define ASSERT_TYPE(T) static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component")
@@ -25,9 +27,13 @@ namespace mag
         public:
             using Entity = std::vector<unique<Component>>;
 
-            ECS(const u32 max_entity_id = 10'000)
+            ECS(const u32 max_entity_id = 10'000, ComponentAddedCallbackFn on_component_added = nullptr)
+                : on_component_added(on_component_added)
             {
-                for (u32 id = 0; id <= max_entity_id; id++) available_ids.insert(id);
+                for (u32 id = 0; id <= max_entity_id; id++)
+                {
+                    available_ids.insert(id);
+                }
             }
 
             ECS(const ECS& other)
@@ -35,6 +41,7 @@ namespace mag
                 available_ids = other.available_ids;
                 entities = copy_entities(other.entities);
                 component_map = other.component_map;
+                on_component_added = other.on_component_added;
             }
 
             ~ECS() = default;
@@ -104,6 +111,11 @@ namespace mag
 
                 entities[entity_id].emplace_back(c);
                 component_map[typeid(T)].insert(entity_id);
+
+                if (on_component_added)
+                {
+                    on_component_added(entity_id, c);
+                }
             }
 
             // Get component of that type
@@ -250,5 +262,8 @@ namespace mag
 
             // Map from component type to entities that have it
             std::map<std::type_index, std::set<u32>> component_map;
+
+            // Callback to signal when a component is added to an entity
+            ComponentAddedCallbackFn on_component_added;
     };
 };  // namespace mag
