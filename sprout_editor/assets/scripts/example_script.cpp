@@ -57,8 +57,42 @@ class CameraController : public ScriptableEntity
 
             transform->translation += direction * speed;
             camera.set_position(transform->translation);
+        }
 
-            LOG_SUCCESS("POS: {0}", math::to_string(camera.get_position()));
+        virtual void on_event(Event& e) override
+        {
+            EventDispatcher dispatcher(e);
+            dispatcher.dispatch<MouseMoveEvent>(BIND_FN(CameraController::on_mouse_move));
+            dispatcher.dispatch<MousePressEvent>(BIND_FN(CameraController::on_mouse_click));
+        }
+
+        void on_mouse_click(MousePressEvent& e)
+        {
+            // Capture/Release the cursor
+            if (e.button == Button::Right)
+            {
+                auto& app = get_application();
+                auto& window = app.get_window();
+
+                window.set_capture_mouse(!window.is_mouse_captured());
+            }
+        }
+
+        void on_mouse_move(MouseMoveEvent& e)
+        {
+            // This is not as good as updating on the loop with dt, but its a nice example
+            auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
+            if (!transform || !camera_c)
+            {
+                LOG_WARNING("Missing transform/camera");
+                return;
+            }
+
+            const ivec2 mouse_dir = {e.x_direction, e.y_direction};
+
+            // Rotate
+            transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 10.0f;
+            camera_c->camera.set_rotation(transform->rotation);
         }
 };
 
