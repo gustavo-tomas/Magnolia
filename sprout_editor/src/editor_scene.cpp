@@ -108,7 +108,7 @@ namespace mag
         auto on_execute_finished = [this](const b8 result)
         {
             // Restart the scene if everything went ok
-            if (result)
+            if (result && is_running())
             {
                 this->on_stop();
                 this->on_start();
