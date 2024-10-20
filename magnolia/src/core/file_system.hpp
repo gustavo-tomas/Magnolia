@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
+#include <thread>
 
 #include "core/buffer.hpp"
 #include "core/types.hpp"
@@ -31,5 +33,30 @@ namespace mag
 
             b8 exists(const std::filesystem::path& path) const;
             b8 is_directory(const std::filesystem::path& path) const;
+    };
+
+    class FileWatcher
+    {
+        public:
+            FileWatcher();
+            ~FileWatcher();
+
+            void watch_file(const std::filesystem::path& file_path);
+            void stop_watching_file(const std::filesystem::path& file_path);
+            void reset_file_status(const std::filesystem::path& file_path);
+
+            b8 was_file_modified(const std::filesystem::path& file_path);
+
+        private:
+            struct FileStatus
+            {
+                    b8 modified = false;
+                    std::filesystem::file_time_type last_write_time;
+            };
+
+            std::thread watcher_thread;
+            std::map<str, FileStatus> files_on_watch;
+            std::mutex files_mutex;
+            b8 running;
     };
 };  // namespace mag

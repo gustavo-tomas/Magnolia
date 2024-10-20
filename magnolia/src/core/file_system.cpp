@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 
+#include "core/application.hpp"
 #include "core/logger.hpp"
 
 namespace mag
@@ -144,5 +145,80 @@ namespace mag
     {
         const auto path = get_fixed_path(raw_file_path);
         return std::filesystem::is_directory(path);
+    }
+
+    FileWatcher::FileWatcher()
+    {
+        running = true;
+
+        watcher_thread = std::thread(
+            [this]
+            {
+                while (running)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+                    std::lock_guard<std::mutex> lock(files_mutex);
+                    for (auto& [file_path, file_status] : files_on_watch)
+                    {
+                        auto current_write_time = std::filesystem::last_write_time(file_path);
+                        if (current_write_time != file_status.last_write_time)
+                        {
+                            file_status.last_write_time = current_write_time;
+                            file_status.modified = true;
+                        }
+                    }
+                }
+            });
+    }
+
+    FileWatcher::~FileWatcher()
+    {
+        running = false;
+
+        if (watcher_thread.joinable())
+        {
+            watcher_thread.join();
+        }
+    }
+
+    void FileWatcher::watch_file(const std::filesystem::path& file_path)
+    {
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        std::lock_guard<std::mutex> lock(files_mutex);
+        if (!file_system.exists(file_path) || files_on_watch.contains(file_path))
+        {
+            return;
+        }
+
+        files_on_watch[file_path].last_write_time = std::filesystem::last_write_time(file_path);
+        files_on_watch[file_path].modified = false;
+    }
+
+    void FileWatcher::stop_watching_file(const std::filesystem::path& file_path)
+    {
+        std::lock_guard<std::mutex> lock(files_mutex);
+        if (files_on_watch.contains(file_path))
+        {
+            files_on_watch.erase(file_path);
+        }
+    }
+
+    void FileWatcher::reset_file_status(const std::filesystem::path& file_path)
+    {
+        std::lock_guard<std::mutex> lock(files_mutex);
+        if (files_on_watch.contains(file_path))
+        {
+            stop_watching_file(file_path);
+            watch_file(file_path);
+        }
+    }
+
+    b8 FileWatcher::was_file_modified(const std::filesystem::path& file_path)
+    {
+        std::lock_guard<std::mutex> lock(files_mutex);
+        return files_on_watch.contains(file_path) && files_on_watch[file_path].modified;
     }
 };  // namespace mag
