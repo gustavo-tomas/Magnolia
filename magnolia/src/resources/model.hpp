@@ -1,8 +1,5 @@
 #pragma once
 
-#include <map>
-#include <vector>
-
 #include "core/math.hpp"
 #include "core/types.hpp"
 

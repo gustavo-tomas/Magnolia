@@ -1,7 +1,5 @@
 #include "panels/content_browser_panel.hpp"
 
-#include <filesystem>
-
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor.hpp"

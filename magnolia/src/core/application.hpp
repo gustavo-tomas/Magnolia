@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "core/event.hpp"
 #include "core/file_system.hpp"
 #include "core/window.hpp"

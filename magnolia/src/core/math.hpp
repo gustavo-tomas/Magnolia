@@ -7,7 +7,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
-#include <vector>
 
 #include "core/types.hpp"
 

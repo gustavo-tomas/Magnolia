@@ -1,7 +1,5 @@
 #include "editor_scene.hpp"
 
-#include <cstdlib>
-
 #include "core/application.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"

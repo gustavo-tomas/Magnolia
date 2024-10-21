@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "core/event.hpp"
 #include "core/types.hpp"
 #include "ecs/ecs.hpp"

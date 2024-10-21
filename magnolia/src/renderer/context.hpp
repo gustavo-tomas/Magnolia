@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"

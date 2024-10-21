@@ -1,11 +1,5 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <set>
-#include <typeindex>
-#include <vector>
-
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "core/types.hpp"

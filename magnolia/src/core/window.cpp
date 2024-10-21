@@ -1,7 +1,5 @@
 #include "core/window.hpp"
 
-#include <thread>
-
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"

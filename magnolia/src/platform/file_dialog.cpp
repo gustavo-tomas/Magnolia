@@ -1,7 +1,5 @@
 #include "platform/file_dialog.hpp"
 
-#include <filesystem>
-
 #include "core/logger.hpp"
 #include "portable-file-dialogs/portable-file-dialogs.h"
 

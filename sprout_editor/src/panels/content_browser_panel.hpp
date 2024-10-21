@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "imgui.h"
 #include "renderer/renderer_image.hpp"
 

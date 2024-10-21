@@ -3,8 +3,6 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
-#include <chrono>
-#include <limits>
 #include <vulkan/vulkan.hpp>
 
 #include "core/event.hpp"

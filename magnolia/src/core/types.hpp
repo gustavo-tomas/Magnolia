@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <memory>
-#include <string>
+#include "pch.hpp"
 
 namespace mag
 {

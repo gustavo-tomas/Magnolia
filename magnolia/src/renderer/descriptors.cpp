@@ -1,7 +1,5 @@
 #include "renderer/descriptors.hpp"
 
-#include <algorithm>
-
 #include "core/assert.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"

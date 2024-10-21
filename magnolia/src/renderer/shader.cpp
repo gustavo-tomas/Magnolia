@@ -1,7 +1,5 @@
 #include "renderer/shader.hpp"
 
-#include <limits>
-
 #include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/logger.hpp"

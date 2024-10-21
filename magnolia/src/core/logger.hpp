@@ -3,8 +3,6 @@
 #include <fmt/color.h>
 #include <fmt/core.h>
 
-#include <source_location>
-
 #include "core/types.hpp"
 
 namespace mag

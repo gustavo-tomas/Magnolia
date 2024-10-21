@@ -1,7 +1,5 @@
 #include "menu/menu_bar.hpp"
 
-#include <filesystem>
-
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"

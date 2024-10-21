@@ -58,7 +58,10 @@ workspace "magnolia"
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "sharedlib"
-    
+
+    pchheader "%{prj.name}/src/pch.hpp"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     files
     {
         "%{prj.name}/src/**.hpp",

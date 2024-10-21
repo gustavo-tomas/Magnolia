@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <vulkan/vulkan.hpp>
 
 #include "core/math.hpp"

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include <vector>
 #include <vulkan/vulkan.hpp>
 
 #include "core/types.hpp"
