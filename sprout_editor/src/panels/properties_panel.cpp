@@ -151,6 +151,13 @@ namespace sprout
                         // Check file validity
                         if (check_file(file_path))
                         {
+                            // Add new file to file watcher
+                            auto &file_watcher = get_application().get_file_watcher();
+                            file_watcher.watch_file(file_path);
+
+                            // @NOTE: we dont remove the previous file because the user might want to swap back to it
+                            // file_watcher.stop_watching_file(component->file_path);
+
                             component->file_path = file_path;
                         }
                     }

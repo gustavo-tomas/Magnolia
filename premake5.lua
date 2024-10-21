@@ -208,14 +208,15 @@ project "sprout_editor"
         runtime "release"
 
 -- Scripting -----------------------------------------------------------------------------------------------------------
-project "scripts"
+local script_dir = "sprout_editor/assets/scripts/"
+local script_files = os.matchfiles(script_dir .. "*.cpp")
+
+common_settings = function()
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "sharedlib"
 
-    files
-    {
-        "sprout_editor/assets/scripts/**.cpp"
-    }
+    targetdir ("build/%{cfg.system}/scripts")
+    objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/scripts/%{prj.name}")
 
     includedirs 
     { 
@@ -277,6 +278,16 @@ project "scripts"
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
+end
+
+-- @TODO: this is a bit of a hack to compile each script .cpp file in its own .dll. We create a project for each file.
+for _, file in ipairs(script_files) do
+    local script_name = path.getbasename(file)
+    project(script_name)
+        targetname (script_name)
+        files { file }
+        common_settings()
+end
 
 -- Libs ----------------------------------------------------------------------------------------------------------------
 

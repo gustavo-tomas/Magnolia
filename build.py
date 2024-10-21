@@ -102,12 +102,11 @@ def shaders(system):
   return
 
 # Scripts
-def scripts(configuration):
+def scripts(configuration, script_name):
   number_of_cores = get_number_of_cores()
-  script_makefile = "scripts.make" # This should match the premake makefile
   
   print("Building scripts...")
-  assert os.system(f"cd build && make --file={script_makefile} config={configuration} -j{number_of_cores}") == 0
+  assert os.system(f"cd build && make config={configuration} {script_name} -j{number_of_cores}") == 0
   return
 
 def main():
@@ -146,7 +145,12 @@ def main():
       lint()
 
     elif command == "scripts":
-      scripts(configuration)
+      if len(sys.argv) < 4:
+        print("Usage: <command> <configuration> <target>")
+        return
+
+      target = str(sys.argv[3])
+      scripts(configuration, target)
 
     else:
       print(f"Invalid command: '{command}'")

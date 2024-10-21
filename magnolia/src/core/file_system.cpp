@@ -151,22 +151,39 @@ namespace mag
     {
         running = true;
 
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
         watcher_thread = std::thread(
-            [this]
+            [this, &file_system]
             {
                 while (running)
                 {
                     std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
+                    std::vector<str> marked_for_removal;
+
                     std::lock_guard<std::mutex> lock(files_mutex);
                     for (auto& [file_path, file_status] : files_on_watch)
                     {
+                        // Remove files that have been deleted
+                        if (!file_system.exists(file_path))
+                        {
+                            marked_for_removal.push_back(file_path);
+                            continue;
+                        }
+
                         auto current_write_time = std::filesystem::last_write_time(file_path);
                         if (current_write_time != file_status.last_write_time)
                         {
                             file_status.last_write_time = current_write_time;
                             file_status.modified = true;
                         }
+                    }
+
+                    for (const auto& file_path : marked_for_removal)
+                    {
+                        files_on_watch.erase(file_path);
                     }
                 }
             });
