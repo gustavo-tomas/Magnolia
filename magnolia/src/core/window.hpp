@@ -1,14 +1,11 @@
 #pragma once
 
-#include <SDL.h>
-#include <SDL_vulkan.h>
-
-#include <vulkan/vulkan.hpp>
-
 #include "core/event.hpp"
 #include "core/keys.hpp"
 #include "core/math.hpp"
 #include "core/types.hpp"
+
+struct SDL_Window;
 
 namespace mag
 {
@@ -34,7 +31,7 @@ namespace mag
 
             void on_update();
 
-            vk::SurfaceKHR create_surface(const vk::Instance instance) const;
+            void create_surface(const void* instance, void* surface) const;
 
             void sleep(const u32 ms);
 

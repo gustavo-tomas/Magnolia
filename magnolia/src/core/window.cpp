@@ -1,5 +1,10 @@
 #include "core/window.hpp"
 
+#include <SDL.h>
+#include <SDL_vulkan.h>
+
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
@@ -143,13 +148,11 @@ namespace mag
         }
     }
 
-    vk::SurfaceKHR Window::create_surface(const vk::Instance instance) const
+    void Window::create_surface(const void* instance, void* surface) const
     {
-        VkSurfaceKHR surface = 0;
-        ASSERT(SDL_Vulkan_CreateSurface(handle, instance, &surface),
+        vk::Instance vk_instance = *reinterpret_cast<const vk::Instance*>(instance);
+        ASSERT(SDL_Vulkan_CreateSurface(handle, vk_instance, reinterpret_cast<VkSurfaceKHR*>(surface)),
                "Failed to create surface: " + str(SDL_GetError()));
-
-        return surface;
     }
 
     void Window::sleep(const u32 ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }

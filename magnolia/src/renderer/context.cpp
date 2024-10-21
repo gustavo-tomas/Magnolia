@@ -143,7 +143,7 @@ namespace mag
         this->frame_count = frame_count;
 
         // Surface
-        this->surface = options.window.create_surface(this->instance);
+        options.window.create_surface(&this->instance, &this->surface);
 
         // Physical device
         LOG_INFO("Enumerating physical devices");
