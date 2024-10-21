@@ -11,6 +11,7 @@
 #include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
+#include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
 
 mag::Application *mag::create_application()

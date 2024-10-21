@@ -4,6 +4,7 @@
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "renderer/renderer.hpp"
 
 namespace sprout
 {

@@ -1,6 +1,7 @@
 #include "resources/image.hpp"
 
 #include "core/application.hpp"
+#include "renderer/renderer.hpp"
 
 namespace mag
 {

@@ -1,6 +1,7 @@
 #include "resources/model.hpp"
 
 #include "core/application.hpp"
+#include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
 
 namespace mag

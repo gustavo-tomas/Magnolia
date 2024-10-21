@@ -4,8 +4,7 @@
 #include "core/file_system.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
-#include "renderer/renderer.hpp"
-#include "renderer/shader.hpp"
+#include "resources/image.hpp"
 #include "resources/image_loader.hpp"
 #include "resources/material.hpp"
 #include "resources/material_loader.hpp"
@@ -16,6 +15,9 @@
 
 namespace mag
 {
+    class Renderer;
+    class ShaderManager;
+
     // Expand app options if necessary
     struct ApplicationOptions
     {

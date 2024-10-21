@@ -6,6 +6,7 @@
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/pipeline.hpp"
+#include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
 
 namespace mag

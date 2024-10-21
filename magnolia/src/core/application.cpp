@@ -2,6 +2,8 @@
 
 #include "core/logger.hpp"
 #include "platform/file_dialog.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
 #include "scripting/scripting_engine.hpp"
 #include "tools/profiler.hpp"
 
