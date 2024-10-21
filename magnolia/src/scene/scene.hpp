@@ -11,7 +11,7 @@ namespace mag
     {
         public:
             Scene();
-            virtual ~Scene() = default;
+            virtual ~Scene();
 
             void on_start();
             void on_stop();
@@ -54,6 +54,7 @@ namespace mag
             virtual void on_event_internal(Event& e) { (void)e; };
             virtual void on_update_internal(const f32 dt) { (void)dt; };
             virtual void on_resize(WindowResizeEvent& e);
+            virtual void on_component_added(const u32 id, Component* component);
 
             str name;
             unique<ECS> ecs;

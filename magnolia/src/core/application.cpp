@@ -36,6 +36,10 @@ namespace mag
         file_system = create_unique<FileSystem>();
         LOG_SUCCESS("FileSystem initialized");
 
+        // Create the file watcher
+        file_watcher = create_unique<FileWatcher>();
+        LOG_SUCCESS("FileWatcher initialized");
+
         // Create the job system
         job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
         LOG_SUCCESS("JobSystem initialized");
@@ -77,8 +81,8 @@ namespace mag
         LOG_SUCCESS("Physics initialized");
 
         // Create the scripting engine
-        ScriptingEngine::initialize();
-        LOG_SUCCESS("ScriptingEngine initialized");
+        LuaScriptingEngine::initialize();
+        LOG_SUCCESS("LuaScriptingEngine initialized");
 
         // Initialize file dialogs
         if (FileDialog::initialize())
@@ -92,7 +96,7 @@ namespace mag
     Application::~Application()
     {
         FileDialog::shutdown();
-        ScriptingEngine::shutdown();
+        LuaScriptingEngine::shutdown();
     }
 
     void Application::run()

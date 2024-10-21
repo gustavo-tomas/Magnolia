@@ -1,12 +1,83 @@
 #include "scripting/scripting_engine.hpp"
 
+// @TODO: this is unix only, create an interface for the windows build
+#include <dlfcn.h>
+
 #include "core/application.hpp"
+#include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
 #include "sol/sol.hpp"
 
 namespace mag
 {
+    void* ScriptingEngine::load_script(const str& file_path)
+    {
+        // @TODO: cleanup
+        str scripts_bin_folder = "scripts/";
+        str extension = ".so";
+        str configuration = "_debug";
+        {
+            const std::filesystem::path cwd = std::filesystem::current_path();
+            const str last_folder = cwd.filename().string();
+            str system = "linux";
+
+#if defined(_WIN32)
+            system = "windows";
+            extension = ".dll";
+#endif
+
+#if defined(MAG_PROFILE)
+            configuration = "_profile";
+#elif defined(MAG_RELEASE)
+            configuration = "_release";
+#endif
+
+            if (last_folder == "Magnolia") scripts_bin_folder = "build/" + system + "/" + scripts_bin_folder;
+        }
+        // @TODO: cleanup
+
+        const str script_src = std::filesystem::path(file_path).stem();
+        const str script_dll = scripts_bin_folder + "lib" + script_src + configuration + extension;
+
+        // @TODO: see if we can load this from memory
+        void* handle = dlopen(script_dll.c_str(), RTLD_NOW | RTLD_GLOBAL);
+        if (!handle)
+        {
+            LOG_ERROR("Failed to load script '{0}': {1}", script_dll, dlerror());
+            return nullptr;
+        }
+
+        return handle;
+    }
+
+    void ScriptingEngine::unload_script(void* handle)
+    {
+        if (handle)
+        {
+            dlclose(handle);
+        }
+    }
+
+    void* ScriptingEngine::get_symbol(void* handle, const str& name)
+    {
+        if (!handle)
+        {
+            LOG_ERROR("Handle is nullptr");
+            return nullptr;
+        }
+
+        void* symbol = dlsym(handle, name.c_str());
+
+        if (!symbol)
+        {
+            LOG_ERROR("Failed to load script symbols '{0}': {1}", name, dlerror());
+            return nullptr;
+        }
+
+        return symbol;
+    }
+
 #define GET_ENTITY_NAME(entity_id) "entity" + std::to_string(entity_id)
 
     // Here we assume that the sol state is persistent until a level or stage is over. There is no way to copy sol state
@@ -20,12 +91,12 @@ namespace mag
 
     static State* state = nullptr;
 
-    void ScriptingEngine::initialize() { state = new State(); }
+    void LuaScriptingEngine::initialize() { state = new State(); }
 
-    void ScriptingEngine::shutdown() { delete state; }
+    void LuaScriptingEngine::shutdown() { delete state; }
 
     // Warning! this unloads all registered scripts!
-    void ScriptingEngine::new_state()
+    void LuaScriptingEngine::new_state()
     {
         state->lua.reset();
         state->loaded_scripts.clear();
@@ -37,17 +108,17 @@ namespace mag
         lua.open_libraries(sol::lib::base);
 
         // Register types
-        lua.new_usertype<Script>("Script", sol::constructors<Script()>(),
+        lua.new_usertype<LuaScript>("LuaScript", sol::constructors<LuaScript()>(),
 
-                                 "get_name", &Script::get_component<NameComponent>,
+                                    "get_name", &LuaScript::get_component<NameComponent>,
 
-                                 "get_transform", &Script::get_component<TransformComponent>,
+                                    "get_transform", &LuaScript::get_component<TransformComponent>,
 
-                                 "get_camera", &Script::get_component<CameraComponent>,
+                                    "get_camera", &LuaScript::get_component<CameraComponent>,
 
-                                 "entity_id", &Script::entity_id,
+                                    "entity_id", &LuaScript::entity_id,
 
-                                 "ecs", &Script::ecs);
+                                    "ecs", &LuaScript::ecs);
 
         lua.new_usertype<NameComponent>("NameComponent", sol::constructors<NameComponent(const str&)>(),
 
@@ -75,7 +146,7 @@ namespace mag
         LuaBindings::create_lua_bindings(*state->lua);
     }
 
-    void ScriptingEngine::load_script(const str& file_path)
+    void LuaScriptingEngine::load_script(const str& file_path)
     {
         if (state->loaded_scripts.contains(file_path)) return;
 
@@ -104,7 +175,7 @@ namespace mag
         state->loaded_scripts.insert(file_path);
     }
 
-    void ScriptingEngine::register_entity(const ScriptComponent& sc)
+    void LuaScriptingEngine::register_entity(const LuaScriptComponent& sc)
     {
         auto& lua = *state->lua;
 

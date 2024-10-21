@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "camera/camera.hpp"
 #include "core/types.hpp"
 
@@ -123,38 +125,38 @@ namespace mag
             Camera camera;
     };
 
-    class Script;
+    class LuaScript;
+    struct LuaScriptComponent : public Component
+    {
+            LuaScriptComponent(const str& file_path) : file_path(file_path) {}
+
+            CLONE(LuaScriptComponent);
+
+            str file_path;
+            LuaScript* instance = nullptr;
+    };
+
+    // @TODO: finish scripting
+    // @TODO: 1. speed up script compilation
+    class ScriptableEntity;
+    typedef std::function<ScriptableEntity*()> CreateScriptFn;
+    typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
+
     struct ScriptComponent : public Component
     {
-            ScriptComponent(const str& file_path) : file_path(file_path) {}
+            ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
+                            DestroyScriptFn destroy_entity = nullptr)
+                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
+            {
+            }
 
             CLONE(ScriptComponent);
 
+            CreateScriptFn create_entity;
+            DestroyScriptFn destroy_entity;
+
             str file_path;
-            Script* instance = nullptr;
-    };
-
-    class ScriptableEntity;
-    struct NativeScriptComponent : public Component
-    {
-            CLONE(NativeScriptComponent);
-
-            ScriptableEntity* instance = nullptr;
-
-            ScriptableEntity* (*instanciate_script)();
-            void (*destroy_script)(NativeScriptComponent*);
-
-            template <typename T>
-            void bind()
-            {
-                static_assert(std::is_base_of<ScriptableEntity, T>::value, "T must be derived from ScriptableEntity");
-
-                instanciate_script = []() { return static_cast<ScriptableEntity*>(new T()); };
-                destroy_script = [](NativeScriptComponent* nsc)
-                {
-                    delete nsc->instance;
-                    nsc->instance = nullptr;
-                };
-            }
+            void* handle = nullptr;
+            ScriptableEntity* entity = nullptr;
     };
 };  // namespace mag

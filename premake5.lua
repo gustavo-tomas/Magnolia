@@ -57,7 +57,7 @@ workspace "magnolia"
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
-    kind "staticlib"
+    kind "sharedlib"
     
     files
     {
@@ -207,6 +207,88 @@ project "sprout_editor"
         optimize "full" -- '-O3'
         runtime "release"
 
+-- Scripting -----------------------------------------------------------------------------------------------------------
+local script_dir = "sprout_editor/assets/scripts/"
+local script_files = os.matchfiles(script_dir .. "*.cpp")
+
+common_settings = function()
+    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    kind "sharedlib"
+
+    targetdir ("build/%{cfg.system}/scripts")
+    objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/scripts/%{prj.name}")
+
+    includedirs 
+    { 
+        "magnolia/src",
+
+        lib_includes
+    }
+
+    libdirs
+    { 
+        libdir
+    }
+
+    links
+    {
+        "magnolia", lib_links
+    }
+
+    filter "system:linux"
+        pic "on"
+        links
+        {
+            "vulkan", "sdl"
+        }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines
+        {
+            "_CRT_SECURE_NO_WARNINGS"
+        }
+
+        links
+        {
+            "vulkan-1",
+            "SDL2",
+            "SDL2main",
+        }
+        -- entrypoint("mainCRTStartup")            
+        
+    filter "configurations:debug"
+        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
+        symbols "on" -- '-g'
+        optimize "off" -- '-O0'
+        runtime "debug"
+
+    filter "configurations:profile"
+        buildoptions { "-Werror" }
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        symbols "off"
+        optimize "on" -- '-O2'
+        runtime "release"
+
+    filter "configurations:release"
+        buildoptions { "-Werror" }
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        symbols "off"
+        optimize "full" -- '-O3'
+        runtime "release"
+end
+
+-- @TODO: this is a bit of a hack to compile each script .cpp file in its own .dll. We create a project for each file.
+for _, file in ipairs(script_files) do
+    local script_name = path.getbasename(file)
+    project(script_name)
+        targetname (script_name)
+        files { file }
+        common_settings()
+end
+
 -- Libs ----------------------------------------------------------------------------------------------------------------
 
 -- Skip compilation if already compiled
@@ -283,7 +365,7 @@ project "fmt"
             os.execute("echo Skipping fmt compilation...")
         else
             os.execute("mkdir -p build/linux/fmt")
-            os.execute("cd build/linux/fmt && cmake -S ../../../libs/fmt -B . && make -j" .. number_of_cores())
+            os.execute("cd build/linux/fmt && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S ../../../libs/fmt -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/fmt/libfmt.a " .. libdir .. "/libfmt.a")
         end
     end
@@ -311,7 +393,7 @@ project "sdl"
             os.execute("echo Skipping SDL2 compilation...")
         else
             os.execute("mkdir -p build/linux/sdl")
-            os.execute("cd build/linux/sdl && cmake -S ../../../libs/sdl -B . && make -j" .. number_of_cores())
+            os.execute("cd build/linux/sdl && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S ../../../libs/sdl -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/sdl/libSDL2.a " .. libdir .. "/libsdl.a")
             os.execute("cp build/linux/sdl/libSDL2main.a " .. libdir .. "/libSDL2main.a")
         end
@@ -417,7 +499,7 @@ project "meshoptimizer"
             os.execute("echo Skipping meshoptimizer compilation...")
         else
             os.execute("mkdir -p build/linux/meshoptimizer")
-            os.execute("cd build/linux/meshoptimizer && cmake -S ../../../libs/meshoptimizer -B . && make -j" .. number_of_cores())
+            os.execute("cd build/linux/meshoptimizer && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S ../../../libs/meshoptimizer -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/meshoptimizer/libmeshoptimizer.a " .. libdir .. "/libmeshoptimizer.a")
         end
     end
@@ -444,7 +526,7 @@ project "bullet"
             os.execute("echo Skipping bullet compilation...")
         else
             os.execute("mkdir -p build/linux/bullet")
-            os.execute("cd build/linux/bullet && cmake -S ../../../libs/bullet -B . && make -j" .. number_of_cores())
+            os.execute("cd build/linux/bullet && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S ../../../libs/bullet -B . && make -j" .. number_of_cores())
 
             os.execute("cp build/linux/bullet/src/BulletDynamics/libBulletDynamics.a " .. libdir .. "/libBulletDynamics.a")
             os.execute("cp build/linux/bullet/src/BulletInverseDynamics/libBulletInverseDynamics.a " .. libdir .. "/libBulletInverseDynamics.a")
@@ -501,7 +583,7 @@ project "lua"
         else
             os.execute("mkdir -p build/linux/lua")
             os.execute("cp -r libs/lua build/linux")
-            os.execute("cd build/linux/lua && make -j" .. number_of_cores())
+            os.execute("cd build/linux/lua && make MYCFLAGS=\"-fPIC\" -j" .. number_of_cores())
             os.execute("cp build/linux/lua/liblua.a " .. libdir .. "/liblua.a")
         end
     end

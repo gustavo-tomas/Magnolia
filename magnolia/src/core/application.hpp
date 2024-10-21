@@ -42,6 +42,7 @@ namespace mag
             Window& get_window() { return *window; };
             Renderer& get_renderer() { return *renderer; };
             FileSystem& get_file_system() { return *file_system; };
+            FileWatcher& get_file_watcher() { return *file_watcher; };
             JobSystem& get_job_system() { return *job_system; };
             ImageLoader& get_image_loader() { return *image_loader; };
             MaterialLoader& get_material_loader() { return *material_loader; };
@@ -65,6 +66,7 @@ namespace mag
             unique<Window> window;
             unique<Renderer> renderer;
             unique<FileSystem> file_system;
+            unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
             unique<ImageLoader> image_loader;
             unique<MaterialLoader> material_loader;

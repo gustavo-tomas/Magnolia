@@ -7,7 +7,15 @@
 
 namespace mag
 {
-    Scene::Scene() : name("Untitled"), ecs(new ECS()) {}
+    Scene::Scene() : name("Untitled"), ecs(new ECS(10'000, BIND_FN2(Scene::on_component_added))) {}
+
+    Scene::~Scene()
+    {
+        if (running)
+        {
+            on_stop();
+        }
+    }
 
     void Scene::on_start()
     {
@@ -18,35 +26,59 @@ namespace mag
 
         physics_engine.on_simulation_start(this);
 
-        ScriptingEngine::new_state();
+        LuaScriptingEngine::new_state();
 
         // Instantiate scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
         {
-            auto* sc = ecs->get_component<ScriptComponent>(id);
-            if (!sc->instance)
+            auto* script = ecs->get_component<LuaScriptComponent>(id);
+            if (!script->instance)
             {
-                sc->instance = new Script();
-                sc->instance->ecs = ecs.get();
-                sc->instance->entity_id = id;
+                script->instance = new LuaScript();
+                script->instance->ecs = ecs.get();
+                script->instance->entity_id = id;
 
-                ScriptingEngine::load_script(sc->file_path);
-                ScriptingEngine::register_entity(*sc);
+                LuaScriptingEngine::load_script(script->file_path);
+                LuaScriptingEngine::register_entity(*script);
 
-                sc->instance->on_create(*sc->instance);
+                script->instance->on_create(*script->instance);
             }
         }
 
         // Instantiate native scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<NativeScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
-            auto* nsc = ecs->get_component<NativeScriptComponent>(id);
-            if (!nsc->instance)
+            auto* script = ecs->get_component<ScriptComponent>(id);
+            if (!script->entity)
             {
-                nsc->instance = nsc->instanciate_script();
-                nsc->instance->ecs = ecs.get();
-                nsc->instance->entity_id = id;
-                nsc->instance->on_create();
+                void* handle = ScriptingEngine::load_script(script->file_path);
+                if (!handle)
+                {
+                    continue;
+                }
+
+                void* raw_create_script_fn = ScriptingEngine::get_symbol(handle, "create_script");
+                void* raw_destroy_script_fn = ScriptingEngine::get_symbol(handle, "destroy_script");
+
+                if (!raw_create_script_fn || !raw_destroy_script_fn)
+                {
+                    continue;
+                }
+
+                using CreateScriptFnPtr = ScriptableEntity* (*)();
+                using DestroyScriptFnPtr = void (*)(ScriptableEntity*);
+
+                CreateScriptFn create_script_fn = reinterpret_cast<CreateScriptFnPtr>(raw_create_script_fn);
+                DestroyScriptFn destroy_script_fn = reinterpret_cast<DestroyScriptFnPtr>(raw_destroy_script_fn);
+
+                script->handle = handle;
+                script->create_entity = create_script_fn;
+                script->destroy_entity = destroy_script_fn;
+
+                script->entity = script->create_entity();
+                script->entity->ecs = ecs.get();
+                script->entity->entity_id = id;
+                script->entity->on_create();
             }
         }
 
@@ -59,19 +91,26 @@ namespace mag
         auto& physics_engine = app.get_physics_engine();
 
         // Destroy scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
         {
-            auto* script = ecs->get_component<ScriptComponent>(id);
+            auto* script = ecs->get_component<LuaScriptComponent>(id);
             script->instance->on_destroy(*script->instance);
             delete script->instance;
             script->instance = nullptr;
         }
 
         // Destroy native scripts
-        for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
-            nsc->instance->on_destroy();
-            nsc->destroy_script(nsc);
+            if (script->entity)
+            {
+                script->entity->on_destroy();
+                script->destroy_entity(script->entity);
+                script->entity = nullptr;
+
+                ScriptingEngine::unload_script(script->handle);
+                script->handle = nullptr;
+            }
         }
 
         physics_engine.on_simulation_end();
@@ -103,7 +142,7 @@ namespace mag
         }
 
         // Update scripts
-        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<LuaScriptComponent>())
         {
             if (script->instance)
             {
@@ -112,21 +151,36 @@ namespace mag
         }
 
         // Update native scripts
-        for (auto nsc : ecs->get_all_components_of_type<NativeScriptComponent>())
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
-            if (nsc->instance)
+            if (script->entity)
             {
-                nsc->instance->on_update(dt);
+                script->entity->on_update(dt);
             }
         }
 
         on_update_internal(dt);
     }
 
+    void Scene::on_component_added(const u32 id, Component* component)
+    {
+        (void)id;
+        (void)component;
+    }
+
     void Scene::on_event(Event& e)
     {
         EventDispatcher dispatcher(e);
         dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Scene::on_resize));
+
+        // Emit events to the native scripts
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        {
+            if (script->entity)
+            {
+                script->entity->on_event(e);
+            }
+        }
 
         on_event_internal(e);
     }

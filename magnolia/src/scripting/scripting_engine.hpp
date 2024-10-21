@@ -1,12 +1,19 @@
 #pragma once
 
-#include "core/logger.hpp"
 #include "core/types.hpp"
 
 namespace mag
 {
-    class ScriptComponent;
     class ScriptingEngine
+    {
+        public:
+            static void* load_script(const str& file_path);  // returns nullptr on error
+            static void unload_script(void* handle);
+            static void* get_symbol(void* handle, const str& name);  // returns nullptr on error
+    };
+
+    class LuaScriptComponent;
+    class LuaScriptingEngine
     {
         public:
             static void initialize();
@@ -18,6 +25,6 @@ namespace mag
 
             static void load_script(const str& file_path);
 
-            static void register_entity(const ScriptComponent& sc);
+            static void register_entity(const LuaScriptComponent& sc);
     };
 };  // namespace mag

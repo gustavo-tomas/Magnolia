@@ -1,12 +1,29 @@
 #include "panels/properties_panel.hpp"
 
+#include "core/application.hpp"
+#include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "resources/model.hpp"
 
 namespace sprout
 {
 #define MIN_VALUE -1'000'000'000
 #define MAX_VALUE +1'000'000'000
+
+    b8 check_file(const str &file_path)
+    {
+        auto &app = get_application();
+        auto &file_system = app.get_file_system();
+
+        if (file_system.exists(file_path) && !file_system.is_directory(file_path))
+        {
+            return file_system.get_file_extension(file_path) == ".cpp";
+        }
+
+        return false;
+    }
 
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
@@ -109,6 +126,50 @@ namespace sprout
         if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                const ImGuiInputTextFlags flags =
+                    ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_EnterReturnsTrue;
+
+                str file_path = component->file_path;
+
+                ImGui::Text("File");
+                if (ImGui::InputText("##File", &file_path, flags))
+                {
+                    // Check file validity
+                    if (check_file(file_path))
+                    {
+                        component->file_path = file_path;
+                    }
+                }
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
+                    {
+                        const c8 *file_path = static_cast<const c8 *>(payload->Data);
+
+                        // Check file validity
+                        if (check_file(file_path))
+                        {
+                            // Add new file to file watcher
+                            auto &file_watcher = get_application().get_file_watcher();
+                            file_watcher.watch_file(file_path);
+
+                            // @NOTE: we dont remove the previous file because the user might want to swap back to it
+                            // file_watcher.stop_watching_file(component->file_path);
+
+                            component->file_path = file_path;
+                        }
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
+            }
+        }
+
+        if (auto component = ecs.get_component<LuaScriptComponent>(selected_entity_id))
+        {
+            if (ImGui::CollapsingHeader("LuaScript", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::TextWrapped("File Path: %s", component->file_path.c_str());
             }
