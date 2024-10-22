@@ -3,6 +3,7 @@
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "resources/material.hpp"

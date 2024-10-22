@@ -1,6 +1,7 @@
 #include "panels/properties_panel.hpp"
 
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"

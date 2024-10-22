@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "core/types.hpp"

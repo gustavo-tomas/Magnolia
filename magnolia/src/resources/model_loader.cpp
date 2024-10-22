@@ -1,6 +1,7 @@
 #include "resources/model_loader.hpp"
 
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 
 namespace mag

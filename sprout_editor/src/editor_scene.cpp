@@ -1,6 +1,7 @@
 #include "editor_scene.hpp"
 
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
 

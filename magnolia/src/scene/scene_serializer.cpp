@@ -1,6 +1,7 @@
 #include "scene/scene_serializer.hpp"
 
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
 #include "renderer/test_model.hpp"

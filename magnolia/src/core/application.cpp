@@ -1,5 +1,6 @@
 #include "core/application.hpp"
 
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "platform/file_dialog.hpp"
 #include "renderer/renderer.hpp"

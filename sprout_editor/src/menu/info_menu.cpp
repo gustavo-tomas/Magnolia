@@ -1,6 +1,7 @@
 #include "menu/info_menu.hpp"
 
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 

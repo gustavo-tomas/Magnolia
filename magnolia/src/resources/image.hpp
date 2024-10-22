@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <vector>
+
 #include "core/types.hpp"
 
 namespace mag

@@ -3,7 +3,11 @@
 // @TODO: this is unix only, create an interface for the windows build
 #include <dlfcn.h>
 
+#include <filesystem>
+
 #include "core/application.hpp"
+#include "core/buffer.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"

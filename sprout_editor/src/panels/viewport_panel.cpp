@@ -2,6 +2,7 @@
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/event.hpp"
-#include "core/file_system.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
 #include "resources/image.hpp"
@@ -17,6 +16,8 @@ namespace mag
 {
     class Renderer;
     class ShaderManager;
+    class FileSystem;
+    class FileWatcher;
 
     // Expand app options if necessary
     struct ApplicationOptions
