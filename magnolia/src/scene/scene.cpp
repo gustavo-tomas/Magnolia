@@ -3,6 +3,7 @@
 #include "camera/camera.hpp"
 #include "core/application.hpp"
 #include "core/assert.hpp"
+#include "physics/physics.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "scene/scriptable_entity.hpp"

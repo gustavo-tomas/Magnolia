@@ -7,6 +7,7 @@
 #include "ecs/ecs.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {

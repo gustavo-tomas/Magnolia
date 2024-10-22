@@ -2,11 +2,11 @@
 
 #include "core/event.hpp"
 #include "core/window.hpp"
-#include "physics/physics.hpp"
 
 namespace mag
 {
     class Renderer;
+    class PhysicsEngine;
     class FileSystem;
     class FileWatcher;
     class JobSystem;

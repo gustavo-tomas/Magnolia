@@ -2,6 +2,7 @@
 
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "physics/physics.hpp"
 #include "platform/file_dialog.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"

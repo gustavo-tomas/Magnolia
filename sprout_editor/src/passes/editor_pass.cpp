@@ -6,6 +6,7 @@
 #include "editor.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/type_conversions.hpp"
 

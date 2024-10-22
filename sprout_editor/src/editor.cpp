@@ -11,6 +11,7 @@
 #include "implot/implot.h"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
+#include "physics/physics.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
 
