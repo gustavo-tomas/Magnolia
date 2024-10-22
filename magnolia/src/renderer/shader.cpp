@@ -9,6 +9,7 @@
 #include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
 #include "resources/material.hpp"
+#include "resources/shader_loader.hpp"
 
 namespace mag
 {

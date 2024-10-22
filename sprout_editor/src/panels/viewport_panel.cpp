@@ -7,6 +7,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
+#include "resources/image_loader.hpp"
 #include "scene/scene_serializer.hpp"
 #include "tools/model_importer.hpp"
 
