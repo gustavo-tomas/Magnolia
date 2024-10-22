@@ -1,15 +1,16 @@
 #pragma once
 
-#include "camera/camera.hpp"
 #include "core/event.hpp"
 
 namespace mag
 {
+    class Camera;
+
     class EditorCameraController
     {
         public:
-            EditorCameraController(Camera& camera) : camera(camera) {}
-            ~EditorCameraController() = default;
+            EditorCameraController(Camera& camera);
+            ~EditorCameraController();
 
             void on_update(const f32 dt);
             void on_event(Event& e);

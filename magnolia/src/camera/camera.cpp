@@ -13,6 +13,8 @@ namespace mag
         calculate_frustum();
     }
 
+    Camera::~Camera() = default;
+
     void Camera::calculate_frustum() { this->frustum = Frustum(projection * view); }
 
     void Camera::calculate_view()
@@ -74,6 +76,25 @@ namespace mag
     }
 
     b8 Camera::is_aabb_visible(const BoundingBox& aabb) const { return frustum.is_aabb_visible(aabb); }
+
+    const f32& Camera::get_fov() const { return fov; }
+    const mat4& Camera::get_view() const { return view; }
+    const mat4& Camera::get_projection() const { return projection; }
+    const vec3& Camera::get_position() const { return position; }
+    const vec3& Camera::get_rotation() const { return rotation; }
+    const mat4& Camera::get_rotation_mat() const { return rotation_mat; }
+    const Frustum& Camera::get_frustum() const { return frustum; }
+
+    f32 Camera::get_near() const { return near; }
+    f32 Camera::get_far() const { return far; }
+    f32 Camera::get_aspect_ratio() const { return aspect_ratio; }
+
+    vec3 Camera::get_side() const { return rotation_mat[0]; }
+    vec3 Camera::get_up() const { return rotation_mat[1]; }
+    vec3 Camera::get_forward() const { return rotation_mat[2]; }
+    vec2 Camera::get_near_far() const { return {near, far}; }
+
+    Frustum::Frustum() = default;
 
     Frustum::Frustum(mat4 m)
     {
@@ -165,4 +186,6 @@ namespace mag
 
         return res * (-1.0f / D);
     }
+
+    std::vector<vec3> Frustum::get_points() const { return std::vector<vec3>(&points[0], &points[8]); }
 };  // namespace mag
