@@ -13,7 +13,6 @@
 #include "panels/status_panel.hpp"
 #include "panels/viewport_panel.hpp"
 #include "renderer/render_graph.hpp"
-#include "scene/scene.hpp"
 
 namespace sprout
 {

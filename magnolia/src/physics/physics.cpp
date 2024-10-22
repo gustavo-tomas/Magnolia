@@ -1,6 +1,8 @@
 #include "physics/physics.hpp"
 
 #include "btBulletDynamicsCommon.h"
+#include "core/logger.hpp"
+#include "ecs/ecs.hpp"
 #include "physics/type_conversions.hpp"
 
 namespace mag

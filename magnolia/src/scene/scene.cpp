@@ -1,6 +1,8 @@
 #include "scene/scene.hpp"
 
+#include "camera/camera.hpp"
 #include "core/application.hpp"
+#include "core/assert.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "scene/scriptable_entity.hpp"
@@ -230,6 +232,32 @@ namespace mag
         // Enqueue entity
         entity_deletion_queue.push_back(id);
     }
+
+    void Scene::set_name(const str& name) { this->name = name; }
+
+    b8 Scene::is_running() const { return running; }
+
+    const str& Scene::get_name() const { return name; }
+
+    ECS& Scene::get_ecs() { return *ecs; }
+
+    Camera& Scene::get_camera()
+    {
+        // @TODO: for now we assume the active camera is the first entity with a camera component
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
+        {
+            return camera_c->camera;
+        }
+
+        ASSERT(false, "No runtime camera!");
+        return std::get<0>(components[0])->camera;
+    }
+
+    void Scene::on_start_internal() {}
+    void Scene::on_stop_internal() {}
+    void Scene::on_event_internal(Event& e) { (void)e; }
+    void Scene::on_update_internal(const f32 dt) { (void)dt; }
 
     // @TODO
     // void Scene::set_render_scale(const f32 new_render_scale)

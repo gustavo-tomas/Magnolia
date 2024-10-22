@@ -1,38 +1,23 @@
 #pragma once
 
-#include "camera/camera.hpp"
-#include "camera/controller.hpp"
+#include "core/math.hpp"
 #include "scene/scene.hpp"
 
 namespace mag
 {
+    class Camera;
+    class EditorCameraController;
+
     class EditorScene : public Scene
     {
         public:
             EditorScene();
+            ~EditorScene();
 
             // Send the editor camera as the active camera in editor mode
-            virtual Camera& get_camera() override
-            {
-                if (is_running())
-                {
-                    auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
-                    for (auto [camera_c, transform] : components)
-                    {
-                        return camera_c->camera;
-                    }
+            virtual Camera& get_camera() override;
 
-                    ASSERT(false, "No runtime camera!");
-                    return std::get<0>(components[0])->camera;
-                }
-
-                else
-                {
-                    return *camera;
-                }
-            };
-
-            void on_viewport_resize(const uvec2& new_viewport_size);
+            void on_viewport_resize(const math::uvec2& new_viewport_size);
 
         protected:
             virtual void on_start_internal() override;
@@ -46,6 +31,6 @@ namespace mag
             unique<ECS> temporary_ecs;
             unique<Camera> camera;
             unique<EditorCameraController> camera_controller;
-            uvec2 current_viewport_size;
+            math::uvec2 current_viewport_size;
     };
 };  // namespace mag
