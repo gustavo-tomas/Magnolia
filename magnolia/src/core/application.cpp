@@ -6,6 +6,7 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "scripting/scripting_engine.hpp"
+#include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
 
 namespace mag

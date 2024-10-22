@@ -1,5 +1,7 @@
 #include "threads/job_system.hpp"
 
+#include <mutex>
+
 namespace mag
 {
     JobQueue::~JobQueue()

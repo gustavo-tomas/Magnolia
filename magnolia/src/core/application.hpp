@@ -10,7 +10,6 @@
 #include "resources/model.hpp"
 #include "resources/model_loader.hpp"
 #include "resources/shader_loader.hpp"
-#include "threads/job_system.hpp"
 
 namespace mag
 {
@@ -18,6 +17,7 @@ namespace mag
     class ShaderManager;
     class FileSystem;
     class FileWatcher;
+    class JobSystem;
 
     // Expand app options if necessary
     struct ApplicationOptions

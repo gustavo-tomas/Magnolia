@@ -4,6 +4,7 @@
 #include "core/file_system.hpp"
 #include "core/types.hpp"
 #include "ecs/components.hpp"
+#include "threads/job_system.hpp"
 
 namespace mag
 {

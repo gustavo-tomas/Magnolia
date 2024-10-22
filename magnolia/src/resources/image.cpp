@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "renderer/renderer.hpp"
+#include "threads/job_system.hpp"
 
 namespace mag
 {
