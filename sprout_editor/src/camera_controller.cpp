@@ -1,4 +1,4 @@
-#include "camera/controller.hpp"
+#include "camera_controller.hpp"
 
 #include "camera/camera.hpp"
 #include "core/application.hpp"

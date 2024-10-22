@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
+#include <thread>
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"

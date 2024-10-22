@@ -1,6 +1,6 @@
 #include "editor_scene.hpp"
 
-#include "camera/controller.hpp"
+#include "camera_controller.hpp"
 #include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/file_system.hpp"
