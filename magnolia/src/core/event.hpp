@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "core/keys.hpp"
 #include "core/types.hpp"
 
@@ -34,8 +32,6 @@ namespace mag
 
             virtual EventType get_type() const = 0;
     };
-
-    using EventCallback = std::function<void(Event&)>;
 
     // Automatic type deduction
     // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h

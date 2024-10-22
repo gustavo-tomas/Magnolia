@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
 
 #include "core/event.hpp"
 #include "core/keys.hpp"
@@ -12,6 +13,7 @@ struct SDL_Window;
 namespace mag
 {
     using namespace mag::math;
+    using EventCallback = std::function<void(Event&)>;
 
     struct WindowOptions
     {
