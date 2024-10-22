@@ -5,6 +5,7 @@
 #include "core/types.hpp"
 #include "ecs/components.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/image.hpp"
 
 namespace mag
 {

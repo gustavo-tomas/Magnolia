@@ -3,21 +3,21 @@
 #include "core/event.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
-#include "resources/image.hpp"
 #include "resources/image_loader.hpp"
-#include "resources/material.hpp"
 #include "resources/material_loader.hpp"
-#include "resources/model.hpp"
 #include "resources/model_loader.hpp"
 #include "resources/shader_loader.hpp"
 
 namespace mag
 {
     class Renderer;
-    class ShaderManager;
     class FileSystem;
     class FileWatcher;
     class JobSystem;
+    class ShaderManager;
+    class TextureManager;
+    class ModelManager;
+    class MaterialManager;
 
     // Expand app options if necessary
     struct ApplicationOptions

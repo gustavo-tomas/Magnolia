@@ -6,6 +6,7 @@
 #include "renderer/renderer.hpp"
 #include "renderer/type_conversions.hpp"
 #include "resources/material.hpp"
+#include "resources/model.hpp"
 
 namespace sprout
 {

@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/image.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 

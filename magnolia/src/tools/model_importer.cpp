@@ -7,6 +7,7 @@
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
 #include "resources/material.hpp"
+#include "resources/model.hpp"
 
 namespace mag
 {

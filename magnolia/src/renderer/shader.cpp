@@ -8,6 +8,7 @@
 #include "renderer/pipeline.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
+#include "resources/material.hpp"
 
 namespace mag
 {
