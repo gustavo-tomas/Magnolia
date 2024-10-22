@@ -1,5 +1,9 @@
 #pragma once
 
+#include <functional>
+#include <queue>
+#include <thread>
+
 #include "core/types.hpp"
 
 // @TODO: see travis vroman video for a nice explanation and to check job type/priority

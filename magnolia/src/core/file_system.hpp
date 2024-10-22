@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "core/buffer.hpp"
 #include "core/types.hpp"
 #include "nlohmann/json.hpp"

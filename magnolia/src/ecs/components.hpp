@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "camera/camera.hpp"
 #include "core/types.hpp"
 

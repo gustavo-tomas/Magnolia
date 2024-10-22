@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "core/event.hpp"
 #include "core/keys.hpp"
 #include "core/math.hpp"

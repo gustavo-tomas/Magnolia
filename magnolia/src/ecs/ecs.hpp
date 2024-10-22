@@ -1,5 +1,10 @@
 #pragma once
 
+#include <functional>
+#include <map>
+#include <set>
+#include <typeindex>
+
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "core/types.hpp"

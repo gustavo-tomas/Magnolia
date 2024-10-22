@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "core/keys.hpp"
 #include "core/types.hpp"
 
