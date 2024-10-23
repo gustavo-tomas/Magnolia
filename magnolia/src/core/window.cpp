@@ -10,6 +10,7 @@
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
+#include "private/key_mappings.hpp"
 
 namespace mag
 {
@@ -29,8 +30,8 @@ namespace mag
 
             std::unordered_map<Key, b8> key_state;
             std::unordered_map<Key, u32> key_update;
-            std::unordered_map<Button, b8> button_state;
-            std::unordered_map<Button, u32> button_update;
+            std::unordered_map<i32, b8> button_state;
+            std::unordered_map<i32, u32> button_update;
 
             const std::chrono::time_point<std::chrono::system_clock> start_time;
     };
@@ -92,7 +93,7 @@ namespace mag
         while (SDL_PollEvent(&e) != 0)
         {
             const Key key = static_cast<Key>(e.key.keysym.sym);
-            const Button button = static_cast<Button>(e.button.button);
+            const u8 button = e.button.button;
 
             switch (e.type)
             {
@@ -139,7 +140,7 @@ namespace mag
 
                 case SDL_MOUSEBUTTONDOWN:
                 {
-                    auto event = MousePressEvent(button);
+                    auto event = MousePressEvent(KeycodeMapper::from_SDL_button(button));
                     impl->event_callback(event);
 
                     impl->button_state[button] = true;
@@ -188,7 +189,7 @@ namespace mag
 
     b8 Window::is_key_down(const Key key) { return impl->key_state[key]; }
 
-    b8 Window::is_button_down(const Button button) { return impl->button_state[button]; }
+    b8 Window::is_button_down(const Button button) { return impl->button_state[KeycodeMapper::to_SDL_button(button)]; }
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
