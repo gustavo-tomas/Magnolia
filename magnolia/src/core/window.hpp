@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL.h>  // @TODO: temp
-
 #include <functional>
 
 #include "core/event.hpp"
@@ -16,8 +14,8 @@ namespace mag
 
     struct WindowOptions
     {
-            static constexpr uvec2 MAX_SIZE = uvec2(std::numeric_limits<u32>().max());
-            static constexpr ivec2 CENTER_POS = ivec2(SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            static constexpr uvec2 MAX_SIZE = uvec2(MAX_U32);
+            static constexpr ivec2 CENTER_POS = ivec2(MAX_I32);
 
             const EventCallback& event_callback;
             uvec2 size = MAX_SIZE;
