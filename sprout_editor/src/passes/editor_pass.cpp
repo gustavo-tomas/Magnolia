@@ -7,8 +7,8 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "physics/physics.hpp"
+#include "private/renderer_type_conversions.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/type_conversions.hpp"
 
 namespace sprout
 {
