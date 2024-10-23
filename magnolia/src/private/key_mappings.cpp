@@ -1,6 +1,5 @@
 #include "private/key_mappings.hpp"
 
-#include "SDL_keycode.h"
 #include "SDL_mouse.h"
 
 namespace mag

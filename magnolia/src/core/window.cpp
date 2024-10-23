@@ -1,12 +1,11 @@
 #include "core/window.hpp"
 
-#include <SDL.h>
-#include <SDL_vulkan.h>
-
 #include <chrono>
 #include <thread>
 #include <vulkan/vulkan.hpp>
 
+#include "SDL.h"
+#include "SDL_vulkan.h"
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"

@@ -1,8 +1,16 @@
 #ifndef _PCH_HEADER_
 #define _PCH_HEADER_
 
+// Don't include this anywhere besides the corresponding .cpp file
+
 // First party headers
 #include "core/types.hpp"
+
+// Third party headers
+#include <vulkan/vulkan.hpp>
+
+#include "SDL.h"
+#include "SDL_vulkan.h"
 
 // STL headers
 #include <algorithm>
