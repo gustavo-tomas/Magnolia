@@ -1,6 +1,10 @@
 #ifndef _PCH_HEADER_
 #define _PCH_HEADER_
 
+// First party headers
+#include "core/types.hpp"
+
+// STL headers
 #include <algorithm>
 #include <chrono>
 #include <cstdint>

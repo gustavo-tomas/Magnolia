@@ -1,7 +1,6 @@
 #include "renderer/render_graph.hpp"
 
 #include "core/assert.hpp"
-#include "core/types.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph_conversions.hpp"
 #include "renderer/type_conversions.hpp"

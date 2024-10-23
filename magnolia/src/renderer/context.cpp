@@ -1,7 +1,6 @@
 #include "renderer/context.hpp"
 
 #include "core/logger.hpp"
-#include "core/types.hpp"
 
 // Use to trace VMA allocations
 #ifdef MAG_DEBUG_TRACE
