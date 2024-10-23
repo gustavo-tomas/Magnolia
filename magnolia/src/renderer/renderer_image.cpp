@@ -78,7 +78,7 @@ namespace mag
         const u64 texture_size = pixels.size();
 
         VulkanBuffer staging_buffer;
-        staging_buffer.initialize(texture_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO,
+        staging_buffer.initialize(texture_size, vk::BufferUsageFlagBits::eTransferSrc, VMA_MEMORY_USAGE_AUTO,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
         staging_buffer.copy(pixels.data(), texture_size);
 

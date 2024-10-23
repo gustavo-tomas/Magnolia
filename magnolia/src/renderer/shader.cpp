@@ -116,7 +116,7 @@ namespace mag
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
-                            size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            size, vk::BufferUsageFlagBits::eUniformBuffer, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
@@ -139,7 +139,7 @@ namespace mag
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
-                            BUFFER_SIZE, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            BUFFER_SIZE, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
