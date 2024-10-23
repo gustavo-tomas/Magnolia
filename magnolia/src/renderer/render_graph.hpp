@@ -61,7 +61,7 @@ namespace mag
     class RenderGraphPass
     {
         public:
-            RenderGraphPass(const str& name, const uvec2& size);
+            RenderGraphPass(const str& name);
             virtual ~RenderGraphPass() = default;
 
             virtual void on_render(RenderGraph& render_graph) { (void)render_graph; };
@@ -89,7 +89,6 @@ namespace mag
             void add_attachment(const AttachmentDescription& attachment_description);
 
             const str name;
-            const uvec2 size;
             std::vector<AttachmentDescription> attachment_descriptions;
     };
 

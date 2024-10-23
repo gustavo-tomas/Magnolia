@@ -5,7 +5,11 @@
 #include "core/logger.hpp"
 #include "core/math.hpp"
 #include "core/types.hpp"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "sol/sol.hpp"
+#pragma clang diagnostic pop
 
 namespace mag
 {

@@ -8,7 +8,7 @@
 
 namespace mag
 {
-    Renderer::Renderer(Window& window) : window(window)
+    Renderer::Renderer(Window& window)
     {
         // Create context
         const ContextCreateOptions context_options = {.window = window};

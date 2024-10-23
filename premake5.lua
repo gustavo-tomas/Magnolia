@@ -3,7 +3,7 @@ workspace "magnolia"
     architecture "x86_64"
     language "c++"
     cppdialect "c++20"
-    toolset "gcc"
+    toolset "clang"
     configurations {"debug", "profile", "release"}
     location "build"
     staticruntime "on"

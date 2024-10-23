@@ -7,8 +7,8 @@
 namespace mag
 {
     class ECS;
-    class Component;
     class Camera;
+    struct Component;
 
     class Scene
     {

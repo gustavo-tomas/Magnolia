@@ -12,7 +12,7 @@
 
 namespace sprout
 {
-    EditorPass::EditorPass(const uvec2& size) : RenderGraphPass("EditorPass", size)
+    EditorPass::EditorPass(const uvec2& size) : RenderGraphPass("EditorPass")
     {
         add_input_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("EditorOutputColor", AttachmentType::Color, size);
@@ -88,7 +88,7 @@ namespace sprout
 
     LineList get_camera_gizmo(const Camera& camera);
 
-    GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass", size)
+    GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass")
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();

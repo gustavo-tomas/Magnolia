@@ -45,7 +45,6 @@ namespace mag
         private:
             void on_resize(WindowResizeEvent& e);
 
-            Window& window;
             unique<Context> context;
 
             // Model data

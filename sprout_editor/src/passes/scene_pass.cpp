@@ -25,7 +25,7 @@ namespace sprout
     };
     // @TODO: temporary
 
-    ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass", size)
+    ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();

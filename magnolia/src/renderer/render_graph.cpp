@@ -12,7 +12,7 @@
 
 namespace mag
 {
-    RenderGraphPass::RenderGraphPass(const str& name, const uvec2& size) : name(name), size(size) {}
+    RenderGraphPass::RenderGraphPass(const str& name) : name(name) {}
 
     void RenderGraphPass::add_input_attachment(const str& attachment_name, const AttachmentType attachment_type,
                                                const uvec2& size, const AttachmentState attachment_state)
