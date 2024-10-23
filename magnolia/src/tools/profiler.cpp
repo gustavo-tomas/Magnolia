@@ -30,6 +30,16 @@ namespace mag
         }
     }
 
+    void ProfilerManager::clear_results() { results.clear(); }
+
+    const std::map<str, ProfileResult>& ProfilerManager::get_results() const { return results; }
+
+    ProfilerManager& ProfilerManager::get()
+    {
+        static ProfilerManager instance;
+        return instance;
+    }
+
     ScopedProfiler::ScopedProfiler(const str& name, const f64 time_interval_ms)
         : name(name), time_interval_ms(time_interval_ms)
     {
