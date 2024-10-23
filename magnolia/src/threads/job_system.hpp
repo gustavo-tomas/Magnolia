@@ -1,8 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <queue>
-#include <thread>
 
 #include "core/types.hpp"
 
@@ -16,8 +14,7 @@ namespace mag
 
     struct Job
     {
-            Job(const JobExecuteFn& execute, const JobCallbackFn& on_execute_finished)
-                : execute_fn(std::move(execute)), callback_fn(std::move(on_execute_finished)){};
+            Job(const JobExecuteFn& execute, const JobCallbackFn& on_execute_finished);
 
             const JobExecuteFn execute_fn;
             const JobCallbackFn callback_fn;
@@ -26,14 +23,15 @@ namespace mag
     class JobQueue
     {
         public:
+            JobQueue();
             ~JobQueue();
 
             void push(Job job);
             Job pop();
 
         private:
-            std::queue<Job> jobs;
-            std::mutex jobs_mutex;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 
     class JobSystem
@@ -46,14 +44,7 @@ namespace mag
             void process_callbacks();
 
         private:
-            JobQueue job_queue;
-            std::vector<std::thread> workers;
-
-            std::queue<JobCallbackFn> callback_queue;
-            std::queue<b8> execute_result_queue;
-            std::mutex callback_mutex;
-            std::mutex execute_mutex;
-
-            b8 running;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace mag
