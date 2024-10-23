@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/keys.hpp"
 #include "core/types.hpp"
 
 namespace mag
@@ -9,6 +8,9 @@ namespace mag
 #define EVENT_CLASS_TYPE_DECLARATION    \
     static EventType get_static_type(); \
     virtual EventType get_type() const override;
+
+    enum class Keys : u64;
+    enum class Buttons : u64;
 
     enum class EventType
     {
@@ -73,20 +75,20 @@ namespace mag
 
     struct KeyPressEvent : public Event
     {
-            explicit KeyPressEvent(const Key key);
+            explicit KeyPressEvent(const Keys key);
 
             EVENT_CLASS_TYPE_DECLARATION;
 
-            Key key;
+            Keys key;
     };
 
     struct KeyReleaseEvent : public Event
     {
-            explicit KeyReleaseEvent(const Key key);
+            explicit KeyReleaseEvent(const Keys key);
 
             EVENT_CLASS_TYPE_DECLARATION;
 
-            Key key;
+            Keys key;
     };
 
     struct MouseMoveEvent : public Event
@@ -111,11 +113,11 @@ namespace mag
 
     struct MousePressEvent : public Event
     {
-            explicit MousePressEvent(const Button button);
+            explicit MousePressEvent(const Buttons button);
 
             EVENT_CLASS_TYPE_DECLARATION;
 
-            Button button;
+            Buttons button;
     };
 
     struct NativeEvent : public Event

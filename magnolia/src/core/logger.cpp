@@ -1,5 +1,8 @@
 #include "core/logger.hpp"
 
+#include <chrono>
+#include <iomanip>
+
 namespace mag
 {
     str const Logger::timestamp()

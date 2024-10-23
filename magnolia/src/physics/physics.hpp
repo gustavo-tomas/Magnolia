@@ -1,12 +1,21 @@
 #pragma once
 
-#include "ecs/components.hpp"
-#include "scene/scene.hpp"
+#include "core/types.hpp"
+
+namespace mag::math
+{
+    struct LineList;
+};
 
 namespace mag
 {
     class PhysicsDebugDraw;
+    class Scene;
+
     struct PhysicsInternalData;
+    struct TransformComponent;
+    struct BoxColliderComponent;
+    struct RigidBodyComponent;
 
     class PhysicsEngine
     {
@@ -19,7 +28,7 @@ namespace mag
 
             void on_update(const f32 dt);
 
-            const LineList& get_line_list() const;
+            const math::LineList& get_line_list() const;
 
         private:
             void add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,

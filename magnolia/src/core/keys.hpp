@@ -8,7 +8,7 @@ namespace mag
 {
     // @NOTE: not all keys are mapped. We probably wont need them.
     // Key mappings
-    typedef enum class Keys
+    typedef enum class Keys : u64
     {
         Unknown = SDLK_UNKNOWN,
         Return = SDLK_RETURN,
@@ -263,15 +263,15 @@ namespace mag
         Kbdillumup = SDLK_KBDILLUMUP,
         Eject = SDLK_EJECT,
         Sleep = SDLK_SLEEP,
-        App1 = SDLK_APP1,
+        App1 = SDLK_APP1
     } Key;
 
-    typedef enum class Buttons
+    typedef enum class Buttons : u64
     {
         Left = SDL_BUTTON_LEFT,
         Middle = SDL_BUTTON_MIDDLE,
         Right = SDL_BUTTON_RIGHT,
         X1 = SDL_BUTTON_X1,
-        X2 = SDL_BUTTON_X2,
+        X2 = SDL_BUTTON_X2
     } Button;
 };  // namespace mag

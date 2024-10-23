@@ -1,7 +1,5 @@
 #include "camera/camera.hpp"
 
-#include "core/types.hpp"
-
 namespace mag
 {
     Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,

@@ -1,7 +1,6 @@
 #include "core/event.hpp"
 
 #include "core/keys.hpp"
-#include "core/types.hpp"
 
 namespace mag
 {
