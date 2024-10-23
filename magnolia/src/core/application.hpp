@@ -42,20 +42,20 @@ namespace mag
             virtual void on_event(Event& e) = 0;
             virtual void on_update(const f32 dt) = 0;
 
-            Window& get_window() { return *window; };
-            Renderer& get_renderer() { return *renderer; };
-            FileSystem& get_file_system() { return *file_system; };
-            FileWatcher& get_file_watcher() { return *file_watcher; };
-            JobSystem& get_job_system() { return *job_system; };
-            ImageLoader& get_image_loader() { return *image_loader; };
-            MaterialLoader& get_material_loader() { return *material_loader; };
-            ModelLoader& get_model_loader() { return *model_loader; };
-            TextureManager& get_texture_manager() { return *texture_loader; };
-            MaterialManager& get_material_manager() { return *material_manager; };
-            ModelManager& get_model_manager() { return *model_manager; };
-            ShaderLoader& get_shader_loader() { return *shader_loader; };
-            ShaderManager& get_shader_manager() { return *shader_manager; };
-            PhysicsEngine& get_physics_engine() { return *physics_engine; };
+            Window& get_window();
+            Renderer& get_renderer();
+            FileSystem& get_file_system();
+            FileWatcher& get_file_watcher();
+            JobSystem& get_job_system();
+            ImageLoader& get_image_loader();
+            MaterialLoader& get_material_loader();
+            ModelLoader& get_model_loader();
+            TextureManager& get_texture_manager();
+            MaterialManager& get_material_manager();
+            ModelManager& get_model_manager();
+            ShaderLoader& get_shader_loader();
+            ShaderManager& get_shader_manager();
+            PhysicsEngine& get_physics_engine();
 
         protected:
             // Process events from the user application

@@ -168,4 +168,19 @@ namespace mag
         (void)e;
         running = false;
     }
+
+    Window& Application::get_window() { return *window; }
+    Renderer& Application::get_renderer() { return *renderer; }
+    FileSystem& Application::get_file_system() { return *file_system; }
+    FileWatcher& Application::get_file_watcher() { return *file_watcher; }
+    JobSystem& Application::get_job_system() { return *job_system; }
+    ImageLoader& Application::get_image_loader() { return *image_loader; }
+    MaterialLoader& Application::get_material_loader() { return *material_loader; }
+    ModelLoader& Application::get_model_loader() { return *model_loader; }
+    TextureManager& Application::get_texture_manager() { return *texture_loader; }
+    MaterialManager& Application::get_material_manager() { return *material_manager; }
+    ModelManager& Application::get_model_manager() { return *model_manager; }
+    ShaderLoader& Application::get_shader_loader() { return *shader_loader; }
+    ShaderManager& Application::get_shader_manager() { return *shader_manager; }
+    PhysicsEngine& Application::get_physics_engine() { return *physics_engine; }
 };  // namespace mag
