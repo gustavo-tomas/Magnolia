@@ -60,6 +60,6 @@ namespace mag
             b8 is_flag_set(const u32 flag) const;
 
             struct IMPL;
-            std::unique_ptr<IMPL> impl;
+            unique<IMPL> impl;
     };
 };  // namespace mag
