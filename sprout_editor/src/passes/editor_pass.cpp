@@ -34,7 +34,7 @@ namespace sprout
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL2_NewFrame(get_application().get_window().get_handle());
+        ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(get_application().get_window().get_handle()));
         ImGui::NewFrame();
 
         // @NOTE: not very accurate

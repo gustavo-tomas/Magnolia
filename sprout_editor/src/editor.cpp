@@ -80,7 +80,7 @@ namespace sprout
 
         set_default_editor_style(ImGui::GetStyle());
 
-        ASSERT(ImGui_ImplSDL2_InitForVulkan(get_application().get_window().get_handle()),
+        ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
                "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};

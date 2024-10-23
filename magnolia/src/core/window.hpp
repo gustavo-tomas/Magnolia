@@ -1,14 +1,11 @@
 #pragma once
 
-#include <chrono>
 #include <functional>
 
 #include "core/event.hpp"
 #include "core/keys.hpp"
 #include "core/math.hpp"
 #include "core/types.hpp"
-
-struct SDL_Window;
 
 namespace mag
 {
@@ -55,24 +52,13 @@ namespace mag
             ivec2 get_mouse_position() const;
             uvec2 get_size() const;
             f64 get_time() const;  // Ms since start
-            SDL_Window* get_handle() const { return handle; };
-            const std::vector<const c8*>& get_instance_extensions() const { return extensions; };
+            void* get_handle() const;
+            const std::vector<const c8*>& get_instance_extensions() const;
 
         private:
             b8 is_flag_set(const u32 flag) const;
 
-            EventCallback event_callback;
-
-            SDL_Window* handle = {};
-            u32 update_counter = {};
-            b8 ignore_mouse_motion_events = {};
-            std::vector<const c8*> extensions;
-
-            std::unordered_map<Key, b8> key_state;
-            std::unordered_map<Key, u32> key_update;
-            std::unordered_map<Button, b8> button_state;
-            std::unordered_map<Button, u32> button_update;
-
-            const std::chrono::time_point<std::chrono::system_clock> start_time;
+            struct IMPL;
+            std::unique_ptr<IMPL> impl;
     };
 };  // namespace mag
