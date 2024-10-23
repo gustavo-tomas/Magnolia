@@ -4,6 +4,10 @@
 // Don't include this anywhere besides the corresponding .cpp file
 
 // First party headers
+#include "core/assert.hpp"
+#include "core/keys.hpp"
+#include "core/logger.hpp"
+#include "core/math.hpp"
 #include "core/types.hpp"
 
 // Third party headers
