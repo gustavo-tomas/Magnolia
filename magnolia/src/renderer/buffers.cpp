@@ -48,6 +48,14 @@ namespace mag
         memcpy(static_cast<c8*>(mapped_region) + offset, data, size_bytes);
     }
 
+    const vk::Buffer& VulkanBuffer::get_buffer() const { return buffer; }
+
+    const VmaAllocation& VulkanBuffer::get_allocation() const { return allocation; }
+
+    void* VulkanBuffer::get_data() const { return mapped_region; }
+
+    u64 VulkanBuffer::get_size() const { return size; }
+
     u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
 
     // GPUBuffer
@@ -75,6 +83,8 @@ namespace mag
 
     void GPUBuffer::shutdown() { buffer.shutdown(); }
 
+    VulkanBuffer& GPUBuffer::get_buffer() { return buffer; }
+
     // VertexBuffer
     // -----------------------------------------------------------------------------------------------------------------
     VertexBuffer::VertexBuffer(const void* vertices, const u64 size_bytes)
@@ -90,6 +100,8 @@ namespace mag
         gpu_buffer.initialize(vertices, size_bytes, vk::BufferUsageFlagBits::eVertexBuffer);
     }
 
+    VulkanBuffer& VertexBuffer::get_buffer() { return gpu_buffer.get_buffer(); }
+
     // IndexBuffer
     // -----------------------------------------------------------------------------------------------------------------
     IndexBuffer::IndexBuffer(const void* indices, const u64 size_bytes)
@@ -104,4 +116,6 @@ namespace mag
         gpu_buffer.shutdown();
         gpu_buffer.initialize(indices, size_bytes, vk::BufferUsageFlagBits::eIndexBuffer);
     }
+
+    VulkanBuffer& IndexBuffer::get_buffer() { return gpu_buffer.get_buffer(); }
 };  // namespace mag

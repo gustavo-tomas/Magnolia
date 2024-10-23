@@ -21,10 +21,10 @@ namespace mag
             void unmap_memory();
             void copy(const void* data, const u64 size_bytes, const u64 offset = 0);
 
-            const vk::Buffer& get_buffer() const { return buffer; };
-            const VmaAllocation& get_allocation() const { return allocation; };  // @TODO: move to cpp
-            void* get_data() const { return mapped_region; };
-            u64 get_size() const { return size; };
+            const vk::Buffer& get_buffer() const;
+            const VmaAllocation& get_allocation() const;
+            void* get_data() const;
+            u64 get_size() const;
             u64 get_device_address() const;
 
         private:
@@ -40,7 +40,7 @@ namespace mag
             void initialize(const void* data, const u64 size_bytes, const vk::BufferUsageFlags usage);
             void shutdown();
 
-            VulkanBuffer& get_buffer() { return buffer; };
+            VulkanBuffer& get_buffer();
 
         private:
             VulkanBuffer buffer;
@@ -54,7 +54,7 @@ namespace mag
 
             void resize(const void* vertices, const u64 size_bytes);
 
-            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer();
 
         private:
             GPUBuffer gpu_buffer;
@@ -68,7 +68,7 @@ namespace mag
 
             void resize(const void* indices, const u64 size_bytes);
 
-            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer();
 
         private:
             GPUBuffer gpu_buffer;
