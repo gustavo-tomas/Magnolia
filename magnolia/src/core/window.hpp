@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL.h>  // @TODO: temp
+
 #include <functional>
 
 #include "core/event.hpp"
@@ -42,9 +44,10 @@ namespace mag
             void set_resizable(const b8 resizable);
             void set_fullscreen(const b8 fullscreen);
 
-            b8 is_key_pressed(const Key key);
-            b8 is_key_down(const Key key);
-            b8 is_button_down(const Button button);
+            b8 is_key_pressed(const Key key) const;
+            b8 is_key_down(const Key key) const;
+            b8 is_button_pressed(const Button button) const;
+            b8 is_button_down(const Button button) const;
             b8 is_mouse_captured() const;
             b8 is_minimized() const;
             b8 is_fullscreen() const;

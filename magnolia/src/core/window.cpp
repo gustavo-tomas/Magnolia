@@ -28,8 +28,8 @@ namespace mag
             b8 ignore_mouse_motion_events = {};
             std::vector<const c8*> extensions;
 
-            std::unordered_map<Key, b8> key_state;
-            std::unordered_map<Key, u32> key_update;
+            std::unordered_map<SDL_Keycode, b8> key_state;
+            std::unordered_map<SDL_Keycode, u32> key_update;
             std::unordered_map<i32, b8> button_state;
             std::unordered_map<i32, u32> button_update;
 
@@ -92,14 +92,14 @@ namespace mag
 
         while (SDL_PollEvent(&e) != 0)
         {
-            const Key key = static_cast<Key>(e.key.keysym.sym);
+            const SDL_Keycode key = e.key.keysym.sym;
             const u8 button = e.button.button;
 
             switch (e.type)
             {
                 case SDL_KEYDOWN:
                 {
-                    auto event = KeyPressEvent(key);
+                    auto event = KeyPressEvent(KeycodeMapper::from_SDL_keycode(key));
                     impl->event_callback(event);
 
                     if (e.key.repeat == 1) continue;
@@ -110,7 +110,7 @@ namespace mag
 
                 case SDL_KEYUP:
                 {
-                    auto event = KeyReleaseEvent(key);
+                    auto event = KeyReleaseEvent(KeycodeMapper::from_SDL_keycode(key));
                     impl->event_callback(event);
 
                     impl->key_state[key] = false;
@@ -182,14 +182,24 @@ namespace mag
 
     void Window::sleep(const u32 ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 
-    b8 Window::is_key_pressed(const Key key)
+    b8 Window::is_key_pressed(const Key key) const
     {
-        return impl->key_state[key] && (impl->key_update[key] == impl->update_counter);
+        return impl->key_state[KeycodeMapper::to_SDL_keycode(key)] &&
+               (impl->key_update[KeycodeMapper::to_SDL_keycode(key)] == impl->update_counter);
     }
 
-    b8 Window::is_key_down(const Key key) { return impl->key_state[key]; }
+    b8 Window::is_button_pressed(const Button button) const
+    {
+        return impl->button_state[KeycodeMapper::to_SDL_button(button)] &&
+               (impl->button_update[KeycodeMapper::to_SDL_button(button)] == impl->update_counter);
+    }
 
-    b8 Window::is_button_down(const Button button) { return impl->button_state[KeycodeMapper::to_SDL_button(button)]; }
+    b8 Window::is_key_down(const Key key) const { return impl->key_state[KeycodeMapper::to_SDL_keycode(key)]; }
+
+    b8 Window::is_button_down(const Button button) const
+    {
+        return impl->button_state[KeycodeMapper::to_SDL_button(button)];
+    }
 
     b8 Window::is_mouse_captured() const { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
