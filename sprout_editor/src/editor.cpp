@@ -307,4 +307,17 @@ namespace sprout
 
         render_graph->build();
     }
+
+    EditorScene &Editor::get_active_scene() { return *open_scenes[selected_scene_index]; }
+    RenderGraph &Editor::get_render_graph() { return *render_graph; }
+    const std::vector<ref<EditorScene>> &Editor::get_open_scenes() const { return open_scenes; }
+    u32 Editor::get_selected_scene_index() const { return selected_scene_index; }
+    const uvec2 &Editor::get_viewport_size() const { return viewport_panel->get_viewport_size(); }
+
+    // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
+    u32 &Editor::get_texture_output() { return settings_panel->get_texture_output(); }
+    u32 &Editor::get_normal_output() { return settings_panel->get_normal_output(); }
+    b8 &Editor::is_bounding_box_enabled() { return settings_panel->is_bounding_box_enabled(); }
+    b8 &Editor::is_physics_colliders_enabled() { return settings_panel->is_physics_colliders_enabled(); }
+    b8 Editor::is_disabled() const { return disabled; }
 };  // namespace sprout

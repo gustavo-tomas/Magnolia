@@ -39,20 +39,18 @@ namespace sprout
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
-            EditorScene& get_active_scene() { return *open_scenes[selected_scene_index]; };
-            RenderGraph& get_render_graph() { return *render_graph; };
-            const std::vector<ref<EditorScene>>& get_open_scenes() const { return open_scenes; };
-            u32 get_selected_scene_index() const { return selected_scene_index; };
+            EditorScene& get_active_scene();
+            RenderGraph& get_render_graph();
+            const std::vector<ref<EditorScene>>& get_open_scenes() const;
+            const uvec2& get_viewport_size() const;
+            u32 get_selected_scene_index() const;
 
             // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
-            u32& get_texture_output() { return settings_panel->get_texture_output(); };
-            u32& get_normal_output() { return settings_panel->get_normal_output(); };
-            b8& is_bounding_box_enabled() { return settings_panel->is_bounding_box_enabled(); };
-            b8& is_physics_colliders_enabled() { return settings_panel->is_physics_colliders_enabled(); };
-
-            const uvec2& get_viewport_size() const { return viewport_panel->get_viewport_size(); };
-
-            b8 is_disabled() const { return disabled; };
+            u32& get_texture_output();
+            u32& get_normal_output();
+            b8& is_bounding_box_enabled();
+            b8& is_physics_colliders_enabled();
+            b8 is_disabled() const;
 
         private:
             friend class EditorPass;
