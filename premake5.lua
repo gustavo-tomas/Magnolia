@@ -117,7 +117,7 @@ project "magnolia"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'

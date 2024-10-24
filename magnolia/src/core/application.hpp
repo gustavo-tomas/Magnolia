@@ -66,22 +66,8 @@ namespace mag
             void on_window_close(WindowCloseEvent& e);
             void on_quit(QuitEvent& e);
 
-            unique<Window> window;
-            unique<Renderer> renderer;
-            unique<FileSystem> file_system;
-            unique<FileWatcher> file_watcher;
-            unique<JobSystem> job_system;
-            unique<ImageLoader> image_loader;
-            unique<MaterialLoader> material_loader;
-            unique<ModelLoader> model_loader;
-            unique<ShaderLoader> shader_loader;
-            unique<TextureManager> texture_loader;
-            unique<MaterialManager> material_manager;
-            unique<ModelManager> model_manager;
-            unique<ShaderManager> shader_manager;
-            unique<PhysicsEngine> physics_engine;
-
-            b8 running;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 
     // @TODO: idk if this is thread safe but i wont use singletons <:(
