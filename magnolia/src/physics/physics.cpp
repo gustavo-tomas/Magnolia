@@ -4,7 +4,7 @@
 #include "core/logger.hpp"
 #include "core/math.hpp"
 #include "ecs/ecs.hpp"
-#include "physics/type_conversions.hpp"
+#include "private/physics_type_conversions.hpp"
 #include "scene/scene.hpp"
 
 namespace mag
