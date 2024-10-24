@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "renderer/renderer_image.hpp"
 
 namespace mag

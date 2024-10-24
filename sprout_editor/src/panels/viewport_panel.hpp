@@ -2,6 +2,7 @@
 
 // clang-format off
 
+#include "core/event.hpp"
 #include "camera/camera.hpp"
 #include "ecs/ecs.hpp"
 #include "imgui.h"

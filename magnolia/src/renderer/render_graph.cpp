@@ -3,6 +3,7 @@
 #include "core/assert.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
+#include "renderer/frame.hpp"
 #include "renderer/render_graph_conversions.hpp"
 #include "tools/profiler.hpp"
 

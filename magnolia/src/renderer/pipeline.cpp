@@ -4,6 +4,7 @@
 
 #include "private/pipeline_type_conversions.hpp"
 #include "renderer/context.hpp"
+#include "renderer/frame.hpp"
 
 namespace mag
 {

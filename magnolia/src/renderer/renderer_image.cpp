@@ -1,5 +1,8 @@
 #include "renderer/renderer_image.hpp"
 
+#include "renderer/buffers.hpp"
+#include "renderer/command.hpp"
+
 namespace mag
 {
     RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,

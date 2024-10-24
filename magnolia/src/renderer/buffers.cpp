@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"
+#include "renderer/command.hpp"
 #include "renderer/context.hpp"
 
 namespace mag

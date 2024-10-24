@@ -2,6 +2,7 @@
 
 #include "renderer/context.hpp"
 #include "renderer/sampler.hpp"
+#include "vk_mem_alloc.h"  // @TODO: temp
 
 namespace mag
 {

@@ -2,6 +2,7 @@
 
 #include "core/event.hpp"
 #include "core/window.hpp"
+#include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "resources/image.hpp"

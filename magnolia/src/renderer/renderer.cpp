@@ -3,6 +3,7 @@
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "renderer/buffers.hpp"
+#include "renderer/frame.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/model.hpp"
 
