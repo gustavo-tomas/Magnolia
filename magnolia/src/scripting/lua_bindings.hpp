@@ -2,19 +2,13 @@
 
 // See this: https://github.com/dwjclark11/Scion2D/blob/master/SCION_CORE/src/Scripting/GlmLuaBindings.cpp
 
-#include "core/logger.hpp"
-#include "core/math.hpp"
-#include "core/types.hpp"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#include "sol/sol.hpp"
-#pragma clang diagnostic pop
+namespace sol
+{
+    class state;
+};
 
 namespace mag
 {
-    using namespace math;
-
     class LuaBindings
     {
         public:

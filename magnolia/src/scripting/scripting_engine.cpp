@@ -11,7 +11,11 @@
 #include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "sol/sol.hpp"
+#pragma clang diagnostic pop
 
 namespace mag
 {
