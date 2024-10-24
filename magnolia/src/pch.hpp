@@ -12,6 +12,7 @@
 
 // Third party headers
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 #include "SDL.h"
 #include "SDL_vulkan.h"

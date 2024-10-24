@@ -1,10 +1,9 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 #include "core/types.hpp"
 #include "renderer/buffers.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 namespace mag
 {

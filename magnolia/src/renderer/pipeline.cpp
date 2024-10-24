@@ -1,5 +1,7 @@
 #include "renderer/pipeline.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "private/pipeline_type_conversions.hpp"
 #include "renderer/context.hpp"
 

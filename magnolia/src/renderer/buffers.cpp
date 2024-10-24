@@ -1,5 +1,7 @@
 #include "renderer/buffers.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "renderer/context.hpp"
 

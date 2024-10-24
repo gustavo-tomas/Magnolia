@@ -1,5 +1,7 @@
 #include "private/pipeline_type_conversions.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 
 namespace mag

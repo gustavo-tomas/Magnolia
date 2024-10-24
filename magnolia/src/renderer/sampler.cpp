@@ -1,5 +1,7 @@
 #include "renderer/sampler.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "renderer/context.hpp"
 
 namespace mag

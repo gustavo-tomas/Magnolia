@@ -1,5 +1,7 @@
 #include "renderer/descriptors.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
