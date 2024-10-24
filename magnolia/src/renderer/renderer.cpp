@@ -8,6 +8,7 @@
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
 #include "renderer/render_graph.hpp"
+#include "renderer/renderer_image.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "resources/model.hpp"

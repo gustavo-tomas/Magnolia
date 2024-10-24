@@ -7,7 +7,6 @@
 
 namespace mag
 {
-    struct Pass;
     class RendererImage;
 
     class CommandBuffer
