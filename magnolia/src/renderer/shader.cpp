@@ -357,4 +357,21 @@ namespace mag
         command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), set,
                                            descriptor_set);
     }
+
+    const ShaderConfiguration& Shader::get_shader_configuration() const { return configuration; }
+
+    const std::vector<vk::VertexInputBindingDescription>& Shader::get_vertex_bindings() const
+    {
+        return vertex_bindings;
+    }
+
+    const std::vector<vk::VertexInputAttributeDescription>& Shader::get_vertex_attributes() const
+    {
+        return vertex_attributes;
+    }
+
+    const std::vector<vk::DescriptorSetLayout>& Shader::get_descriptor_set_layouts() const
+    {
+        return descriptor_set_layouts;
+    }
 };  // namespace mag

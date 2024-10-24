@@ -16,7 +16,7 @@ namespace mag
 
             void bind();
 
-            const vk::PipelineLayout& get_layout() const { return pipeline_layout; };
+            const vk::PipelineLayout& get_layout() const;
 
         private:
             vk::Pipeline pipeline;

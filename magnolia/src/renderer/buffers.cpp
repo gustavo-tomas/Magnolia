@@ -10,6 +10,9 @@ namespace mag
 {
     // VulkanBuffer
     // -----------------------------------------------------------------------------------------------------------------
+    VulkanBuffer::VulkanBuffer() = default;
+    VulkanBuffer::~VulkanBuffer() = default;
+
     void VulkanBuffer::initialize(const u64 size_bytes, const vk::BufferUsageFlags usage,
                                   const VmaMemoryUsage memory_usage, const VmaAllocationCreateFlags memory_flags)
     {
@@ -63,6 +66,9 @@ namespace mag
 
     // GPUBuffer
     // -----------------------------------------------------------------------------------------------------------------
+    GPUBuffer::GPUBuffer() = default;
+    GPUBuffer::~GPUBuffer() = default;
+
     void GPUBuffer::initialize(const void* data, const u64 size_bytes, const vk::BufferUsageFlags usage)
     {
         auto& context = get_context();

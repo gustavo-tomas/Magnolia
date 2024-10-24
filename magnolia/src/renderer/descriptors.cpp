@@ -30,6 +30,8 @@ namespace mag
 
     // DescriptorAllocator
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorAllocator::DescriptorAllocator() = default;
+
     DescriptorAllocator::~DescriptorAllocator()
     {
         auto& context = get_context();
@@ -121,6 +123,8 @@ namespace mag
 
     // DescriptorLayoutCache
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorLayoutCache::DescriptorLayoutCache() = default;
+
     DescriptorLayoutCache::~DescriptorLayoutCache()
     {
         auto& context = get_context();
@@ -227,6 +231,8 @@ namespace mag
 
     // DescriptorBuilder
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorBuilder::DescriptorBuilder() = default;
+
     DescriptorBuilder::~DescriptorBuilder()
     {
         for (auto* info : buffer_infos)

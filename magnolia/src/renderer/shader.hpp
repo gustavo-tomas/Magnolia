@@ -56,22 +56,10 @@ namespace mag
             void set_texture(const str& name, Image* texture);
             void set_material(const str& name, Material* material);
 
-            const ShaderConfiguration& get_shader_configuration() const { return configuration; }
-
-            const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const
-            {
-                return vertex_bindings;
-            };
-
-            const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const
-            {
-                return vertex_attributes;
-            };
-
-            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const
-            {
-                return descriptor_set_layouts;
-            };
+            const ShaderConfiguration& get_shader_configuration() const;
+            const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const;
+            const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const;
+            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const;
 
         private:
             struct UBO

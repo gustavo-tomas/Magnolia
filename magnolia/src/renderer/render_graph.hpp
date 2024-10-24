@@ -64,12 +64,12 @@ namespace mag
     {
         public:
             RenderGraphPass(const str& name);
-            virtual ~RenderGraphPass() = default;
+            virtual ~RenderGraphPass();
 
-            virtual void on_render(RenderGraph& render_graph) { (void)render_graph; };
+            virtual void on_render(RenderGraph& render_graph);
 
-            const PerformanceResults& get_performance_results() const { return performance_results; };
-            const str& get_name() const { return name; };
+            const PerformanceResults& get_performance_results() const;
+            const str& get_name() const;
 
             // @TODO: temp?
             Pass pass;
@@ -97,7 +97,7 @@ namespace mag
     class RenderGraph
     {
         public:
-            RenderGraph() = default;
+            RenderGraph();
             ~RenderGraph();
 
             void add_pass(RenderGraphPass* pass);
@@ -106,13 +106,9 @@ namespace mag
             void build();
             void execute();
 
-            RendererImage& get_attachment(const str& attachment_name)
-            {
-                const u32 curr_frame = get_context().get_curr_frame_number();
-                return *attachments[attachment_name][curr_frame].texture;
-            };
-            RendererImage& get_output_attachment() { return get_attachment(output_attachment_name); };
-            const std::vector<RenderGraphPass*>& get_passes() const { return passes; };
+            RendererImage& get_attachment(const str& attachment_name);
+            RendererImage& get_output_attachment();
+            const std::vector<RenderGraphPass*>& get_passes() const;
 
         private:
             void execute_render_pass(RenderGraphPass* render_pass);

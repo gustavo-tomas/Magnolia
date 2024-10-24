@@ -13,7 +13,7 @@ namespace mag
                     const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels);
             ~Sampler();
 
-            const vk::Sampler& get_handle() const { return sampler; };
+            const vk::Sampler& get_handle() const;
 
         private:
             vk::Sampler sampler;

@@ -13,6 +13,9 @@ namespace mag
     class CommandBuffer
     {
         public:
+            CommandBuffer();
+            ~CommandBuffer();
+
             void initialize(const vk::CommandPool& pool, const vk::CommandBufferLevel level);
 
             void begin();
@@ -48,7 +51,7 @@ namespace mag
                                  const vk::ImageLayout new_layout, const u32 base_mip_levels = 0,
                                  const u32 mip_levels = 1);
 
-            const vk::CommandBuffer& get_handle() const { return this->command_buffer; }
+            const vk::CommandBuffer& get_handle() const;
 
         private:
             vk::CommandBuffer command_buffer;

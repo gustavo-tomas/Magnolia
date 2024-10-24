@@ -7,6 +7,9 @@
 
 namespace mag
 {
+    CommandBuffer::CommandBuffer() = default;
+    CommandBuffer::~CommandBuffer() = default;
+
     void CommandBuffer::initialize(const vk::CommandPool& pool, const vk::CommandBufferLevel level)
     {
         vk::CommandBufferAllocateInfo cmd_alloc_info(pool, level, 1);
@@ -136,4 +139,6 @@ namespace mag
                                            vk::PipelineStageFlagBits::eAllCommands, {}, nullptr, nullptr,
                                            image_barrier);
     }
+
+    const vk::CommandBuffer& CommandBuffer::get_handle() const { return this->command_buffer; }
 };  // namespace mag

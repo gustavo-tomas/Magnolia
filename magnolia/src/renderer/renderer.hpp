@@ -19,6 +19,7 @@ namespace mag
     {
         public:
             Renderer(Window& window);
+            ~Renderer();
 
             void on_update(RenderGraph& render_graph);
             void on_event(Event& e);

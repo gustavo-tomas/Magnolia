@@ -123,4 +123,6 @@ namespace mag
         const CommandBuffer& command_buffer = get_context().get_curr_frame().command_buffer;
         command_buffer.get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
     }
+
+    const vk::PipelineLayout& Pipeline::get_layout() const { return pipeline_layout; }
 };  // namespace mag

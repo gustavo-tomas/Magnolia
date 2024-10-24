@@ -24,4 +24,6 @@ namespace mag
         auto& context = get_context();
         context.get_device().destroySampler(sampler);
     }
+
+    const vk::Sampler& Sampler::get_handle() const { return sampler; }
 };  // namespace mag

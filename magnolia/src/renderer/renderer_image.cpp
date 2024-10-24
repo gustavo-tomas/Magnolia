@@ -155,4 +155,12 @@ namespace mag
 
         staging_buffer.shutdown();
     }
+
+    const vk::Image& RendererImage::get_image() const { return image; }
+    const vk::ImageView& RendererImage::get_image_view() const { return image_view; }
+    const vk::Format& RendererImage::get_format() const { return format; }
+    const vk::Extent3D& RendererImage::get_extent() const { return extent; }
+    const Sampler& RendererImage::get_sampler() const { return sampler; }
+    const str& RendererImage::get_name() const { return name; }
+    u32 RendererImage::get_mip_levels() const { return mip_levels; }
 };  // namespace mag

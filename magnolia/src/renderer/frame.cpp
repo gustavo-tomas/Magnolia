@@ -131,4 +131,8 @@ namespace mag
 
         return true;
     }
+
+    Frame& FrameProvider::get_current_frame() { return frames[frame_number]; }
+    const u32& FrameProvider::get_swapchain_image_index() const { return this->swapchain_image_index; }
+    const u32& FrameProvider::get_current_frame_number() const { return frame_number; }
 };  // namespace mag

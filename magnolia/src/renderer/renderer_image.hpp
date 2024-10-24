@@ -25,13 +25,13 @@ namespace mag
             // The dimensions, mip levels, channels, etc are not changed, only the image pixels
             void set_pixels(const std::vector<u8>& pixels);
 
-            const vk::Image& get_image() const { return image; };
-            const vk::ImageView& get_image_view() const { return image_view; };
-            const vk::Format& get_format() const { return format; };
-            const vk::Extent3D& get_extent() const { return extent; };
-            const Sampler& get_sampler() const { return sampler; };
-            const str& get_name() const { return name; };
-            u32 get_mip_levels() const { return mip_levels; };
+            const vk::Image& get_image() const;
+            const vk::ImageView& get_image_view() const;
+            const vk::Format& get_format() const;
+            const vk::Extent3D& get_extent() const;
+            const Sampler& get_sampler() const;
+            const str& get_name() const;
+            u32 get_mip_levels() const;
 
         private:
             void create_image_and_view();

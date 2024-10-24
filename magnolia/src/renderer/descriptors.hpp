@@ -13,7 +13,7 @@ namespace mag
     class DescriptorAllocator
     {
         public:
-            DescriptorAllocator() = default;
+            DescriptorAllocator();
             ~DescriptorAllocator();
 
             std::vector<std::pair<vk::DescriptorType, f32>> sizes = {{vk::DescriptorType::eSampler, 0.5f},
@@ -47,7 +47,7 @@ namespace mag
     class DescriptorLayoutCache
     {
         public:
-            DescriptorLayoutCache() = default;
+            DescriptorLayoutCache();
             ~DescriptorLayoutCache();
 
             vk::DescriptorSetLayout create_descriptor_layout(const vk::DescriptorSetLayoutCreateInfo* info);
@@ -77,6 +77,7 @@ namespace mag
     class DescriptorBuilder
     {
         public:
+            DescriptorBuilder();
             ~DescriptorBuilder();
 
             static DescriptorBuilder begin(DescriptorLayoutCache* layout_cache, DescriptorAllocator* allocator);

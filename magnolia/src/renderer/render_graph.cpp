@@ -1,10 +1,10 @@
 #include "renderer/render_graph.hpp"
 
 #include "core/assert.hpp"
+#include "private/render_graph_type_conversions.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
-#include "renderer/render_graph_conversions.hpp"
 #include "tools/profiler.hpp"
 
 // @TODO: reimplement missing features:
@@ -14,6 +14,9 @@
 namespace mag
 {
     RenderGraphPass::RenderGraphPass(const str& name) : name(name) {}
+    RenderGraphPass::~RenderGraphPass() = default;
+
+    void RenderGraphPass::on_render(RenderGraph& render_graph) { (void)render_graph; }
 
     void RenderGraphPass::add_input_attachment(const str& attachment_name, const AttachmentType attachment_type,
                                                const uvec2& size, const AttachmentState attachment_state)
@@ -57,8 +60,12 @@ namespace mag
         attachment_descriptions.push_back(attachment_description);
     }
 
+    const PerformanceResults& RenderGraphPass::get_performance_results() const { return performance_results; }
+    const str& RenderGraphPass::get_name() const { return name; }
+
     // Render graph
     // -----------------------------------------------------------------------------------------------------------------
+    RenderGraph::RenderGraph() = default;
 
     RenderGraph::~RenderGraph()
     {
@@ -266,4 +273,14 @@ namespace mag
 
         command_buffer.end_rendering();
     }
+
+    RendererImage& RenderGraph::get_attachment(const str& attachment_name)
+    {
+        const u32 curr_frame = get_context().get_curr_frame_number();
+        return *attachments[attachment_name][curr_frame].texture;
+    }
+
+    RendererImage& RenderGraph::get_output_attachment() { return get_attachment(output_attachment_name); }
+
+    const std::vector<RenderGraphPass*>& RenderGraph::get_passes() const { return passes; }
 };  // namespace mag

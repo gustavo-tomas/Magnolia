@@ -13,6 +13,9 @@ namespace mag
     class VulkanBuffer
     {
         public:
+            VulkanBuffer();
+            ~VulkanBuffer();
+
             void initialize(const u64 size_bytes, const vk::BufferUsageFlags usage, const VmaMemoryUsage memory_usage,
                             const VmaAllocationCreateFlags memory_flags);
             void shutdown();
@@ -37,6 +40,9 @@ namespace mag
     class GPUBuffer
     {
         public:
+            GPUBuffer();
+            ~GPUBuffer();
+
             void initialize(const void* data, const u64 size_bytes, const vk::BufferUsageFlags usage);
             void shutdown();
 

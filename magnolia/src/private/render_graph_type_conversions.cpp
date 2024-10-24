@@ -1,11 +1,11 @@
-#pragma once
+#include "private/render_graph_type_conversions.hpp"
 
 #include "core/assert.hpp"
 #include "renderer/render_graph.hpp"
 
 namespace mag
 {
-    inline vk::AttachmentLoadOp mag_attachment_state_to_vk(const AttachmentState state)
+    vk::AttachmentLoadOp mag_attachment_state_to_vk(const AttachmentState state)
     {
         switch (state)
         {

@@ -17,6 +17,8 @@ namespace mag
         LOG_SUCCESS("Context initialized");
     }
 
+    Renderer::~Renderer() = default;
+
     void Renderer::on_update(RenderGraph& render_graph)
     {
         this->context->begin_frame();
