@@ -57,6 +57,11 @@ workspace "magnolia"
         "LinkTimeOptimization"
     }
 
+    defines
+    {
+        "VULKAN_HPP_NAMESPACE=vk"
+    }
+
 -- @TODO: consistent build folders/output
 -- @TODO: fix windows build
 
