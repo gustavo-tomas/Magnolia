@@ -5,6 +5,7 @@
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
@@ -42,6 +43,8 @@ namespace sprout
         pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
         pass.depth_clear_value = {1.0f};
     }
+
+    ScenePass::~ScenePass() = default;
 
     void ScenePass::on_render(RenderGraph& render_graph)
     {

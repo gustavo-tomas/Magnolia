@@ -1,9 +1,16 @@
 #pragma once
 
-#include "ecs/components.hpp"
+#include "core/types.hpp"
 #include "renderer/render_graph.hpp"
-#include "renderer/shader.hpp"
-#include "renderer/test_model.hpp"
+
+namespace mag
+{
+    struct TransformComponent;
+    struct Image;
+
+    class Shader;
+    class Line;
+};  // namespace mag
 
 namespace sprout
 {
@@ -13,6 +20,7 @@ namespace sprout
     {
         public:
             EditorPass(const uvec2& size);
+            ~EditorPass();
 
             virtual void on_render(RenderGraph& render_graph) override;
     };
@@ -21,6 +29,7 @@ namespace sprout
     {
         public:
             GizmoPass(const uvec2& size);
+            ~GizmoPass();
 
             virtual void on_render(RenderGraph& render_graph) override;
 

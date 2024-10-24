@@ -1,7 +1,11 @@
 #pragma once
 
 #include "renderer/render_graph.hpp"
-#include "renderer/shader.hpp"
+
+namespace mag
+{
+    class Shader;
+};
 
 namespace sprout
 {
@@ -11,6 +15,7 @@ namespace sprout
     {
         public:
             ScenePass(const uvec2& size);
+            ~ScenePass();
 
             virtual void on_render(RenderGraph& render_graph) override;
 

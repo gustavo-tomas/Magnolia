@@ -10,6 +10,8 @@
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/frame.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
+#include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 
 namespace sprout
@@ -23,6 +25,8 @@ namespace sprout
         pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
         pass.depth_clear_value = {1.0f};
     }
+
+    EditorPass::~EditorPass() = default;
 
     void EditorPass::on_render(RenderGraph& render_graph)
     {
@@ -111,6 +115,8 @@ namespace sprout
         pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.3, 1.0));
         pass.depth_clear_value = {1.0f};
     }
+
+    GizmoPass::~GizmoPass() = default;
 
     void GizmoPass::on_render(RenderGraph& render_graph)
     {
