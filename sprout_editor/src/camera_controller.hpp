@@ -5,6 +5,11 @@
 namespace mag
 {
     class Camera;
+};
+
+namespace sprout
+{
+    using namespace mag;
 
     class EditorCameraController
     {
@@ -21,4 +26,4 @@ namespace mag
 
             Camera& camera;
     };
-};  // namespace mag
+};  // namespace sprout

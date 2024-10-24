@@ -4,7 +4,7 @@
 #include "core/application.hpp"
 #include "core/window.hpp"
 
-namespace mag
+namespace sprout
 {
     EditorCameraController::EditorCameraController(Camera& camera) : camera(camera) {}
 
@@ -63,4 +63,4 @@ namespace mag
 
         this->camera.set_position(camera_position);
     }
-};  // namespace mag
+};  // namespace sprout

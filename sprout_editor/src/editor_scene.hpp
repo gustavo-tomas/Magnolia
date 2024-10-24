@@ -6,6 +6,12 @@
 namespace mag
 {
     class Camera;
+};
+
+namespace sprout
+{
+    using namespace mag;
+
     class EditorCameraController;
 
     class EditorScene : public Scene
@@ -33,4 +39,4 @@ namespace mag
             unique<EditorCameraController> camera_controller;
             math::uvec2 current_viewport_size;
     };
-};  // namespace mag
+};  // namespace sprout

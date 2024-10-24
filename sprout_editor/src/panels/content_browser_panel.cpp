@@ -1,6 +1,7 @@
 #include "panels/content_browser_panel.hpp"
 
 #include <filesystem>
+#include <vulkan/vulkan.hpp>
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
@@ -8,6 +9,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "renderer/renderer.hpp"
+#include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 
 namespace sprout

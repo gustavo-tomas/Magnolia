@@ -6,6 +6,7 @@
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "menu/info_menu.hpp"

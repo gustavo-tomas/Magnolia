@@ -4,6 +4,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "physics/physics.hpp"
@@ -48,34 +49,7 @@ namespace sprout
         performance_results.draw_calls++;
         performance_results.rendered_triangles += 2;
 
-        // Disable widgets
-        ImGui::BeginDisabled(editor.disabled);
-
-        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
-                                              static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
-
-        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-
-        // ImGui windows goes here
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
-        // ImGui::ShowDemoWindow();
-
-        editor.scene_panel->render(window_flags, ecs);
-        const u64 selected_entity_id = editor.scene_panel->get_selected_entity_id();
-
-        editor.menu_bar->render(window_flags);
-        editor.content_browser_panel->render(window_flags);
-        editor.material_panel->render(window_flags, ecs, selected_entity_id);
-        editor.properties_panel->render(window_flags, ecs, selected_entity_id);
-        editor.settings_panel->render(window_flags);
-        editor.camera_panel->render(window_flags, camera);
-        editor.status_panel->render(window_flags);
-
-        ImGui::EndDisabled();
-
-        // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
-        // by rendering after the ImGui::EndDisabled()
-        editor.viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
+        editor.render(ecs, camera, viewport_image);
 
         // End
         ImGui::Render();

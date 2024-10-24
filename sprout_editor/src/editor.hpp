@@ -2,17 +2,11 @@
 
 #include <magnolia.hpp>
 
-#include "editor_scene.hpp"
-#include "menu/menu_bar.hpp"
-#include "panels/camera_panel.hpp"
-#include "panels/content_browser_panel.hpp"
-#include "panels/materials_panel.hpp"
-#include "panels/properties_panel.hpp"
-#include "panels/scene_panel.hpp"
-#include "panels/settings_panel.hpp"
-#include "panels/status_panel.hpp"
-#include "panels/viewport_panel.hpp"
-#include "renderer/render_graph.hpp"
+namespace mag
+{
+    class RenderGraph;
+    class RendererImage;
+}  // namespace mag
 
 namespace sprout
 {
@@ -20,6 +14,8 @@ namespace sprout
 
     // ImGui drag and drop types
     inline const c8* CONTENT_BROWSER_ITEM = "CONTENT_BROWSER_ITEM";
+
+    class EditorScene;
 
     class Editor : public Application
     {
@@ -55,6 +51,8 @@ namespace sprout
         private:
             friend class EditorPass;
 
+            void render(ECS& ecs, Camera& camera, RendererImage& viewport_image);
+
             void on_sdl_event(NativeEvent& e);
             void on_resize(WindowResizeEvent& e);
             void on_quit(QuitEvent& e);
@@ -63,27 +61,8 @@ namespace sprout
             void set_active_scene(const u32 index);
             void build_render_graph(const uvec2& size, const uvec2& viewport_size);
 
-            vk::DescriptorPool descriptor_pool;
-
-            unique<MenuBar> menu_bar;
-            unique<ContentBrowserPanel> content_browser_panel;
-            unique<ViewportPanel> viewport_panel;
-            unique<ScenePanel> scene_panel;
-            unique<MaterialsPanel> material_panel;
-            unique<PropertiesPanel> properties_panel;
-            unique<StatusPanel> status_panel;
-            unique<CameraPanel> camera_panel;
-            unique<SettingsPanel> settings_panel;
-
-            unique<RenderGraph> render_graph;
-            std::vector<ref<EditorScene>> open_scenes;
-            std::vector<u32> open_scenes_marked_for_deletion;
-
-            u32 selected_scene_index = 0;
-            u32 next_scene_index = 0;
-
-            uvec2 curr_viewport_size;
-            b8 disabled = false;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 
     Editor& get_editor();

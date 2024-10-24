@@ -9,7 +9,7 @@
 #include "ecs/ecs.hpp"
 #include "threads/job_system.hpp"
 
-namespace mag
+namespace sprout
 {
     EditorScene::EditorScene()
         : Scene(),
@@ -182,4 +182,4 @@ namespace mag
             return *camera;
         }
     }
-};  // namespace mag
+};  // namespace sprout

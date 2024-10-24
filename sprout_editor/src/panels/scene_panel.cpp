@@ -2,8 +2,10 @@
 
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/test_model.hpp"
+#include "imgui.h"
+#include "resources/model.hpp"
 
 namespace sprout
 {
