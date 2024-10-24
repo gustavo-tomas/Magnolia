@@ -1,19 +1,20 @@
 #pragma once
 
-#include "core/event.hpp"
-#include "core/window.hpp"
-#include "renderer/buffers.hpp"
-#include "renderer/context.hpp"
-#include "renderer/render_graph.hpp"
-#include "resources/image.hpp"
+#include "core/types.hpp"
 
 // @TODO: refactor this API to be more consistent
 
 namespace mag
 {
+    class Window;
+    class RenderGraph;
     class Line;
+    class RendererImage;
+
+    struct Event;
+    struct WindowResizeEvent;
     struct Model;
-    struct Material;
+    struct Image;
 
     class Renderer
     {
@@ -47,13 +48,7 @@ namespace mag
         private:
             void on_resize(WindowResizeEvent& e);
 
-            unique<Context> context;
-
-            // Model data
-            std::map<Model*, ref<VertexBuffer>> vertex_buffers;
-            std::map<Model*, ref<IndexBuffer>> index_buffers;
-
-            // Image data
-            std::map<Image*, ref<RendererImage>> images;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace mag

@@ -11,6 +11,7 @@
 #include "renderer/pipeline.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
+#include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/shader_loader.hpp"
 
