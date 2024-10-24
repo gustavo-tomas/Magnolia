@@ -40,40 +40,36 @@ namespace mag
             void end_timestamp();
             void calculate_timestamp();
 
-            const vk::Instance& get_instance() const { return this->instance; };
-            const vk::Device& get_device() const { return this->device; };
-            const vk::PhysicalDevice& get_physical_device() const { return this->physical_device; };
-            const vk::Queue& get_graphics_queue() const { return this->graphics_queue; };
-            const vk::SurfaceKHR& get_surface() const { return this->surface; };
-            const vk::SurfaceFormatKHR& get_surface_format() const { return this->surface_format; };
-            const vk::Extent2D& get_surface_extent() const { return this->surface_extent; };
-            const vk::SwapchainKHR& get_swapchain() const { return this->swapchain; };
-            const vk::Format& get_swapchain_image_format() const { return this->surface_format.format; };
-            const vk::CommandPool& get_command_pool() const { return this->command_pool; };
-            const vk::Fence& get_upload_fence() const { return this->upload_fence; };
-            const std::vector<vk::Image>& get_swapchain_images() const { return this->swapchain_images; };
-            const std::vector<vk::ImageView>& get_swapchain_image_views() const { return this->swapchain_image_views; };
-            const VmaAllocator& get_allocator() const { return this->allocator; };
-            const ProfileResult& get_timestamp() const { return this->timestamp; };
-            const u32& get_curr_frame_number() const { return this->frame_provider.get_current_frame_number(); };
-
-            const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const
-            {
-                return this->descriptor_buffer_properties;
-            };
+            const vk::Instance& get_instance() const;
+            const vk::Device& get_device() const;
+            const vk::PhysicalDevice& get_physical_device() const;
+            const vk::Queue& get_graphics_queue() const;
+            const vk::SurfaceKHR& get_surface() const;
+            const vk::SurfaceFormatKHR& get_surface_format() const;
+            const vk::Extent2D& get_surface_extent() const;
+            const vk::SwapchainKHR& get_swapchain() const;
+            const vk::Format& get_swapchain_image_format() const;
+            const vk::CommandPool& get_command_pool() const;
+            const vk::Fence& get_upload_fence() const;
+            const std::vector<vk::Image>& get_swapchain_images() const;
+            const std::vector<vk::ImageView>& get_swapchain_image_views() const;
+            const VmaAllocator& get_allocator() const;
+            const ProfileResult& get_timestamp() const;
+            const u32& get_curr_frame_number() const;
+            const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& get_descriptor_buffer_properties() const;
 
             vk::Format get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
                                             const vk::FormatFeatureFlags features) const;
             vk::Format get_supported_depth_format() const;
 
-            Frame& get_curr_frame() { return this->frame_provider.get_current_frame(); };
-            DescriptorLayoutCache& get_descriptor_layout_cache() { return *this->descriptor_layout_cache; };
-            DescriptorAllocator& get_descriptor_allocator() { return *this->descriptor_allocator; };
+            Frame& get_curr_frame();
+            DescriptorLayoutCache& get_descriptor_layout_cache();
+            DescriptorAllocator& get_descriptor_allocator();
 
-            vk::SampleCountFlagBits get_msaa_samples() const { return this->msaa_samples; };
-            u32 get_queue_family_index() const { return this->queue_family_index; };
-            u32 get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); };
-            u32 get_frame_count() const { return frame_count; };
+            vk::SampleCountFlagBits get_msaa_samples() const;
+            u32 get_queue_family_index() const;
+            u32 get_swapchain_image_index() const;
+            u32 get_frame_count() const;
 
         private:
             vk::Instance instance;

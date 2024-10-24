@@ -476,6 +476,28 @@ namespace mag
                             static_cast<f64>(result.value.begin) * timestamp_period * 1e-6;
     }
 
+    const vk::Instance& Context::get_instance() const { return this->instance; }
+    const vk::Device& Context::get_device() const { return this->device; }
+    const vk::PhysicalDevice& Context::get_physical_device() const { return this->physical_device; }
+    const vk::Queue& Context::get_graphics_queue() const { return this->graphics_queue; }
+    const vk::SurfaceKHR& Context::get_surface() const { return this->surface; }
+    const vk::SurfaceFormatKHR& Context::get_surface_format() const { return this->surface_format; }
+    const vk::Extent2D& Context::get_surface_extent() const { return this->surface_extent; }
+    const vk::SwapchainKHR& Context::get_swapchain() const { return this->swapchain; }
+    const vk::Format& Context::get_swapchain_image_format() const { return this->surface_format.format; }
+    const vk::CommandPool& Context::get_command_pool() const { return this->command_pool; }
+    const vk::Fence& Context::get_upload_fence() const { return this->upload_fence; }
+    const std::vector<vk::Image>& Context::get_swapchain_images() const { return this->swapchain_images; }
+    const std::vector<vk::ImageView>& Context::get_swapchain_image_views() const { return this->swapchain_image_views; }
+    const VmaAllocator& Context::get_allocator() const { return this->allocator; }
+    const ProfileResult& Context::get_timestamp() const { return this->timestamp; }
+    const u32& Context::get_curr_frame_number() const { return this->frame_provider.get_current_frame_number(); }
+
+    const vk::PhysicalDeviceDescriptorBufferPropertiesEXT& Context::get_descriptor_buffer_properties() const
+    {
+        return this->descriptor_buffer_properties;
+    }
+
     vk::Format Context::get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
                                              const vk::FormatFeatureFlags features) const
     {
@@ -506,4 +528,13 @@ namespace mag
             {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
             vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
     }
+
+    Frame& Context::get_curr_frame() { return this->frame_provider.get_current_frame(); }
+    DescriptorLayoutCache& Context::get_descriptor_layout_cache() { return *this->descriptor_layout_cache; }
+    DescriptorAllocator& Context::get_descriptor_allocator() { return *this->descriptor_allocator; }
+
+    vk::SampleCountFlagBits Context::get_msaa_samples() const { return this->msaa_samples; }
+    u32 Context::get_queue_family_index() const { return this->queue_family_index; }
+    u32 Context::get_swapchain_image_index() const { return frame_provider.get_swapchain_image_index(); }
+    u32 Context::get_frame_count() const { return frame_count; }
 };  // namespace mag
