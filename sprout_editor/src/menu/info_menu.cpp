@@ -4,6 +4,7 @@
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
 
 namespace sprout
 {

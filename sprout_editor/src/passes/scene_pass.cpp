@@ -5,6 +5,7 @@
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
+#include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 

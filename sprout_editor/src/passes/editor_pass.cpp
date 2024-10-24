@@ -10,6 +10,7 @@
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/frame.hpp"
 #include "renderer/renderer.hpp"
+#include "resources/image.hpp"
 
 namespace sprout
 {

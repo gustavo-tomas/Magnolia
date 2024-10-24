@@ -1,6 +1,6 @@
 #pragma once
 
-#include "imgui.h"
+typedef int ImGuiWindowFlags;
 
 namespace sprout
 {
