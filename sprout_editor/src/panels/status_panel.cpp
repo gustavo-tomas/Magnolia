@@ -36,6 +36,9 @@ namespace sprout
             }
     };
 
+    StatusPanel::StatusPanel() = default;
+    StatusPanel::~StatusPanel() = default;
+
     void StatusPanel::render(const ImGuiWindowFlags window_flags)
     {
         ImGui::Begin(ICON_FA_INFO " Status", NULL, window_flags);

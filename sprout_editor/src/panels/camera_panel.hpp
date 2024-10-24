@@ -1,7 +1,11 @@
 #pragma once
 
-#include "camera/camera.hpp"
-#include "imgui.h"
+typedef int ImGuiWindowFlags;
+
+namespace mag
+{
+    class Camera;
+};
 
 namespace sprout
 {
@@ -10,6 +14,9 @@ namespace sprout
     class CameraPanel
     {
         public:
+            CameraPanel();
+            ~CameraPanel();
+
             void render(const ImGuiWindowFlags window_flags, Camera& camera);
     };
 };  // namespace sprout

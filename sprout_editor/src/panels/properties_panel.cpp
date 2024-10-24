@@ -2,6 +2,7 @@
 
 #include "core/application.hpp"
 #include "core/file_system.hpp"
+#include "ecs/ecs.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
@@ -25,6 +26,9 @@ namespace sprout
 
         return false;
     }
+
+    PropertiesPanel::PropertiesPanel() = default;
+    PropertiesPanel::~PropertiesPanel() = default;
 
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {

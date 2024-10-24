@@ -1,9 +1,12 @@
 #include "panels/viewport_panel.hpp"
 
+#include "ImGuizmo.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "camera/camera.hpp"
 #include "core/application.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "ecs/ecs.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
@@ -13,6 +16,21 @@
 
 namespace sprout
 {
+    struct ViewportPanel::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            b8 viewport_window_active = false;
+            math::uvec2 viewport_size = {1, 1}, viewport_position = {0, 0};
+            vk::DescriptorSet viewport_image_descriptor = {};
+            ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+    };
+
+    ViewportPanel::ViewportPanel() : impl(new IMPL()) {}
+
+    ViewportPanel::~ViewportPanel() = default;
+
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
                                const u32 selected_entity_id, const RendererImage &viewport_image)
     {
@@ -23,12 +41,12 @@ namespace sprout
         auto &open_scenes = editor.get_open_scenes();
 
         // Recreate image descriptors
-        if (viewport_image_descriptor != nullptr)
+        if (impl->viewport_image_descriptor != nullptr)
         {
-            ImGui_ImplVulkan_RemoveTexture(viewport_image_descriptor);
+            ImGui_ImplVulkan_RemoveTexture(impl->viewport_image_descriptor);
         }
 
-        viewport_image_descriptor =
+        impl->viewport_image_descriptor =
             ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
@@ -87,13 +105,13 @@ namespace sprout
 
                 editor.set_selected_scene_index(i);
 
-                viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
+                impl->viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
                 ImGui::SetNextItemAllowOverlap();
-                ImGui::Image(viewport_image_descriptor, ImVec2(viewport_size.x, viewport_size.y));
+                ImGui::Image(impl->viewport_image_descriptor, ImVec2(impl->viewport_size.x, impl->viewport_size.y));
 
                 const auto image_pos = ImGui::GetItemRectMin();
-                viewport_position = {image_pos.x, image_pos.y};
+                impl->viewport_position = {image_pos.x, image_pos.y};
 
                 // Load assets if any was draged over the viewport
                 if (ImGui::BeginDragDropTarget())
@@ -214,11 +232,12 @@ namespace sprout
             const mat4 &proj = camera.get_projection();
 
             ImGuizmo::SetDrawlist();
-            ImGuizmo::SetRect(viewport_position.x, viewport_position.y, viewport_size.x, viewport_size.y);
+            ImGuizmo::SetRect(impl->viewport_position.x, impl->viewport_position.y, impl->viewport_size.x,
+                              impl->viewport_size.y);
 
             mat4 transform_matrix = transform->get_transformation_matrix();
 
-            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), gizmo_operation, ImGuizmo::LOCAL,
+            if (ImGuizmo::Manipulate(value_ptr(view), value_ptr(proj), impl->gizmo_operation, ImGuizmo::LOCAL,
                                      value_ptr(transform_matrix)))
             {
                 vec3 translation, rotation, scale;
@@ -255,7 +274,7 @@ namespace sprout
             }
         }
 
-        viewport_window_active = ImGui::IsWindowFocused();
+        impl->viewport_window_active = ImGui::IsWindowFocused();
 
         ImGui::End();
 
@@ -279,21 +298,25 @@ namespace sprout
         {
             // Move
             case Key::g:
-                gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+                impl->gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
                 break;
 
             // Rotate
             case Key::r:
-                gizmo_operation = ImGuizmo::OPERATION::ROTATE;
+                impl->gizmo_operation = ImGuizmo::OPERATION::ROTATE;
                 break;
 
             // Scale
             case Key::s:
-                gizmo_operation = ImGuizmo::OPERATION::SCALE;
+                impl->gizmo_operation = ImGuizmo::OPERATION::SCALE;
                 break;
 
             default:
                 break;
         }
     }
+
+    const math::uvec2 &ViewportPanel::get_viewport_size() const { return impl->viewport_size; }
+
+    b8 ViewportPanel::is_viewport_window_active() const { return impl->viewport_window_active; }
 };  // namespace sprout

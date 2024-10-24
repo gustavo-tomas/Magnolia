@@ -10,6 +10,9 @@ namespace sprout
 {
     using namespace mag;
 
+    InfoMenu::InfoMenu() = default;
+    InfoMenu::~InfoMenu() = default;
+
     void InfoMenu::render(const ImGuiWindowFlags window_flags)
     {
         // Parse instructions from the json file

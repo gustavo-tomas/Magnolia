@@ -15,6 +15,7 @@
 namespace sprout
 {
     MenuBar::MenuBar() : info_menu(new InfoMenu()) {}
+
     MenuBar::~MenuBar() = default;
 
     void MenuBar::render(const ImGuiWindowFlags window_flags)

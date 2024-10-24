@@ -4,6 +4,9 @@
 
 namespace sprout
 {
+    SettingsPanel::SettingsPanel() = default;
+    SettingsPanel::~SettingsPanel() = default;
+
     void SettingsPanel::render(const ImGuiWindowFlags window_flags)
     {
         ImGui::Begin(ICON_FA_WRENCH " Settings", NULL, window_flags);
@@ -24,4 +27,9 @@ namespace sprout
 
         ImGui::End();
     }
+
+    u32 &SettingsPanel::get_texture_output() { return texture_output; }
+    u32 &SettingsPanel::get_normal_output() { return normal_output; }
+    b8 &SettingsPanel::is_bounding_box_enabled() { return enable_bounding_boxes; }
+    b8 &SettingsPanel::is_physics_colliders_enabled() { return enable_physics_boxes; }
 };  // namespace sprout

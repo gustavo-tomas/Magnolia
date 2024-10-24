@@ -1,7 +1,13 @@
 #pragma once
 
-#include "ecs/ecs.hpp"
-#include "imgui.h"
+#include "core/types.hpp"
+
+typedef int ImGuiWindowFlags;
+
+namespace mag
+{
+    class ECS;
+};
 
 namespace sprout
 {
@@ -10,9 +16,12 @@ namespace sprout
     class ScenePanel
     {
         public:
+            ScenePanel();
+            ~ScenePanel();
+
             void render(const ImGuiWindowFlags window_flags, ECS& ecs);
 
-            u32 get_selected_entity_id() const { return selected_entity_id; };
+            u32 get_selected_entity_id() const;
 
         private:
             u32 selected_entity_id = INVALID_ID;

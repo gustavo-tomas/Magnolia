@@ -1,15 +1,17 @@
 #pragma once
 
-// clang-format off
-
-#include "core/event.hpp"
-#include "camera/camera.hpp"
-#include "ecs/ecs.hpp"
+#include "core/math.hpp"
 #include "imgui.h"
-#include "ImGuizmo.h"
-#include "renderer/renderer_image.hpp"
 
-// clang-format on
+namespace mag
+{
+    class RendererImage;
+    class Camera;
+    class ECS;
+
+    struct Event;
+    struct KeyPressEvent;
+};  // namespace mag
 
 namespace sprout
 {
@@ -18,21 +20,21 @@ namespace sprout
     class ViewportPanel
     {
         public:
+            ViewportPanel();
+            ~ViewportPanel();
+
             void render(const ImGuiWindowFlags window_flags, const Camera& camera, ECS& ecs,
                         const u32 selected_entity_id, const RendererImage& viewport_image);
 
             void on_event(Event& e);
 
-            const uvec2& get_viewport_size() const { return viewport_size; };
-
-            b8 is_viewport_window_active() const { return viewport_window_active; };
+            const math::uvec2& get_viewport_size() const;
+            b8 is_viewport_window_active() const;
 
         private:
             void on_key_press(KeyPressEvent& e);
 
-            b8 viewport_window_active = false;
-            uvec2 viewport_size = {1, 1}, viewport_position = {0, 0};
-            vk::DescriptorSet viewport_image_descriptor = {};
-            ImGuizmo::OPERATION gizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace sprout
