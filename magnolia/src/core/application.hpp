@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/event.hpp"
+#include "core/types.hpp"
 
 namespace mag
 {
@@ -20,6 +20,11 @@ namespace mag
     class MaterialLoader;
     class ModelLoader;
     class ShaderLoader;
+
+    struct Event;
+    struct QuitEvent;
+    struct WindowCloseEvent;
+    struct WindowResizeEvent;
 
     class Application
     {
