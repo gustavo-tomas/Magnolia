@@ -15,20 +15,13 @@
 #include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
 
-mag::Application *mag::create_application()
-{
-    mag::ApplicationOptions options;
-    options.title = "Sprout";
-    options.window_icon = "sprout_editor/assets/images/application_icon.bmp";
-
-    return new sprout::Editor(options);
-}
+mag::Application *mag::create_application() { return new sprout::Editor("sprout_editor/config.json"); }
 
 namespace sprout
 {
     Editor &get_editor() { return static_cast<Editor &>(get_application()); }
 
-    Editor::Editor(const ApplicationOptions &options) : Application(options)
+    Editor::Editor(const str &config_file_path) : Application(config_file_path)
     {
         auto &context = get_context();
         auto &device = context.get_device();

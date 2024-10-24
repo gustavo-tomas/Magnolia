@@ -2,6 +2,7 @@
 
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "core/window.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_dialog.hpp"
 #include "renderer/renderer.hpp"
@@ -46,19 +47,52 @@ namespace mag
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
             unique<PhysicsEngine> physics_engine;
+
+            b8 running;
     };
 
-    b8 running;
-
-    Application::Application(const ApplicationOptions& options) : impl(new IMPL())
+    Application::Application(const str& config_file_path) : impl(new IMPL())
     {
         application = this;
 
         // Remember that smart pointers are destroyed in the reverse order of creation
 
+        // Create the file system
+        impl->file_system = create_unique<FileSystem>();
+        LOG_SUCCESS("FileSystem initialized");
+
+        // Read config file
+
+        json config;
+
+        uvec2 window_size = WindowOptions::MAX_SIZE;
+        ivec2 window_position = WindowOptions::CENTER_POS;
+        str window_title = "Magnolia";
+        str window_icon = "";
+
+        if (impl->file_system->read_json_data(config_file_path, config))
+        {
+            u32 count = 0;
+            for (const auto& num : config["WindowSize"])
+            {
+                if (count >= window_size.length()) break;
+                window_size[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["WindowPosition"])
+            {
+                if (count >= window_position.length()) break;
+                window_position[count++] = num;
+            }
+
+            window_title = config["WindowTitle"].get<str>();
+            window_icon = config["WindowIcon"].get<str>();
+        }
+
         // Create the window
-        const WindowOptions window_options = {BIND_FN(Application::process_event), options.size, options.position,
-                                              options.title, options.window_icon};
+        const WindowOptions window_options = {BIND_FN(Application::process_event), window_size, window_position,
+                                              window_title, window_icon};
 
         impl->window = create_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
@@ -66,10 +100,6 @@ namespace mag
         // Create the renderer
         impl->renderer = create_unique<Renderer>(*impl->window);
         LOG_SUCCESS("Renderer initialized");
-
-        // Create the file system
-        impl->file_system = create_unique<FileSystem>();
-        LOG_SUCCESS("FileSystem initialized");
 
         // Create the file watcher
         impl->file_watcher = create_unique<FileWatcher>();
@@ -124,8 +154,6 @@ namespace mag
         {
             LOG_SUCCESS("FileDialog initialized");
         }
-
-        running = true;
     }
 
     Application::~Application()
@@ -138,7 +166,9 @@ namespace mag
     {
         f64 curr_time = 0, last_time = 0, dt = 0;
 
-        while (running)
+        impl->running = true;
+
+        while (impl->running)
         {
             // Calculate dt
             curr_time = impl->window->get_time();
@@ -183,13 +213,13 @@ namespace mag
     void Application::on_quit(QuitEvent& e)
     {
         (void)e;
-        running = false;
+        impl->running = false;
     }
 
     void Application::on_window_close(WindowCloseEvent& e)
     {
         (void)e;
-        running = false;
+        impl->running = false;
     }
 
     Window& Application::get_window() { return *impl->window; }

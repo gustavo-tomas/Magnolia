@@ -1,6 +1,7 @@
 #include "tools/profiler.hpp"
 
 #include "core/application.hpp"
+#include "core/window.hpp"
 
 namespace mag
 {

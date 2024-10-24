@@ -4,6 +4,7 @@
 #include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/file_system.hpp"
+#include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "threads/job_system.hpp"

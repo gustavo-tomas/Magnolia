@@ -24,7 +24,7 @@ namespace sprout
     class Editor : public Application
     {
         public:
-            Editor(const mag::ApplicationOptions& options);
+            Editor(const str& config_file_path);
             ~Editor();
 
             virtual void on_update(const f32 dt) override;

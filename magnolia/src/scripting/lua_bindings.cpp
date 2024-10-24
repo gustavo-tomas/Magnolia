@@ -1,6 +1,7 @@
 #include "scripting/lua_bindings.hpp"
 
 #include "core/application.hpp"
+#include "core/window.hpp"
 
 namespace mag
 {

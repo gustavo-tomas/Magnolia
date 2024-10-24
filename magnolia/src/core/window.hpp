@@ -27,7 +27,7 @@ namespace mag
     class Window
     {
         public:
-            Window(const WindowOptions& options);
+            explicit Window(const WindowOptions& options);
             ~Window();
 
             void on_update();

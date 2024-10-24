@@ -1,10 +1,10 @@
 #pragma once
 
 #include "core/event.hpp"
-#include "core/window.hpp"
 
 namespace mag
 {
+    class Window;
     class Renderer;
     class PhysicsEngine;
     class FileSystem;
@@ -21,19 +21,10 @@ namespace mag
     class ModelLoader;
     class ShaderLoader;
 
-    // Expand app options if necessary
-    struct ApplicationOptions
-    {
-            uvec2 size = WindowOptions::MAX_SIZE;
-            ivec2 position = WindowOptions::CENTER_POS;
-            str title = "Magnolia";
-            str window_icon = "";
-    };
-
     class Application
     {
         public:
-            explicit Application(const ApplicationOptions& options);
+            explicit Application(const str& config_file_path);
             virtual ~Application();
 
             // The main function will call this, not the user
