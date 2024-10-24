@@ -1,5 +1,6 @@
 #include "renderer/context.hpp"
 
+#include "core/debug.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"
 #include "renderer/descriptors.hpp"
@@ -54,6 +55,7 @@ namespace mag
             LOG_ERROR("{0}\n", pCallbackData->pMessage);
         }
 
+        DEBUG_BREAK();
         return VK_FALSE;
     }
 
