@@ -1,15 +1,16 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "core/types.hpp"
-#include "math/types.hpp"
+#include "math/vec.hpp"
 
 namespace mag
 {
 #define DEFAULT_MODEL_NAME "__mag_default_model__"
 
-    using namespace math;
+    using namespace mag::math;
 
     struct Vertex
     {

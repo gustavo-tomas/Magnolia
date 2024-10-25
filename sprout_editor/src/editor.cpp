@@ -11,6 +11,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "implot/implot.h"
+#include "math/generic.hpp"
 #include "menu/menu_bar.hpp"
 #include "panels/camera_panel.hpp"
 #include "panels/content_browser_panel.hpp"

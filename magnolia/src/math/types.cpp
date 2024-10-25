@@ -1,5 +1,8 @@
 #include "math/types.hpp"
 
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
+
 namespace mag::math
 {
     b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation)

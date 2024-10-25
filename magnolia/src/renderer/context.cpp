@@ -3,6 +3,7 @@
 #include "core/debug.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"
+#include "math/generic.hpp"
 #include "renderer/descriptors.hpp"
 #include "renderer/frame.hpp"
 #include "tools/profiler.hpp"

@@ -1,5 +1,7 @@
 #include "ecs/components.hpp"
 
+#include "math/generic.hpp"
+
 namespace mag
 {
 #define CLONE_DEFINITION(type) \

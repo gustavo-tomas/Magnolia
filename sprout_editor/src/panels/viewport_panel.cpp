@@ -13,6 +13,7 @@
 #include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
+#include "math/generic.hpp"
 #include "renderer/renderer_image.hpp"
 #include "resources/image_loader.hpp"
 #include "scene/scene_serializer.hpp"

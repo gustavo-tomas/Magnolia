@@ -1,5 +1,8 @@
 #include "camera/frustum.hpp"
 
+#include "math/mat.hpp"
+#include "math/type_definitions.hpp"
+
 namespace mag
 {
     enum Planes

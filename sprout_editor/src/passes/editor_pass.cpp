@@ -8,6 +8,8 @@
 #include "editor_scene.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
 #include "physics/physics.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/frame.hpp"

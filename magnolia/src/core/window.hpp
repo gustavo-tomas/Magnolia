@@ -6,6 +6,7 @@
 #include "core/keys.hpp"
 #include "core/types.hpp"
 #include "math/types.hpp"
+#include "math/vec.hpp"
 
 namespace mag
 {

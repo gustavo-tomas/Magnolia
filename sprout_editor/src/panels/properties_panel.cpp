@@ -6,6 +6,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "math/generic.hpp"
 #include "misc/cpp/imgui_stdlib.h"
 #include "resources/model.hpp"
 

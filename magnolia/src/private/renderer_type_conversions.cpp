@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "math/vec.hpp"
+
 namespace mag
 {
     vk::ClearValue const vec_to_vk_clear_value(const math::vec4& v)

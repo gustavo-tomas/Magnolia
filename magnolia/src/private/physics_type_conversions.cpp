@@ -3,6 +3,8 @@
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
 #include "ecs/components.hpp"
+#include "math/quat.hpp"
+#include "math/trigonometric.hpp"
 
 namespace mag
 {

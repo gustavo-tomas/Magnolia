@@ -3,6 +3,8 @@
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"

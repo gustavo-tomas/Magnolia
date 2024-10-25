@@ -2,7 +2,7 @@
 
 #include "core/application.hpp"
 #include "core/window.hpp"
-#include "math/types.hpp"
+#include "math/generic.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
