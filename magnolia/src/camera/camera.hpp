@@ -5,53 +5,16 @@
 
 namespace mag
 {
-    using namespace math;
+    using namespace mag::math;
 
-    // Taken from: https://gist.github.com/podgorskiy/e698d18879588ada9014768e3e82a644
-    class Frustum
-    {
-        public:
-            Frustum();
-            Frustum(mat4 m);  // m = ProjectionMatrix * ViewMatrix
-
-            // https://iquilezles.org/articles/frustumcorrect/
-            b8 is_aabb_visible(const BoundingBox& aabb) const;
-            std::vector<vec3> get_points() const;
-
-        private:
-            enum Planes
-            {
-                Left = 0,
-                Right,
-                Bottom,
-                Top,
-                Near,
-                Far,
-                Count,
-                Combinations = Count * (Count - 1) / 2
-            };
-
-            template <Planes i, Planes j>
-            struct ij2k
-            {
-                    enum
-                    {
-                        k = i * (9 - i) / 2 + j - 1
-                    };
-            };
-
-            template <Planes a, Planes b, Planes c>
-            vec3 intersection(const vec3* crosses) const;
-
-            vec4 planes[Count];
-            vec3 points[8];
-    };
+    class Frustum;
 
     class Camera
     {
         public:
             Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
                    const f32 far);
+            Camera(const Camera& other);
             ~Camera();
 
             void set_position(const vec3& position);
@@ -84,9 +47,7 @@ namespace mag
             void calculate_projection();
             void calculate_frustum();
 
-            Frustum frustum;
-            mat4 view, projection, rotation_mat;
-            vec3 position, rotation;
-            f32 fov, aspect_ratio, near, far;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace mag

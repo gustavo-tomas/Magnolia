@@ -2,6 +2,7 @@
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "camera/frustum.hpp"
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
