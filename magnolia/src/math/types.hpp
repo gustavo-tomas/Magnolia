@@ -9,6 +9,8 @@
 #include <glm/gtx/transform.hpp>
 #include <vector>
 
+// #include <glm/fwd.hpp> // @TODO: use this header
+
 #include "core/types.hpp"
 
 // Math definitions
@@ -16,10 +18,6 @@ namespace mag::math
 {
     // Wrapper for glm
     using namespace glm;
-
-    const f32 Half_Pi = glm::half_pi<f32>();
-    const f32 Pi = glm::pi<f32>();
-    const f32 Two_Pi = glm::two_pi<f32>();
 
     // Simpler version of glm::decompose
     b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation);

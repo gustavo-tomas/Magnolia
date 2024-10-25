@@ -7,8 +7,8 @@
 #include "core/assert.hpp"
 #include "core/keys.hpp"
 #include "core/logger.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
+#include "math/types.hpp"
 
 // Third party headers
 #include <vulkan/vulkan.hpp>

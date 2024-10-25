@@ -4,8 +4,8 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
+#include "math/types.hpp"
 
 typedef struct VmaAllocator_T* VmaAllocator;
 

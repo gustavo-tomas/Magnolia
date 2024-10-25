@@ -1,8 +1,8 @@
 #include "scripting/lua_bindings.hpp"
 
 #include "core/application.hpp"
-#include "core/math.hpp"
 #include "core/window.hpp"
+#include "math/types.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"

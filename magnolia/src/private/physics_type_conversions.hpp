@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/math.hpp"
+#include "math/types.hpp"
 
 class btTransform;
 class btVector3;

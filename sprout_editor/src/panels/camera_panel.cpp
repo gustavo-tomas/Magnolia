@@ -1,10 +1,10 @@
 #include "panels/camera_panel.hpp"
 
 #include "camera/camera.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "math/types.hpp"
 
 namespace sprout
 {

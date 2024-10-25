@@ -1,4 +1,4 @@
-#include "core/math.hpp"
+#include "math/types.hpp"
 
 namespace mag::math
 {

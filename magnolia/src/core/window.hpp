@@ -4,8 +4,8 @@
 
 #include "core/event.hpp"
 #include "core/keys.hpp"
-#include "core/math.hpp"
 #include "core/types.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {

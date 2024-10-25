@@ -3,8 +3,8 @@
 #include <map>
 #include <vulkan/vulkan_handles.hpp>
 
-#include "core/math.hpp"
 #include "core/types.hpp"
+#include "math/types.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"
 

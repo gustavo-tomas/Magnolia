@@ -2,8 +2,8 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
-#include "core/math.hpp"
 #include "ecs/ecs.hpp"
+#include "math/types.hpp"
 #include "private/physics_type_conversions.hpp"
 #include "scene/scene.hpp"
 

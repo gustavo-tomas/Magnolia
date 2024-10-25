@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/math.hpp"
 #include "imgui.h"
+#include "math/types.hpp"
 
 namespace mag
 {
