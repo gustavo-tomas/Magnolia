@@ -496,7 +496,8 @@ project "assimp"
 
     elseif os.host() == "linux" then
         if exists(libdir .. "/libassimp.so") and
-           exists(libdir .. "/libassimp.so.5") then
+           exists(libdir .. "/libassimp.so.5") and
+           exists(libdir .. "/libassimp.so.5.4.3") then
             os.execute("echo Skipping assimp compilation...")
 
         else
@@ -504,6 +505,7 @@ project "assimp"
             os.execute("cd build/linux/assimp && cmake -S ../../../libs/assimp -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/assimp/bin/libassimp.so " .. libdir .. "/libassimp.so")
             os.execute("cp build/linux/assimp/bin/libassimp.so.5 " .. libdir .. "/libassimp.so.5")
+            os.execute("cp build/linux/assimp/bin/libassimp.so.5.4.3 " .. libdir .. "/libassimp.so.5.4.3")
         end
     end
 
