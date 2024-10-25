@@ -4,14 +4,11 @@
 #include <vulkan/vulkan_handles.hpp>
 
 #include "core/types.hpp"
-#include "math/types.hpp"
 #include "renderer/buffers.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
 {
-    using namespace mag::math;
-
     class Pipeline;
     struct Image;
     struct Material;
