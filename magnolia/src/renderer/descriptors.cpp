@@ -28,16 +28,27 @@ namespace mag
         return descriptor_pool;
     }
 
+    struct DescriptorAllocator::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            PoolSizes descriptor_sizes;
+            vk::DescriptorPool current_pool = {};
+            std::vector<vk::DescriptorPool> used_pools;
+            std::vector<vk::DescriptorPool> free_pools;
+    };
+
     // DescriptorAllocator
     // ---------------------------------------------------------------------------------------------------------------------
-    DescriptorAllocator::DescriptorAllocator() = default;
+    DescriptorAllocator::DescriptorAllocator() : impl(new IMPL()) {}
 
     DescriptorAllocator::~DescriptorAllocator()
     {
         auto& context = get_context();
 
-        for (const auto& p : free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
-        for (const auto& p : used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : impl->free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : impl->used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
     }
 
     b8 DescriptorAllocator::allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout)
@@ -45,13 +56,13 @@ namespace mag
         auto& context = get_context();
 
         // initialize the currentPool handle if it's null
-        if (current_pool == VK_NULL_HANDLE)
+        if (impl->current_pool == VK_NULL_HANDLE)
         {
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
+            impl->current_pool = grab_pool();
+            impl->used_pools.push_back(impl->current_pool);
         }
 
-        vk::DescriptorSetAllocateInfo alloc_info(current_pool, 1, &layout);
+        vk::DescriptorSetAllocateInfo alloc_info(impl->current_pool, 1, &layout);
 
         // try to allocate the descriptor set
         vk::Result alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
@@ -76,8 +87,8 @@ namespace mag
         if (needReallocate)
         {
             // allocate a new pool and retry
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
+            impl->current_pool = grab_pool();
+            impl->used_pools.push_back(impl->current_pool);
 
             alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
 
@@ -93,32 +104,32 @@ namespace mag
         auto& context = get_context();
 
         // reset all used pools and add them to the free pools
-        for (const auto& p : used_pools)
+        for (const auto& p : impl->used_pools)
         {
             VK_CHECK(VK_CAST(vkResetDescriptorPool(context.get_device(), p, 0)));
-            free_pools.push_back(p);
+            impl->free_pools.push_back(p);
         }
 
         // clear the used pools, since we've put them all in the free pools
-        used_pools.clear();
+        impl->used_pools.clear();
 
         // reset the current pool handle back to null
-        current_pool = VK_NULL_HANDLE;
+        impl->current_pool = VK_NULL_HANDLE;
     }
 
     vk::DescriptorPool DescriptorAllocator::grab_pool()
     {
         // there are reusable pools availible
-        if (free_pools.size() > 0)
+        if (impl->free_pools.size() > 0)
         {
             // grab pool from the back of the vector and remove it from there.
-            vk::DescriptorPool pool = free_pools.back();
-            free_pools.pop_back();
+            vk::DescriptorPool pool = impl->free_pools.back();
+            impl->free_pools.pop_back();
             return pool;
         }
 
         // no pools availible, so create a new one
-        return create_pool(descriptor_sizes, 1000, {});
+        return create_pool(impl->descriptor_sizes, 1000, {});
     }
 
     // DescriptorLayoutCache

@@ -2,9 +2,9 @@
 
 #include <unordered_map>
 #include <vector>
-#include <vulkan/vulkan_handles.hpp>
 
 #include "core/types.hpp"
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {
@@ -16,18 +16,6 @@ namespace mag
             DescriptorAllocator();
             ~DescriptorAllocator();
 
-            std::vector<std::pair<vk::DescriptorType, f32>> sizes = {{vk::DescriptorType::eSampler, 0.5f},
-                                                                     {vk::DescriptorType::eCombinedImageSampler, 4.0f},
-                                                                     {vk::DescriptorType::eSampledImage, 4.0f},
-                                                                     {vk::DescriptorType::eStorageImage, 1.0f},
-                                                                     {vk::DescriptorType::eUniformTexelBuffer, 1.0f},
-                                                                     {vk::DescriptorType::eStorageTexelBuffer, 1.0f},
-                                                                     {vk::DescriptorType::eUniformBuffer, 2.0f},
-                                                                     {vk::DescriptorType::eStorageBuffer, 2.0f},
-                                                                     {vk::DescriptorType::eUniformBufferDynamic, 1.0f},
-                                                                     {vk::DescriptorType::eStorageBufferDynamic, 1.0f},
-                                                                     {vk::DescriptorType::eInputAttachment, 0.5f}};
-
             using PoolSizes = std::vector<std::pair<vk::DescriptorType, f32>>;
 
             b8 allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout);
@@ -36,10 +24,8 @@ namespace mag
         private:
             vk::DescriptorPool grab_pool();
 
-            vk::DescriptorPool current_pool = {};
-            PoolSizes descriptor_sizes;
-            std::vector<vk::DescriptorPool> used_pools;
-            std::vector<vk::DescriptorPool> free_pools;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 
     // DescriptorLayoutCache
