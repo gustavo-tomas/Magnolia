@@ -115,7 +115,7 @@ namespace mag
         impl->used_pools.clear();
 
         // reset the current pool handle back to null
-        impl->current_pool = VK_NULL_HANDLE;
+        impl->current_pool = nullptr;
     }
 
     vk::DescriptorPool DescriptorAllocator::grab_pool()
