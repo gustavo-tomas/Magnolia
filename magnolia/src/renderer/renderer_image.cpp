@@ -1,33 +1,62 @@
 #include "renderer/renderer_image.hpp"
 
+#include <vulkan/vulkan.hpp>
+
+#include "math/vec.hpp"
+#include "private/renderer_type_conversions.hpp"
+#include "renderer/buffers.hpp"
+#include "renderer/command.hpp"
+#include "renderer/context.hpp"
+#include "renderer/sampler.hpp"
+
 namespace mag
 {
-    RendererImage::RendererImage(const vk::Extent3D& extent, const vk::Format format,
-                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
-        : name(name),
-          mip_levels(mip_levels),
-          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
-          format(format),
-          extent(extent),
-          msaa_samples(msaa_samples),
-          image_usage(image_usage),
-          image_aspect(image_aspect)
+    struct RendererImage::IMPL
+    {
+            IMPL(const uvec3& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
+                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels, const SampleCount msaa_samples,
+                 const str& name)
+                : name(name),
+                  mip_levels(mip_levels),
+                  format(format),
+                  image_usage(image_usage),
+                  image_aspect(image_aspect),
+                  extent(extent),
+                  sampler(Filter::Linear, SamplerAddressMode::Repeat, SamplerMipmapMode::Linear, mip_levels),
+                  msaa_samples(msaa_samples)
+            {
+            }
+
+            ~IMPL() = default;
+
+            str name;
+            u32 mip_levels;
+
+            vk::Format format;
+            vk::Image image;
+            vk::ImageView image_view;
+            vk::ImageUsageFlags image_usage;
+            vk::ImageAspectFlags image_aspect;
+
+            uvec3 extent;
+            Sampler sampler;
+            SampleCount msaa_samples;
+
+            VmaAllocation allocation;
+    };
+
+    RendererImage::RendererImage(const uvec3& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
+                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
+                                 const SampleCount msaa_samples, const str& name)
+        : impl(new IMPL(extent, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
     {
         create_image_and_view();
     }
 
-    RendererImage::RendererImage(const vk::Extent3D& extent, const std::vector<u8>& pixels, const vk::Format format,
+    RendererImage::RendererImage(const uvec3& extent, const std::vector<u8>& pixels, const vk::Format format,
                                  const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                                 const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
-        : name(name),
-          mip_levels(mip_levels),
-          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
-          format(format),
-          extent(extent),
-          msaa_samples(msaa_samples),
-          image_usage(image_usage),
-          image_aspect(image_aspect)
+                                 const u32 mip_levels, const SampleCount msaa_samples, const str& name)
+        : impl(new IMPL(extent, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
     {
         create_image_and_view();
 
@@ -38,8 +67,8 @@ namespace mag
     {
         auto& context = get_context();
 
-        context.get_device().destroyImageView(this->image_view);
-        vmaDestroyImage(context.get_allocator(), image, allocation);
+        context.get_device().destroyImageView(impl->image_view);
+        vmaDestroyImage(context.get_allocator(), impl->image, impl->allocation);
     }
 
     void RendererImage::create_image_and_view()
@@ -50,25 +79,26 @@ namespace mag
         VkImageCreateInfo image_create_info = {};
         image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image_create_info.imageType = VK_IMAGE_TYPE_2D;
-        image_create_info.format = static_cast<VkFormat>(format);
-        image_create_info.extent = extent;
-        image_create_info.mipLevels = mip_levels;
+        image_create_info.format = static_cast<VkFormat>(impl->format);
+        image_create_info.extent = mag_to_vk(impl->extent);
+        image_create_info.mipLevels = impl->mip_levels;
         image_create_info.arrayLayers = 1;
-        image_create_info.samples = static_cast<VkSampleCountFlagBits>(msaa_samples);
+        image_create_info.samples = static_cast<VkSampleCountFlagBits>(mag_to_vk(impl->msaa_samples));
         image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_create_info.usage = static_cast<VkImageUsageFlags>(image_usage);
+        image_create_info.usage = static_cast<VkImageUsageFlags>(impl->image_usage);
 
         VmaAllocationCreateInfo vma_alloc_info = {};
         vma_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         VK_CHECK(VK_CAST(vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info,
-                                        reinterpret_cast<VkImage*>(&this->image), &allocation, 0)));
+                                        reinterpret_cast<VkImage*>(&impl->image), &impl->allocation, 0)));
 
-        const vk::ImageSubresourceRange range(image_aspect, 0, mip_levels, 0, 1);
-        const vk::ImageViewCreateInfo view_create_info({}, image, vk::ImageViewType::e2D, format, {}, range);
+        const vk::ImageSubresourceRange range(impl->image_aspect, 0, impl->mip_levels, 0, 1);
+        const vk::ImageViewCreateInfo view_create_info({}, impl->image, vk::ImageViewType::e2D, impl->format, {},
+                                                       range);
 
-        this->image_view = context.get_device().createImageView(view_create_info);
+        impl->image_view = context.get_device().createImageView(view_create_info);
     }
 
     void RendererImage::set_pixels(const std::vector<u8>& pixels)
@@ -78,12 +108,12 @@ namespace mag
         const u64 texture_size = pixels.size();
 
         VulkanBuffer staging_buffer;
-        staging_buffer.initialize(texture_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_AUTO,
+        staging_buffer.initialize(texture_size, vk::BufferUsageFlagBits::eTransferSrc, VMA_MEMORY_USAGE_AUTO,
                                   VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
         staging_buffer.copy(pixels.data(), texture_size);
 
         context.submit_commands_immediate(
-            [&](CommandBuffer cmd)
+            [&](CommandBuffer& cmd)
             {
                 cmd.copy_buffer_to_image(staging_buffer, *this);
 
@@ -91,14 +121,14 @@ namespace mag
                                     vk::ImageLayout::eTransferDstOptimal);
 
                 vk::ImageSubresourceRange range(vk::ImageAspectFlagBits::eColor, {}, 1, 0, 1);
-                vk::ImageMemoryBarrier barrier({}, {}, {}, {}, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored, image,
-                                               range);
+                vk::ImageMemoryBarrier barrier({}, {}, {}, {}, vk::QueueFamilyIgnored, vk::QueueFamilyIgnored,
+                                               impl->image, range);
 
-                i32 mip_width = extent.width;
-                i32 mip_height = extent.height;
+                i32 mip_width = impl->extent.x;
+                i32 mip_height = impl->extent.y;
 
                 // @TODO: improve layout transition
-                for (u32 i = 1; i < mip_levels; i++)
+                for (u32 i = 1; i < impl->mip_levels; i++)
                 {
                     barrier.subresourceRange.baseMipLevel = i - 1;
                     barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
@@ -123,7 +153,7 @@ namespace mag
                         .setZ(1);
 
                     vk::ImageBlit blit(src_subresource, src_offsets, dst_subresource, dst_offsets);
-                    cmd.get_handle().blitImage(image, vk::ImageLayout::eTransferSrcOptimal, image,
+                    cmd.get_handle().blitImage(impl->image, vk::ImageLayout::eTransferSrcOptimal, impl->image,
                                                vk::ImageLayout::eTransferDstOptimal, blit, vk::Filter::eLinear);
 
                     barrier.oldLayout = vk::ImageLayout::eTransferSrcOptimal;
@@ -139,7 +169,7 @@ namespace mag
                     if (mip_height > 1) mip_height /= 2;
                 }
 
-                barrier.subresourceRange.baseMipLevel = mip_levels - 1;
+                barrier.subresourceRange.baseMipLevel = impl->mip_levels - 1;
                 barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
                 barrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
                 barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
@@ -152,4 +182,12 @@ namespace mag
 
         staging_buffer.shutdown();
     }
+
+    const vk::Image& RendererImage::get_image() const { return impl->image; }
+    const vk::ImageView& RendererImage::get_image_view() const { return impl->image_view; }
+    const vk::Format& RendererImage::get_format() const { return impl->format; }
+    const uvec3& RendererImage::get_extent() const { return impl->extent; }
+    const Sampler& RendererImage::get_sampler() const { return impl->sampler; }
+    const str& RendererImage::get_name() const { return impl->name; }
+    u32 RendererImage::get_mip_levels() const { return impl->mip_levels; }
 };  // namespace mag

@@ -12,7 +12,7 @@ namespace mag
             static void* get_symbol(void* handle, const str& name);  // returns nullptr on error
     };
 
-    class LuaScriptComponent;
+    struct LuaScriptComponent;
     class LuaScriptingEngine
     {
         public:

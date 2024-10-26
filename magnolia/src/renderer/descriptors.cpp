@@ -1,10 +1,12 @@
 #include "renderer/descriptors.hpp"
 
-#include <algorithm>
+#include <vulkan/vulkan.hpp>
 
 #include "core/assert.hpp"
+#include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
+#include "renderer/sampler.hpp"
 
 namespace mag
 {
@@ -27,14 +29,27 @@ namespace mag
         return descriptor_pool;
     }
 
+    struct DescriptorAllocator::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            PoolSizes descriptor_sizes;
+            vk::DescriptorPool current_pool = {};
+            std::vector<vk::DescriptorPool> used_pools;
+            std::vector<vk::DescriptorPool> free_pools;
+    };
+
     // DescriptorAllocator
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorAllocator::DescriptorAllocator() : impl(new IMPL()) {}
+
     DescriptorAllocator::~DescriptorAllocator()
     {
         auto& context = get_context();
 
-        for (const auto& p : free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
-        for (const auto& p : used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : impl->free_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
+        for (const auto& p : impl->used_pools) vkDestroyDescriptorPool(context.get_device(), p, nullptr);
     }
 
     b8 DescriptorAllocator::allocate(vk::DescriptorSet* set, const vk::DescriptorSetLayout layout)
@@ -42,13 +57,13 @@ namespace mag
         auto& context = get_context();
 
         // initialize the currentPool handle if it's null
-        if (current_pool == VK_NULL_HANDLE)
+        if (impl->current_pool == VK_NULL_HANDLE)
         {
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
+            impl->current_pool = grab_pool();
+            impl->used_pools.push_back(impl->current_pool);
         }
 
-        vk::DescriptorSetAllocateInfo alloc_info(current_pool, 1, &layout);
+        vk::DescriptorSetAllocateInfo alloc_info(impl->current_pool, 1, &layout);
 
         // try to allocate the descriptor set
         vk::Result alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
@@ -73,8 +88,8 @@ namespace mag
         if (needReallocate)
         {
             // allocate a new pool and retry
-            current_pool = grab_pool();
-            used_pools.push_back(current_pool);
+            impl->current_pool = grab_pool();
+            impl->used_pools.push_back(impl->current_pool);
 
             alloc_result = context.get_device().allocateDescriptorSets(&alloc_info, set);
 
@@ -90,36 +105,38 @@ namespace mag
         auto& context = get_context();
 
         // reset all used pools and add them to the free pools
-        for (const auto& p : used_pools)
+        for (const auto& p : impl->used_pools)
         {
             VK_CHECK(VK_CAST(vkResetDescriptorPool(context.get_device(), p, 0)));
-            free_pools.push_back(p);
+            impl->free_pools.push_back(p);
         }
 
         // clear the used pools, since we've put them all in the free pools
-        used_pools.clear();
+        impl->used_pools.clear();
 
         // reset the current pool handle back to null
-        current_pool = VK_NULL_HANDLE;
+        impl->current_pool = nullptr;
     }
 
     vk::DescriptorPool DescriptorAllocator::grab_pool()
     {
         // there are reusable pools availible
-        if (free_pools.size() > 0)
+        if (impl->free_pools.size() > 0)
         {
             // grab pool from the back of the vector and remove it from there.
-            vk::DescriptorPool pool = free_pools.back();
-            free_pools.pop_back();
+            vk::DescriptorPool pool = impl->free_pools.back();
+            impl->free_pools.pop_back();
             return pool;
         }
 
         // no pools availible, so create a new one
-        return create_pool(descriptor_sizes, 1000, {});
+        return create_pool(impl->descriptor_sizes, 1000, {});
     }
 
     // DescriptorLayoutCache
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorLayoutCache::DescriptorLayoutCache() = default;
+
     DescriptorLayoutCache::~DescriptorLayoutCache()
     {
         auto& context = get_context();
@@ -226,6 +243,8 @@ namespace mag
 
     // DescriptorBuilder
     // ---------------------------------------------------------------------------------------------------------------------
+    DescriptorBuilder::DescriptorBuilder() = default;
+
     DescriptorBuilder::~DescriptorBuilder()
     {
         for (auto* info : buffer_infos)
@@ -319,7 +338,8 @@ namespace mag
         auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
         auto& descriptor_allocator = get_context().get_descriptor_allocator();
 
-        const vk::DescriptorBufferInfo descriptor_buffer_info(buffer.get_buffer(), offset, buffer_size);
+        const vk::DescriptorBufferInfo descriptor_buffer_info(*static_cast<const vk::Buffer*>(buffer.get_handle()),
+                                                              offset, buffer_size);
 
         const b8 result =
             DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
@@ -344,7 +364,8 @@ namespace mag
         for (auto& texture : textures)
         {
             const vk::DescriptorImageInfo descriptor_image_info(
-                texture->get_sampler().get_handle(), texture->get_image_view(), vk::ImageLayout::eReadOnlyOptimal);
+                *static_cast<const vk::Sampler*>(texture->get_sampler().get_handle()), texture->get_image_view(),
+                vk::ImageLayout::eReadOnlyOptimal);
 
             descriptor_image_infos.push_back(descriptor_image_info);
         }

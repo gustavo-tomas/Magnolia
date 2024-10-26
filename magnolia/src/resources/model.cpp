@@ -1,7 +1,10 @@
 #include "resources/model.hpp"
 
 #include "core/application.hpp"
+#include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/model_loader.hpp"
+#include "threads/job_system.hpp"
 
 namespace mag
 {

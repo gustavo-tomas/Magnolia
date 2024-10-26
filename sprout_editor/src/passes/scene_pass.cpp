@@ -2,9 +2,16 @@
 
 #include "core/application.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
+#include "private/renderer_type_conversions.hpp"
 #include "renderer/render_graph.hpp"
-#include "renderer/type_conversions.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
+#include "resources/image.hpp"
 #include "resources/material.hpp"
+#include "resources/model.hpp"
 
 namespace sprout
 {
@@ -23,7 +30,7 @@ namespace sprout
     };
     // @TODO: temporary
 
-    ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass", size)
+    ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();
@@ -36,9 +43,11 @@ namespace sprout
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
 
         pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
-        pass.depth_clear_value = {1.0f};
+        pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f, 1.0f);
     }
+
+    ScenePass::~ScenePass() = default;
 
     void ScenePass::on_render(RenderGraph& render_graph)
     {

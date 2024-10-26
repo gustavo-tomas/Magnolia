@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include "renderer/shader.hpp"
+#include "core/types.hpp"
 
 namespace mag
 {
-    using namespace mag::math;
+    class Shader;
 
     class Pipeline
     {
@@ -16,10 +14,10 @@ namespace mag
 
             void bind();
 
-            const vk::PipelineLayout& get_layout() const { return pipeline_layout; };
+            const void* get_layout() const;
 
         private:
-            vk::Pipeline pipeline;
-            vk::PipelineLayout pipeline_layout;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace mag

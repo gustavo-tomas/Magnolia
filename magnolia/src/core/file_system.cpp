@@ -1,7 +1,7 @@
 #include "core/file_system.hpp"
 
-#include <algorithm>
 #include <fstream>
+#include <mutex>
 
 #include "core/application.hpp"
 #include "core/logger.hpp"

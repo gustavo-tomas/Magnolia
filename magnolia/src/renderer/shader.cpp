@@ -1,17 +1,27 @@
 #include "renderer/shader.hpp"
 
-#include <limits>
+#include <vulkan/vulkan.hpp>
 
 #include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/logger.hpp"
+#include "math/generic.hpp"
+#include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/descriptors.hpp"
+#include "renderer/frame.hpp"
 #include "renderer/pipeline.hpp"
+#include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
+#include "resources/image.hpp"
+#include "resources/material.hpp"
+#include "resources/shader_loader.hpp"
+#include "spirv_reflect.h"
 
 namespace mag
 {
+    using namespace mag::math;
+
     ref<Shader> ShaderManager::get(const str& file_path)
     {
         auto it = shaders.find(file_path);
@@ -43,7 +53,7 @@ namespace mag
             for (const auto& module : shader_configuration.shader_modules)
             {
                 const auto& reflection = module.spv_module;
-                binding_count = max(binding_count, reflection.descriptor_binding_count);
+                binding_count = max(binding_count, reflection->descriptor_binding_count);
             }
 
             descriptor_set_layouts.resize(binding_count);
@@ -54,18 +64,18 @@ namespace mag
         {
             const auto& reflection = module.spv_module;
 
-            const vk::ShaderStageFlags stage = static_cast<vk::ShaderStageFlags>(reflection.shader_stage);
+            const vk::ShaderStageFlags stage = static_cast<vk::ShaderStageFlags>(reflection->shader_stage);
 
             // Add vertex attributes sorted by location
             if (stage == vk::ShaderStageFlagBits::eVertex)
             {
                 std::map<u32, SpvReflectInterfaceVariable*> sorted_input_variables;
-                for (u32 i = 0; i < reflection.input_variable_count; i++)
+                for (u32 i = 0; i < reflection->input_variable_count; i++)
                 {
-                    const auto& variable = reflection.input_variables[i];
+                    const auto& variable = reflection->input_variables[i];
 
                     // Filter built-in variables
-                    if (variable->location < std::numeric_limits<u32>::max())
+                    if (variable->location < MAX_U32)
                     {
                         sorted_input_variables[variable->location] = variable;
                     }
@@ -85,9 +95,9 @@ namespace mag
                 }
             }
 
-            for (u32 i = 0; i < reflection.descriptor_binding_count; i++)
+            for (u32 i = 0; i < reflection->descriptor_binding_count; i++)
             {
-                auto& descriptor_binding = reflection.descriptor_bindings[i];
+                auto& descriptor_binding = reflection->descriptor_bindings[i];
 
                 // Already initialized
                 if (uniforms_map.contains(descriptor_binding.name)) continue;
@@ -98,12 +108,12 @@ namespace mag
 
                 uniforms_map[scope].descriptor_set_layouts.resize(frame_count);
                 uniforms_map[scope].descriptor_sets.resize(frame_count);
-                uniforms_map[scope].descriptor_binding = descriptor_binding;
+                uniforms_map[scope].descriptor_binding = new SpvReflectDescriptorBinding(descriptor_binding);
 
                 // Store a pointer to each block member
                 for (u32 m = 0; m < descriptor_binding.block.member_count; m++)
                 {
-                    const auto& member = &uniforms_map[scope].descriptor_binding.block.members[m];
+                    const auto& member = &uniforms_map[scope].descriptor_binding->block.members[m];
                     uniforms_map[scope].members_cache[member->name] = member;
                 }
 
@@ -115,7 +125,7 @@ namespace mag
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
-                            size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            size, vk::BufferUsageFlagBits::eUniformBuffer, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
@@ -138,7 +148,7 @@ namespace mag
                     for (u32 f = 0; f < frame_count; f++)
                     {
                         uniforms_map[scope].buffers[f].initialize(
-                            BUFFER_SIZE, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+                            BUFFER_SIZE, vk::BufferUsageFlagBits::eStorageBuffer, VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
                             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
                         auto& descriptor_set = uniforms_map[scope].descriptor_sets[f];
@@ -201,12 +211,21 @@ namespace mag
             {
                 buffer.shutdown();
             }
+
+            delete ubo.descriptor_binding;
+            ubo.descriptor_binding = nullptr;
         }
 
-        for (const auto& shader_module : configuration.shader_modules)
+        for (auto& shader_module : configuration.shader_modules)
         {
-            context.get_device().destroyShaderModule(shader_module.module);
-            spvReflectDestroyShaderModule(const_cast<SpvReflectShaderModule*>(&shader_module.spv_module));
+            context.get_device().destroyShaderModule(*shader_module.module);
+            spvReflectDestroyShaderModule(const_cast<SpvReflectShaderModule*>(shader_module.spv_module));
+
+            delete shader_module.module;
+            delete shader_module.spv_module;
+
+            shader_module.module = nullptr;
+            shader_module.spv_module = nullptr;
         }
     }
 
@@ -250,7 +269,7 @@ namespace mag
             auto& buffer = ubo.buffers[curr_frame_number];
             buffer.copy(data, size, offset + data_offset);
 
-            bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+            bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
             return;
         }
 
@@ -284,7 +303,7 @@ namespace mag
 
             auto renderer_texture = renderer.get_renderer_image(texture);
 
-            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding.binding, {renderer_texture},
+            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, {renderer_texture},
                                                               descriptor_set, descriptor_set_layout);
 
             texture_descriptor_sets[texture] = descriptor_set;
@@ -292,7 +311,7 @@ namespace mag
 
         ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[texture];
 
-        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+        bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
     }
 
     void Shader::set_material(const str& name, Material* material)
@@ -332,7 +351,7 @@ namespace mag
                 renderer_textures.push_back(renderer_texture);
             }
 
-            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding.binding, renderer_textures,
+            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, renderer_textures,
                                                               descriptor_set, descriptor_set_layout);
 
             material_descriptor_sets[material] = descriptor_set;
@@ -342,7 +361,7 @@ namespace mag
 
         ubo.descriptor_sets[curr_frame_number] = material_descriptor_sets[material];
 
-        bind_descriptor(ubo.descriptor_binding.set, ubo.descriptor_sets[curr_frame_number]);
+        bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
     }
 
     void Shader::bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set)
@@ -350,7 +369,25 @@ namespace mag
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
 
-        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), set,
+        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics,
+                                           *static_cast<const vk::PipelineLayout*>(pipeline->get_layout()), set,
                                            descriptor_set);
+    }
+
+    const ShaderConfiguration& Shader::get_shader_configuration() const { return configuration; }
+
+    const std::vector<vk::VertexInputBindingDescription>& Shader::get_vertex_bindings() const
+    {
+        return vertex_bindings;
+    }
+
+    const std::vector<vk::VertexInputAttributeDescription>& Shader::get_vertex_attributes() const
+    {
+        return vertex_attributes;
+    }
+
+    const std::vector<vk::DescriptorSetLayout>& Shader::get_descriptor_set_layouts() const
+    {
+        return descriptor_set_layouts;
     }
 };  // namespace mag

@@ -1,4 +1,5 @@
 #include <magnolia.hpp>
+#include <math/quat.hpp>
 
 using namespace mag;
 

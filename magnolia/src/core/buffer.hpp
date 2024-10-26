@@ -8,8 +8,8 @@ namespace mag
 {
     struct Buffer
     {
-            Buffer() = default;
-            Buffer(const u64 size) : data(size){};
+            Buffer();
+            Buffer(const u64 size);
 
             template <typename T>
             T* cast()
@@ -17,7 +17,7 @@ namespace mag
                 return reinterpret_cast<T*>(data.data());
             }
 
-            u64 get_size() const { return data.size(); };
+            u64 get_size() const;
 
             std::vector<u8> data;
     };

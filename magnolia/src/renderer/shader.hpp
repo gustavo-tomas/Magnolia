@@ -1,18 +1,16 @@
 #pragma once
 
 #include <map>
-#include <vulkan/vulkan.hpp>
+#include <vector>
 
-#include "core/math.hpp"
 #include "core/types.hpp"
-#include "renderer/buffers.hpp"
-#include "spirv_reflect.h"
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {
-    using namespace mag::math;
-
     class Pipeline;
+    class VulkanBuffer;
+
     struct Image;
     struct Material;
 
@@ -20,8 +18,8 @@ namespace mag
     {
             str file_path = "";
 
-            vk::ShaderModule module = {};
-            SpvReflectShaderModule spv_module = {};
+            vk::ShaderModule* module = nullptr;
+            SpvReflectShaderModule* spv_module = nullptr;
     };
 
     struct ShaderConfiguration
@@ -56,27 +54,15 @@ namespace mag
             void set_texture(const str& name, Image* texture);
             void set_material(const str& name, Material* material);
 
-            const ShaderConfiguration& get_shader_configuration() const { return configuration; }
-
-            const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const
-            {
-                return vertex_bindings;
-            };
-
-            const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const
-            {
-                return vertex_attributes;
-            };
-
-            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const
-            {
-                return descriptor_set_layouts;
-            };
+            const ShaderConfiguration& get_shader_configuration() const;
+            const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const;
+            const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const;
+            const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const;
 
         private:
             struct UBO
             {
-                    SpvReflectDescriptorBinding descriptor_binding;
+                    SpvReflectDescriptorBinding* descriptor_binding = nullptr;
 
                     // Cache of the uniform members
                     std::map<str, SpvReflectBlockVariable*> members_cache;
@@ -91,8 +77,8 @@ namespace mag
             void bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set);
 
             ShaderConfiguration configuration;
-            std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
-            std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
+            std::vector<vk::VertexInputBindingDescription> vertex_bindings;
+            std::vector<vk::VertexInputAttributeDescription> vertex_attributes;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
             unique<Pipeline> pipeline;

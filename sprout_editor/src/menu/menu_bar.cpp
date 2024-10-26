@@ -3,15 +3,21 @@
 #include <filesystem>
 
 #include "core/application.hpp"
+#include "core/event.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
+#include "menu/info_menu.hpp"
 #include "platform/file_dialog.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
 {
     MenuBar::MenuBar() : info_menu(new InfoMenu()) {}
+
+    MenuBar::~MenuBar() = default;
 
     void MenuBar::render(const ImGuiWindowFlags window_flags)
     {
@@ -206,4 +212,6 @@ namespace sprout
                 break;
         }
     }
+
+    b8 MenuBar::quit_requested() const { return quit; }
 };  // namespace sprout

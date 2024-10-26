@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 namespace mag
 {
@@ -77,5 +76,8 @@ namespace mag
 #define MAG_TIMEOUT 1'000'000'000                                                     /* 1 second in nanoseconds */
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)                         /* Shortcut to bind methods */
 #define BIND_FN2(x) std::bind(&x, this, std::placeholders::_1, std::placeholders::_2) /* Shortcut to bind methods */
+
+#define MAX_U32 static_cast<u32>(0xFFFFFFFF)
+#define MAX_I32 static_cast<i32>(0xFFFFFFFF)
 
 };  // namespace mag

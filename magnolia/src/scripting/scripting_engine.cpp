@@ -3,11 +3,19 @@
 // @TODO: this is unix only, create an interface for the windows build
 #include <dlfcn.h>
 
+#include <filesystem>
+
 #include "core/application.hpp"
+#include "core/buffer.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/lua_bindings.hpp"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "sol/sol.hpp"
+#pragma clang diagnostic pop
 
 namespace mag
 {

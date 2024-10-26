@@ -3,6 +3,8 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "implot/implot.h"
+#include "renderer/context.hpp"
+#include "renderer/render_graph.hpp"
 #include "tools/profiler.hpp"
 
 namespace sprout
@@ -35,6 +37,9 @@ namespace sprout
                 }
             }
     };
+
+    StatusPanel::StatusPanel() = default;
+    StatusPanel::~StatusPanel() = default;
 
     void StatusPanel::render(const ImGuiWindowFlags window_flags)
     {

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <memory>
+#include "core/types.hpp"
 
-#include "imgui.h"
-#include "renderer/renderer_image.hpp"
+typedef int ImGuiWindowFlags;
 
 namespace sprout
 {
@@ -13,12 +12,12 @@ namespace sprout
     {
         public:
             ContentBrowserPanel();
-            ~ContentBrowserPanel() = default;
+            ~ContentBrowserPanel();
 
             void render(const ImGuiWindowFlags window_flags);
 
         private:
-            ref<RendererImage> folder_image, file_image;
-            vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace sprout

@@ -1,9 +1,12 @@
 #include "scene/scene_serializer.hpp"
 
 #include "core/application.hpp"
-#include "core/types.hpp"
+#include "core/file_system.hpp"
 #include "ecs/components.hpp"
+#include "ecs/ecs.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/image.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -20,6 +23,8 @@ namespace mag
     }
 
     SceneSerializer::SceneSerializer(Scene& scene) : scene(scene) {}
+
+    SceneSerializer::~SceneSerializer() = default;
 
     void SceneSerializer::serialize(const str& file_path)
     {

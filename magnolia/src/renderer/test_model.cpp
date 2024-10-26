@@ -1,5 +1,6 @@
 #include "renderer/test_model.hpp"
 
+#include "math/generic.hpp"
 #include "renderer/buffers.hpp"
 #include "resources/material.hpp"
 

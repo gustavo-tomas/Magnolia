@@ -1,10 +1,17 @@
 #include "panels/materials_panel.hpp"
 
 #include "core/application.hpp"
+#include "ecs/ecs.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
+#include "resources/material.hpp"
+#include "resources/model.hpp"
 
 namespace sprout
 {
+    MaterialsPanel::MaterialsPanel() = default;
+    MaterialsPanel::~MaterialsPanel() = default;
+
     void MaterialsPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         ImGui::Begin(ICON_FA_PAINT_ROLLER " Materials", NULL, window_flags);

@@ -15,9 +15,9 @@ namespace mag
             }                                                                                   \
         }
 #else
-    #define ASSERT(assertion, ...) \
-        {                          \
-            assertion;             \
+    #define ASSERT(assertion, ...)        \
+        {                                 \
+            static_cast<void>(assertion); \
         }
 #endif
 };  // namespace mag

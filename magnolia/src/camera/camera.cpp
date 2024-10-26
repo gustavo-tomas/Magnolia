@@ -1,43 +1,65 @@
 #include "camera/camera.hpp"
 
-#include "core/types.hpp"
+#include "camera/frustum.hpp"
+#include "math/mat.hpp"
+#include "math/quat.hpp"
 
 namespace mag
 {
+    struct Camera::IMPL
+    {
+            IMPL(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
+                 const f32 far)
+                : position(position), rotation(rotation), fov(fov), aspect_ratio(aspect_ratio), near(near), far(far)
+            {
+            }
+
+            ~IMPL() = default;
+
+            Frustum frustum;
+            mat4 view, projection, rotation_mat;
+            vec3 position, rotation;
+            f32 fov, aspect_ratio, near, far;
+    };
+
     Camera::Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
                    const f32 far)
-        : position(position), rotation(rotation), fov(fov), aspect_ratio(aspect_ratio), near(near), far(far)
+        : impl(new IMPL(position, rotation, fov, aspect_ratio, near, far))
     {
         calculate_view();
         calculate_projection();
         calculate_frustum();
     }
 
-    void Camera::calculate_frustum() { this->frustum = Frustum(projection * view); }
+    Camera::Camera(const Camera& other) : impl(new IMPL(*other.impl)) {}
+
+    Camera::~Camera() = default;
+
+    void Camera::calculate_frustum() { impl->frustum = Frustum(impl->projection * impl->view); }
 
     void Camera::calculate_view()
     {
-        const quat pitch_rotation = angleAxis(radians(rotation.x), vec3(1, 0, 0));
-        const quat yaw_rotation = angleAxis(radians(rotation.y), vec3(0, 1, 0));
-        const quat roll_rotation = angleAxis(radians(rotation.z), vec3(0, 0, 1));
+        const quat pitch_rotation = angleAxis(radians(impl->rotation.x), vec3(1, 0, 0));
+        const quat yaw_rotation = angleAxis(radians(impl->rotation.y), vec3(0, 1, 0));
+        const quat roll_rotation = angleAxis(radians(impl->rotation.z), vec3(0, 0, 1));
 
-        this->rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
-        const mat4 translation = translate(mat4(1.0f), position);
+        impl->rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
+        const mat4 translation = translate(mat4(1.0f), impl->position);
 
-        this->view = inverse(translation * rotation_mat);
+        impl->view = inverse(translation * impl->rotation_mat);
 
         calculate_frustum();
     }
 
     void Camera::calculate_projection()
     {
-        this->projection = perspective(radians(fov), aspect_ratio, near, far);
+        impl->projection = perspective(radians(impl->fov), impl->aspect_ratio, impl->near, impl->far);
         calculate_frustum();
     }
 
     void Camera::set_position(const vec3& position)
     {
-        this->position = position;
+        impl->position = position;
         calculate_view();
     }
 
@@ -46,9 +68,9 @@ namespace mag
         // Constrain rotation between [-180, 180)
         for (u32 i = 0; i < 3; i++)
         {
-            this->rotation[i] = fmod(rotation[i] + 180.0f, 360.0f);
-            if (this->rotation[i] < 0.0f) this->rotation[i] += 360.0f;
-            this->rotation[i] -= 180.0f;
+            impl->rotation[i] = fmod(rotation[i] + 180.0f, 360.0f);
+            if (impl->rotation[i] < 0.0f) impl->rotation[i] += 360.0f;
+            impl->rotation[i] -= 180.0f;
         }
 
         calculate_view();
@@ -56,113 +78,39 @@ namespace mag
 
     void Camera::set_aspect_ratio(const vec2& size)
     {
-        this->aspect_ratio = size.x / size.y;
+        impl->aspect_ratio = size.x / size.y;
         calculate_projection();
     }
 
     void Camera::set_fov(const f32 fov)
     {
-        this->fov = fov;
+        impl->fov = fov;
         calculate_projection();
     }
 
     void Camera::set_near_far(const vec2& near_far)
     {
-        this->near = near_far.x;
-        this->far = near_far.y;
+        impl->near = near_far.x;
+        impl->far = near_far.y;
         calculate_projection();
     }
 
-    b8 Camera::is_aabb_visible(const BoundingBox& aabb) const { return frustum.is_aabb_visible(aabb); }
+    b8 Camera::is_aabb_visible(const BoundingBox& aabb) const { return impl->frustum.is_aabb_visible(aabb); }
 
-    Frustum::Frustum(mat4 m)
-    {
-        m = transpose(m);
-        planes[Left] = m[3] + m[0];
-        planes[Right] = m[3] - m[0];
-        planes[Bottom] = m[3] + m[1];
-        planes[Top] = m[3] - m[1];
-        planes[Near] = m[3] + m[2];
-        planes[Far] = m[3] - m[2];
+    const f32& Camera::get_fov() const { return impl->fov; }
+    const mat4& Camera::get_view() const { return impl->view; }
+    const mat4& Camera::get_projection() const { return impl->projection; }
+    const vec3& Camera::get_position() const { return impl->position; }
+    const vec3& Camera::get_rotation() const { return impl->rotation; }
+    const mat4& Camera::get_rotation_mat() const { return impl->rotation_mat; }
+    const Frustum& Camera::get_frustum() const { return impl->frustum; }
 
-        vec3 crosses[Combinations] = {
-            cross(vec3(planes[Left]), vec3(planes[Right])),  cross(vec3(planes[Left]), vec3(planes[Bottom])),
-            cross(vec3(planes[Left]), vec3(planes[Top])),    cross(vec3(planes[Left]), vec3(planes[Near])),
-            cross(vec3(planes[Left]), vec3(planes[Far])),    cross(vec3(planes[Right]), vec3(planes[Bottom])),
-            cross(vec3(planes[Right]), vec3(planes[Top])),   cross(vec3(planes[Right]), vec3(planes[Near])),
-            cross(vec3(planes[Right]), vec3(planes[Far])),   cross(vec3(planes[Bottom]), vec3(planes[Top])),
-            cross(vec3(planes[Bottom]), vec3(planes[Near])), cross(vec3(planes[Bottom]), vec3(planes[Far])),
-            cross(vec3(planes[Top]), vec3(planes[Near])),    cross(vec3(planes[Top]), vec3(planes[Far])),
-            cross(vec3(planes[Near]), vec3(planes[Far]))};
+    f32 Camera::get_near() const { return impl->near; }
+    f32 Camera::get_far() const { return impl->far; }
+    f32 Camera::get_aspect_ratio() const { return impl->aspect_ratio; }
 
-        points[0] = intersection<Left, Bottom, Near>(crosses);
-        points[1] = intersection<Left, Top, Near>(crosses);
-        points[2] = intersection<Right, Bottom, Near>(crosses);
-        points[3] = intersection<Right, Top, Near>(crosses);
-        points[4] = intersection<Left, Bottom, Far>(crosses);
-        points[5] = intersection<Left, Top, Far>(crosses);
-        points[6] = intersection<Right, Bottom, Far>(crosses);
-        points[7] = intersection<Right, Top, Far>(crosses);
-    }
-
-    b8 Frustum::is_aabb_visible(const BoundingBox& aabb) const
-    {
-        const vec3& minp = aabb.min;
-        const vec3& maxp = aabb.max;
-
-        // check box outside/inside of frustum
-        for (u32 i = 0; i < Count; i++)
-        {
-            if ((dot(planes[i], vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(planes[i], vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0))
-            {
-                return false;
-            }
-        }
-
-        // check frustum outside/inside box
-        u32 out;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].x > maxp.x) ? 1 : 0);
-        if (out == 8) return false;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].x < minp.x) ? 1 : 0);
-        if (out == 8) return false;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].y > maxp.y) ? 1 : 0);
-        if (out == 8) return false;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].y < minp.y) ? 1 : 0);
-        if (out == 8) return false;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].z > maxp.z) ? 1 : 0);
-        if (out == 8) return false;
-
-        out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((points[i].z < minp.z) ? 1 : 0);
-        if (out == 8) return false;
-
-        return true;
-    }
-
-    template <Frustum::Planes a, Frustum::Planes b, Frustum::Planes c>
-    vec3 Frustum::intersection(const vec3* crosses) const
-    {
-        const f32 D = dot(vec3(planes[a]), crosses[ij2k<b, c>::k]);
-        const vec3 res = mat3(crosses[ij2k<b, c>::k], -crosses[ij2k<a, c>::k], crosses[ij2k<a, b>::k]) *
-                         vec3(planes[a].w, planes[b].w, planes[c].w);
-
-        return res * (-1.0f / D);
-    }
+    vec3 Camera::get_side() const { return impl->rotation_mat[0]; }
+    vec3 Camera::get_up() const { return impl->rotation_mat[1]; }
+    vec3 Camera::get_forward() const { return impl->rotation_mat[2]; }
+    vec2 Camera::get_near_far() const { return {impl->near, impl->far}; }
 };  // namespace mag

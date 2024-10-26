@@ -1,10 +1,15 @@
-#include "camera/controller.hpp"
+#include "camera_controller.hpp"
 
+#include "camera/camera.hpp"
 #include "core/application.hpp"
 #include "core/window.hpp"
 
-namespace mag
+namespace sprout
 {
+    EditorCameraController::EditorCameraController(Camera& camera) : camera(camera) {}
+
+    EditorCameraController::~EditorCameraController() = default;
+
     void EditorCameraController::on_update(const f32 dt) { (void)dt; }
 
     void EditorCameraController::on_event(Event& e)
@@ -58,4 +63,4 @@ namespace mag
 
         this->camera.set_position(camera_position);
     }
-};  // namespace mag
+};  // namespace sprout

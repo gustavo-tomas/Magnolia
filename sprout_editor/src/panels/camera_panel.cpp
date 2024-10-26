@@ -1,9 +1,18 @@
 #include "panels/camera_panel.hpp"
 
+#include "camera/camera.hpp"
+#include "core/types.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
+#include "math/types.hpp"
 
 namespace sprout
 {
+    CameraPanel::CameraPanel() = default;
+    CameraPanel::~CameraPanel() = default;
+
     void CameraPanel::render(const ImGuiWindowFlags window_flags, Camera& camera)
     {
         ImGui::Begin(ICON_FA_CAMERA " Camera", NULL, window_flags);

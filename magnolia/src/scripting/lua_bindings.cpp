@@ -1,6 +1,13 @@
 #include "scripting/lua_bindings.hpp"
 
 #include "core/application.hpp"
+#include "core/window.hpp"
+#include "math/generic.hpp"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+#include "sol/sol.hpp"
+#pragma clang diagnostic pop
 
 namespace mag
 {

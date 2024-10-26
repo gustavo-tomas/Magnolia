@@ -1,11 +1,17 @@
 #include "panels/scene_panel.hpp"
 
+#include "ecs/ecs.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
-#include "renderer/test_model.hpp"
+#include "imgui.h"
+#include "resources/model.hpp"
 
 namespace sprout
 {
+    ScenePanel::ScenePanel() = default;
+    ScenePanel::~ScenePanel() = default;
+
     void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs)
     {
         // Check if selected id is valid
@@ -142,4 +148,6 @@ namespace sprout
 
         ImGui::End();
     }
+
+    u32 ScenePanel::get_selected_entity_id() const { return selected_entity_id; }
 };  // namespace sprout

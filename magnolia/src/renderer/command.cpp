@@ -1,64 +1,78 @@
 #include "renderer/command.hpp"
 
+#include <vulkan/vulkan.hpp>
+
+#include "private/renderer_type_conversions.hpp"
+#include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
 
 namespace mag
 {
+    CommandBuffer::CommandBuffer() : command_buffer(new vk::CommandBuffer()) {}
+
+    CommandBuffer::~CommandBuffer()
+    {
+        delete this->command_buffer;
+        this->command_buffer = nullptr;
+    }
+
     void CommandBuffer::initialize(const vk::CommandPool& pool, const vk::CommandBufferLevel level)
     {
         vk::CommandBufferAllocateInfo cmd_alloc_info(pool, level, 1);
-        this->command_buffer = get_context().get_device().allocateCommandBuffers(cmd_alloc_info).front();
+        *command_buffer = get_context().get_device().allocateCommandBuffers(cmd_alloc_info).front();
     }
 
     void CommandBuffer::begin()
     {
         vk::CommandBufferBeginInfo begin_info(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-        this->command_buffer.begin(begin_info);
+        this->command_buffer->begin(begin_info);
     }
 
-    void CommandBuffer::end() { this->command_buffer.end(); }
+    void CommandBuffer::end() { this->command_buffer->end(); }
 
     void CommandBuffer::begin_rendering(const vk::RenderingInfo& rendering_info)
     {
-        this->command_buffer.beginRendering(rendering_info);
+        this->command_buffer->beginRendering(rendering_info);
     }
 
-    void CommandBuffer::end_rendering() { this->command_buffer.endRendering(); }
+    void CommandBuffer::end_rendering() { this->command_buffer->endRendering(); }
 
     void CommandBuffer::draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                              const u32 first_instance)
     {
-        this->command_buffer.draw(vertex_count, instance_count, first_vertex, first_instance);
+        this->command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
     }
 
     void CommandBuffer::draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
                                      const i32 vertex_offset, const u32 first_instance)
     {
-        this->command_buffer.drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
+        this->command_buffer->drawIndexed(index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void CommandBuffer::bind_vertex_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
-        this->command_buffer.bindVertexBuffers(0, buffer.get_buffer(), offset);
+        this->command_buffer->bindVertexBuffers(0, *static_cast<const vk::Buffer*>(buffer.get_handle()), offset);
     }
 
     void CommandBuffer::bind_index_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
-        this->command_buffer.bindIndexBuffer(buffer.get_buffer(), offset, vk::IndexType::eUint32);
+        this->command_buffer->bindIndexBuffer(*static_cast<const vk::Buffer*>(buffer.get_handle()), offset,
+                                              vk::IndexType::eUint32);
     }
 
     void CommandBuffer::bind_descriptor_set(const vk::PipelineBindPoint bind_point, const vk::PipelineLayout layout,
                                             const u32 first_set, const vk::DescriptorSet descriptor_set)
     {
-        this->command_buffer.bindDescriptorSets(bind_point, layout, first_set, descriptor_set, nullptr);
+        this->command_buffer->bindDescriptorSets(bind_point, layout, first_set, descriptor_set, nullptr);
     }
 
     void CommandBuffer::copy_buffer(const VulkanBuffer& src, const VulkanBuffer& dst, const u64 size_bytes,
                                     const u64 src_offset, const u64 dst_offset)
     {
         vk::BufferCopy copy(src_offset, dst_offset, size_bytes);
-        this->command_buffer.copyBuffer(src.get_buffer(), dst.get_buffer(), copy);
+        this->command_buffer->copyBuffer(*static_cast<const vk::Buffer*>(src.get_handle()),
+                                         *static_cast<const vk::Buffer*>(dst.get_handle()), copy);
     }
 
     void CommandBuffer::copy_buffer_to_image(const VulkanBuffer& src, const RendererImage& image)
@@ -72,10 +86,10 @@ namespace mag
                                            vk::DependencyFlagBits::eByRegion, {}, {}, to_transfer_barrier);
 
         const vk::ImageSubresourceLayers image_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
-        const vk::BufferImageCopy copy_region(0, 0, 0, image_subresource, {}, image.get_extent());
+        const vk::BufferImageCopy copy_region(0, 0, 0, image_subresource, {}, mag_to_vk(image.get_extent()));
 
-        this->command_buffer.copyBufferToImage(src.get_buffer(), image.get_image(),
-                                               vk::ImageLayout::eTransferDstOptimal, copy_region);
+        this->command_buffer->copyBufferToImage(*static_cast<const vk::Buffer*>(src.get_handle()), image.get_image(),
+                                                vk::ImageLayout::eTransferDstOptimal, copy_region);
 
         vk::ImageMemoryBarrier to_readable_barrier = to_transfer_barrier;
         to_readable_barrier.setOldLayout(vk::ImageLayout::eTransferDstOptimal)
@@ -106,8 +120,8 @@ namespace mag
 
         const vk::ImageBlit blit_region(src_subresource, src_offsets, dst_subresource, dst_offsets);
 
-        this->command_buffer.blitImage(src, vk::ImageLayout::eTransferSrcOptimal, dst,
-                                       vk::ImageLayout::eTransferDstOptimal, blit_region, vk::Filter::eLinear);
+        this->command_buffer->blitImage(src, vk::ImageLayout::eTransferSrcOptimal, dst,
+                                        vk::ImageLayout::eTransferDstOptimal, blit_region, vk::Filter::eLinear);
     }
 
     void CommandBuffer::transfer_layout(const RendererImage& image, const vk::ImageLayout curr_layout,
@@ -134,4 +148,6 @@ namespace mag
                                            vk::PipelineStageFlagBits::eAllCommands, {}, nullptr, nullptr,
                                            image_barrier);
     }
+
+    const vk::CommandBuffer& CommandBuffer::get_handle() const { return *this->command_buffer; }
 };  // namespace mag

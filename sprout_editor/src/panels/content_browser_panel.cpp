@@ -1,15 +1,30 @@
 #include "panels/content_browser_panel.hpp"
 
 #include <filesystem>
+#include <vulkan/vulkan.hpp>
 
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
+#include "renderer/renderer.hpp"
+#include "renderer/renderer_image.hpp"
+#include "renderer/sampler.hpp"
+#include "resources/image.hpp"
 
 namespace sprout
 {
-    ContentBrowserPanel::ContentBrowserPanel()
+    struct ContentBrowserPanel::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            ref<RendererImage> folder_image, file_image;
+            vk::DescriptorSet folder_image_descriptor = {}, file_image_descriptor = {};
+    };
+
+    ContentBrowserPanel::ContentBrowserPanel() : impl(new IMPL())
     {
         auto& app = get_application();
         auto& renderer = app.get_renderer();
@@ -18,17 +33,19 @@ namespace sprout
         auto folder_tex = texture_manager.get("sprout_editor/assets/images/fa-folder-solid.png");
         auto file_tex = texture_manager.get("sprout_editor/assets/images/fa-file-solid.png");
 
-        folder_image = renderer.get_renderer_image(folder_tex.get());
-        file_image = renderer.get_renderer_image(file_tex.get());
+        impl->folder_image = renderer.get_renderer_image(folder_tex.get());
+        impl->file_image = renderer.get_renderer_image(file_tex.get());
 
-        folder_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(folder_image->get_sampler().get_handle(), folder_image->get_image_view(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        impl->folder_image_descriptor = ImGui_ImplVulkan_AddTexture(
+            *static_cast<const vk::Sampler*>(impl->folder_image->get_sampler().get_handle()),
+            impl->folder_image->get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        file_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(file_image->get_sampler().get_handle(), file_image->get_image_view(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        impl->file_image_descriptor =
+            ImGui_ImplVulkan_AddTexture(*static_cast<const vk::Sampler*>(impl->file_image->get_sampler().get_handle()),
+                                        impl->file_image->get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+
+    ContentBrowserPanel::~ContentBrowserPanel() = default;
 
     void ContentBrowserPanel::render(const ImGuiWindowFlags window_flags)
     {
@@ -74,12 +91,14 @@ namespace sprout
 
             if (directory_entry.is_directory())
             {
-                ImGui::ImageButton(filename_string.c_str(), folder_image_descriptor, {thumbnail_size, thumbnail_size});
+                ImGui::ImageButton(filename_string.c_str(), impl->folder_image_descriptor,
+                                   {thumbnail_size, thumbnail_size});
             }
 
             else
             {
-                ImGui::ImageButton(filename_string.c_str(), file_image_descriptor, {thumbnail_size, thumbnail_size});
+                ImGui::ImageButton(filename_string.c_str(), impl->file_image_descriptor,
+                                   {thumbnail_size, thumbnail_size});
             }
 
             if (ImGui::BeginDragDropSource())

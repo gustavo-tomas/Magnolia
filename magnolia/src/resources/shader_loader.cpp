@@ -1,7 +1,13 @@
 #include "resources/shader_loader.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/application.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "renderer/context.hpp"
+#include "renderer/shader.hpp"
+#include "spirv_reflect.h"
 
 namespace mag
 {
@@ -70,13 +76,13 @@ namespace mag
                 return false;
             }
 
-            if (shader_module.spv_module.shader_stage ==
+            if (shader_module.spv_module->shader_stage ==
                 static_cast<SpvReflectShaderStageFlagBits>(vk::ShaderStageFlagBits::eVertex))
             {
                 contains_vertex_stage = true;
             }
 
-            if (shader_module.spv_module.shader_stage ==
+            if (shader_module.spv_module->shader_stage ==
                 static_cast<SpvReflectShaderStageFlagBits>(vk::ShaderStageFlagBits::eFragment))
             {
                 contains_fragment_stage = true;
@@ -129,12 +135,14 @@ namespace mag
             return false;
         }
 
-        const vk::ShaderModule module = context.get_device().createShaderModule(
+        vk::ShaderModule* module = new vk::ShaderModule();
+
+        *module = context.get_device().createShaderModule(
             vk::ShaderModuleCreateInfo({}, buffer.get_size(), buffer.cast<u32>()));
 
         // Generate reflection data for a shader
-        SpvReflectShaderModule spv_module = {};
-        SpvReflectResult result = spvReflectCreateShaderModule(buffer.get_size(), buffer.cast<u32>(), &spv_module);
+        SpvReflectShaderModule* spv_module = new SpvReflectShaderModule();
+        SpvReflectResult result = spvReflectCreateShaderModule(buffer.get_size(), buffer.cast<u32>(), spv_module);
         VK_CHECK(VK_CAST(result));
 
         shader_module->module = module;

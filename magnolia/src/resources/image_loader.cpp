@@ -1,6 +1,8 @@
 #include "resources/image_loader.hpp"
 
 #include "core/application.hpp"
+#include "core/buffer.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "resources/image.hpp"
 

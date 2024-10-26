@@ -1,7 +1,11 @@
 #include "physics/physics.hpp"
 
 #include "btBulletDynamicsCommon.h"
-#include "physics/type_conversions.hpp"
+#include "core/logger.hpp"
+#include "ecs/ecs.hpp"
+#include "math/type_definitions.hpp"
+#include "private/physics_type_conversions.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {

@@ -1,6 +1,7 @@
 #include "tools/profiler.hpp"
 
 #include "core/application.hpp"
+#include "core/window.hpp"
 
 namespace mag
 {
@@ -28,6 +29,16 @@ namespace mag
             results[name].frame_count = 0;
             results[name].frame_start = window.get_time();
         }
+    }
+
+    void ProfilerManager::clear_results() { results.clear(); }
+
+    const std::map<str, ProfileResult>& ProfilerManager::get_results() const { return results; }
+
+    ProfilerManager& ProfilerManager::get()
+    {
+        static ProfilerManager instance;
+        return instance;
     }
 
     ScopedProfiler::ScopedProfiler(const str& name, const f64 time_interval_ms)

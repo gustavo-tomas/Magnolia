@@ -1,24 +1,39 @@
 #include "passes/editor_pass.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
+#include "camera/frustum.hpp"
 #include "core/application.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "renderer/type_conversions.hpp"
+#include "math/generic.hpp"
+#include "math/type_definitions.hpp"
+#include "physics/physics.hpp"
+#include "private/renderer_type_conversions.hpp"
+#include "renderer/context.hpp"
+#include "renderer/frame.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
+#include "renderer/test_model.hpp"
+#include "resources/image.hpp"
 
 namespace sprout
 {
-    EditorPass::EditorPass(const uvec2& size) : RenderGraphPass("EditorPass", size)
+    EditorPass::EditorPass(const uvec2& size) : RenderGraphPass("EditorPass")
     {
         add_input_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("EditorOutputColor", AttachmentType::Color, size);
 
         pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
-        pass.depth_clear_value = {1.0f};
+        pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f);
     }
+
+    EditorPass::~EditorPass() = default;
 
     void EditorPass::on_render(RenderGraph& render_graph)
     {
@@ -32,7 +47,7 @@ namespace sprout
 
         // Begin
         ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplSDL2_NewFrame(get_application().get_window().get_handle());
+        ImGui_ImplSDL2_NewFrame(static_cast<SDL_Window*>(get_application().get_window().get_handle()));
         ImGui::NewFrame();
 
         // @NOTE: not very accurate
@@ -40,34 +55,7 @@ namespace sprout
         performance_results.draw_calls++;
         performance_results.rendered_triangles += 2;
 
-        // Disable widgets
-        ImGui::BeginDisabled(editor.disabled);
-
-        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
-                                              static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
-
-        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-
-        // ImGui windows goes here
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
-        // ImGui::ShowDemoWindow();
-
-        editor.scene_panel->render(window_flags, ecs);
-        const u64 selected_entity_id = editor.scene_panel->get_selected_entity_id();
-
-        editor.menu_bar->render(window_flags);
-        editor.content_browser_panel->render(window_flags);
-        editor.material_panel->render(window_flags, ecs, selected_entity_id);
-        editor.properties_panel->render(window_flags, ecs, selected_entity_id);
-        editor.settings_panel->render(window_flags);
-        editor.camera_panel->render(window_flags, camera);
-        editor.status_panel->render(window_flags);
-
-        ImGui::EndDisabled();
-
-        // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
-        // by rendering after the ImGui::EndDisabled()
-        editor.viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
+        editor.render(ecs, camera, viewport_image);
 
         // End
         ImGui::Render();
@@ -86,7 +74,7 @@ namespace sprout
 
     LineList get_camera_gizmo(const Camera& camera);
 
-    GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass", size)
+    GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass")
     {
         auto& app = get_application();
         auto& shader_manager = app.get_shader_manager();
@@ -104,9 +92,11 @@ namespace sprout
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
 
         pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.3, 1.0));
-        pass.depth_clear_value = {1.0f};
+        pass.color_clear_value = vec4(0.1, 0.1, 0.3, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f);
     }
+
+    GizmoPass::~GizmoPass() = default;
 
     void GizmoPass::on_render(RenderGraph& render_graph)
     {

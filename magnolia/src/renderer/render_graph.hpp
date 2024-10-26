@@ -1,8 +1,9 @@
 #pragma once
 
 #include <map>
-#include <vector>
 
+#include "math/vec.hpp"
+#include "private/vulkan_fwd.hpp"
 #include "renderer/renderer_image.hpp"
 
 namespace mag
@@ -51,12 +52,12 @@ namespace mag
 
     struct Pass
     {
-            vk::RenderingInfo rendering_info;
-            vk::RenderingAttachmentInfo color_attachment;
-            vk::RenderingAttachmentInfo depth_attachment;
+            void* rendering_info = nullptr;
+            void* color_attachment = nullptr;
+            void* depth_attachment = nullptr;
 
-            vk::ClearValue color_clear_value = vk::ClearColorValue(0.0f, 1.0f, 1.0f, 1.0f);
-            vk::ClearValue depth_clear_value = vk::ClearDepthStencilValue(1.0f);
+            vec4 color_clear_value = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+            vec2 depth_stencil_clear_value = vec2(1.0f, 0.0f);
             uvec2 size = {};
     };
 
@@ -64,13 +65,13 @@ namespace mag
     class RenderGraphPass
     {
         public:
-            RenderGraphPass(const str& name, const uvec2& size);
-            virtual ~RenderGraphPass() = default;
+            RenderGraphPass(const str& name);
+            virtual ~RenderGraphPass();
 
-            virtual void on_render(RenderGraph& render_graph) { (void)render_graph; };
+            virtual void on_render(RenderGraph& render_graph);
 
-            const PerformanceResults& get_performance_results() const { return performance_results; };
-            const str& get_name() const { return name; };
+            const PerformanceResults& get_performance_results() const;
+            const str& get_name() const;
 
             // @TODO: temp?
             Pass pass;
@@ -92,14 +93,13 @@ namespace mag
             void add_attachment(const AttachmentDescription& attachment_description);
 
             const str name;
-            const uvec2 size;
             std::vector<AttachmentDescription> attachment_descriptions;
     };
 
     class RenderGraph
     {
         public:
-            RenderGraph() = default;
+            RenderGraph();
             ~RenderGraph();
 
             void add_pass(RenderGraphPass* pass);
@@ -108,13 +108,9 @@ namespace mag
             void build();
             void execute();
 
-            RendererImage& get_attachment(const str& attachment_name)
-            {
-                const u32 curr_frame = get_context().get_curr_frame_number();
-                return *attachments[attachment_name][curr_frame].texture;
-            };
-            RendererImage& get_output_attachment() { return get_attachment(output_attachment_name); };
-            const std::vector<RenderGraphPass*>& get_passes() const { return passes; };
+            RendererImage& get_attachment(const str& attachment_name);
+            RendererImage& get_output_attachment();
+            const std::vector<RenderGraphPass*>& get_passes() const;
 
         private:
             void execute_render_pass(RenderGraphPass* render_pass);

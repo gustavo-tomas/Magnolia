@@ -4,6 +4,7 @@
 
 #include "camera/camera.hpp"
 #include "core/types.hpp"
+#include "math/vec.hpp"
 
 namespace mag
 {
@@ -11,20 +12,19 @@ namespace mag
 
     // @NOTE: beware of pointers! Deep copy also copies them over!
 
-#define CLONE(type) \
-    Component* clone() const override { return new type(*this); }
+#define CLONE_DECLARATION(type) virtual Component* clone() const override;
 
     struct Component
     {
-            virtual ~Component() = default;
+            virtual ~Component();
             virtual Component* clone() const = 0;
     };
 
     struct NameComponent : public Component
     {
-            NameComponent(const str& name) : name(name){};
+            NameComponent(const str& name);
 
-            CLONE(NameComponent);
+            CLONE_DECLARATION(NameComponent);
 
             str name;
     };
@@ -32,34 +32,22 @@ namespace mag
     struct TransformComponent : public Component
     {
             TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),
-                               const vec3& scale = vec3(1))
-                : translation(translation), rotation(rotation), scale(scale){};
+                               const vec3& scale = vec3(1));
 
-            CLONE(TransformComponent);
+            CLONE_DECLARATION(TransformComponent);
 
             vec3 translation, rotation, scale;
 
-            mat4 get_transformation_matrix() const
-            {
-                const mat4 rotation_mat = math::toMat4(quat(math::radians(rotation)));
-
-                return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
-            }
+            mat4 get_transformation_matrix() const;
     };
 
     struct Image;
     struct SpriteComponent : public Component
     {
             SpriteComponent(const ref<Image>& texture, const str& texture_file_path, const b8 constant_size = false,
-                            const b8 always_face_camera = false)
-                : texture(texture),
-                  texture_file_path(texture_file_path),
-                  constant_size(constant_size),
-                  always_face_camera(always_face_camera)
-            {
-            }
+                            const b8 always_face_camera = false);
 
-            CLONE(SpriteComponent);
+            CLONE_DECLARATION(SpriteComponent);
 
             ref<Image> texture;
             str texture_file_path;  // @TODO: this is not ideal
@@ -72,18 +60,18 @@ namespace mag
     struct Model;
     struct ModelComponent : public Component
     {
-            ModelComponent(const ref<Model>& model) : model(model) {}
+            ModelComponent(const ref<Model>& model);
 
-            CLONE(ModelComponent);
+            CLONE_DECLARATION(ModelComponent);
 
             ref<Model> model;
     };
 
     struct BoxColliderComponent : public Component
     {
-            BoxColliderComponent(const vec3& dimensions = vec3(1)) : dimensions(dimensions) {}
+            BoxColliderComponent(const vec3& dimensions = vec3(1));
 
-            CLONE(BoxColliderComponent);
+            CLONE_DECLARATION(BoxColliderComponent);
 
             vec3 dimensions;
 
@@ -93,23 +81,23 @@ namespace mag
 
     struct RigidBodyComponent : public Component
     {
-            RigidBodyComponent(const f32 mass = 0.0f) : mass(mass) {}
+            RigidBodyComponent(const f32 mass = 0.0f);
 
-            CLONE(RigidBodyComponent);
+            CLONE_DECLARATION(RigidBodyComponent);
 
             f32 mass;
 
             // Storage for physics engine use
             void* internal = nullptr;
 
-            b8 is_dynamic() const { return mass != 0.0f; }
+            b8 is_dynamic() const;
     };
 
     struct LightComponent : public Component
     {
-            LightComponent(const vec3& color = vec3(1), const f32 intensity = 1) : color(color), intensity(intensity) {}
+            LightComponent(const vec3& color = vec3(1), const f32 intensity = 1);
 
-            CLONE(LightComponent);
+            CLONE_DECLARATION(LightComponent);
 
             vec3 color;
             f32 intensity;
@@ -118,9 +106,9 @@ namespace mag
     class Camera;
     struct CameraComponent : public Component
     {
-            CameraComponent(const Camera& camera) : camera(camera) {}
+            CameraComponent(const Camera& camera);
 
-            CLONE(CameraComponent);
+            CLONE_DECLARATION(CameraComponent);
 
             Camera camera;
     };
@@ -128,9 +116,9 @@ namespace mag
     class LuaScript;
     struct LuaScriptComponent : public Component
     {
-            LuaScriptComponent(const str& file_path) : file_path(file_path) {}
+            LuaScriptComponent(const str& file_path);
 
-            CLONE(LuaScriptComponent);
+            CLONE_DECLARATION(LuaScriptComponent);
 
             str file_path;
             LuaScript* instance = nullptr;
@@ -145,12 +133,9 @@ namespace mag
     struct ScriptComponent : public Component
     {
             ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
-                            DestroyScriptFn destroy_entity = nullptr)
-                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
-            {
-            }
+                            DestroyScriptFn destroy_entity = nullptr);
 
-            CLONE(ScriptComponent);
+            CLONE_DECLARATION(ScriptComponent);
 
             CreateScriptFn create_entity;
             DestroyScriptFn destroy_entity;

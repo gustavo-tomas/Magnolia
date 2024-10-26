@@ -1,24 +1,31 @@
 #pragma once
 
-#include "core/event.hpp"
 #include "core/types.hpp"
-#include "imgui.h"
-#include "menu/info_menu.hpp"
+
+typedef int ImGuiWindowFlags;
+
+namespace mag
+{
+    struct Event;
+    struct KeyPressEvent;
+};  // namespace mag
 
 namespace sprout
 {
     using namespace mag;
 
+    class InfoMenu;
+
     class MenuBar
     {
         public:
             MenuBar();
-            ~MenuBar() = default;
+            ~MenuBar();
 
             void render(const ImGuiWindowFlags window_flags);
-            b8 quit_requested() const { return quit; };
-
             void on_event(Event& e);
+
+            b8 quit_requested() const;
 
         private:
             void new_scene();

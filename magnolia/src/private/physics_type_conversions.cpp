@@ -1,12 +1,14 @@
-#pragma once
+#include "private/physics_type_conversions.hpp"
 
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
 #include "ecs/components.hpp"
+#include "math/quat.hpp"
+#include "math/trigonometric.hpp"
 
 namespace mag
 {
-    inline btTransform const mag_transform_to_bt_transform(const TransformComponent& t)
+    btTransform const mag_transform_to_bt_transform(const TransformComponent& t)
     {
         btTransform bt_transform;
         bt_transform.setIdentity();
@@ -20,10 +22,10 @@ namespace mag
         return bt_transform;
     }
 
-    inline TransformComponent const bt_transform_to_mag_transform(const btTransform& t, const vec3& scale)
+    TransformComponent const bt_transform_to_mag_transform(const btTransform& t, const vec3& scale)
     {
         TransformComponent transform;
-        transform.translation = vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
+        transform.translation = math::vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
 
         btScalar pitch, yaw, roll;
         t.getRotation().getEulerZYX(roll, yaw, pitch);
@@ -35,14 +37,14 @@ namespace mag
         return transform;
     }
 
-    inline btVector3 const mag_vec_to_bt_vec(const vec3& v)
+    btVector3 const mag_vec_to_bt_vec(const vec3& v)
     {
         const btVector3 bt_vec(v.x, v.y, v.z);
 
         return bt_vec;
     }
 
-    inline vec3 const bt_vec_to_mag_vec(const btVector3& bt_vec)
+    vec3 const bt_vec_to_mag_vec(const btVector3& bt_vec)
     {
         const vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
 

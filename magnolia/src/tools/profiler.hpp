@@ -19,15 +19,11 @@ namespace mag
     {
         public:
             void update_profile_result(const str& name, const f64 duration, const f64 time_interval_ms);
-            void clear_results() { results.clear(); };
+            void clear_results();
 
-            const std::map<str, ProfileResult>& get_results() const { return results; };
+            const std::map<str, ProfileResult>& get_results() const;
 
-            static ProfilerManager& get()
-            {
-                static ProfilerManager instance;
-                return instance;
-            }
+            static ProfilerManager& get();
 
         private:
             // Keep the results ordered

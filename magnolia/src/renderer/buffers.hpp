@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
 #include "core/types.hpp"
+#include "private/vulkan_fwd.hpp"
 #include "vk_mem_alloc.h"
 
 namespace mag
@@ -13,7 +12,10 @@ namespace mag
     class VulkanBuffer
     {
         public:
-            void initialize(const u64 size_bytes, const VkBufferUsageFlags usage, const VmaMemoryUsage memory_usage,
+            VulkanBuffer();
+            ~VulkanBuffer();
+
+            void initialize(const u64 size_bytes, const vk::BufferUsageFlags usage, const VmaMemoryUsage memory_usage,
                             const VmaAllocationCreateFlags memory_flags);
             void shutdown();
 
@@ -21,15 +23,15 @@ namespace mag
             void unmap_memory();
             void copy(const void* data, const u64 size_bytes, const u64 offset = 0);
 
-            const vk::Buffer& get_buffer() const { return buffer; };
-            const VmaAllocation& get_allocation() const { return allocation; };
-            void* get_data() const { return mapped_region; };
-            u64 get_size() const { return size; };
+            const void* get_handle() const;
+            const void* get_allocation() const;
+            void* get_data() const;
+
+            u64 get_size() const;
             u64 get_device_address() const;
 
         private:
-            vk::Buffer buffer = {};
-            VkBuffer vk_buffer = {};
+            vk::Buffer* buffer = nullptr;
             VmaAllocation allocation = {};
             void* mapped_region = {};
             u64 size = {};
@@ -38,10 +40,13 @@ namespace mag
     class GPUBuffer
     {
         public:
-            void initialize(const void* data, const u64 size_bytes, const VkBufferUsageFlags usage);
+            GPUBuffer();
+            ~GPUBuffer();
+
+            void initialize(const void* data, const u64 size_bytes, const vk::BufferUsageFlags usage);
             void shutdown();
 
-            VulkanBuffer& get_buffer() { return buffer; };
+            VulkanBuffer& get_buffer();
 
         private:
             VulkanBuffer buffer;
@@ -55,7 +60,7 @@ namespace mag
 
             void resize(const void* vertices, const u64 size_bytes);
 
-            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer();
 
         private:
             GPUBuffer gpu_buffer;
@@ -69,7 +74,7 @@ namespace mag
 
             void resize(const void* indices, const u64 size_bytes);
 
-            VulkanBuffer& get_buffer() { return gpu_buffer.get_buffer(); };
+            VulkanBuffer& get_buffer();
 
         private:
             GPUBuffer gpu_buffer;

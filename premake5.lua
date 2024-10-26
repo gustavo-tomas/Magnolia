@@ -3,7 +3,7 @@ workspace "magnolia"
     architecture "x86_64"
     language "c++"
     cppdialect "c++20"
-    toolset "gcc"
+    toolset "clang"
     configurations {"debug", "profile", "release"}
     location "build"
     staticruntime "on"
@@ -51,6 +51,17 @@ workspace "magnolia"
         "BulletLinearMath"
     }
 
+    -- @NOTE: don't use LTO on debug, it might interfere with ClangBuildAnalyzer
+    build_flags =
+    {
+        "LinkTimeOptimization"
+    }
+
+    defines
+    {
+        "VULKAN_HPP_NAMESPACE=vk"
+    }
+
 -- @TODO: consistent build folders/output
 -- @TODO: fix windows build
 
@@ -58,7 +69,10 @@ workspace "magnolia"
 project "magnolia"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "sharedlib"
-    
+
+    pchheader "%{prj.name}/src/pch.hpp"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     files
     {
         "%{prj.name}/src/**.hpp",
@@ -114,7 +128,7 @@ project "magnolia"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
@@ -123,6 +137,7 @@ project "magnolia"
     filter "configurations:profile"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
@@ -130,6 +145,7 @@ project "magnolia"
     filter "configurations:release"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -187,7 +203,7 @@ project "sprout_editor"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
@@ -196,6 +212,7 @@ project "sprout_editor"
     filter "configurations:profile"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
@@ -203,6 +220,7 @@ project "sprout_editor"
     filter "configurations:release"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -259,7 +277,7 @@ common_settings = function()
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror" }
+        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
@@ -268,6 +286,7 @@ common_settings = function()
     filter "configurations:profile"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
@@ -275,6 +294,7 @@ common_settings = function()
     filter "configurations:release"
         buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -476,7 +496,8 @@ project "assimp"
 
     elseif os.host() == "linux" then
         if exists(libdir .. "/libassimp.so") and
-           exists(libdir .. "/libassimp.so.5") then
+           exists(libdir .. "/libassimp.so.5") and
+           exists(libdir .. "/libassimp.so.5.4.3") then
             os.execute("echo Skipping assimp compilation...")
 
         else
@@ -484,6 +505,7 @@ project "assimp"
             os.execute("cd build/linux/assimp && cmake -S ../../../libs/assimp -B . && make -j" .. number_of_cores())
             os.execute("cp build/linux/assimp/bin/libassimp.so " .. libdir .. "/libassimp.so")
             os.execute("cp build/linux/assimp/bin/libassimp.so.5 " .. libdir .. "/libassimp.so.5")
+            os.execute("cp build/linux/assimp/bin/libassimp.so.5.4.3 " .. libdir .. "/libassimp.so.5.4.3")
         end
     end
 

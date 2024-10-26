@@ -2,15 +2,13 @@
 
 // See this: https://github.com/dwjclark11/Scion2D/blob/master/SCION_CORE/src/Scripting/GlmLuaBindings.cpp
 
-#include "core/logger.hpp"
-#include "core/math.hpp"
-#include "core/types.hpp"
-#include "sol/sol.hpp"
+namespace sol
+{
+    class state;
+};
 
 namespace mag
 {
-    using namespace math;
-
     class LuaBindings
     {
         public:

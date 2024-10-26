@@ -2,6 +2,8 @@
 
 #include "core/application.hpp"
 #include "resources/image.hpp"
+#include "resources/material_loader.hpp"
+#include "threads/job_system.hpp"
 
 namespace mag
 {

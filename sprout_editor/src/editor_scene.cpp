@@ -1,12 +1,15 @@
 #include "editor_scene.hpp"
 
-#include <cstdlib>
-
+#include "camera_controller.hpp"
 #include "core/application.hpp"
-#include "core/types.hpp"
+#include "core/assert.hpp"
+#include "core/file_system.hpp"
+#include "core/window.hpp"
 #include "ecs/components.hpp"
+#include "ecs/ecs.hpp"
+#include "threads/job_system.hpp"
 
-namespace mag
+namespace sprout
 {
     EditorScene::EditorScene()
         : Scene(),
@@ -21,6 +24,8 @@ namespace mag
 
         camera->set_aspect_ratio(current_viewport_size);
     }
+
+    EditorScene::~EditorScene() = default;
 
     void EditorScene::on_start_internal()
     {
@@ -157,4 +162,24 @@ namespace mag
         // Don't do anything on window resize (we handle the viewport resize only)
         (void)e;
     }
-};  // namespace mag
+
+    Camera& EditorScene::get_camera()
+    {
+        if (is_running())
+        {
+            auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+            for (auto [camera_c, transform] : components)
+            {
+                return camera_c->camera;
+            }
+
+            ASSERT(false, "No runtime camera!");
+            return std::get<0>(components[0])->camera;
+        }
+
+        else
+        {
+            return *camera;
+        }
+    }
+};  // namespace sprout

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "renderer/buffers.hpp"
 #include "resources/model.hpp"
 

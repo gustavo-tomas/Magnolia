@@ -1,32 +1,70 @@
 #include "editor.hpp"
 
 #include <core/entry_point.hpp>
+#include <vulkan/vulkan.hpp>
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
+#include "editor_scene.hpp"
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "implot/implot.h"
+#include "math/generic.hpp"
+#include "menu/menu_bar.hpp"
+#include "panels/camera_panel.hpp"
+#include "panels/content_browser_panel.hpp"
+#include "panels/materials_panel.hpp"
+#include "panels/properties_panel.hpp"
+#include "panels/scene_panel.hpp"
+#include "panels/settings_panel.hpp"
+#include "panels/status_panel.hpp"
+#include "panels/viewport_panel.hpp"
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
+#include "physics/physics.hpp"
+#include "renderer/context.hpp"
+#include "renderer/render_graph.hpp"
+#include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
 
-mag::Application *mag::create_application()
-{
-    mag::ApplicationOptions options;
-    options.title = "Sprout";
-    options.window_icon = "sprout_editor/assets/images/application_icon.bmp";
-
-    return new sprout::Editor(options);
-}
+mag::Application *mag::create_application() { return new sprout::Editor("sprout_editor/config.json"); }
 
 namespace sprout
 {
     Editor &get_editor() { return static_cast<Editor &>(get_application()); }
 
-    Editor::Editor(const ApplicationOptions &options) : Application(options)
+    struct Editor::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            vk::DescriptorPool descriptor_pool;
+
+            unique<MenuBar> menu_bar;
+            unique<ContentBrowserPanel> content_browser_panel;
+            unique<ViewportPanel> viewport_panel;
+            unique<ScenePanel> scene_panel;
+            unique<MaterialsPanel> material_panel;
+            unique<PropertiesPanel> properties_panel;
+            unique<StatusPanel> status_panel;
+            unique<CameraPanel> camera_panel;
+            unique<SettingsPanel> settings_panel;
+
+            unique<RenderGraph> render_graph;
+            std::vector<ref<EditorScene>> open_scenes;
+            std::vector<u32> open_scenes_marked_for_deletion;
+
+            u32 selected_scene_index = 0;
+            u32 next_scene_index = 0;
+
+            uvec2 curr_viewport_size;
+            b8 disabled = false;
+    };
+
+    Editor::Editor(const str &config_file_path) : Application(config_file_path), impl(new IMPL())
     {
         auto &context = get_context();
         auto &device = context.get_device();
@@ -48,7 +86,7 @@ namespace sprout
         const vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1000,
                                                        pool_sizes);
 
-        descriptor_pool = context.get_device().createDescriptorPool(create_info);
+        impl->descriptor_pool = context.get_device().createDescriptorPool(create_info);
 
         // Initialize imgui
         IMGUI_CHECKVERSION();
@@ -78,7 +116,7 @@ namespace sprout
 
         set_default_editor_style(ImGui::GetStyle());
 
-        ASSERT(ImGui_ImplSDL2_InitForVulkan(get_application().get_window().get_handle()),
+        ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
                "Failed to initialize editor window backend");
 
         ImGui_ImplVulkan_InitInfo init_info = {};
@@ -86,7 +124,7 @@ namespace sprout
         init_info.PhysicalDevice = context.get_physical_device();
         init_info.Device = device;
         init_info.Queue = context.get_graphics_queue();
-        init_info.DescriptorPool = static_cast<VkDescriptorPool>(descriptor_pool);
+        init_info.DescriptorPool = static_cast<VkDescriptorPool>(impl->descriptor_pool);
         init_info.MinImageCount = context.get_swapchain_images().size();
         init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
@@ -97,21 +135,21 @@ namespace sprout
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
-        menu_bar = create_unique<MenuBar>();
-        content_browser_panel = create_unique<ContentBrowserPanel>();
-        viewport_panel = create_unique<ViewportPanel>();
-        scene_panel = create_unique<ScenePanel>();
-        material_panel = create_unique<MaterialsPanel>();
-        status_panel = create_unique<StatusPanel>();
-        camera_panel = create_unique<CameraPanel>();
-        settings_panel = create_unique<SettingsPanel>();
+        impl->menu_bar = create_unique<MenuBar>();
+        impl->content_browser_panel = create_unique<ContentBrowserPanel>();
+        impl->viewport_panel = create_unique<ViewportPanel>();
+        impl->scene_panel = create_unique<ScenePanel>();
+        impl->material_panel = create_unique<MaterialsPanel>();
+        impl->status_panel = create_unique<StatusPanel>();
+        impl->camera_panel = create_unique<CameraPanel>();
+        impl->settings_panel = create_unique<SettingsPanel>();
 
         // Initialize render graph
         auto &app = get_application();
         auto &window = app.get_window();
 
         const uvec2 window_size = window.get_size();
-        curr_viewport_size = window_size;
+        impl->curr_viewport_size = window_size;
 
         build_render_graph(window_size, get_viewport_size());
 
@@ -133,7 +171,7 @@ namespace sprout
         ImPlot::DestroyContext();
         ImGui::DestroyContext();
 
-        context.get_device().destroyDescriptorPool(descriptor_pool);
+        context.get_device().destroyDescriptorPool(impl->descriptor_pool);
     }
 
     void Editor::on_update(const f32 dt)
@@ -145,44 +183,44 @@ namespace sprout
         auto &renderer = app.get_renderer();
 
         // Delete closed scenes from back to front
-        for (i32 i = open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
+        for (i32 i = impl->open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
         {
-            const u32 pos = open_scenes_marked_for_deletion[i];
+            const u32 pos = impl->open_scenes_marked_for_deletion[i];
 
-            open_scenes.erase(open_scenes.begin() + pos);
-            open_scenes_marked_for_deletion.erase(open_scenes_marked_for_deletion.begin() + i);
+            impl->open_scenes.erase(impl->open_scenes.begin() + pos);
+            impl->open_scenes_marked_for_deletion.erase(impl->open_scenes_marked_for_deletion.begin() + i);
 
-            if (pos < selected_scene_index)
+            if (pos < impl->selected_scene_index)
             {
-                selected_scene_index =
-                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+                impl->selected_scene_index =
+                    math::clamp(impl->selected_scene_index - 1, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
             }
 
-            else if (pos == selected_scene_index)
+            else if (pos == impl->selected_scene_index)
             {
-                selected_scene_index =
-                    math::clamp(selected_scene_index - 1, 0u, static_cast<u32>(open_scenes.size() - 1));
+                impl->selected_scene_index =
+                    math::clamp(impl->selected_scene_index - 1, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
 
-                set_active_scene(selected_scene_index);
+                set_active_scene(impl->selected_scene_index);
             }
         }
 
-        if (selected_scene_index != next_scene_index)
+        if (impl->selected_scene_index != impl->next_scene_index)
         {
-            set_active_scene(next_scene_index);
+            set_active_scene(impl->next_scene_index);
         }
 
         auto &active_scene = get_active_scene();
 
         // @TODO: this is a hack. We want to resize the editor viewport but we want to decouple the application from the
         // rest of the engine. We should find a better solution to handle application side events.
-        const auto &viewport_size = viewport_panel->get_viewport_size();
+        const auto &viewport_size = impl->viewport_panel->get_viewport_size();
         active_scene.on_viewport_resize(viewport_size);
         this->on_viewport_resize(viewport_size);
 
         active_scene.on_update(dt);
 
-        if (menu_bar->quit_requested())
+        if (impl->menu_bar->quit_requested())
         {
             auto event = QuitEvent();
             process_user_application_event(event);
@@ -197,6 +235,38 @@ namespace sprout
         renderer.on_update(get_render_graph());
     }
 
+    void Editor::render(ECS &ecs, Camera &camera, RendererImage &viewport_image)
+    {
+        // Disable widgets
+        ImGui::BeginDisabled(impl->disabled);
+
+        const ImGuiDockNodeFlags dock_flags = ImGuiDockNodeFlags_PassthruCentralNode |
+                                              static_cast<ImGuiDockNodeFlags>(ImGuiDockNodeFlags_NoWindowMenuButton);
+
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+
+        // ImGui windows goes here
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
+        // ImGui::ShowDemoWindow();
+
+        impl->scene_panel->render(window_flags, ecs);
+        const u64 selected_entity_id = impl->scene_panel->get_selected_entity_id();
+
+        impl->menu_bar->render(window_flags);
+        impl->content_browser_panel->render(window_flags);
+        impl->material_panel->render(window_flags, ecs, selected_entity_id);
+        impl->properties_panel->render(window_flags, ecs, selected_entity_id);
+        impl->settings_panel->render(window_flags);
+        impl->camera_panel->render(window_flags, camera);
+        impl->status_panel->render(window_flags);
+
+        ImGui::EndDisabled();
+
+        // @TODO: this feels like a bit of a hack. We keep the viewport with its regular color
+        // by rendering after the ImGui::EndDisabled()
+        impl->viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
+    }
+
     void Editor::on_event(Event &e)
     {
         EventDispatcher dispatcher(e);
@@ -205,8 +275,8 @@ namespace sprout
         dispatcher.dispatch<QuitEvent>(BIND_FN(Editor::on_quit));
 
         get_active_scene().on_event(e);
-        menu_bar->on_event(e);
-        viewport_panel->on_event(e);
+        impl->menu_bar->on_event(e);
+        impl->viewport_panel->on_event(e);
     }
 
     // @TODO: use file dialogs to ask about saving files when the file dialog is implemented. For now this is a
@@ -217,7 +287,7 @@ namespace sprout
         (void)e;
 
         // Save open scenes
-        for (const auto &scene : open_scenes)
+        for (const auto &scene : impl->open_scenes)
         {
             close_scene(scene);
         }
@@ -234,16 +304,16 @@ namespace sprout
 
     void Editor::on_viewport_resize(const uvec2 &new_viewport_size)
     {
-        if (new_viewport_size == curr_viewport_size) return;
+        if (new_viewport_size == impl->curr_viewport_size) return;
 
-        curr_viewport_size = new_viewport_size;
+        impl->curr_viewport_size = new_viewport_size;
 
         const uvec2 window_size = get_application().get_window().get_size();
 
         build_render_graph(window_size, new_viewport_size);
     }
 
-    void Editor::add_scene(EditorScene *scene) { open_scenes.emplace_back(scene); }
+    void Editor::add_scene(EditorScene *scene) { impl->open_scenes.emplace_back(scene); }
 
     void Editor::close_scene(const ref<EditorScene> &scene)
     {
@@ -254,18 +324,18 @@ namespace sprout
 
         // @TODO: linear search but w e. It is unlikely that this will hinder the performance
         u32 idx = INVALID_ID;
-        for (u32 i = 0; i < open_scenes.size(); i++)
+        for (u32 i = 0; i < impl->open_scenes.size(); i++)
         {
-            if (open_scenes[i] == scene)
+            if (impl->open_scenes[i] == scene)
             {
                 idx = i;
-                open_scenes_marked_for_deletion.push_back(idx);
+                impl->open_scenes_marked_for_deletion.push_back(idx);
                 break;
             }
         }
 
         // Sort to avoid problems during deletion
-        std::sort(open_scenes_marked_for_deletion.begin(), open_scenes_marked_for_deletion.end());
+        std::sort(impl->open_scenes_marked_for_deletion.begin(), impl->open_scenes_marked_for_deletion.end());
     }
 
     void Editor::set_active_scene(const u32 index)
@@ -279,23 +349,23 @@ namespace sprout
             active_scene.on_stop();
         }
 
-        selected_scene_index = math::clamp(index, 0u, static_cast<u32>(open_scenes.size() - 1));
+        impl->selected_scene_index = math::clamp(index, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
 
-        physics_engine.on_simulation_start(open_scenes[selected_scene_index].get());
+        physics_engine.on_simulation_start(impl->open_scenes[impl->selected_scene_index].get());
     }
 
-    void Editor::set_input_disabled(const b8 disable) { this->disabled = disable; }
+    void Editor::set_input_disabled(const b8 disable) { impl->disabled = disable; }
 
     void Editor::set_selected_scene_index(const u32 index)
     {
-        next_scene_index = math::clamp(index, 0u, static_cast<u32>(open_scenes.size() - 1));
+        impl->next_scene_index = math::clamp(index, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
     }
 
-    b8 Editor::is_viewport_window_active() const { return viewport_panel->is_viewport_window_active(); }
+    b8 Editor::is_viewport_window_active() const { return impl->viewport_panel->is_viewport_window_active(); }
 
     void Editor::build_render_graph(const uvec2 &size, const uvec2 &viewport_size)
     {
-        render_graph.reset(new RenderGraph());
+        impl->render_graph.reset(new RenderGraph());
 
         // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
 
@@ -303,13 +373,26 @@ namespace sprout
         GizmoPass *gizmo_pass = new GizmoPass(viewport_size);
         EditorPass *editor_pass = new EditorPass(size);
 
-        render_graph->set_output_attachment("EditorOutputColor");
-        // render_graph->set_output_attachment("OutputColor");
+        impl->render_graph->set_output_attachment("EditorOutputColor");
+        // impl->render_graph->set_output_attachment("OutputColor");
 
-        render_graph->add_pass(scene_pass);
-        render_graph->add_pass(gizmo_pass);
-        render_graph->add_pass(editor_pass);
+        impl->render_graph->add_pass(scene_pass);
+        impl->render_graph->add_pass(gizmo_pass);
+        impl->render_graph->add_pass(editor_pass);
 
-        render_graph->build();
+        impl->render_graph->build();
     }
+
+    EditorScene &Editor::get_active_scene() { return *impl->open_scenes[impl->selected_scene_index]; }
+    RenderGraph &Editor::get_render_graph() { return *impl->render_graph; }
+    const std::vector<ref<EditorScene>> &Editor::get_open_scenes() const { return impl->open_scenes; }
+    u32 Editor::get_selected_scene_index() const { return impl->selected_scene_index; }
+    const uvec2 &Editor::get_viewport_size() const { return impl->viewport_panel->get_viewport_size(); }
+
+    // @TODO: find a better way to pass values to the rest of the application (maybe use a struct?)
+    u32 &Editor::get_texture_output() { return impl->settings_panel->get_texture_output(); }
+    u32 &Editor::get_normal_output() { return impl->settings_panel->get_normal_output(); }
+    b8 &Editor::is_bounding_box_enabled() { return impl->settings_panel->is_bounding_box_enabled(); }
+    b8 &Editor::is_physics_colliders_enabled() { return impl->settings_panel->is_physics_colliders_enabled(); }
+    b8 Editor::is_disabled() const { return impl->disabled; }
 };  // namespace sprout

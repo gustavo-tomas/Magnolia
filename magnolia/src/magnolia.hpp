@@ -7,4 +7,5 @@
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "core/types.hpp"
+#include "core/window.hpp"
 #include "scene/scriptable_entity.hpp"

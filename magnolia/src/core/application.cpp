@@ -1,8 +1,22 @@
 #include "core/application.hpp"
 
+#include "core/event.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "core/window.hpp"
+#include "physics/physics.hpp"
 #include "platform/file_dialog.hpp"
+#include "renderer/renderer.hpp"
+#include "renderer/shader.hpp"
+#include "resources/image.hpp"
+#include "resources/image_loader.hpp"
+#include "resources/material.hpp"
+#include "resources/material_loader.hpp"
+#include "resources/model.hpp"
+#include "resources/model_loader.hpp"
+#include "resources/shader_loader.hpp"
 #include "scripting/scripting_engine.hpp"
+#include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
 
 namespace mag
@@ -15,69 +29,121 @@ namespace mag
         return *application;
     }
 
-    Application::Application(const ApplicationOptions& options)
+    struct Application::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            unique<Window> window;
+            unique<Renderer> renderer;
+            unique<FileSystem> file_system;
+            unique<FileWatcher> file_watcher;
+            unique<JobSystem> job_system;
+            unique<ImageLoader> image_loader;
+            unique<MaterialLoader> material_loader;
+            unique<ModelLoader> model_loader;
+            unique<ShaderLoader> shader_loader;
+            unique<TextureManager> texture_loader;
+            unique<MaterialManager> material_manager;
+            unique<ModelManager> model_manager;
+            unique<ShaderManager> shader_manager;
+            unique<PhysicsEngine> physics_engine;
+
+            b8 running;
+    };
+
+    Application::Application(const str& config_file_path) : impl(new IMPL())
     {
         application = this;
 
         // Remember that smart pointers are destroyed in the reverse order of creation
 
-        // Create the window
-        const WindowOptions window_options = {BIND_FN(Application::process_event), options.size, options.position,
-                                              options.title, options.window_icon};
+        // Create the file system
+        impl->file_system = create_unique<FileSystem>();
+        LOG_SUCCESS("FileSystem initialized");
 
-        window = create_unique<Window>(window_options);
+        // Read config file
+
+        json config;
+
+        uvec2 window_size = WindowOptions::MAX_SIZE;
+        ivec2 window_position = WindowOptions::CENTER_POS;
+        str window_title = "Magnolia";
+        str window_icon = "";
+
+        if (impl->file_system->read_json_data(config_file_path, config))
+        {
+            u32 count = 0;
+            for (const auto& num : config["WindowSize"])
+            {
+                if (count >= window_size.length()) break;
+                window_size[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["WindowPosition"])
+            {
+                if (count >= window_position.length()) break;
+                window_position[count++] = num;
+            }
+
+            window_title = config["WindowTitle"].get<str>();
+            window_icon = config["WindowIcon"].get<str>();
+        }
+
+        // Create the window
+        const WindowOptions window_options = {BIND_FN(Application::process_event), window_size, window_position,
+                                              window_title, window_icon};
+
+        impl->window = create_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
         // Create the renderer
-        renderer = create_unique<Renderer>(*window);
+        impl->renderer = create_unique<Renderer>(*impl->window);
         LOG_SUCCESS("Renderer initialized");
 
-        // Create the file system
-        file_system = create_unique<FileSystem>();
-        LOG_SUCCESS("FileSystem initialized");
-
         // Create the file watcher
-        file_watcher = create_unique<FileWatcher>();
+        impl->file_watcher = create_unique<FileWatcher>();
         LOG_SUCCESS("FileWatcher initialized");
 
         // Create the job system
-        job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
+        impl->job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
         LOG_SUCCESS("JobSystem initialized");
 
         // Create the image loader
-        image_loader = create_unique<ImageLoader>();
+        impl->image_loader = create_unique<ImageLoader>();
         LOG_SUCCESS("ImageLoader initialized");
 
         // Create the material loader
-        material_loader = create_unique<MaterialLoader>();
+        impl->material_loader = create_unique<MaterialLoader>();
         LOG_SUCCESS("MaterialLoader initialized");
 
         // Create the model loader
-        model_loader = create_unique<ModelLoader>();
+        impl->model_loader = create_unique<ModelLoader>();
         LOG_SUCCESS("ModelLoader initialized");
 
         // Create the shader loader
-        shader_loader = create_unique<ShaderLoader>();
+        impl->shader_loader = create_unique<ShaderLoader>();
         LOG_SUCCESS("ShaderLoader initialized");
 
         // Create the texture manager
-        texture_loader = create_unique<TextureManager>();
+        impl->texture_loader = create_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
 
         // Create the material manager
-        material_manager = create_unique<MaterialManager>();
+        impl->material_manager = create_unique<MaterialManager>();
         LOG_SUCCESS("MaterialManager initialized");
 
         // Create the model manager
-        model_manager = create_unique<ModelManager>();
+        impl->model_manager = create_unique<ModelManager>();
         LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager
-        shader_manager = create_unique<ShaderManager>();
+        impl->shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
         // Create the physics engine
-        physics_engine = create_unique<PhysicsEngine>();
+        impl->physics_engine = create_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
 
         // Create the scripting engine
@@ -89,8 +155,6 @@ namespace mag
         {
             LOG_SUCCESS("FileDialog initialized");
         }
-
-        running = true;
     }
 
     Application::~Application()
@@ -103,27 +167,29 @@ namespace mag
     {
         f64 curr_time = 0, last_time = 0, dt = 0;
 
-        while (running)
+        impl->running = true;
+
+        while (impl->running)
         {
             // Calculate dt
-            curr_time = window->get_time();
+            curr_time = impl->window->get_time();
             dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
 
             SCOPED_PROFILE("Application");
 
-            window->on_update();
+            impl->window->on_update();
 
             // Skip rendering if minimized or resizing
-            if (window->is_minimized())
+            if (impl->window->is_minimized())
             {
-                window->sleep(50);
+                impl->window->sleep(50);
                 continue;
             }
 
-            physics_engine->on_update(dt);
+            impl->physics_engine->on_update(dt);
 
-            job_system->process_callbacks();
+            impl->job_system->process_callbacks();
 
             // Update the user application
             on_update(dt);
@@ -137,7 +203,7 @@ namespace mag
         dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
         dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
 
-        renderer->on_event(e);
+        impl->renderer->on_event(e);
 
         // Send event to be processed by the user application
         on_event(e);
@@ -148,12 +214,27 @@ namespace mag
     void Application::on_quit(QuitEvent& e)
     {
         (void)e;
-        running = false;
+        impl->running = false;
     }
 
     void Application::on_window_close(WindowCloseEvent& e)
     {
         (void)e;
-        running = false;
+        impl->running = false;
     }
+
+    Window& Application::get_window() { return *impl->window; }
+    Renderer& Application::get_renderer() { return *impl->renderer; }
+    FileSystem& Application::get_file_system() { return *impl->file_system; }
+    FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
+    JobSystem& Application::get_job_system() { return *impl->job_system; }
+    ImageLoader& Application::get_image_loader() { return *impl->image_loader; }
+    MaterialLoader& Application::get_material_loader() { return *impl->material_loader; }
+    ModelLoader& Application::get_model_loader() { return *impl->model_loader; }
+    TextureManager& Application::get_texture_manager() { return *impl->texture_loader; }
+    MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
+    ModelManager& Application::get_model_manager() { return *impl->model_manager; }
+    ShaderLoader& Application::get_shader_loader() { return *impl->shader_loader; }
+    ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
+    PhysicsEngine& Application::get_physics_engine() { return *impl->physics_engine; }
 };  // namespace mag

@@ -1,16 +1,16 @@
 #pragma once
 
-#include <functional>
-
-#include "core/keys.hpp"
 #include "core/types.hpp"
 
 namespace mag
 {
     // Dark magic
-#define EVENT_CLASS_TYPE(type)                                     \
-    static EventType get_static_type() { return EventType::type; } \
-    virtual EventType get_type() const override { return get_static_type(); }
+#define EVENT_CLASS_TYPE_DECLARATION    \
+    static EventType get_static_type(); \
+    virtual EventType get_type() const override;
+
+    enum class Keys : u64;
+    enum class Buttons : u64;
 
     enum class EventType
     {
@@ -30,19 +30,17 @@ namespace mag
 
     struct Event
     {
-            virtual ~Event() {}
+            virtual ~Event();
 
             virtual EventType get_type() const = 0;
     };
-
-    using EventCallback = std::function<void(Event&)>;
 
     // Automatic type deduction
     // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h
     class EventDispatcher
     {
         public:
-            explicit EventDispatcher(Event& event) : event(event) {}
+            explicit EventDispatcher(Event& event);
 
             // F will be deduced by the compiler
             template <typename T, typename F>
@@ -60,16 +58,16 @@ namespace mag
 
     struct WindowCloseEvent : public Event
     {
-            EVENT_CLASS_TYPE(WindowClose);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             // Empty
     };
 
     struct WindowResizeEvent : public Event
     {
-            WindowResizeEvent(const u32 width, const u32 height) : width(width), height(height) {}
+            WindowResizeEvent(const u32 width, const u32 height);
 
-            EVENT_CLASS_TYPE(WindowResize);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             u32 width;
             u32 height;
@@ -77,30 +75,27 @@ namespace mag
 
     struct KeyPressEvent : public Event
     {
-            explicit KeyPressEvent(const Key key) : key(key) {}
+            explicit KeyPressEvent(const Keys key);
 
-            EVENT_CLASS_TYPE(KeyPress);
+            EVENT_CLASS_TYPE_DECLARATION;
 
-            Key key;
+            Keys key;
     };
 
     struct KeyReleaseEvent : public Event
     {
-            explicit KeyReleaseEvent(const Key key) : key(key) {}
+            explicit KeyReleaseEvent(const Keys key);
 
-            EVENT_CLASS_TYPE(KeyRelease);
+            EVENT_CLASS_TYPE_DECLARATION;
 
-            Key key;
+            Keys key;
     };
 
     struct MouseMoveEvent : public Event
     {
-            MouseMoveEvent(const i32 x_direction, const i32 y_direction)
-                : x_direction(x_direction), y_direction(y_direction)
-            {
-            }
+            MouseMoveEvent(const i32 x_direction, const i32 y_direction);
 
-            EVENT_CLASS_TYPE(MouseMove);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             i32 x_direction;
             i32 y_direction;
@@ -108,9 +103,9 @@ namespace mag
 
     struct MouseScrollEvent : public Event
     {
-            MouseScrollEvent(const f64 x_offset, const f64 y_offset) : x_offset(x_offset), y_offset(y_offset) {}
+            MouseScrollEvent(const f64 x_offset, const f64 y_offset);
 
-            EVENT_CLASS_TYPE(MouseScroll);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             f64 x_offset;
             f64 y_offset;
@@ -118,25 +113,25 @@ namespace mag
 
     struct MousePressEvent : public Event
     {
-            explicit MousePressEvent(const Button button) : button(button) {}
+            explicit MousePressEvent(const Buttons button);
 
-            EVENT_CLASS_TYPE(MousePress);
+            EVENT_CLASS_TYPE_DECLARATION;
 
-            Button button;
+            Buttons button;
     };
 
     struct NativeEvent : public Event
     {
-            explicit NativeEvent(const void* e) : e(e) {}
+            explicit NativeEvent(const void* e);
 
-            EVENT_CLASS_TYPE(NativeEvent);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             const void* e;
     };
 
     struct QuitEvent : public Event
     {
-            EVENT_CLASS_TYPE(Quit);
+            EVENT_CLASS_TYPE_DECLARATION;
 
             // Empty
     };
