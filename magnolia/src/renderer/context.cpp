@@ -1,5 +1,7 @@
 #include "renderer/context.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/debug.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>  // @TODO: temp
+
 #include "renderer/context.hpp"
 #include "renderer/sampler.hpp"
 #include "vk_mem_alloc.h"  // @TODO: temp
