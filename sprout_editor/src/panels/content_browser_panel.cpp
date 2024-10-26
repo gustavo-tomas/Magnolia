@@ -35,12 +35,12 @@ namespace sprout
         impl->folder_image = renderer.get_renderer_image(folder_tex.get());
         impl->file_image = renderer.get_renderer_image(file_tex.get());
 
-        impl->folder_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(impl->folder_image->get_sampler().get_handle(),
-                                        impl->folder_image->get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        impl->folder_image_descriptor = ImGui_ImplVulkan_AddTexture(
+            *static_cast<const vk::Sampler*>(impl->folder_image->get_sampler().get_handle()),
+            impl->folder_image->get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         impl->file_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(impl->file_image->get_sampler().get_handle(),
+            ImGui_ImplVulkan_AddTexture(*static_cast<const vk::Sampler*>(impl->file_image->get_sampler().get_handle()),
                                         impl->file_image->get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 

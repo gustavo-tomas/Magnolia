@@ -351,7 +351,8 @@ namespace mag
         for (auto& texture : textures)
         {
             const vk::DescriptorImageInfo descriptor_image_info(
-                texture->get_sampler().get_handle(), texture->get_image_view(), vk::ImageLayout::eReadOnlyOptimal);
+                *static_cast<const vk::Sampler*>(texture->get_sampler().get_handle()), texture->get_image_view(),
+                vk::ImageLayout::eReadOnlyOptimal);
 
             descriptor_image_infos.push_back(descriptor_image_info);
         }

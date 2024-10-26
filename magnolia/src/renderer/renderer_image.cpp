@@ -10,7 +10,7 @@ namespace mag
                                  const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
         : name(name),
           mip_levels(mip_levels),
-          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
+          sampler(Filter::Linear, SamplerAddressMode::Repeat, SamplerMipmapMode::Linear, mip_levels),
           format(format),
           extent(extent),
           msaa_samples(msaa_samples),
@@ -25,7 +25,7 @@ namespace mag
                                  const u32 mip_levels, const vk::SampleCountFlagBits msaa_samples, const str& name)
         : name(name),
           mip_levels(mip_levels),
-          sampler(vk::Filter::eLinear, vk::SamplerAddressMode::eRepeat, vk::SamplerMipmapMode::eLinear, mip_levels),
+          sampler(Filter::Linear, SamplerAddressMode::Repeat, SamplerMipmapMode::Linear, mip_levels),
           format(format),
           extent(extent),
           msaa_samples(msaa_samples),

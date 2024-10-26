@@ -52,8 +52,8 @@ namespace sprout
         }
 
         impl->viewport_image_descriptor =
-            ImGui_ImplVulkan_AddTexture(viewport_image.get_sampler().get_handle(), viewport_image.get_image_view(),
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            ImGui_ImplVulkan_AddTexture(*static_cast<const vk::Sampler *>(viewport_image.get_sampler().get_handle()),
+                                        viewport_image.get_image_view(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         // Runtime controls
         b8 swap_state;

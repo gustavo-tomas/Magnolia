@@ -1,21 +1,41 @@
 #pragma once
 
-#include <vulkan/vulkan_handles.hpp>
-
 #include "core/types.hpp"
 
 namespace mag
 {
+    enum class Filter
+    {
+        Nearest,
+        Linear
+    };
+
+    enum class SamplerAddressMode
+    {
+        Repeat,
+        MirroredRepeat,
+        ClampToEdge,
+        ClampToBorder,
+        MirrorClampToEdge
+    };
+
+    enum class SamplerMipmapMode
+    {
+        Nearest,
+        Linear
+    };
+
     class Sampler
     {
         public:
-            Sampler(const vk::Filter min_mag_filter, const vk::SamplerAddressMode address_mode,
-                    const vk::SamplerMipmapMode mip_map_mode, const u32 mip_levels);
+            Sampler(const Filter min_mag_filter, const SamplerAddressMode address_mode,
+                    const SamplerMipmapMode mip_map_mode, const u32 mip_levels);
             ~Sampler();
 
-            const vk::Sampler& get_handle() const;
+            const void* get_handle() const;
 
         private:
-            vk::Sampler sampler;
+            struct IMPL;
+            unique<IMPL> impl;
     };
 };  // namespace mag
