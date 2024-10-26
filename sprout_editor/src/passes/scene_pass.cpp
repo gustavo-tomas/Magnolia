@@ -43,7 +43,7 @@ namespace sprout
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
 
         pass.size = size;
-        pass.color_clear_value = vec_to_vk_clear_value(vec4(0.1, 0.1, 0.1, 1.0));
+        pass.color_clear_value = mag_to_vk(vec4(0.1, 0.1, 0.1, 1.0));
         pass.depth_clear_value = {1.0f};
     }
 

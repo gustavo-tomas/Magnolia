@@ -113,7 +113,7 @@ namespace mag
             vk::ImageAspectFlags image_aspect = {};
             vk::ImageUsageFlags image_usage = {};
             vk::Format image_format = {};
-            vk::Extent3D image_extent = vk::Extent3D(vec_to_vk_extent(description.size), 1);
+            vk::Extent3D image_extent = vk::Extent3D(mag_to_vk(description.size), 1);
 
             switch (description.type)
             {
@@ -254,7 +254,7 @@ namespace mag
             }
         }
 
-        const vk::Rect2D render_area = vk::Rect2D({}, vec_to_vk_extent(pass.size));
+        const vk::Rect2D render_area = vk::Rect2D({}, mag_to_vk(pass.size));
         const vk::Rect2D scissor = render_area;
 
         // Flip the viewport along the Y axis
