@@ -1,29 +1,7 @@
 #pragma once
 
 #include "math/types.hpp"
-
-namespace vk
-{
-    union ClearValue;
-    struct Extent2D;
-    struct Extent3D;
-
-    enum class Filter;
-    enum class SamplerAddressMode;
-    enum class SamplerMipmapMode;
-    enum class AttachmentLoadOp;
-
-    enum class PrimitiveTopology;
-    enum class PolygonMode;
-    enum class BlendOp;
-    enum class BlendFactor;
-
-    template <typename BitType>
-    class Flags;
-
-    enum class CullModeFlagBits : unsigned int;
-    using CullModeFlags = Flags<CullModeFlagBits>;
-};  // namespace vk
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {

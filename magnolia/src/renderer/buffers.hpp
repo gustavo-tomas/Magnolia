@@ -1,19 +1,8 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "private/vulkan_fwd.hpp"
 #include "vk_mem_alloc.h"
-
-// I dont want to wrap all these flags so we just fwd them for now :)
-namespace vk
-{
-    template <typename BitType>
-    class Flags;
-
-    enum class BufferUsageFlagBits : unsigned int;
-    using BufferUsageFlags = Flags<BufferUsageFlagBits>;
-
-    class Buffer;
-};  // namespace vk
 
 namespace mag
 {

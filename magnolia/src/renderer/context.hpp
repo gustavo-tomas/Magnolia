@@ -5,38 +5,7 @@
 #include "core/assert.hpp"
 #include "core/types.hpp"
 #include "math/types.hpp"
-
-typedef struct VmaAllocator_T* VmaAllocator;
-
-namespace vk
-{
-    template <typename BitType>
-    class Flags;
-
-    enum class Format;
-    enum class ImageTiling;
-    enum class PresentModeKHR;
-    enum class SampleCountFlagBits : unsigned int;
-    enum class FormatFeatureFlagBits : unsigned int;
-
-    struct Extent2D;
-    struct Extent3D;
-    struct SurfaceFormatKHR;
-    struct PhysicalDeviceDescriptorBufferPropertiesEXT;
-
-    class Instance;
-    class Device;
-    class PhysicalDevice;
-    class SwapchainKHR;
-    class SurfaceKHR;
-    class CommandPool;
-    class Fence;
-    class Queue;
-    class Image;
-    class ImageView;
-
-    using FormatFeatureFlags = Flags<FormatFeatureFlagBits>;
-};  // namespace vk
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {

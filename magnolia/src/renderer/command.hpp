@@ -1,23 +1,7 @@
 #pragma once
 
 #include "core/types.hpp"
-
-namespace vk
-{
-    enum class CommandBufferLevel;
-    enum class PipelineBindPoint;
-    enum class ImageLayout;
-
-    struct RenderingInfo;
-    struct RenderingInfo;
-    struct Extent3D;
-
-    class CommandPool;
-    class CommandBuffer;
-    class PipelineLayout;
-    class Image;
-    class DescriptorSet;
-};  // namespace vk
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {
