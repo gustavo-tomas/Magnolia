@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "core/application.hpp"
+#include "core/buffer.hpp"
 #include "core/logger.hpp"
 
 namespace mag
