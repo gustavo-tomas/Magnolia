@@ -45,12 +45,13 @@ namespace mag
 
     void CommandBuffer::bind_vertex_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
-        this->command_buffer.bindVertexBuffers(0, buffer.get_buffer(), offset);
+        this->command_buffer.bindVertexBuffers(0, *static_cast<const vk::Buffer*>(buffer.get_handle()), offset);
     }
 
     void CommandBuffer::bind_index_buffer(const VulkanBuffer& buffer, const u64 offset)
     {
-        this->command_buffer.bindIndexBuffer(buffer.get_buffer(), offset, vk::IndexType::eUint32);
+        this->command_buffer.bindIndexBuffer(*static_cast<const vk::Buffer*>(buffer.get_handle()), offset,
+                                             vk::IndexType::eUint32);
     }
 
     void CommandBuffer::bind_descriptor_set(const vk::PipelineBindPoint bind_point, const vk::PipelineLayout layout,
@@ -63,7 +64,8 @@ namespace mag
                                     const u64 src_offset, const u64 dst_offset)
     {
         vk::BufferCopy copy(src_offset, dst_offset, size_bytes);
-        this->command_buffer.copyBuffer(src.get_buffer(), dst.get_buffer(), copy);
+        this->command_buffer.copyBuffer(*static_cast<const vk::Buffer*>(src.get_handle()),
+                                        *static_cast<const vk::Buffer*>(dst.get_handle()), copy);
     }
 
     void CommandBuffer::copy_buffer_to_image(const VulkanBuffer& src, const RendererImage& image)
@@ -79,7 +81,7 @@ namespace mag
         const vk::ImageSubresourceLayers image_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
         const vk::BufferImageCopy copy_region(0, 0, 0, image_subresource, {}, image.get_extent());
 
-        this->command_buffer.copyBufferToImage(src.get_buffer(), image.get_image(),
+        this->command_buffer.copyBufferToImage(*static_cast<const vk::Buffer*>(src.get_handle()), image.get_image(),
                                                vk::ImageLayout::eTransferDstOptimal, copy_region);
 
         vk::ImageMemoryBarrier to_readable_barrier = to_transfer_barrier;

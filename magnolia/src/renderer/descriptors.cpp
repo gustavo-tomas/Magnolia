@@ -326,7 +326,8 @@ namespace mag
         auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
         auto& descriptor_allocator = get_context().get_descriptor_allocator();
 
-        const vk::DescriptorBufferInfo descriptor_buffer_info(buffer.get_buffer(), offset, buffer_size);
+        const vk::DescriptorBufferInfo descriptor_buffer_info(*static_cast<const vk::Buffer*>(buffer.get_handle()),
+                                                              offset, buffer_size);
 
         const b8 result =
             DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)

@@ -25,10 +25,12 @@ namespace mag
         allocation_create_info.usage = memory_usage;
         allocation_create_info.flags = memory_flags | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        VK_CHECK(VK_CAST(vmaCreateBuffer(get_context().get_allocator(), &buffer_create_info, &allocation_create_info,
-                                         reinterpret_cast<VkBuffer*>(&buffer), &allocation, nullptr)));
+        buffer = new vk::Buffer();
 
-        this->size = size_bytes;
+        VK_CHECK(VK_CAST(vmaCreateBuffer(get_context().get_allocator(), &buffer_create_info, &allocation_create_info,
+                                         reinterpret_cast<VkBuffer*>(buffer), &allocation, nullptr)));
+
+        size = size_bytes;
 
         // Use persistent mapping
         this->map_memory();
@@ -37,7 +39,8 @@ namespace mag
     void VulkanBuffer::shutdown()
     {
         this->unmap_memory();
-        vmaDestroyBuffer(get_context().get_allocator(), buffer, allocation);
+        vmaDestroyBuffer(get_context().get_allocator(), *buffer, allocation);
+        buffer = nullptr;
     }
 
     void* VulkanBuffer::map_memory()
@@ -54,15 +57,15 @@ namespace mag
         memcpy(static_cast<c8*>(mapped_region) + offset, data, size_bytes);
     }
 
-    const vk::Buffer& VulkanBuffer::get_buffer() const { return buffer; }
+    const void* VulkanBuffer::get_handle() const { return buffer; }
 
-    const VmaAllocation& VulkanBuffer::get_allocation() const { return allocation; }
+    const void* VulkanBuffer::get_allocation() const { return allocation; }
 
     void* VulkanBuffer::get_data() const { return mapped_region; }
 
     u64 VulkanBuffer::get_size() const { return size; }
 
-    u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({buffer}); };
+    u64 VulkanBuffer::get_device_address() const { return get_context().get_device().getBufferAddressKHR({*buffer}); }
 
     // GPUBuffer
     // -----------------------------------------------------------------------------------------------------------------
@@ -84,7 +87,7 @@ namespace mag
                           VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
         // Copy data from the staging buffer to the gpu buffer
-        context.submit_commands_immediate([=, this](CommandBuffer cmd)
+        context.submit_commands_immediate([&staging_buffer, size_bytes, this](CommandBuffer cmd)
                                           { cmd.copy_buffer(staging_buffer, buffer, size_bytes, 0, 0); });
 
         staging_buffer.shutdown();

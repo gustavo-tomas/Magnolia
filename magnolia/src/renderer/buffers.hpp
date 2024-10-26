@@ -1,9 +1,19 @@
 #pragma once
 
-#include <vulkan/vulkan_handles.hpp>
-
 #include "core/types.hpp"
 #include "vk_mem_alloc.h"
+
+// I dont want to wrap all these flags so we just fwd them for now :)
+namespace vk
+{
+    template <typename BitType>
+    class Flags;
+
+    enum class BufferUsageFlagBits : unsigned int;
+    using BufferUsageFlags = Flags<BufferUsageFlagBits>;
+
+    class Buffer;
+};  // namespace vk
 
 namespace mag
 {
@@ -24,14 +34,15 @@ namespace mag
             void unmap_memory();
             void copy(const void* data, const u64 size_bytes, const u64 offset = 0);
 
-            const vk::Buffer& get_buffer() const;
-            const VmaAllocation& get_allocation() const;
+            const void* get_handle() const;
+            const void* get_allocation() const;
             void* get_data() const;
+
             u64 get_size() const;
             u64 get_device_address() const;
 
         private:
-            vk::Buffer buffer = {};
+            vk::Buffer* buffer = nullptr;
             VmaAllocation allocation = {};
             void* mapped_region = {};
             u64 size = {};
