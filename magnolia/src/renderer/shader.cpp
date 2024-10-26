@@ -18,6 +18,8 @@
 
 namespace mag
 {
+    using namespace mag::math;
+
     ref<Shader> ShaderManager::get(const str& file_path)
     {
         auto it = shaders.find(file_path);
@@ -356,7 +358,8 @@ namespace mag
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
 
-        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics, pipeline->get_layout(), set,
+        command_buffer.bind_descriptor_set(vk::PipelineBindPoint::eGraphics,
+                                           *static_cast<const vk::PipelineLayout*>(pipeline->get_layout()), set,
                                            descriptor_set);
     }
 

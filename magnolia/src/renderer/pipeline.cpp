@@ -5,10 +5,20 @@
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
+#include "renderer/shader.hpp"
 
 namespace mag
 {
-    Pipeline::Pipeline(const Shader& shader)
+    struct Pipeline::IMPL
+    {
+            IMPL() = default;
+            ~IMPL() = default;
+
+            vk::Pipeline pipeline;
+            vk::PipelineLayout pipeline_layout;
+    };
+
+    Pipeline::Pipeline(const Shader& shader) : impl(new IMPL())
     {
         auto& context = get_context();
 
@@ -59,7 +69,7 @@ namespace mag
         }
 
         vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, shader.get_descriptor_set_layouts());
-        this->pipeline_layout = context.get_device().createPipelineLayout(pipeline_layout_create_info);
+        impl->pipeline_layout = context.get_device().createPipelineLayout(pipeline_layout_create_info);
 
         const auto& shader_modules = shader_configuration.shader_modules;
 
@@ -103,26 +113,26 @@ namespace mag
         const vk::GraphicsPipelineCreateInfo pipeline_create_info(
             {}, shader_stages, &vertex_input_state_create_info, &input_assembly_create_info, {}, &viewport_state,
             &rasterization_create_info, &multisampling_state_create_info, &depth_stencil_create_info, &color_blending,
-            &dynamic_state, pipeline_layout, {}, {}, {}, {}, &pipeline_rendering_create_info);
+            &dynamic_state, impl->pipeline_layout, {}, {}, {}, {}, &pipeline_rendering_create_info);
 
         const auto result_value = context.get_device().createGraphicsPipeline({}, pipeline_create_info);
         VK_CHECK(result_value.result);
 
-        this->pipeline = result_value.value;
+        impl->pipeline = result_value.value;
     }
 
     Pipeline::~Pipeline()
     {
         auto& context = get_context();
-        context.get_device().destroyPipeline(pipeline);
-        context.get_device().destroyPipelineLayout(pipeline_layout);
+        context.get_device().destroyPipeline(impl->pipeline);
+        context.get_device().destroyPipelineLayout(impl->pipeline_layout);
     }
 
     void Pipeline::bind()
     {
         const CommandBuffer& command_buffer = get_context().get_curr_frame().command_buffer;
-        command_buffer.get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+        command_buffer.get_handle().bindPipeline(vk::PipelineBindPoint::eGraphics, impl->pipeline);
     }
 
-    const vk::PipelineLayout& Pipeline::get_layout() const { return pipeline_layout; }
+    const void* Pipeline::get_layout() const { return &impl->pipeline_layout; }
 };  // namespace mag
