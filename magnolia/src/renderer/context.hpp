@@ -42,7 +42,7 @@ namespace mag
             void recreate_swapchain(const math::uvec2& size, const vk::PresentModeKHR present_mode);
             void begin_frame();
             b8 end_frame(const RendererImage& image, const vk::Extent3D& extent);
-            void submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function);
+            void submit_commands_immediate(std::function<void(CommandBuffer& cmd)>&& function);
 
             void begin_timestamp();
             void end_timestamp();

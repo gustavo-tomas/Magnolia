@@ -40,6 +40,7 @@ namespace mag
     {
         this->unmap_memory();
         vmaDestroyBuffer(get_context().get_allocator(), *buffer, allocation);
+        delete buffer;
         buffer = nullptr;
     }
 
@@ -87,7 +88,7 @@ namespace mag
                           VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
 
         // Copy data from the staging buffer to the gpu buffer
-        context.submit_commands_immediate([&staging_buffer, size_bytes, this](CommandBuffer cmd)
+        context.submit_commands_immediate([&staging_buffer, size_bytes, this](CommandBuffer& cmd)
                                           { cmd.copy_buffer(staging_buffer, buffer, size_bytes, 0, 0); });
 
         staging_buffer.shutdown();

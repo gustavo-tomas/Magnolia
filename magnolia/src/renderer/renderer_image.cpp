@@ -86,7 +86,7 @@ namespace mag
         staging_buffer.copy(pixels.data(), texture_size);
 
         context.submit_commands_immediate(
-            [&](CommandBuffer cmd)
+            [&](CommandBuffer& cmd)
             {
                 cmd.copy_buffer_to_image(staging_buffer, *this);
 

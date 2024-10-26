@@ -1,13 +1,28 @@
 #pragma once
 
-#include <vulkan/vulkan_handles.hpp>
-
 #include "core/types.hpp"
-#include "renderer/buffers.hpp"
+
+namespace vk
+{
+    enum class CommandBufferLevel;
+    enum class PipelineBindPoint;
+    enum class ImageLayout;
+
+    struct RenderingInfo;
+    struct RenderingInfo;
+    struct Extent3D;
+
+    class CommandPool;
+    class CommandBuffer;
+    class PipelineLayout;
+    class Image;
+    class DescriptorSet;
+};  // namespace vk
 
 namespace mag
 {
     class RendererImage;
+    class VulkanBuffer;
 
     class CommandBuffer
     {
@@ -53,6 +68,6 @@ namespace mag
             const vk::CommandBuffer& get_handle() const;
 
         private:
-            vk::CommandBuffer command_buffer;
+            vk::CommandBuffer* command_buffer = nullptr;
     };
 };  // namespace mag

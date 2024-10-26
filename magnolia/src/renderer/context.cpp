@@ -459,7 +459,7 @@ namespace mag
         return impl->frame_provider.end_frame(image, extent);
     }
 
-    void Context::submit_commands_immediate(std::function<void(CommandBuffer cmd)>&& function)
+    void Context::submit_commands_immediate(std::function<void(CommandBuffer& cmd)>&& function)
     {
         auto& cmd = impl->submit_command_buffer;
 
