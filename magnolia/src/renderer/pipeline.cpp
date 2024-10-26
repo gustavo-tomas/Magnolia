@@ -6,6 +6,7 @@
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
 #include "renderer/shader.hpp"
+#include "spirv_reflect.h"
 
 namespace mag
 {
@@ -77,7 +78,7 @@ namespace mag
         for (const auto& shader_module : shader_modules)
         {
             const vk::PipelineShaderStageCreateInfo create_info(
-                {}, static_cast<vk::ShaderStageFlagBits>(shader_module.spv_module.shader_stage), shader_module.module,
+                {}, static_cast<vk::ShaderStageFlagBits>(shader_module.spv_module->shader_stage), *shader_module.module,
                 "main");
 
             shader_stages.push_back(create_info);

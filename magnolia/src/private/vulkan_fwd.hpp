@@ -1,8 +1,14 @@
 #pragma once
 
-// Forward declarations for vulkan and vma types (because khronos can't do it properly)
+// Forward declarations for vulkan types (because khronos can't do it properly)
 
+// VMA
 typedef struct VmaAllocator_T* VmaAllocator;
+
+// SPIRV
+struct SpvReflectBlockVariable;
+struct SpvReflectDescriptorBinding;
+struct SpvReflectShaderModule;
 
 namespace vk
 {
@@ -39,6 +45,8 @@ namespace vk
     struct PhysicalDeviceDescriptorBufferPropertiesEXT;
     struct RenderingInfo;
     struct SurfaceFormatKHR;
+    struct VertexInputAttributeDescription;
+    struct VertexInputBindingDescription;
     struct WriteDescriptorSet;
 
     class Buffer;
@@ -55,6 +63,7 @@ namespace vk
     class PhysicalDevice;
     class PipelineLayout;
     class Queue;
+    class ShaderModule;
     class SurfaceKHR;
     class SwapchainKHR;
 

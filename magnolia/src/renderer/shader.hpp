@@ -1,15 +1,16 @@
 #pragma once
 
 #include <map>
-#include <vulkan/vulkan_handles.hpp>
+#include <vector>
 
 #include "core/types.hpp"
-#include "renderer/buffers.hpp"
-#include "spirv_reflect.h"
+#include "private/vulkan_fwd.hpp"
 
 namespace mag
 {
     class Pipeline;
+    class VulkanBuffer;
+
     struct Image;
     struct Material;
 
@@ -17,8 +18,8 @@ namespace mag
     {
             str file_path = "";
 
-            vk::ShaderModule module = {};
-            SpvReflectShaderModule spv_module = {};
+            vk::ShaderModule* module = nullptr;
+            SpvReflectShaderModule* spv_module = nullptr;
     };
 
     struct ShaderConfiguration
@@ -61,7 +62,7 @@ namespace mag
         private:
             struct UBO
             {
-                    SpvReflectDescriptorBinding descriptor_binding;
+                    SpvReflectDescriptorBinding* descriptor_binding = nullptr;
 
                     // Cache of the uniform members
                     std::map<str, SpvReflectBlockVariable*> members_cache;
