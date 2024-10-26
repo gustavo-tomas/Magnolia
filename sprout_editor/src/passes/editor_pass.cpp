@@ -12,6 +12,7 @@
 #include "math/type_definitions.hpp"
 #include "physics/physics.hpp"
 #include "private/renderer_type_conversions.hpp"
+#include "renderer/context.hpp"
 #include "renderer/frame.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"

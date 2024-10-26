@@ -9,6 +9,7 @@ namespace mag
 
     vk::Extent2D mag_to_vk(const math::vec2& v);
     vk::Extent3D mag_to_vk(const math::vec3& v);
+    vk::Extent3D mag_to_vk(const math::uvec3& v);
 
     math::vec2 vk_to_mag(const vk::Extent2D& extent);
     math::vec3 vk_to_mag(const vk::Extent3D& extent);
@@ -28,6 +29,11 @@ namespace mag
     enum class AttachmentState;
 
     vk::AttachmentLoadOp mag_to_vk(const AttachmentState state);
+
+    enum class SampleCount;
+
+    SampleCount vk_to_mag(const vk::SampleCountFlagBits sample_count);
+    vk::SampleCountFlagBits mag_to_vk(const SampleCount sample_count);
 
     vk::PrimitiveTopology str_to_vk_topology(const str& topology);
     vk::PolygonMode str_to_vk_polygon_mode(const str& polygon_mode);

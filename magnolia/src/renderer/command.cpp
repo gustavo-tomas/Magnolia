@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
+#include "private/renderer_type_conversions.hpp"
 #include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
@@ -85,7 +86,7 @@ namespace mag
                                            vk::DependencyFlagBits::eByRegion, {}, {}, to_transfer_barrier);
 
         const vk::ImageSubresourceLayers image_subresource(vk::ImageAspectFlagBits::eColor, 0, 0, 1);
-        const vk::BufferImageCopy copy_region(0, 0, 0, image_subresource, {}, image.get_extent());
+        const vk::BufferImageCopy copy_region(0, 0, 0, image_subresource, {}, mag_to_vk(image.get_extent()));
 
         this->command_buffer->copyBufferToImage(*static_cast<const vk::Buffer*>(src.get_handle()), image.get_image(),
                                                 vk::ImageLayout::eTransferDstOptimal, copy_region);

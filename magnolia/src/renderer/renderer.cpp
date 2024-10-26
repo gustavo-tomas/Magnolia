@@ -1,9 +1,12 @@
 #include "renderer/renderer.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"
+#include "private/renderer_type_conversions.hpp"
 #include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
@@ -54,7 +57,7 @@ namespace mag
         const auto& image = render_graph.get_output_attachment();
         const auto& extent = image.get_extent();
 
-        impl->context->end_frame(image, extent);
+        impl->context->end_frame(image, mag_to_vk(extent));
         impl->context->calculate_timestamp();  // Calculate after command recording ended
     }
 
@@ -178,7 +181,7 @@ namespace mag
             return it->second;
         }
 
-        const vk::Extent3D extent(image->width, image->height, 1);
+        const uvec3 extent(image->width, image->height, 1);
 
         // @TODO: check for supported formats
         const vk::Format format = vk::Format::eR8G8B8A8Srgb;
@@ -187,7 +190,7 @@ namespace mag
             create_ref<RendererImage>(extent, image->pixels, format,
                                       vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                                           vk::ImageUsageFlagBits::eTransferDst,
-                                      vk::ImageAspectFlagBits::eColor, image->mip_levels, vk::SampleCountFlagBits::e1);
+                                      vk::ImageAspectFlagBits::eColor, image->mip_levels, SampleCount::_1);
 
         return impl->images[image];
     }

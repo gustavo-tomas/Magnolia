@@ -15,6 +15,7 @@
 #include "imgui/misc/cpp/imgui_stdlib.h"
 #include "math/generic.hpp"
 #include "renderer/renderer_image.hpp"
+#include "renderer/sampler.hpp"
 #include "resources/image_loader.hpp"
 #include "scene/scene_serializer.hpp"
 #include "tools/model_importer.hpp"

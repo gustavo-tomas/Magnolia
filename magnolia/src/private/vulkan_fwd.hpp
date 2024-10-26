@@ -1,6 +1,6 @@
 #pragma once
 
-// Forward declarations for vulkan types (because khronos can't do it properly)
+// Forward declarations for vulkan types (because khronos can't do them properly)
 
 // VMA
 typedef struct VmaAllocator_T* VmaAllocator;
@@ -33,6 +33,8 @@ namespace vk
     enum class BufferUsageFlagBits : unsigned int;
     enum class CullModeFlagBits : unsigned int;
     enum class FormatFeatureFlagBits : unsigned int;
+    enum class ImageAspectFlagBits : unsigned int;
+    enum class ImageUsageFlagBits : unsigned int;
     enum class SampleCountFlagBits : unsigned int;
     enum class ShaderStageFlagBits : unsigned int;
 
@@ -73,5 +75,7 @@ namespace vk
     using BufferUsageFlags = Flags<BufferUsageFlagBits>;
     using CullModeFlags = Flags<CullModeFlagBits>;
     using FormatFeatureFlags = Flags<FormatFeatureFlagBits>;
+    using ImageAspectFlags = Flags<ImageAspectFlagBits>;
+    using ImageUsageFlags = Flags<ImageUsageFlagBits>;
     using ShaderStageFlags = Flags<ShaderStageFlagBits>;
 };  // namespace vk

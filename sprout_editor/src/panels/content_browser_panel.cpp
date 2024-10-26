@@ -10,6 +10,7 @@
 #include "imgui.h"
 #include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
+#include "renderer/sampler.hpp"
 #include "resources/image.hpp"
 
 namespace sprout

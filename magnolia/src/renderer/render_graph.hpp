@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vulkan/vulkan.hpp>
 
 #include "math/vec.hpp"
 #include "renderer/renderer_image.hpp"

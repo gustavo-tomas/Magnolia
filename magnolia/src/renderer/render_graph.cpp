@@ -1,5 +1,7 @@
 #include "renderer/render_graph.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
@@ -112,7 +114,7 @@ namespace mag
             vk::ImageAspectFlags image_aspect = {};
             vk::ImageUsageFlags image_usage = {};
             vk::Format image_format = {};
-            vk::Extent3D image_extent = vk::Extent3D(mag_to_vk(description.size), 1);
+            const uvec3 image_extent = uvec3(description.size, 1);
 
             switch (description.type)
             {

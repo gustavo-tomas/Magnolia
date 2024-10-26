@@ -29,6 +29,8 @@ namespace mag
         return vk_extent;
     }
 
+    vk::Extent3D mag_to_vk(const math::uvec3& v) { return mag_to_vk(vec3(v)); }
+
     math::vec2 vk_to_mag(const vk::Extent2D& extent)
     {
         const math::vec2 v(extent.width, extent.height);
@@ -196,6 +198,84 @@ namespace mag
             default:
                 LOG_ERROR("Invalid AttachmentState");
                 return vk::AttachmentLoadOp::eClear;
+                break;
+        }
+    }
+
+    SampleCount vk_to_mag(const vk::SampleCountFlagBits sample_count)
+    {
+        switch (sample_count)
+        {
+            case vk::SampleCountFlagBits::e1:
+                return SampleCount::_1;
+                break;
+
+            case vk::SampleCountFlagBits::e2:
+                return SampleCount::_2;
+                break;
+
+            case vk::SampleCountFlagBits::e4:
+                return SampleCount::_4;
+                break;
+
+            case vk::SampleCountFlagBits::e8:
+                return SampleCount::_8;
+                break;
+
+            case vk::SampleCountFlagBits::e16:
+                return SampleCount::_16;
+                break;
+
+            case vk::SampleCountFlagBits::e32:
+                return SampleCount::_32;
+                break;
+
+            case vk::SampleCountFlagBits::e64:
+                return SampleCount::_64;
+                break;
+
+            default:
+                LOG_ERROR("Invalid SampleCount");
+                return SampleCount::_1;
+                break;
+        }
+    }
+
+    vk::SampleCountFlagBits mag_to_vk(const SampleCount sample_count)
+    {
+        switch (sample_count)
+        {
+            case SampleCount::_1:
+                return vk::SampleCountFlagBits::e1;
+                break;
+
+            case SampleCount::_2:
+                return vk::SampleCountFlagBits::e2;
+                break;
+
+            case SampleCount::_4:
+                return vk::SampleCountFlagBits::e4;
+                break;
+
+            case SampleCount::_8:
+                return vk::SampleCountFlagBits::e8;
+                break;
+
+            case SampleCount::_16:
+                return vk::SampleCountFlagBits::e16;
+                break;
+
+            case SampleCount::_32:
+                return vk::SampleCountFlagBits::e32;
+                break;
+
+            case SampleCount::_64:
+                return vk::SampleCountFlagBits::e64;
+                break;
+
+            default:
+                LOG_ERROR("Invalid SampleCount");
+                return vk::SampleCountFlagBits::e1;
                 break;
         }
     }
