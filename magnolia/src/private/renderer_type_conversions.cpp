@@ -3,41 +3,40 @@
 #include <vulkan/vulkan.hpp>
 
 #include "core/logger.hpp"
-#include "math/vec.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/sampler.hpp"
 
 namespace mag
 {
-    vk::ClearValue const mag_to_vk(const math::vec4& v)
+    vk::ClearValue mag_to_vk(const math::vec4& v)
     {
         const vk::ClearValue vk_clear_value({v.r, v.g, v.b, v.a});
 
         return vk_clear_value;
     }
 
-    vk::Extent2D const mag_to_vk(const math::vec2& v)
+    vk::Extent2D mag_to_vk(const math::vec2& v)
     {
         const vk::Extent2D vk_extent(v.r, v.g);
 
         return vk_extent;
     }
 
-    vk::Extent3D const mag_to_vk(const math::vec3& v)
+    vk::Extent3D mag_to_vk(const math::vec3& v)
     {
         const vk::Extent3D vk_extent(v.r, v.g, v.b);
 
         return vk_extent;
     }
 
-    math::vec2 const vk_to_mag(const vk::Extent2D& extent)
+    math::vec2 vk_to_mag(const vk::Extent2D& extent)
     {
         const math::vec2 v(extent.width, extent.height);
 
         return v;
     }
 
-    math::vec3 const vk_to_mag(const vk::Extent3D& extent)
+    math::vec3 vk_to_mag(const vk::Extent3D& extent)
     {
         const math::vec3 v(extent.width, extent.height, extent.depth);
 
