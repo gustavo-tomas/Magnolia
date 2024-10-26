@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "private/pipeline_type_conversions.hpp"
+#include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
 

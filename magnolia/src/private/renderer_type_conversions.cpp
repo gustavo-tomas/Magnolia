@@ -200,4 +200,49 @@ namespace mag
                 break;
         }
     }
+
+    vk::PrimitiveTopology str_to_vk_topology(const str& topology)
+    {
+        if (topology == "Triangle") return vk::PrimitiveTopology::eTriangleList;
+        if (topology == "Line") return vk::PrimitiveTopology::eLineList;
+
+        LOG_ERROR("Invalid topology '{0}'", topology);
+        return vk::PrimitiveTopology::eTriangleList;
+    }
+
+    vk::PolygonMode str_to_vk_polygon_mode(const str& polygon_mode)
+    {
+        if (polygon_mode == "Fill") return vk::PolygonMode::eFill;
+        if (polygon_mode == "Line") return vk::PolygonMode::eLine;
+
+        LOG_ERROR("Invalid polygon mode '{0}'", polygon_mode);
+        return vk::PolygonMode::eFill;
+    }
+
+    vk::CullModeFlags str_to_vk_cull_mode(const str& cull_mode)
+    {
+        if (cull_mode == "None") return vk::CullModeFlagBits::eNone;
+        if (cull_mode == "Back") return vk::CullModeFlagBits::eBack;
+
+        LOG_ERROR("Invalid cull mode '{0}'", cull_mode);
+        return vk::CullModeFlagBits::eNone;
+    }
+
+    vk::BlendOp str_to_vk_blend_op(const str& blend_op)
+    {
+        if (blend_op == "Add") return vk::BlendOp::eAdd;
+
+        LOG_ERROR("Invalid blend operation '{0}'", blend_op);
+        return vk::BlendOp::eAdd;
+    }
+
+    vk::BlendFactor str_to_vk_blend_factor(const str& blend_factor)
+    {
+        if (blend_factor == "One") return vk::BlendFactor::eOne;
+        if (blend_factor == "OneMinusSrcAlpha") return vk::BlendFactor::eOneMinusSrcAlpha;
+        if (blend_factor == "SrcAlpha") return vk::BlendFactor::eSrcAlpha;
+
+        LOG_ERROR("Invalid blend operation '{0}'", blend_factor);
+        return vk::BlendFactor::eOne;
+    }
 };  // namespace mag

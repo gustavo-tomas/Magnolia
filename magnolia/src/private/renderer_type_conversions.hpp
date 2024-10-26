@@ -12,6 +12,17 @@ namespace vk
     enum class SamplerAddressMode;
     enum class SamplerMipmapMode;
     enum class AttachmentLoadOp;
+
+    enum class PrimitiveTopology;
+    enum class PolygonMode;
+    enum class BlendOp;
+    enum class BlendFactor;
+
+    template <typename BitType>
+    class Flags;
+
+    enum class CullModeFlagBits : unsigned int;
+    using CullModeFlags = Flags<CullModeFlagBits>;
 };  // namespace vk
 
 namespace mag
@@ -39,4 +50,10 @@ namespace mag
     enum class AttachmentState;
 
     vk::AttachmentLoadOp mag_to_vk(const AttachmentState state);
+
+    vk::PrimitiveTopology str_to_vk_topology(const str& topology);
+    vk::PolygonMode str_to_vk_polygon_mode(const str& polygon_mode);
+    vk::CullModeFlags str_to_vk_cull_mode(const str& cull_mode);
+    vk::BlendOp str_to_vk_blend_op(const str& blend_op);
+    vk::BlendFactor str_to_vk_blend_factor(const str& blend_factor);
 };  // namespace mag
