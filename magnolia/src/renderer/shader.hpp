@@ -77,8 +77,8 @@ namespace mag
             void bind_descriptor(const u32 set, const vk::DescriptorSet& descriptor_set);
 
             ShaderConfiguration configuration;
-            std::vector<vk::VertexInputBindingDescription> vertex_bindings = {};
-            std::vector<vk::VertexInputAttributeDescription> vertex_attributes = {};
+            std::vector<vk::VertexInputBindingDescription> vertex_bindings;
+            std::vector<vk::VertexInputAttributeDescription> vertex_attributes;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
 
             unique<Pipeline> pipeline;

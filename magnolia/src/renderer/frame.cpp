@@ -1,5 +1,7 @@
 #include "renderer/frame.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "renderer/context.hpp"
@@ -14,10 +16,14 @@ namespace mag
         frames.resize(frame_count);
         for (u64 i = 0; i < frames.size(); i++)
         {
+            frames[i].render_fence = new vk::Fence();
+            frames[i].render_semaphore = new vk::Semaphore();
+            frames[i].present_semaphore = new vk::Semaphore();
+
             vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
-            frames[i].render_fence = context.get_device().createFence(fence_create_info);
-            frames[i].render_semaphore = context.get_device().createSemaphore({});
-            frames[i].present_semaphore = context.get_device().createSemaphore({});
+            *frames[i].render_fence = context.get_device().createFence(fence_create_info);
+            *frames[i].render_semaphore = context.get_device().createSemaphore({});
+            *frames[i].present_semaphore = context.get_device().createSemaphore({});
             frames[i].command_buffer.initialize(context.get_command_pool(), vk::CommandBufferLevel::ePrimary);
         }
     }
@@ -25,11 +31,19 @@ namespace mag
     void FrameProvider::shutdown()
     {
         auto& context = get_context();
-        for (const auto& frame : frames)
+        for (auto& frame : frames)
         {
-            context.get_device().destroyFence(frame.render_fence);
-            context.get_device().destroySemaphore(frame.render_semaphore);
-            context.get_device().destroySemaphore(frame.present_semaphore);
+            context.get_device().destroyFence(*frame.render_fence);
+            context.get_device().destroySemaphore(*frame.render_semaphore);
+            context.get_device().destroySemaphore(*frame.present_semaphore);
+
+            delete frame.render_fence;
+            delete frame.render_semaphore;
+            delete frame.present_semaphore;
+
+            frame.render_fence = nullptr;
+            frame.render_semaphore = nullptr;
+            frame.present_semaphore = nullptr;
         }
     }
 
@@ -41,8 +55,8 @@ namespace mag
         Frame& curr_frame = this->get_current_frame();
         const vk::Device& device = context.get_device();
 
-        VK_CHECK(device.waitForFences(curr_frame.render_fence, true, MAG_TIMEOUT));
-        device.resetFences(curr_frame.render_fence);
+        VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, MAG_TIMEOUT));
+        device.resetFences(*curr_frame.render_fence);
 
         curr_frame.command_buffer.get_handle().reset();
         curr_frame.command_buffer.begin();
@@ -59,8 +73,8 @@ namespace mag
         // Acquire
         try
         {
-            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT, curr_frame.present_semaphore,
-                                                     nullptr, &swapchain_image_index);
+            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT,
+                                                     *curr_frame.present_semaphore, nullptr, &swapchain_image_index);
 
             if (result != vk::Result::eSuccess) throw result;
         }
@@ -97,15 +111,15 @@ namespace mag
 
         vk::SubmitInfo submit;
         submit.setWaitDstStageMask(wait_stage)
-            .setWaitSemaphores(curr_frame.present_semaphore)
-            .setSignalSemaphores(curr_frame.render_semaphore)
+            .setWaitSemaphores(*curr_frame.present_semaphore)
+            .setSignalSemaphores(*curr_frame.render_semaphore)
             .setCommandBuffers(curr_frame.command_buffer.get_handle());
 
-        context.get_graphics_queue().submit(submit, curr_frame.render_fence);
+        context.get_graphics_queue().submit(submit, *curr_frame.render_fence);
 
         vk::PresentInfoKHR present_info;
         present_info.setSwapchains(context.get_swapchain())
-            .setWaitSemaphores(curr_frame.render_semaphore)
+            .setWaitSemaphores(*curr_frame.render_semaphore)
             .setImageIndices(this->swapchain_image_index);
 
         // Present

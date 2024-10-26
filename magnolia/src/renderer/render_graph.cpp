@@ -201,6 +201,16 @@ namespace mag
         auto& command_buffer = context.get_curr_frame().command_buffer;
         auto& pass = render_pass->pass;
 
+        // @TODO: this is unlikely to be a good idea
+        delete static_cast<vk::RenderingInfo*>(pass.rendering_info);
+        delete static_cast<vk::RenderingAttachmentInfo*>(pass.color_attachment);
+        delete static_cast<vk::RenderingAttachmentInfo*>(pass.depth_attachment);
+
+        pass.rendering_info = nullptr;
+        pass.color_attachment = nullptr;
+        pass.depth_attachment = nullptr;
+        // @TODO: this is unlikely to be a good idea
+
         const u32 curr_frame = context.get_curr_frame_number();
 
         // Build attachment and execute pass
@@ -226,18 +236,20 @@ namespace mag
                 switch (description.type)
                 {
                     case AttachmentType::Color:
-                        pass.color_attachment = vk::RenderingAttachmentInfo(
+                        pass.color_attachment = new vk::RenderingAttachmentInfo(
                             attachment[curr_frame].texture->get_image_view(), vk::ImageLayout::eColorAttachmentOptimal,
                             vk::ResolveModeFlagBits::eNone, {}, {}, load_op, vk::AttachmentStoreOp::eStore,
-                            pass.color_clear_value);
+                            mag_to_vk(pass.color_clear_value));
                         new_layout = vk::ImageLayout::eColorAttachmentOptimal;
                         break;
 
                     case AttachmentType::Depth:
-                        pass.depth_attachment = vk::RenderingAttachmentInfo(
+                        pass.depth_attachment = new vk::RenderingAttachmentInfo(
                             attachment[curr_frame].texture->get_image_view(),
                             vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, {},
-                            load_op, vk::AttachmentStoreOp::eStore, {pass.depth_clear_value});
+                            load_op, vk::AttachmentStoreOp::eStore,
+                            vk::ClearDepthStencilValue(pass.depth_stencil_clear_value.x,
+                                                       pass.depth_stencil_clear_value.y));
                         break;
 
                     default:
@@ -262,13 +274,14 @@ namespace mag
         const vk::Viewport viewport(0, render_area.extent.height, render_area.extent.width,
                                     -static_cast<i32>(render_area.extent.height), 0.0f, 1.0f);
 
-        pass.rendering_info =
-            vk::RenderingInfo({}, render_area, 1, {}, pass.color_attachment, &pass.depth_attachment, {});
+        pass.rendering_info = new vk::RenderingInfo(
+            {}, render_area, 1, {}, *static_cast<vk::RenderingAttachmentInfo*>(pass.color_attachment),
+            static_cast<vk::RenderingAttachmentInfo*>(pass.depth_attachment), {});
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);
 
-        command_buffer.begin_rendering(render_pass->pass.rendering_info);
+        command_buffer.begin_rendering(*static_cast<vk::RenderingInfo*>(render_pass->pass.rendering_info));
 
         render_pass->on_render(*this);
 

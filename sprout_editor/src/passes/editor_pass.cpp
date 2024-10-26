@@ -1,5 +1,7 @@
 #include "passes/editor_pass.hpp"
 
+#include <vulkan/vulkan.hpp>
+
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/frustum.hpp"
@@ -27,8 +29,8 @@ namespace sprout
         add_output_attachment("EditorOutputColor", AttachmentType::Color, size);
 
         pass.size = size;
-        pass.color_clear_value = mag_to_vk(vec4(0.1, 0.1, 0.1, 1.0));
-        pass.depth_clear_value = {1.0f};
+        pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f);
     }
 
     EditorPass::~EditorPass() = default;
@@ -90,8 +92,8 @@ namespace sprout
         add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
 
         pass.size = size;
-        pass.color_clear_value = mag_to_vk(vec4(0.1, 0.1, 0.3, 1.0));
-        pass.depth_clear_value = {1.0f};
+        pass.color_clear_value = vec4(0.1, 0.1, 0.3, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f);
     }
 
     GizmoPass::~GizmoPass() = default;

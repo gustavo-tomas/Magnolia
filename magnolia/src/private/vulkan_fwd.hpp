@@ -65,6 +65,7 @@ namespace vk
     class PhysicalDevice;
     class PipelineLayout;
     class Queue;
+    class Semaphore;
     class ShaderModule;
     class SurfaceKHR;
     class SwapchainKHR;

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <map>
-#include <vulkan/vulkan.hpp>
 
 #include "math/vec.hpp"
+#include "private/vulkan_fwd.hpp"
 #include "renderer/renderer_image.hpp"
 
 namespace mag
@@ -52,12 +52,12 @@ namespace mag
 
     struct Pass
     {
-            vk::RenderingInfo rendering_info;
-            vk::RenderingAttachmentInfo color_attachment;
-            vk::RenderingAttachmentInfo depth_attachment;
+            void* rendering_info = nullptr;
+            void* color_attachment = nullptr;
+            void* depth_attachment = nullptr;
 
-            vk::ClearValue color_clear_value = vk::ClearColorValue(0.0f, 1.0f, 1.0f, 1.0f);
-            vk::ClearValue depth_clear_value = vk::ClearDepthStencilValue(1.0f);
+            vec4 color_clear_value = vec4(0.0f, 1.0f, 1.0f, 1.0f);
+            vec2 depth_stencil_clear_value = vec2(1.0f, 0.0f);
             uvec2 size = {};
     };
 

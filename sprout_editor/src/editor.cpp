@@ -1,6 +1,7 @@
 #include "editor.hpp"
 
 #include <core/entry_point.hpp>
+#include <vulkan/vulkan.hpp>
 
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
