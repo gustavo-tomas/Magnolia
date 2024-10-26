@@ -1,7 +1,6 @@
 #include "renderer/render_graph.hpp"
 
 #include "core/assert.hpp"
-#include "private/render_graph_type_conversions.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/context.hpp"
 #include "renderer/frame.hpp"
@@ -220,7 +219,7 @@ namespace mag
             else if (description.stage == AttachmentStage::Output)
             {
                 vk::ImageLayout new_layout = attachment[curr_frame].curr_layout;
-                vk::AttachmentLoadOp load_op = mag_attachment_state_to_vk(description.state);
+                vk::AttachmentLoadOp load_op = mag_to_vk(description.state);
 
                 switch (description.type)
                 {

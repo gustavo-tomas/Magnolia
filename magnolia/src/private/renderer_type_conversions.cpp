@@ -4,6 +4,7 @@
 
 #include "core/logger.hpp"
 #include "math/vec.hpp"
+#include "renderer/render_graph.hpp"
 #include "renderer/sampler.hpp"
 
 namespace mag
@@ -56,7 +57,7 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid filter value");
+                LOG_ERROR("Invalid Filter");
                 return vk::Filter::eLinear;
                 break;
         }
@@ -87,7 +88,7 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid address mode value");
+                LOG_ERROR("Invalid SamplerAddressMode");
                 return vk::SamplerAddressMode::eRepeat;
                 break;
         }
@@ -106,7 +107,7 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid mip map mode value");
+                LOG_ERROR("Invalid Filter");
                 return vk::SamplerMipmapMode::eLinear;
                 break;
         }
@@ -125,7 +126,7 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid filter value");
+                LOG_ERROR("Invalid Filter");
                 return Filter::Linear;
                 break;
         }
@@ -156,7 +157,7 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid address mode value");
+                LOG_ERROR("Invalid SamplerAddressMode");
                 return SamplerAddressMode::Repeat;
                 break;
         }
@@ -175,8 +176,27 @@ namespace mag
                 break;
 
             default:
-                LOG_ERROR("Invalid mip map mode value");
+                LOG_ERROR("Invalid SamplerMipmapMode");
                 return SamplerMipmapMode::Linear;
+                break;
+        }
+    }
+
+    vk::AttachmentLoadOp mag_to_vk(const AttachmentState state)
+    {
+        switch (state)
+        {
+            case AttachmentState::Clear:
+                return vk::AttachmentLoadOp::eClear;
+                break;
+
+            case AttachmentState::Load:
+                return vk::AttachmentLoadOp::eLoad;
+                break;
+
+            default:
+                LOG_ERROR("Invalid AttachmentState");
+                return vk::AttachmentLoadOp::eClear;
                 break;
         }
     }

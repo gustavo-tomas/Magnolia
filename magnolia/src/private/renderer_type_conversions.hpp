@@ -11,6 +11,7 @@ namespace vk
     enum class Filter;
     enum class SamplerAddressMode;
     enum class SamplerMipmapMode;
+    enum class AttachmentLoadOp;
 };  // namespace vk
 
 namespace mag
@@ -34,4 +35,8 @@ namespace mag
     Filter vk_to_mag(const vk::Filter& filter);
     SamplerAddressMode vk_to_mag(const vk::SamplerAddressMode& address_mode);
     SamplerMipmapMode vk_to_mag(const vk::SamplerMipmapMode& mip_map_mode);
+
+    enum class AttachmentState;
+
+    vk::AttachmentLoadOp mag_to_vk(const AttachmentState state);
 };  // namespace mag
