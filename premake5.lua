@@ -62,6 +62,11 @@ workspace "magnolia"
         "VULKAN_HPP_NAMESPACE=vk"
     }
 
+    linkoptions
+    {
+        "-fuse-ld=mold -Wl,-v"
+    }
+
 -- @TODO: consistent build folders/output
 -- @TODO: fix windows build
 
