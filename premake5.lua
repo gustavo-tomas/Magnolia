@@ -245,25 +245,22 @@ common_settings = function()
     { 
         "magnolia/src",
 
-        lib_includes
+        lib_includes -- @TODO: remove when fmt gets removed from the headers
     }
 
     libdirs
     { 
-        libdir
+        libdir -- @TODO: remove when fmt gets removed from the headers
     }
 
     links
     {
-        "magnolia", lib_links
+        "magnolia", 
+        "fmt" -- @TODO: remove when fmt gets removed from the headers
     }
 
     filter "system:linux"
         pic "on"
-        links
-        {
-            "vulkan", "sdl"
-        }
 
     filter "system:windows"
         systemversion "latest"
@@ -273,12 +270,6 @@ common_settings = function()
             "_CRT_SECURE_NO_WARNINGS"
         }
 
-        links
-        {
-            "vulkan-1",
-            "SDL2",
-            "SDL2main",
-        }
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
