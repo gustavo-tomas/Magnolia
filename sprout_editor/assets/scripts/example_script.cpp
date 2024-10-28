@@ -83,7 +83,6 @@ class CameraController : public ScriptableEntity
 
             // Rotate
             transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 10.0f;
-            camera_c->camera.set_rotation(transform->rotation);
         }
 };
 
