@@ -124,8 +124,6 @@ namespace mag
             LuaScript* instance = nullptr;
     };
 
-    // @TODO: finish scripting
-    // @TODO: 1. speed up script compilation
     class ScriptableEntity;
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
