@@ -237,6 +237,7 @@ namespace sprout
         const auto& camera_entities =
             scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();
 
+        // Camera sprites
         for (u32 i = 0; i < camera_entities.size(); i++)
         {
             const auto& transform = std::get<0>(camera_entities[i]);
@@ -247,6 +248,7 @@ namespace sprout
 
         const auto& light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
 
+        // Light sprites
         for (u32 i = 0; i < light_entities.size(); i++)
         {
             const auto& transform = std::get<0>(light_entities[i]);
@@ -262,13 +264,18 @@ namespace sprout
         // Remove rotation if sprite is aligned to the camera
         const vec3 model_rotation = transform->rotation;
 
+        // The sprites are quite big, so we also scale them down a bit
+        const vec3 model_scale = transform->scale;
+
         transform->rotation = vec3(0);
+        transform->scale = vec3(0.01);
 
         const auto model_matrix = transform->get_transformation_matrix();
         const SpriteData sprite_data = {.model = model_matrix,
                                         .size_const_face = {sprite->width, sprite->height, true, true}};
 
         transform->rotation = model_rotation;
+        transform->scale = model_scale;
 
         sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * instance);
         sprite_shader->set_texture("u_sprite_texture", sprite.get());
