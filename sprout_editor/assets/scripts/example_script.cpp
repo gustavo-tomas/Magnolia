@@ -1,18 +1,8 @@
 #include <magnolia.hpp>
 #include <math/quat.hpp>
+#include <math/types.hpp>
 
 using namespace mag;
-
-mat4 get_rotation_mat(const vec3& rotation)
-{
-    const quat pitch_rotation = angleAxis(radians(rotation.x), vec3(1, 0, 0));
-    const quat yaw_rotation = angleAxis(radians(rotation.y), vec3(0, 1, 0));
-    const quat roll_rotation = angleAxis(radians(rotation.z), vec3(0, 0, 1));
-
-    const mat4 rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
-
-    return rotation_mat;
-}
 
 class CameraController : public ScriptableEntity
 {
@@ -33,7 +23,7 @@ class CameraController : public ScriptableEntity
                 return;
             }
 
-            const mat4 rotation_mat = get_rotation_mat(transform->rotation);
+            const mat4 rotation_mat = calculate_rotation_mat(transform->rotation);
             const vec3 side = rotation_mat[0];
             const vec3 up = rotation_mat[1];
             const vec3 forward = rotation_mat[2];

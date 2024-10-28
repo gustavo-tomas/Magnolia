@@ -3,6 +3,7 @@
 #include "camera/frustum.hpp"
 #include "math/mat.hpp"
 #include "math/quat.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {
@@ -39,11 +40,7 @@ namespace mag
 
     void Camera::calculate_view()
     {
-        const quat pitch_rotation = angleAxis(radians(impl->rotation.x), vec3(1, 0, 0));
-        const quat yaw_rotation = angleAxis(radians(impl->rotation.y), vec3(0, 1, 0));
-        const quat roll_rotation = angleAxis(radians(impl->rotation.z), vec3(0, 0, 1));
-
-        impl->rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
+        impl->rotation_mat = calculate_rotation_mat(impl->rotation);
         const mat4 translation = translate(mat4(1.0f), impl->position);
 
         impl->view = inverse(translation * impl->rotation_mat);
