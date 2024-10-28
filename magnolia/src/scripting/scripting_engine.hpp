@@ -11,20 +11,4 @@ namespace mag
             static void unload_script(void* handle);
             static void* get_symbol(void* handle, const str& name);  // returns nullptr on error
     };
-
-    struct LuaScriptComponent;
-    class LuaScriptingEngine
-    {
-        public:
-            static void initialize();
-
-            static void shutdown();
-
-            // Warning! this unloads all registered scripts!
-            static void new_state();
-
-            static void load_script(const str& file_path);
-
-            static void register_entity(const LuaScriptComponent& sc);
-    };
 };  // namespace mag

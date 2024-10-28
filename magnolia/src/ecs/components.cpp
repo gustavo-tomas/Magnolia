@@ -44,8 +44,6 @@ namespace mag
 
     CameraComponent::CameraComponent(const Camera& camera) : camera(camera) {}
 
-    LuaScriptComponent::LuaScriptComponent(const str& file_path) : file_path(file_path) {}
-
     ScriptComponent::ScriptComponent(const str& file_path, void* handle, CreateScriptFn create_entity,
                                      DestroyScriptFn destroy_entity)
         : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
@@ -60,6 +58,5 @@ namespace mag
     CLONE_DEFINITION(RigidBodyComponent)
     CLONE_DEFINITION(LightComponent)
     CLONE_DEFINITION(CameraComponent)
-    CLONE_DEFINITION(LuaScriptComponent)
     CLONE_DEFINITION(ScriptComponent)
 };  // namespace mag

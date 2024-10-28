@@ -16,7 +16,6 @@
 #include "resources/model.hpp"
 #include "resources/model_loader.hpp"
 #include "resources/shader_loader.hpp"
-#include "scripting/scripting_engine.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
 
@@ -151,10 +150,6 @@ namespace mag
         impl->physics_engine = create_unique<PhysicsEngine>();
         LOG_SUCCESS("Physics initialized");
 
-        // Create the scripting engine
-        LuaScriptingEngine::initialize();
-        LOG_SUCCESS("LuaScriptingEngine initialized");
-
         // Initialize file dialogs
         if (FileDialog::initialize())
         {
@@ -162,11 +157,7 @@ namespace mag
         }
     }
 
-    Application::~Application()
-    {
-        FileDialog::shutdown();
-        LuaScriptingEngine::shutdown();
-    }
+    Application::~Application() { FileDialog::shutdown(); }
 
     void Application::run()
     {

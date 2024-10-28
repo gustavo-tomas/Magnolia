@@ -113,17 +113,6 @@ namespace mag
             Camera camera;
     };
 
-    class LuaScript;
-    struct LuaScriptComponent : public Component
-    {
-            LuaScriptComponent(const str& file_path);
-
-            CLONE_DECLARATION(LuaScriptComponent);
-
-            str file_path;
-            LuaScript* instance = nullptr;
-    };
-
     class ScriptableEntity;
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;

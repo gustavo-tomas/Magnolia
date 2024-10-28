@@ -136,12 +136,6 @@ namespace sprout
                     ImGui::Text("%s", component_name.c_str());
                 }
 
-                if (ecs.get_component<LuaScriptComponent>(entity_id))
-                {
-                    const str component_name = str(ICON_FA_SCROLL) + " LuaScript";
-                    ImGui::Text("%s", component_name.c_str());
-                }
-
                 ImGui::TreePop();
             }
         }

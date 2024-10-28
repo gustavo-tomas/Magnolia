@@ -30,26 +30,7 @@ namespace mag
 
         physics_engine.on_simulation_start(this);
 
-        LuaScriptingEngine::new_state();
-
         // Instantiate scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
-        {
-            auto* script = ecs->get_component<LuaScriptComponent>(id);
-            if (!script->instance)
-            {
-                script->instance = new LuaScript();
-                script->instance->ecs = ecs.get();
-                script->instance->entity_id = id;
-
-                LuaScriptingEngine::load_script(script->file_path);
-                LuaScriptingEngine::register_entity(*script);
-
-                script->instance->on_create(*script->instance);
-            }
-        }
-
-        // Instantiate native scripts
         for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
             auto* script = ecs->get_component<ScriptComponent>(id);
@@ -95,15 +76,6 @@ namespace mag
         auto& physics_engine = app.get_physics_engine();
 
         // Destroy scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<LuaScriptComponent>())
-        {
-            auto* script = ecs->get_component<LuaScriptComponent>(id);
-            script->instance->on_destroy(*script->instance);
-            delete script->instance;
-            script->instance = nullptr;
-        }
-
-        // Destroy native scripts
         for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
             if (script->entity)
@@ -135,15 +107,6 @@ namespace mag
         entity_deletion_queue.clear();
 
         // Update scripts
-        for (auto script : ecs->get_all_components_of_type<LuaScriptComponent>())
-        {
-            if (script->instance)
-            {
-                script->instance->on_update(*script->instance, dt);
-            }
-        }
-
-        // Update native scripts
         for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
         {
             if (script->entity)
