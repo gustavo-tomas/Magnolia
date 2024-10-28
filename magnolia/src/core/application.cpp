@@ -51,6 +51,7 @@ namespace mag
             unique<PhysicsEngine> physics_engine;
 
             b8 running;
+            f32 target_frame_rate;
     };
 
     Application::Application(const str& config_file_path) : impl(new IMPL())
@@ -91,6 +92,9 @@ namespace mag
             window_title = config["WindowTitle"].get<str>();
             window_icon = config["WindowIcon"].get<str>();
         }
+
+        // Set target frame rate
+        set_target_frame_rate(config["TargetFrameRate"].get<f32>());
 
         // Create the window
         const WindowOptions window_options = {BIND_FN(Application::process_event), window_size, window_position,
@@ -194,6 +198,13 @@ namespace mag
 
             // Update the user application
             on_update(dt);
+
+            // Delay if needed
+            const f32 delay = (1000.0 / impl->target_frame_rate) - (impl->window->get_time() - last_time);
+            if (delay > 0.0 && impl->target_frame_rate > 0.0)
+            {
+                impl->window->sleep(delay);
+            }
         }
     }
 
@@ -223,6 +234,8 @@ namespace mag
         (void)e;
         impl->running = false;
     }
+
+    void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
     Renderer& Application::get_renderer() { return *impl->renderer; }

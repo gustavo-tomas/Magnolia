@@ -2,5 +2,6 @@
     "WindowSize": [],
     "WindowPosition": [],
     "WindowTitle": "Sprout",
-    "WindowIcon": "sprout_editor/assets/images/application_icon.bmp"
+    "WindowIcon": "sprout_editor/assets/images/application_icon.bmp",
+    "TargetFrameRate": -1
 }

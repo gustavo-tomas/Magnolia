@@ -180,6 +180,7 @@ namespace mag
                "Failed to create surface: " + str(SDL_GetError()));
     }
 
+    // @TODO: use floats
     void Window::sleep(const u32 ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 
     b8 Window::is_key_pressed(const Key key) const

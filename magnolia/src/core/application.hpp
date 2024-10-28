@@ -38,6 +38,9 @@ namespace mag
             virtual void on_event(Event& e) = 0;
             virtual void on_update(const f32 dt) = 0;
 
+            // -1 is no limits
+            void set_target_frame_rate(const f32 frame_rate);
+
             Window& get_window();
             Renderer& get_renderer();
             FileSystem& get_file_system();
