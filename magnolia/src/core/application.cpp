@@ -200,7 +200,7 @@ namespace mag
             on_update(dt);
 
             // Delay if needed
-            const f32 delay = (1000.0 / impl->target_frame_rate) - (impl->window->get_time() - last_time);
+            const f64 delay = (1000.0 / impl->target_frame_rate) - (impl->window->get_time() - last_time);
             if (delay > 0.0 && impl->target_frame_rate > 0.0)
             {
                 impl->window->sleep(delay);

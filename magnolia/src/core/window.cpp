@@ -1,6 +1,7 @@
 #include "core/window.hpp"
 
 #include <chrono>
+#include <ratio>
 #include <thread>
 #include <vulkan/vulkan.hpp>
 
@@ -180,8 +181,11 @@ namespace mag
                "Failed to create surface: " + str(SDL_GetError()));
     }
 
-    // @TODO: use floats
-    void Window::sleep(const u32 ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+    void Window::sleep(const f64 ms)
+    {
+        std::chrono::duration<f64, std::milli> duration(ms);
+        std::this_thread::sleep_for(duration);
+    }
 
     b8 Window::is_key_pressed(const Key key) const
     {
