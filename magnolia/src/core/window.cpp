@@ -7,8 +7,11 @@
 
 #include "SDL.h"
 #include "SDL_vulkan.h"
+#include "core/application.hpp"
 #include "core/assert.hpp"
+#include "core/buffer.hpp"
 #include "core/event.hpp"
+#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "private/key_mappings.hpp"
 
@@ -226,11 +229,29 @@ namespace mag
 
     b8 Window::set_window_icon(const str& bmp_file) const
     {
-        SDL_Surface* icon = SDL_LoadBMP(bmp_file.c_str());
+        auto& app = get_application();
+        auto& file_system = app.get_file_system();
+
+        Buffer buffer;
+        if (!file_system.read_binary_data(bmp_file, buffer))
+        {
+            LOG_ERROR("Failed to read file: '{0}'", bmp_file);
+            return false;
+        }
+
+        SDL_RWops* rw = SDL_RWFromMem(buffer.cast<void*>(), buffer.get_size());
+
+        if (!rw)
+        {
+            LOG_ERROR("Failed to read from memory: '{0}'", SDL_GetError());
+            return false;
+        }
+
+        SDL_Surface* icon = SDL_LoadBMP_RW(rw, 1);
 
         if (!icon)
         {
-            LOG_ERROR("Failed to load application icon: {0}", str(SDL_GetError()));
+            LOG_ERROR("Failed to load application icon: '{0}'", SDL_GetError());
             return false;
         }
 
