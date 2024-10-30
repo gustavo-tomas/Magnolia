@@ -55,27 +55,36 @@ namespace mag
         model_data += sizeof(u32);
 
         // Read vertices
-        model->vertices.resize(num_vertices);
-        memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
-        model_data += VEC_SIZE_BYTES(model->vertices);
+        if (num_vertices > 0)
+        {
+            model->vertices.resize(num_vertices);
+            memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
+            model_data += VEC_SIZE_BYTES(model->vertices);
+        }
 
         // Read number of indices
         const u32 num_indices = *reinterpret_cast<u32*>(model_data);
         model_data += sizeof(u32);
 
         // Read indices
-        model->indices.resize(num_indices);
-        memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
-        model_data += VEC_SIZE_BYTES(model->indices);
+        if (num_indices > 0)
+        {
+            model->indices.resize(num_indices);
+            memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
+            model_data += VEC_SIZE_BYTES(model->indices);
+        }
 
         // Read number of meshes
         const u32 num_meshes = *reinterpret_cast<u32*>(model_data);
         model_data += sizeof(u32);
 
         // Read meshes
-        model->meshes.resize(num_meshes);
-        memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
-        model_data += VEC_SIZE_BYTES(model->meshes);
+        if (num_meshes > 0)
+        {
+            model->meshes.resize(num_meshes);
+            memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
+            model_data += VEC_SIZE_BYTES(model->meshes);
+        }
 
         LOG_SUCCESS("Loaded model: {0}", file_path);
         return true;
