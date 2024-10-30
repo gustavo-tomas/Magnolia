@@ -69,7 +69,7 @@ namespace mag
             unique<IMPL> impl;
     };
 
-    // @TODO: idk if this is thread safe but i wont use singletons <:(
+    // Access to the application
     Application& get_application();
 
     // Defined by the client
