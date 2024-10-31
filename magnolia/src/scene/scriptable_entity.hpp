@@ -37,24 +37,4 @@ namespace mag
             ECS* ecs = nullptr;
             u32 entity_id;
     };
-
-    class LuaScript
-    {
-        private:
-            friend class Scene;
-            friend class LuaScriptingEngine;  // @TODO: is this a good idea?
-
-            std::function<void(LuaScript&)> on_create;
-            std::function<void(LuaScript&)> on_destroy;
-            std::function<void(LuaScript&, const f32)> on_update;
-
-            template <typename T>
-            T* get_component()
-            {
-                return ecs->get_component<T>(entity_id);
-            }
-
-            ECS* ecs = nullptr;
-            u32 entity_id;
-    };
 };  // namespace mag
