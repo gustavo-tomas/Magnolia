@@ -54,7 +54,7 @@ def build(system, configuration):
 
 # ----- Run -----
 def run(system, configuration):
-  assert os.system(f"build{bar}{system}{bar}sprout{bar}sprout_{configuration}") == 0
+  assert os.system(f"build{bar}{system}{bar}sprout_editor{bar}sprout_editor_{configuration}") == 0
   return
 
 # ----- Clean -----
