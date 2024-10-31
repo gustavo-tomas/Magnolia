@@ -76,7 +76,18 @@ namespace mag
             auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT,
                                                      *curr_frame.present_semaphore, nullptr, &swapchain_image_index);
 
-            if (result != vk::Result::eSuccess) throw result;
+            if (result != vk::Result::eSuccess)
+            {
+                LOG_WARNING("Acquire next image result: '{0}'", vk::to_string(result));
+
+                if (result == vk::Result::eErrorOutOfDateKHR)
+                {
+                    LOG_WARNING("Swapchain is out of date");
+                    return false;
+                }
+
+                throw result;
+            }
         }
 
         catch (const vk::OutOfDateKHRError& e)
