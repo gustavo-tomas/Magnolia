@@ -9,8 +9,8 @@
 <!-- Add links -->
 - C++20
 - Gcc 11.4.0
+- Clang 15
 - Python 3.10.12
-- Lua 5.4
 - Cmake 3.22.1
 - Vulkan SDK 1.3.268
 
