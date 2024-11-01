@@ -454,7 +454,7 @@ namespace mag
         }
     }
 
-    void Context::begin_frame() { impl->frame_provider.begin_frame(); }
+    b8 Context::begin_frame() { return impl->frame_provider.begin_frame(); }
 
     b8 Context::end_frame(const RendererImage& image, const vk::Extent3D& extent)
     {

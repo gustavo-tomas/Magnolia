@@ -45,7 +45,7 @@ namespace mag
 
     void Renderer::on_update(RenderGraph& render_graph)
     {
-        impl->context->begin_frame();
+        if (!impl->context->begin_frame()) return;
         impl->context->begin_timestamp();  // Performance query
 
         render_graph.execute();

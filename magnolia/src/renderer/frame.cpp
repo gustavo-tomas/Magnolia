@@ -48,22 +48,7 @@ namespace mag
     }
 
     // Start recording commands
-    void FrameProvider::begin_frame()
-    {
-        auto& context = get_context();
-
-        Frame& curr_frame = this->get_current_frame();
-        const vk::Device& device = context.get_device();
-
-        VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, MAG_TIMEOUT));
-        device.resetFences(*curr_frame.render_fence);
-
-        curr_frame.command_buffer.get_handle().reset();
-        curr_frame.command_buffer.begin();
-    }
-
-    // End command recording, submit info and acquire/present the image
-    b8 FrameProvider::end_frame(const RendererImage& draw_image, const vk::Extent3D& extent)
+    b8 FrameProvider::begin_frame()
     {
         auto& context = get_context();
 
@@ -100,6 +85,23 @@ namespace mag
         {
             ASSERT(false, "Failed to acquire swapchain image");
         }
+
+        VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, MAG_TIMEOUT));
+        device.resetFences(*curr_frame.render_fence);
+
+        curr_frame.command_buffer.get_handle().reset();
+        curr_frame.command_buffer.begin();
+
+        return true;
+    }
+
+    // End command recording, submit info and acquire/present the image
+    b8 FrameProvider::end_frame(const RendererImage& draw_image, const vk::Extent3D& extent)
+    {
+        auto& context = get_context();
+
+        Frame& curr_frame = this->get_current_frame();
+        // const vk::Device& device = context.get_device();
 
         // Set swapchain image layout to transfer
         curr_frame.command_buffer.transfer_layout(context.get_swapchain_images()[swapchain_image_index],

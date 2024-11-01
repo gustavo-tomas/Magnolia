@@ -24,7 +24,7 @@ namespace mag
             void initialize(const u32 frame_count);
             void shutdown();
 
-            void begin_frame();
+            b8 begin_frame();
             b8 end_frame(const RendererImage& draw_image, const vk::Extent3D& extent);
 
             Frame& get_current_frame();
