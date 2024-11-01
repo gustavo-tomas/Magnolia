@@ -291,6 +291,7 @@ namespace sprout
     {
         Camera dummy_camera = camera;
         dummy_camera.set_near_far({0.1, 10.0f});
+        dummy_camera.set_aspect_ratio({1920, 1080});
 
         // Get frustum corners
         std::vector<vec3> corners = dummy_camera.get_frustum().get_points();
