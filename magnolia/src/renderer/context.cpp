@@ -58,6 +58,11 @@ namespace mag
             LOG_ERROR("{0}\n", pCallbackData->pMessage);
         }
 
+        else
+        {
+            LOG_INFO("{0}\n", pCallbackData->pMessage);
+        }
+
         DEBUG_BREAK();
         return VK_FALSE;
     }
@@ -108,9 +113,7 @@ namespace mag
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
         std::vector<const c8*> instance_extensions;
-        std::vector<const c8*> device_extensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-            VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME};
+        std::vector<const c8*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         std::vector<const c8*> validation_layers;
 
         const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
