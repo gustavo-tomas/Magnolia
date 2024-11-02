@@ -134,12 +134,39 @@ namespace mag
                                         const vk::ImageLayout new_layout, const u32 base_mip_levels,
                                         const u32 mip_levels)
     {
+        // Select appropriate access flags
+        vk::AccessFlags src_access_flags = {};
+        vk::AccessFlags dst_access_flags = {};
+
+        switch (curr_layout)
+        {
+            case vk::ImageLayout::eShaderReadOnlyOptimal:
+                src_access_flags = vk::AccessFlagBits::eInputAttachmentRead | vk::AccessFlagBits::eShaderRead |
+                                   vk::AccessFlagBits::eColorAttachmentRead;
+                break;
+
+            default:
+                src_access_flags = vk::AccessFlagBits::eMemoryWrite;
+                break;
+        }
+
+        switch (new_layout)
+        {
+            case vk::ImageLayout::eTransferDstOptimal:
+                dst_access_flags = vk::AccessFlagBits::eTransferWrite;
+                break;
+
+            default:
+                dst_access_flags = vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead;
+                break;
+        }
+
         vk::ImageMemoryBarrier image_barrier;
         image_barrier.setOldLayout(curr_layout)
             .setNewLayout(new_layout)
             .setImage(image)
-            .setSrcAccessMask(vk::AccessFlagBits::eMemoryWrite)
-            .setDstAccessMask(vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead)
+            .setSrcAccessMask(src_access_flags)
+            .setDstAccessMask(dst_access_flags)
             .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
             .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
             .setSubresourceRange({vk::ImageAspectFlagBits::eColor, base_mip_levels, mip_levels, 0, 1});
