@@ -140,9 +140,23 @@ namespace mag
 
         switch (curr_layout)
         {
+            case vk::ImageLayout::eTransferSrcOptimal:
+                src_access_flags = vk::AccessFlagBits::eTransferRead;
+                break;
+
+            case vk::ImageLayout::eTransferDstOptimal:
+                src_access_flags = vk::AccessFlagBits::eTransferWrite;
+                break;
+
             case vk::ImageLayout::eShaderReadOnlyOptimal:
                 src_access_flags = vk::AccessFlagBits::eInputAttachmentRead | vk::AccessFlagBits::eShaderRead |
                                    vk::AccessFlagBits::eColorAttachmentRead;
+                break;
+
+            case vk::ImageLayout::eColorAttachmentOptimal:
+                src_access_flags = vk::AccessFlagBits::eColorAttachmentRead |
+                                   vk::AccessFlagBits::eColorAttachmentWrite |
+                                   vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
                 break;
 
             default:
@@ -152,8 +166,27 @@ namespace mag
 
         switch (new_layout)
         {
+            case vk::ImageLayout::eTransferSrcOptimal:
+                dst_access_flags = vk::AccessFlagBits::eTransferRead;
+                break;
+
             case vk::ImageLayout::eTransferDstOptimal:
                 dst_access_flags = vk::AccessFlagBits::eTransferWrite;
+                break;
+
+            case vk::ImageLayout::eShaderReadOnlyOptimal:
+                dst_access_flags = vk::AccessFlagBits::eInputAttachmentRead | vk::AccessFlagBits::eShaderRead |
+                                   vk::AccessFlagBits::eColorAttachmentRead;
+                break;
+
+            case vk::ImageLayout::eColorAttachmentOptimal:
+                dst_access_flags = vk::AccessFlagBits::eColorAttachmentRead |
+                                   vk::AccessFlagBits::eColorAttachmentWrite |
+                                   vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
+                break;
+
+            case vk::ImageLayout::ePresentSrcKHR:
+                dst_access_flags = {};
                 break;
 
             default:
