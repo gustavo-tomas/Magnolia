@@ -80,7 +80,7 @@ namespace mag
             vk::PresentModeKHR surface_present_mode;
             vk::SwapchainKHR swapchain;
             vk::Queue graphics_queue;
-            vk::CommandPool command_pool, immediate_command_pool;
+            vk::CommandPool immediate_command_pool;
             vk::Fence upload_fence;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::QueryPool query_pool;
@@ -362,9 +362,7 @@ namespace mag
         impl->upload_fence = impl->device.createFence({});
 
         // Command pool
-        const vk::CommandPoolCreateInfo command_pool_info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-                                                          impl->queue_family_index);
-        impl->command_pool = impl->device.createCommandPool(command_pool_info);
+        const vk::CommandPoolCreateInfo command_pool_info({}, impl->queue_family_index);
         impl->immediate_command_pool = impl->device.createCommandPool(command_pool_info);
 
         // Command buffer
@@ -415,7 +413,6 @@ namespace mag
 
         impl->device.destroyQueryPool(impl->query_pool);
         impl->device.destroyFence(impl->upload_fence);
-        impl->device.destroyCommandPool(impl->command_pool);
         impl->device.destroyCommandPool(impl->immediate_command_pool);
         impl->device.destroySwapchainKHR(impl->swapchain);
         impl->device.destroy();
@@ -548,7 +545,6 @@ namespace mag
     const vk::Extent2D& Context::get_surface_extent() const { return impl->surface_extent; }
     const vk::SwapchainKHR& Context::get_swapchain() const { return impl->swapchain; }
     const vk::Format& Context::get_swapchain_image_format() const { return impl->surface_format.format; }
-    const vk::CommandPool& Context::get_command_pool() const { return impl->command_pool; }
     const vk::Fence& Context::get_upload_fence() const { return impl->upload_fence; }
     const std::vector<vk::Image>& Context::get_swapchain_images() const { return impl->swapchain_images; }
     const std::vector<vk::ImageView>& Context::get_swapchain_image_views() const { return impl->swapchain_image_views; }

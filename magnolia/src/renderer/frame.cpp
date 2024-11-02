@@ -19,12 +19,16 @@ namespace mag
             frames[i].render_fence = new vk::Fence();
             frames[i].render_semaphore = new vk::Semaphore();
             frames[i].present_semaphore = new vk::Semaphore();
+            frames[i].command_pool = new vk::CommandPool();
 
-            vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
+            const vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
             *frames[i].render_fence = context.get_device().createFence(fence_create_info);
             *frames[i].render_semaphore = context.get_device().createSemaphore({});
             *frames[i].present_semaphore = context.get_device().createSemaphore({});
-            frames[i].command_buffer.initialize(context.get_command_pool(), vk::CommandBufferLevel::ePrimary);
+
+            const vk::CommandPoolCreateInfo command_pool_info({}, context.get_queue_family_index());
+            *frames[i].command_pool = context.get_device().createCommandPool(command_pool_info);
+            frames[i].command_buffer.initialize(*frames[i].command_pool, vk::CommandBufferLevel::ePrimary);
         }
     }
 
@@ -36,14 +40,17 @@ namespace mag
             context.get_device().destroyFence(*frame.render_fence);
             context.get_device().destroySemaphore(*frame.render_semaphore);
             context.get_device().destroySemaphore(*frame.present_semaphore);
+            context.get_device().destroyCommandPool(*frame.command_pool);
 
             delete frame.render_fence;
             delete frame.render_semaphore;
             delete frame.present_semaphore;
+            delete frame.command_pool;
 
             frame.render_fence = nullptr;
             frame.render_semaphore = nullptr;
             frame.present_semaphore = nullptr;
+            frame.command_pool = nullptr;
         }
     }
 
@@ -89,7 +96,7 @@ namespace mag
         VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, MAG_TIMEOUT));
         device.resetFences(*curr_frame.render_fence);
 
-        curr_frame.command_buffer.get_handle().reset();
+        context.get_device().resetCommandPool(*curr_frame.command_pool);
         curr_frame.command_buffer.begin();
 
         return true;

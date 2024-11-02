@@ -15,6 +15,7 @@ namespace mag
             vk::Fence* render_fence = nullptr;
             vk::Semaphore* render_semaphore = nullptr;
             vk::Semaphore* present_semaphore = nullptr;
+            vk::CommandPool* command_pool = nullptr;
             CommandBuffer command_buffer;
     };
 

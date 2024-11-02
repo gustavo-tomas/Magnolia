@@ -55,7 +55,6 @@ namespace mag
             const vk::Extent2D& get_surface_extent() const;
             const vk::SwapchainKHR& get_swapchain() const;
             const vk::Format& get_swapchain_image_format() const;
-            const vk::CommandPool& get_command_pool() const;
             const vk::Fence& get_upload_fence() const;
             const std::vector<vk::Image>& get_swapchain_images() const;
             const std::vector<vk::ImageView>& get_swapchain_image_views() const;
