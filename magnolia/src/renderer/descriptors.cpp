@@ -34,7 +34,11 @@ namespace mag
             IMPL() = default;
             ~IMPL() = default;
 
-            PoolSizes descriptor_sizes;
+            // Add more types if necessary
+            PoolSizes descriptor_sizes = {{vk::DescriptorType::eUniformBuffer, 1},
+                                          {vk::DescriptorType::eStorageBuffer, 1},
+                                          {vk::DescriptorType::eCombinedImageSampler, 1}};
+
             vk::DescriptorPool current_pool = {};
             std::vector<vk::DescriptorPool> used_pools;
             std::vector<vk::DescriptorPool> free_pools;
