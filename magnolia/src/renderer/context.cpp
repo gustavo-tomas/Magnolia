@@ -114,6 +114,11 @@ namespace mag
 
         std::vector<const c8*> instance_extensions;
         std::vector<const c8*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const c8*> core_device_extensions = {
+            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
+            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+            VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME};
+
         std::vector<const c8*> validation_layers;
 
         const vk::PhysicalDeviceType preferred_device_type = vk::PhysicalDeviceType::eDiscreteGpu;
@@ -299,9 +304,9 @@ namespace mag
 
         vk::PhysicalDeviceBufferDeviceAddressFeatures buffer_device_address_features(true, {}, {},
                                                                                      &descriptor_indexing_features);
-        vk::PhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features(true, {}, {}, {},
-                                                                                 &buffer_device_address_features);
-        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &descriptor_buffer_features);
+
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &buffer_device_address_features);
+
         vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
                                                                                       &dynamic_rendering_features);
 
@@ -311,7 +316,13 @@ namespace mag
 
         LOG_INFO("Enumerating device extension properties");
         const auto device_properties = impl->physical_device.enumerateDeviceExtensionProperties();
-        for (const auto& device_extension : device_extensions)
+
+        std::vector<const c8*> all_device_extensions;
+        all_device_extensions.insert(all_device_extensions.begin(), device_extensions.begin(), device_extensions.end());
+        all_device_extensions.insert(all_device_extensions.begin(), core_device_extensions.begin(),
+                                     core_device_extensions.end());
+
+        for (const auto& device_extension : all_device_extensions)
         {
             LOG_INFO("Extension: {0}", device_extension);
             b8 available = false;
