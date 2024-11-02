@@ -18,6 +18,7 @@
 #include "renderer/sampler.hpp"
 #include "resources/image_loader.hpp"
 #include "scene/scene_serializer.hpp"
+#include "threads/job_system.hpp"
 #include "tools/model_importer.hpp"
 
 namespace sprout
@@ -181,12 +182,28 @@ namespace sprout
                         // Check if asset is a model that needs to be imported
                         else if (importer.is_extension_supported(extension))
                         {
-                            // @TODO: do this in another thread
-                            str imported_model_path = "";
-                            if (importer.import(path, imported_model_path))
+                            auto &job_system = app.get_job_system();
+
+                            // This is a bit ugly but gets the job done (just don't forget to delete it)
+                            str *imported_model_path = new str("");
+
+                            auto on_execute = [path, imported_model_path]
                             {
-                                scene.add_model(imported_model_path);
-                            }
+                                ModelImporter importer;
+                                return importer.import(path, *imported_model_path);
+                            };
+
+                            auto on_finish = [&scene, imported_model_path](const b8 result)
+                            {
+                                if (result)
+                                {
+                                    scene.add_model(*imported_model_path);
+                                }
+
+                                delete imported_model_path;
+                            };
+
+                            job_system.add_job({on_execute, on_finish});
                         }
 
                         // Check if asset is an image
