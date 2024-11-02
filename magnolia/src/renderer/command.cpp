@@ -144,12 +144,18 @@ namespace mag
 
         switch (curr_layout)
         {
+            case vk::ImageLayout::eUndefined:
+                src_access_flags = vk::AccessFlagBits::eNone;
+                break;
+
             case vk::ImageLayout::eTransferSrcOptimal:
                 src_access_flags = vk::AccessFlagBits::eTransferRead;
+                src_stage_flags = vk::PipelineStageFlagBits::eTransfer;
                 break;
 
             case vk::ImageLayout::eTransferDstOptimal:
                 src_access_flags = vk::AccessFlagBits::eTransferWrite;
+                src_stage_flags = vk::PipelineStageFlagBits::eTransfer;
                 break;
 
             case vk::ImageLayout::eShaderReadOnlyOptimal:
@@ -162,6 +168,7 @@ namespace mag
                 src_access_flags = vk::AccessFlagBits::eColorAttachmentRead |
                                    vk::AccessFlagBits::eColorAttachmentWrite |
                                    vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
+                src_stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
                 break;
 
             default:
@@ -172,6 +179,7 @@ namespace mag
         {
             case vk::ImageLayout::eTransferSrcOptimal:
                 dst_access_flags = vk::AccessFlagBits::eTransferRead;
+                dst_stage_flags = vk::PipelineStageFlagBits::eTransfer;
                 break;
 
             case vk::ImageLayout::eTransferDstOptimal:
@@ -182,16 +190,19 @@ namespace mag
             case vk::ImageLayout::eShaderReadOnlyOptimal:
                 dst_access_flags = vk::AccessFlagBits::eInputAttachmentRead | vk::AccessFlagBits::eShaderRead |
                                    vk::AccessFlagBits::eColorAttachmentRead;
+                dst_stage_flags = vk::PipelineStageFlagBits::eFragmentShader;
                 break;
 
             case vk::ImageLayout::eColorAttachmentOptimal:
                 dst_access_flags = vk::AccessFlagBits::eColorAttachmentRead |
                                    vk::AccessFlagBits::eColorAttachmentWrite |
                                    vk::AccessFlagBits::eColorAttachmentReadNoncoherentEXT;
+                dst_stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
                 break;
 
             case vk::ImageLayout::ePresentSrcKHR:
                 dst_access_flags = {};
+                dst_stage_flags = vk::PipelineStageFlagBits::eBottomOfPipe;
                 break;
 
             default:
