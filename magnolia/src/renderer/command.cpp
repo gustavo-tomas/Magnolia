@@ -6,6 +6,7 @@
 #include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
 #include "renderer/renderer_image.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 namespace mag
 {
@@ -134,9 +135,12 @@ namespace mag
                                         const vk::ImageLayout new_layout, const u32 base_mip_levels,
                                         const u32 mip_levels)
     {
-        // Select appropriate access flags
-        vk::AccessFlags src_access_flags = {};
-        vk::AccessFlags dst_access_flags = {};
+        // Select appropriate access and stage flags
+        vk::AccessFlags src_access_flags = vk::AccessFlagBits::eMemoryWrite;
+        vk::AccessFlags dst_access_flags = vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead;
+
+        vk::PipelineStageFlags src_stage_flags = vk::PipelineStageFlagBits::eAllCommands;
+        vk::PipelineStageFlags dst_stage_flags = vk::PipelineStageFlagBits::eAllCommands;
 
         switch (curr_layout)
         {
@@ -151,6 +155,7 @@ namespace mag
             case vk::ImageLayout::eShaderReadOnlyOptimal:
                 src_access_flags = vk::AccessFlagBits::eInputAttachmentRead | vk::AccessFlagBits::eShaderRead |
                                    vk::AccessFlagBits::eColorAttachmentRead;
+                src_stage_flags = vk::PipelineStageFlagBits::eFragmentShader;
                 break;
 
             case vk::ImageLayout::eColorAttachmentOptimal:
@@ -160,7 +165,6 @@ namespace mag
                 break;
 
             default:
-                src_access_flags = vk::AccessFlagBits::eMemoryWrite;
                 break;
         }
 
@@ -172,6 +176,7 @@ namespace mag
 
             case vk::ImageLayout::eTransferDstOptimal:
                 dst_access_flags = vk::AccessFlagBits::eTransferWrite;
+                dst_stage_flags = vk::PipelineStageFlagBits::eTransfer;
                 break;
 
             case vk::ImageLayout::eShaderReadOnlyOptimal:
@@ -190,7 +195,6 @@ namespace mag
                 break;
 
             default:
-                dst_access_flags = vk::AccessFlagBits::eMemoryWrite | vk::AccessFlagBits::eMemoryRead;
                 break;
         }
 
@@ -204,9 +208,7 @@ namespace mag
             .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
             .setSubresourceRange({vk::ImageAspectFlagBits::eColor, base_mip_levels, mip_levels, 0, 1});
 
-        this->get_handle().pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands,
-                                           vk::PipelineStageFlagBits::eAllCommands, {}, nullptr, nullptr,
-                                           image_barrier);
+        this->get_handle().pipelineBarrier(src_stage_flags, dst_stage_flags, {}, nullptr, nullptr, image_barrier);
     }
 
     const vk::CommandBuffer& CommandBuffer::get_handle() const { return *this->command_buffer; }
