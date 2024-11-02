@@ -191,6 +191,10 @@ namespace mag
         options.window.create_surface(&impl->instance, &impl->surface);
 
         // Physical device
+        vk::PhysicalDeviceFeatures required_physical_device_features;
+        required_physical_device_features.setSamplerAnisotropy(true);
+        required_physical_device_features.setFillModeNonSolid(true);
+
         LOG_INFO("Enumerating physical devices");
         const auto available_physical_devices = impl->instance.enumeratePhysicalDevices();
         for (const auto& available_physical_device : available_physical_devices)
@@ -219,7 +223,19 @@ namespace mag
 
                 queue_family_index++;
             }
-            if (!found_queue_family_index) continue;
+
+            if (!found_queue_family_index)
+            {
+                continue;
+            }
+
+            // Also check available features
+            const auto available_physical_device_features = available_physical_device.getFeatures();
+            if (!available_physical_device_features.samplerAnisotropy ||
+                !available_physical_device_features.fillModeNonSolid)
+            {
+                continue;
+            }
 
             impl->physical_device = available_physical_device;
             impl->queue_family_index = queue_family_index;
@@ -274,11 +290,7 @@ namespace mag
             if (format.format == vk::Format::eR8G8B8A8Srgb || format.format == vk::Format::eB8G8R8A8Srgb)
                 impl->surface_format = format;
 
-        // Features
-        vk::PhysicalDeviceFeatures features;
-        features.setSamplerAnisotropy(true);
-        features.setFillModeNonSolid(true);
-
+        // Extra physical device features
         vk::PhysicalDeviceSynchronization2FeaturesKHR synchronization_2_features(true);
 
         vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
@@ -319,7 +331,7 @@ namespace mag
         vk::DeviceCreateInfo device_create_info;
         device_create_info.setQueueCreateInfos(device_queue_create_info)
             .setPEnabledExtensionNames(device_extensions)
-            .setPEnabledFeatures(&features)
+            .setPEnabledFeatures(&required_physical_device_features)
             .setPNext(&shader_draw_parameters_features);
 
         impl->device = impl->physical_device.createDevice(device_create_info);
