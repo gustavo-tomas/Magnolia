@@ -291,14 +291,14 @@ namespace mag
                 impl->surface_format = format;
 
         // Extra physical device features
-        vk::PhysicalDeviceSynchronization2FeaturesKHR synchronization_2_features(true);
+        vk::PhysicalDeviceSynchronization2Features synchronization_2_features(true);
 
         vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
         descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
         descriptor_indexing_features.setPNext(&synchronization_2_features);
 
-        vk::PhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features(true, {}, {},
-                                                                                        &descriptor_indexing_features);
+        vk::PhysicalDeviceBufferDeviceAddressFeatures buffer_device_address_features(true, {}, {},
+                                                                                     &descriptor_indexing_features);
         vk::PhysicalDeviceDescriptorBufferFeaturesEXT descriptor_buffer_features(true, {}, {}, {},
                                                                                  &buffer_device_address_features);
         vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &descriptor_buffer_features);
