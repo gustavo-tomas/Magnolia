@@ -106,7 +106,7 @@ namespace mag
 
         // @TODO: hardcoded format
         const auto color_format = vk::Format::eR16G16B16A16Sfloat;
-        const auto depth_format = vk::Format::eD32Sfloat;
+        const auto depth_format = context.get_supported_depth_format();
 
         // Create pipeline
         const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info({}, color_format, depth_format);

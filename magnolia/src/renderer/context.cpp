@@ -583,8 +583,9 @@ namespace mag
 
     vk::Format Context::get_supported_depth_format() const
     {
-        return get_supported_format({vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
-                                    vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+        return get_supported_format(
+            {vk::Format::eD24UnormS8Uint, vk::Format::eD16Unorm, vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint},
+            vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
     }
 
     Frame& Context::get_curr_frame() { return impl->frame_provider.get_current_frame(); }
