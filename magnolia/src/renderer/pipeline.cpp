@@ -104,8 +104,7 @@ namespace mag
         const std::vector<vk::DynamicState> dynamic_states = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
         const vk::PipelineDynamicStateCreateInfo dynamic_state({}, dynamic_states);
 
-        // @TODO: hardcoded format
-        const auto color_format = vk::Format::eR16G16B16A16Sfloat;
+        const auto color_format = context.get_supported_color_format(ImageFormat::Float);
         const auto depth_format = context.get_supported_depth_format();
 
         // Create pipeline

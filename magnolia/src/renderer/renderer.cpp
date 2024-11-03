@@ -182,9 +182,7 @@ namespace mag
         }
 
         const uvec3 extent(image->width, image->height, 1);
-
-        // @TODO: check for supported formats
-        const vk::Format format = vk::Format::eR8G8B8A8Srgb;
+        const vk::Format format = get_context().get_supported_color_format(ImageFormat::Srgb);
 
         impl->images[image] =
             create_ref<RendererImage>(extent, ImageType::Texture, image->pixels, format,

@@ -30,6 +30,12 @@ namespace mag
             str engine_name = "Magnolia";
     };
 
+    enum class ImageFormat
+    {
+        Srgb,
+        Float
+    };
+
     class Context
     {
         public:
@@ -65,6 +71,7 @@ namespace mag
 
             vk::Format get_supported_format(const std::vector<vk::Format>& candidates, const vk::ImageTiling tiling,
                                             const vk::FormatFeatureFlags features) const;
+            vk::Format get_supported_color_format(const ImageFormat desired_format) const;
             vk::Format get_supported_depth_format() const;
 
             Frame& get_curr_frame();

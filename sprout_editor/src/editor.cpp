@@ -119,7 +119,7 @@ namespace sprout
         ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
                "Failed to initialize editor window backend");
 
-        vk::Format color_attachment_format = vk::Format::eR16G16B16A16Sfloat;
+        const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::Float);
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();
@@ -134,7 +134,7 @@ namespace sprout
         init_info.PipelineRenderingCreateInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
         init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
         init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
-            reinterpret_cast<VkFormat *>(&color_attachment_format);
+            reinterpret_cast<const VkFormat *>(&color_attachment_format);
 
         ASSERT(ImGui_ImplVulkan_Init(&init_info), "Failed to initialize editor renderer backend");
 

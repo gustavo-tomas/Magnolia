@@ -636,6 +636,28 @@ namespace mag
             vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment);
     }
 
+    vk::Format Context::get_supported_color_format(const ImageFormat desired_format) const
+    {
+        switch (desired_format)
+        {
+            case ImageFormat::Srgb:
+                return get_supported_format({vk::Format::eR8G8B8A8Srgb, vk::Format::eB8G8R8A8Srgb},
+                                            vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eColorAttachment);
+                break;
+
+            case ImageFormat::Float:
+                return get_supported_format(
+                    {vk::Format::eR16G16B16A16Sfloat, vk::Format::eR32G32B32A32Sfloat, vk::Format::eR64G64B64A64Sfloat},
+                    vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eColorAttachment);
+                break;
+
+            default:
+                LOG_ERROR("Invalid Image Format");
+                return vk::Format::eR8G8B8A8Srgb;
+                break;
+        }
+    }
+
     Frame& Context::get_curr_frame() { return impl->frame_provider.get_current_frame(); }
     DescriptorLayoutCache& Context::get_descriptor_layout_cache() { return *impl->descriptor_layout_cache; }
     DescriptorAllocator& Context::get_descriptor_allocator() { return *impl->descriptor_allocator; }

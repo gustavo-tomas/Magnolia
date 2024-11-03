@@ -123,7 +123,7 @@ namespace mag
                     image_aspect = vk::ImageAspectFlagBits::eColor;
                     image_usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
                                   vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
-                    image_format = vk::Format::eR16G16B16A16Sfloat;
+                    image_format = context.get_supported_color_format(ImageFormat::Float);
                     break;
 
                 case AttachmentType::Depth:
