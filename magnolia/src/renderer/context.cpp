@@ -106,6 +106,12 @@ namespace mag
             CommandBuffer submit_command_buffer;
     };
 
+    struct DeviceExtension
+    {
+            b8 promoted;  // Extension is promoted to vulkan core
+            b8 vital;     // Extension is  necessary for the application to run
+    };
+
     Context::Context(const ContextCreateOptions& options) : impl(new IMPL())
     {
         context = this;
@@ -113,11 +119,20 @@ namespace mag
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
         std::vector<const c8*> instance_extensions;
-        std::vector<const c8*> device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-        std::vector<const c8*> core_device_extensions = {
-            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
-            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-            VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME};
+        std::map<const c8*, DeviceExtension> device_extensions = {
+            // Vital KHR
+            {VK_KHR_SWAPCHAIN_EXTENSION_NAME, {.promoted = false, .vital = true}},
+            {VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, {.promoted = true, .vital = true}},
+            {VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, {.promoted = true, .vital = true}},
+            {VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, {.promoted = true, .vital = true}},
+
+            // Vital EXT
+            {VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, {.promoted = true, .vital = true}},
+            {VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, {.promoted = true, .vital = true}},
+
+            // Non vitals
+            {VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME, {.promoted = false, .vital = false}},
+            {VK_EXT_PAGEABLE_DEVICE_LOCAL_MEMORY_EXTENSION_NAME, {.promoted = false, .vital = false}}};
 
         std::vector<const c8*> validation_layers;
 
@@ -317,31 +332,37 @@ namespace mag
         LOG_INFO("Enumerating device extension properties");
         const auto device_properties = impl->physical_device.enumerateDeviceExtensionProperties();
 
-        std::vector<const c8*> all_device_extensions;
-        all_device_extensions.insert(all_device_extensions.begin(), device_extensions.begin(), device_extensions.end());
-        all_device_extensions.insert(all_device_extensions.begin(), core_device_extensions.begin(),
-                                     core_device_extensions.end());
-
-        for (const auto& device_extension : all_device_extensions)
+        std::vector<const c8*> required_device_extensions;
+        for (const auto& [extension_name, device_extension] : device_extensions)
         {
-            LOG_INFO("Extension: {0}", device_extension);
+            LOG_INFO("Extension: {0}", extension_name);
             b8 available = false;
             for (const auto& device_property : device_properties)
             {
-                if (std::strcmp(device_property.extensionName.data(), device_extension) == 0)
+                if (std::strcmp(device_property.extensionName.data(), extension_name) == 0)
                 {
                     available = true;
                     break;
                 }
             }
 
-            ASSERT(available, "Extension not available: " + str(device_extension));
+            // Enable non promoted extensions
+            if (!device_extension.promoted)
+            {
+                required_device_extensions.push_back(extension_name);
+            }
+
+            // Assert vital extensions are present
+            if (device_extension.vital)
+            {
+                ASSERT(available, "Extension not available: " + str(extension_name));
+            }
         }
 
         // Logical device
         vk::DeviceCreateInfo device_create_info;
         device_create_info.setQueueCreateInfos(device_queue_create_info)
-            .setPEnabledExtensionNames(device_extensions)
+            .setPEnabledExtensionNames(required_device_extensions)
             .setPEnabledFeatures(&required_physical_device_features)
             .setPNext(&shader_draw_parameters_features);
 
