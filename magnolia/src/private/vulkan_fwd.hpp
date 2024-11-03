@@ -79,4 +79,5 @@ namespace vk
     using ImageAspectFlags = Flags<ImageAspectFlagBits>;
     using ImageUsageFlags = Flags<ImageUsageFlagBits>;
     using ShaderStageFlags = Flags<ShaderStageFlagBits>;
+    using SampleCountFlags = Flags<SampleCountFlagBits>;
 };  // namespace vk

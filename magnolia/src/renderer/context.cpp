@@ -84,7 +84,7 @@ namespace mag
             vk::Fence upload_fence;
             vk::DebugUtilsMessengerEXT debug_utils_messenger;
             vk::QueryPool query_pool;
-            vk::SampleCountFlagBits msaa_samples;
+            vk::SampleCountFlags msaa_samples;
 
             std::vector<vk::Image> swapchain_images;
             std::vector<vk::ImageView> swapchain_image_views;
@@ -274,19 +274,20 @@ namespace mag
         // Query support
         impl->is_query_supported = impl->physical_device_properties.properties.limits.timestampComputeAndGraphics;
 
-        // @TODO: harcoded to max samples
+        // Check available MSAA samples
         const auto properties = impl->physical_device_properties.properties;
         const auto counts = properties.limits.framebufferColorSampleCounts &
                             properties.limits.framebufferDepthSampleCounts &
                             properties.limits.framebufferStencilSampleCounts;
 
-        impl->msaa_samples = (counts & vk::SampleCountFlagBits::e64)   ? vk::SampleCountFlagBits::e64
-                             : (counts & vk::SampleCountFlagBits::e32) ? vk::SampleCountFlagBits::e32
-                             : (counts & vk::SampleCountFlagBits::e16) ? vk::SampleCountFlagBits::e16
-                             : (counts & vk::SampleCountFlagBits::e8)  ? vk::SampleCountFlagBits::e8
-                             : (counts & vk::SampleCountFlagBits::e4)  ? vk::SampleCountFlagBits::e4
-                             : (counts & vk::SampleCountFlagBits::e2)  ? vk::SampleCountFlagBits::e2
-                                                                       : vk::SampleCountFlagBits::e1;
+        impl->msaa_samples = {};
+        if (counts & vk::SampleCountFlagBits::e1) impl->msaa_samples |= vk::SampleCountFlagBits::e1;
+        if (counts & vk::SampleCountFlagBits::e2) impl->msaa_samples |= vk::SampleCountFlagBits::e2;
+        if (counts & vk::SampleCountFlagBits::e4) impl->msaa_samples |= vk::SampleCountFlagBits::e4;
+        if (counts & vk::SampleCountFlagBits::e8) impl->msaa_samples |= vk::SampleCountFlagBits::e8;
+        if (counts & vk::SampleCountFlagBits::e16) impl->msaa_samples |= vk::SampleCountFlagBits::e16;
+        if (counts & vk::SampleCountFlagBits::e32) impl->msaa_samples |= vk::SampleCountFlagBits::e32;
+        if (counts & vk::SampleCountFlagBits::e64) impl->msaa_samples |= vk::SampleCountFlagBits::e64;
 
         // Capabilities
         auto surface_present_modes = impl->physical_device.getSurfacePresentModesKHR(impl->surface);
@@ -658,11 +659,12 @@ namespace mag
         }
     }
 
+    vk::SampleCountFlags Context::get_available_msaa_samples() const { return impl->msaa_samples; }
+
     Frame& Context::get_curr_frame() { return impl->frame_provider.get_current_frame(); }
     DescriptorLayoutCache& Context::get_descriptor_layout_cache() { return *impl->descriptor_layout_cache; }
     DescriptorAllocator& Context::get_descriptor_allocator() { return *impl->descriptor_allocator; }
 
-    vk::SampleCountFlagBits Context::get_msaa_samples() const { return impl->msaa_samples; }
     u32 Context::get_queue_family_index() const { return impl->queue_family_index; }
     u32 Context::get_swapchain_image_index() const { return impl->frame_provider.get_swapchain_image_index(); }
     u32 Context::get_frame_count() const { return impl->frame_count; }

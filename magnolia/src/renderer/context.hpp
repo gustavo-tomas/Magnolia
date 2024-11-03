@@ -73,12 +73,12 @@ namespace mag
                                             const vk::FormatFeatureFlags features) const;
             vk::Format get_supported_color_format(const ImageFormat desired_format) const;
             vk::Format get_supported_depth_format() const;
+            vk::SampleCountFlags get_available_msaa_samples() const;
 
             Frame& get_curr_frame();
             DescriptorLayoutCache& get_descriptor_layout_cache();
             DescriptorAllocator& get_descriptor_allocator();
 
-            vk::SampleCountFlagBits get_msaa_samples() const;
             u32 get_queue_family_index() const;
             u32 get_swapchain_image_index() const;
             u32 get_frame_count() const;
