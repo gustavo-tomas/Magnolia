@@ -146,6 +146,10 @@ namespace mag
         {
             case vk::ImageLayout::eUndefined:
                 src_access_flags = vk::AccessFlagBits::eNone;
+
+                // @NOTE: we are assuming that if an image is in the undefined layout it is being prepped for a tranfer
+                // operation
+                src_stage_flags = vk::PipelineStageFlagBits::eTransfer;
                 break;
 
             case vk::ImageLayout::eTransferSrcOptimal:
