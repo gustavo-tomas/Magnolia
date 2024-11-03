@@ -137,7 +137,7 @@ namespace mag
                 i32 mip_width = impl->extent.x;
                 i32 mip_height = impl->extent.y;
 
-                // @TODO: improve layout transition
+                // @TODO: use KTX to generate mip maps: https://www.khronos.org/ktx/
                 for (u32 i = 1; i < impl->mip_levels; i++)
                 {
                     barrier.subresourceRange.baseMipLevel = i - 1;
