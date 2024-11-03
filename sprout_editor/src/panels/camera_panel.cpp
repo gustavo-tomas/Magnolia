@@ -19,7 +19,7 @@ namespace sprout
 
         const c8* format = "%.2f";
         const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+        const ImGuiInputTextFlags input_flags = 0;
 
         vec3 translation = camera.get_position();
         vec3 rotation = camera.get_rotation();

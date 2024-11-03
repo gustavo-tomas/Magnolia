@@ -119,6 +119,8 @@ namespace sprout
         ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
                "Failed to initialize editor window backend");
 
+        vk::Format color_attachment_format = vk::Format::eR16G16B16A16Sfloat;
+
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();
         init_info.PhysicalDevice = context.get_physical_device();
@@ -128,10 +130,13 @@ namespace sprout
         init_info.MinImageCount = context.get_swapchain_images().size();
         init_info.ImageCount = context.get_swapchain_images().size();
         init_info.UseDynamicRendering = true;
-        init_info.ColorAttachmentFormat = static_cast<VkFormat>(vk::Format::eR16G16B16A16Sfloat);
         init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        init_info.PipelineRenderingCreateInfo = {.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
+        init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+        init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
+            reinterpret_cast<VkFormat *>(&color_attachment_format);
 
-        ASSERT(ImGui_ImplVulkan_Init(&init_info, nullptr), "Failed to initialize editor renderer backend");
+        ASSERT(ImGui_ImplVulkan_Init(&init_info), "Failed to initialize editor renderer backend");
 
         ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
@@ -246,7 +251,7 @@ namespace sprout
         const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
         // ImGui windows goes here
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), dock_flags);
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dock_flags);
         // ImGui::ShowDemoWindow();
 
         impl->scene_panel->render(window_flags, ecs);

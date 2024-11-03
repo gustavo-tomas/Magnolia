@@ -103,8 +103,7 @@ namespace sprout
 
                 str name = open_scenes[i]->get_name();
 
-                if (edited_scene_index == i &&
-                    ImGui::InputText("##SceneNameClicked", &name, ImGuiInputTextFlags_EnterReturnsTrue))
+                if (edited_scene_index == i && ImGui::InputText("##SceneNameClicked", &name, 0))
                 {
                     open_scenes[i]->set_name(name);
                     edited_scene_index = INVALID_ID;
@@ -115,7 +114,8 @@ namespace sprout
                 impl->viewport_size = {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y};
 
                 ImGui::SetNextItemAllowOverlap();
-                ImGui::Image(impl->viewport_image_descriptor, ImVec2(impl->viewport_size.x, impl->viewport_size.y));
+                ImGui::Image((ImTextureID)((VkDescriptorSet)impl->viewport_image_descriptor),
+                             ImVec2(impl->viewport_size.x, impl->viewport_size.y));
 
                 const auto image_pos = ImGui::GetItemRectMin();
                 impl->viewport_position = {image_pos.x, image_pos.y};

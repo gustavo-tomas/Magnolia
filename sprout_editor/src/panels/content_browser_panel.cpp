@@ -91,13 +91,15 @@ namespace sprout
 
             if (directory_entry.is_directory())
             {
-                ImGui::ImageButton(filename_string.c_str(), impl->folder_image_descriptor,
+                ImGui::ImageButton(filename_string.c_str(),
+                                   (ImTextureID)((VkDescriptorSet)(impl->folder_image_descriptor)),
                                    {thumbnail_size, thumbnail_size});
             }
 
             else
             {
-                ImGui::ImageButton(filename_string.c_str(), impl->file_image_descriptor,
+                ImGui::ImageButton(filename_string.c_str(),
+                                   (ImTextureID)((VkDescriptorSet)(impl->file_image_descriptor)),
                                    {thumbnail_size, thumbnail_size});
             }
 

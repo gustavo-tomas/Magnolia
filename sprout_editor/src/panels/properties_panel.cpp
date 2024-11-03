@@ -133,8 +133,7 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                const ImGuiInputTextFlags flags =
-                    ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_EnterReturnsTrue;
+                const ImGuiInputTextFlags flags = ImGuiInputTextFlags_CallbackHistory;
 
                 str file_path = component->file_path;
 
@@ -182,7 +181,7 @@ namespace sprout
     {
         const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+        const ImGuiInputTextFlags input_flags = 0;
 
         vec3 editable_value = value;
 
@@ -209,7 +208,7 @@ namespace sprout
     {
         const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
-        const ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+        const ImGuiInputTextFlags input_flags = 0;
 
         f32 editable_value = value;
 
