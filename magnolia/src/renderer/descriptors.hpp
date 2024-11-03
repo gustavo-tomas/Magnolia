@@ -39,7 +39,6 @@ namespace mag
             vk::DescriptorSetLayout create_descriptor_layout(const vk::DescriptorSetLayoutCreateInfo* info);
             struct DescriptorLayoutInfo
             {
-                    // good idea to turn this into a inlined array
                     std::vector<vk::DescriptorSetLayoutBinding> bindings;
 
                     b8 operator==(const DescriptorLayoutInfo& other) const;
