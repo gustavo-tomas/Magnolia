@@ -108,8 +108,9 @@ namespace mag
 
     struct DeviceExtension
     {
-            b8 promoted;  // Extension is promoted to vulkan core
-            b8 vital;     // Extension is  necessary for the application to run
+            b8 promoted;           // Extension is promoted to vulkan core
+            b8 vital;              // Extension is necessary for the application to run
+            b8 available = false;  // Extension is available in this device
     };
 
     Context::Context(const ContextCreateOptions& options) : impl(new IMPL())
@@ -310,21 +311,6 @@ namespace mag
             if (format.format == vk::Format::eR8G8B8A8Srgb || format.format == vk::Format::eB8G8R8A8Srgb)
                 impl->surface_format = format;
 
-        // Extra physical device features
-        vk::PhysicalDeviceSynchronization2Features synchronization_2_features(true);
-
-        vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
-        descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
-        descriptor_indexing_features.setPNext(&synchronization_2_features);
-
-        vk::PhysicalDeviceBufferDeviceAddressFeatures buffer_device_address_features(true, {}, {},
-                                                                                     &descriptor_indexing_features);
-
-        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &buffer_device_address_features);
-
-        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
-                                                                                      &dynamic_rendering_features);
-
         vk::DeviceQueueCreateInfo device_queue_create_info;
         std::array queue_priorities = {1.0f};
         device_queue_create_info.setQueuePriorities(queue_priorities).setQueueFamilyIndex(impl->queue_family_index);
@@ -333,15 +319,14 @@ namespace mag
         const auto device_properties = impl->physical_device.enumerateDeviceExtensionProperties();
 
         std::vector<const c8*> required_device_extensions;
-        for (const auto& [extension_name, device_extension] : device_extensions)
+        for (auto& [extension_name, device_extension] : device_extensions)
         {
             LOG_INFO("Extension: {0}", extension_name);
-            b8 available = false;
             for (const auto& device_property : device_properties)
             {
                 if (std::strcmp(device_property.extensionName.data(), extension_name) == 0)
                 {
-                    available = true;
+                    device_extension.available = true;
                     break;
                 }
             }
@@ -355,9 +340,35 @@ namespace mag
             // Assert vital extensions are present
             if (device_extension.vital)
             {
-                ASSERT(available, "Extension not available: " + str(extension_name));
+                ASSERT(device_extension.available, "Extension not available: " + str(extension_name));
             }
         }
+
+        // @NOTE: this sucks, this sucks a lot. i hate vulkan so much wtf is this
+        // Extra physical device features
+        vk::PhysicalDeviceMemoryPriorityFeaturesEXT memory_priority_features(true);
+
+        vk::PhysicalDevicePageableDeviceLocalMemoryFeaturesEXT pageable_device_local_memory_features(
+            true, &memory_priority_features);
+
+        void* p_next = nullptr;
+        if (device_extensions[VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME].available)
+        {
+            p_next = &pageable_device_local_memory_features;
+        }
+        vk::PhysicalDeviceSynchronization2Features synchronization_2_features(true, p_next);
+
+        vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
+        descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
+        descriptor_indexing_features.setPNext(&synchronization_2_features);
+
+        vk::PhysicalDeviceBufferDeviceAddressFeatures buffer_device_address_features(true, {}, {},
+                                                                                     &descriptor_indexing_features);
+
+        vk::PhysicalDeviceDynamicRenderingFeatures dynamic_rendering_features(true, &buffer_device_address_features);
+
+        vk::PhysicalDeviceShaderDrawParameterFeatures shader_draw_parameters_features(true,
+                                                                                      &dynamic_rendering_features);
 
         // Logical device
         vk::DeviceCreateInfo device_create_info;
