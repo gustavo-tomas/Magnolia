@@ -24,6 +24,7 @@ namespace mag
         VmaAllocationCreateInfo allocation_create_info = {};
         allocation_create_info.usage = memory_usage;
         allocation_create_info.flags = memory_flags | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        allocation_create_info.priority = 0.5f;
 
         buffer = new vk::Buffer();
 

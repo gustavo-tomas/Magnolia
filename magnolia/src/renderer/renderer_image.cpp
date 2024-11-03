@@ -13,15 +13,16 @@ namespace mag
 {
     struct RendererImage::IMPL
     {
-            IMPL(const uvec3& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
-                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels, const SampleCount msaa_samples,
-                 const str& name)
+            IMPL(const uvec3& extent, const ImageType image_type, const vk::Format format,
+                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
+                 const SampleCount msaa_samples, const str& name)
                 : name(name),
                   mip_levels(mip_levels),
                   format(format),
                   image_usage(image_usage),
                   image_aspect(image_aspect),
                   extent(extent),
+                  type(image_type),
                   sampler(Filter::Linear, SamplerAddressMode::Repeat, SamplerMipmapMode::Linear, mip_levels),
                   msaa_samples(msaa_samples)
             {
@@ -39,24 +40,26 @@ namespace mag
             vk::ImageAspectFlags image_aspect;
 
             uvec3 extent;
+            ImageType type;
             Sampler sampler;
             SampleCount msaa_samples;
 
             VmaAllocation allocation;
     };
 
-    RendererImage::RendererImage(const uvec3& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
-                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                                 const SampleCount msaa_samples, const str& name)
-        : impl(new IMPL(extent, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
+    RendererImage::RendererImage(const uvec3& extent, const ImageType image_type, const vk::Format format,
+                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
+                                 const u32 mip_levels, const SampleCount msaa_samples, const str& name)
+        : impl(new IMPL(extent, image_type, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
     {
         create_image_and_view();
     }
 
-    RendererImage::RendererImage(const uvec3& extent, const std::vector<u8>& pixels, const vk::Format format,
-                                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                                 const u32 mip_levels, const SampleCount msaa_samples, const str& name)
-        : impl(new IMPL(extent, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
+    RendererImage::RendererImage(const uvec3& extent, const ImageType image_type, const std::vector<u8>& pixels,
+                                 const vk::Format format, const vk::ImageUsageFlags image_usage,
+                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
+                                 const SampleCount msaa_samples, const str& name)
+        : impl(new IMPL(extent, image_type, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
     {
         create_image_and_view();
 
@@ -88,8 +91,15 @@ namespace mag
         image_create_info.usage = static_cast<VkImageUsageFlags>(impl->image_usage);
 
         VmaAllocationCreateInfo vma_alloc_info = {};
-        vma_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        vma_alloc_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
         vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        vma_alloc_info.priority = 0.5f;
+
+        if (impl->type == ImageType::Attachment)
+        {
+            vma_alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+            vma_alloc_info.priority = 1.0f;
+        }
 
         VK_CHECK(VK_CAST(vmaCreateImage(context.get_allocator(), &image_create_info, &vma_alloc_info,
                                         reinterpret_cast<VkImage*>(&impl->image), &impl->allocation, 0)));

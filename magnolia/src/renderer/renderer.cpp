@@ -187,7 +187,7 @@ namespace mag
         const vk::Format format = vk::Format::eR8G8B8A8Srgb;
 
         impl->images[image] =
-            create_ref<RendererImage>(extent, image->pixels, format,
+            create_ref<RendererImage>(extent, ImageType::Texture, image->pixels, format,
                                       vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                                           vk::ImageUsageFlagBits::eTransferDst,
                                       vk::ImageAspectFlagBits::eColor, image->mip_levels, SampleCount::_1);

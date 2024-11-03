@@ -419,6 +419,11 @@ namespace mag
         allocator_create_info.vulkanApiVersion = impl->api_version;
         allocator_create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
+        if (device_extensions[VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME].available)
+        {
+            allocator_create_info.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+        }
+
         VK_CHECK(VK_CAST(vmaCreateAllocator(&allocator_create_info, &impl->allocator)));
 
         impl->frame_provider.initialize(frame_count);

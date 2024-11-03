@@ -140,8 +140,8 @@ namespace mag
             for (u32 i = 0; i < frame_count; i++)
             {
                 attachment[i].curr_layout = vk::ImageLayout::eUndefined;
-                attachment[i].texture =
-                    create_ref<RendererImage>(image_extent, image_format, image_usage, image_aspect);
+                attachment[i].texture = create_ref<RendererImage>(image_extent, ImageType::Attachment, image_format,
+                                                                  image_usage, image_aspect);
             }
         }
 

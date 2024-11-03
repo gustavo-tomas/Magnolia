@@ -20,19 +20,26 @@ namespace mag
         _64
     };
 
+    enum class ImageType
+    {
+        Texture,
+        Attachment
+    };
+
     class Sampler;
 
     class RendererImage
     {
         public:
-            RendererImage(const uvec3& extent, const vk::Format format, const vk::ImageUsageFlags image_usage,
-                          const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
-                          const SampleCount msaa_samples = SampleCount::_1, const str& name = "");
-
-            RendererImage(const uvec3& extent, const std::vector<u8>& pixels, const vk::Format format,
+            RendererImage(const uvec3& extent, const ImageType image_type, const vk::Format format,
                           const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
                           const u32 mip_levels = 1, const SampleCount msaa_samples = SampleCount::_1,
                           const str& name = "");
+
+            RendererImage(const uvec3& extent, const ImageType image_type, const std::vector<u8>& pixels,
+                          const vk::Format format, const vk::ImageUsageFlags image_usage,
+                          const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
+                          const SampleCount msaa_samples = SampleCount::_1, const str& name = "");
 
             ~RendererImage();
 
