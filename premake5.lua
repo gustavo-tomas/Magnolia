@@ -62,7 +62,10 @@ workspace "magnolia"
 
     linkoptions
     {
-        "-fuse-ld=mold -Wl,-v"
+        "-fuse-ld=mold -Wl,-v",
+
+        -- For some reason, premake is having trouble finding assimp
+        "-Wl,-R" .. libdir
     }
 
 -- @TODO: consistent build folders/output
