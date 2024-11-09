@@ -134,14 +134,13 @@ project "magnolia"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
@@ -149,7 +148,6 @@ project "magnolia"
         runtime "release"
 
     filter "configurations:release"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
@@ -209,14 +207,13 @@ project "sprout_editor"
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
@@ -224,7 +221,6 @@ project "sprout_editor"
         runtime "release"
 
     filter "configurations:release"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
@@ -274,14 +270,13 @@ common_settings = function()
         -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-Werror", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
         defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
@@ -289,7 +284,6 @@ common_settings = function()
         runtime "release"
 
     filter "configurations:release"
-        buildoptions { "-Werror" }
         defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
         flags { build_flags }
         symbols "off"
