@@ -1,7 +1,11 @@
 #include "tools/model_importer.hpp"
 
+#include <vector>
+
+#include "assimp/Importer.hpp"
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
+#include "assimp/scene.h"
 #include "core/application.hpp"
 #include "core/buffer.hpp"
 #include "core/file_system.hpp"
@@ -16,7 +20,25 @@ namespace mag
 #define MODEL_FILE_EXTENSION ".model.json"
 #define BINARY_FILE_EXTENSION ".model.bin"
 
-    ModelImporter::ModelImporter() : importer(new Assimp::Importer()) {}
+    struct ModelImporter::IMPL
+    {
+            IMPL() : importer(new Assimp::Importer()) {}
+            ~IMPL() = default;
+
+            b8 create_native_file(const str& output_directory, const Model& model, str& imported_model_path);
+
+            b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model& model);
+            void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
+                                      Model& model);
+            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model& model);
+
+            const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
+
+            unique<Assimp::Importer> importer;
+    };
+
+    ModelImporter::ModelImporter() : impl(new ModelImporter::IMPL()) {}
+    ModelImporter::~ModelImporter() = default;
 
     b8 ModelImporter::import(const str& file_path, str& imported_model_path)
     {
@@ -26,10 +48,10 @@ namespace mag
         const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes |
                           aiProcess_PreTransformVertices;
 
-        const aiScene* scene = importer->ReadFile(file_path, flags);
+        const aiScene* scene = impl->importer->ReadFile(file_path, flags);
         if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
         {
-            LOG_ERROR("Failed to import model '{0}': {1}", file_path, importer->GetErrorString());
+            LOG_ERROR("Failed to import model '{0}': {1}", file_path, impl->importer->GetErrorString());
             return false;
         }
 
@@ -46,7 +68,7 @@ namespace mag
         for (u32 m = 0; m < scene->mNumMeshes; m++)
         {
             const aiMesh* mesh = scene->mMeshes[m];
-            if (!initialize_mesh(m, mesh, model))
+            if (!impl->initialize_mesh(m, mesh, model))
             {
                 return false;
             }
@@ -63,11 +85,12 @@ namespace mag
             return false;
         }
 
-        initialize_materials(scene, file_path, output_directory, model);
-        return create_native_file(output_directory, model, imported_model_path);
+        impl->initialize_materials(scene, file_path, output_directory, model);
+        return impl->create_native_file(output_directory, model, imported_model_path);
     }
 
-    b8 ModelImporter::create_native_file(const str& output_directory, const Model& model, str& imported_model_path)
+    b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const Model& model,
+                                               str& imported_model_path)
     {
         auto& app = get_application();
         auto& file_system = app.get_file_system();
@@ -135,7 +158,7 @@ namespace mag
         return true;
     }
 
-    b8 ModelImporter::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model& model)
+    b8 ModelImporter::IMPL::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model& model)
     {
         if (!ai_mesh->HasFaces())
         {
@@ -213,7 +236,7 @@ namespace mag
         return true;
     }
 
-    void ModelImporter::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model& model)
+    void ModelImporter::IMPL::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model& model)
     {
         const u32 vertex_count = vertices.size();
         const u32 index_count = indices.size();
@@ -247,8 +270,8 @@ namespace mag
         model.indices.insert(model.indices.end(), optimized_indices.begin(), optimized_indices.end());
     }
 
-    void ModelImporter::initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
-                                             Model& model)
+    void ModelImporter::IMPL::initialize_materials(const aiScene* ai_scene, const str& file_path,
+                                                   const str& output_directory, Model& model)
     {
         auto& app = get_application();
         auto& file_system = app.get_file_system();
@@ -287,8 +310,8 @@ namespace mag
         }
     }
 
-    const str ModelImporter::find_texture(const aiMaterial* ai_material, aiTextureType ai_type,
-                                          const str& directory) const
+    const str ModelImporter::IMPL::find_texture(const aiMaterial* ai_material, aiTextureType ai_type,
+                                                const str& directory) const
     {
         auto& app = get_application();
         auto& material_manager = app.get_material_manager();
@@ -351,6 +374,6 @@ namespace mag
 
     b8 ModelImporter::is_extension_supported(const str& extension_with_dot)
     {
-        return importer->IsExtensionSupported(extension_with_dot);
+        return impl->importer->IsExtensionSupported(extension_with_dot);
     }
 };  // namespace mag
