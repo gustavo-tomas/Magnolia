@@ -31,5 +31,8 @@
         "sprout_editor/assets/models/sponza/native/vase.mat.json",
         "sprout_editor/assets/models/sponza/native/Material__25.mat.json",
         "sprout_editor/assets/models/sponza/native/roof.mat.json"
-    ]
+    ],
+    "NumVertices": 209631,
+    "NumIndices": 786801,
+    "NumMeshes": 25
 }

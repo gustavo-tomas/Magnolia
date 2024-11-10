@@ -98,11 +98,19 @@ namespace mag
         const str native_model_file_path = output_directory + "/" + model.name + MODEL_FILE_EXTENSION;
         const str binary_file_path = output_directory + "/" + model.name + BINARY_FILE_EXTENSION;
 
+        const u32 num_vertices = model.vertices.size();
+        const u32 num_indices = model.indices.size();
+        const u32 num_meshes = model.meshes.size();
+
         json data;
         data["Type"] = "Model";
         data["Name"] = model.name;
         data["File"] = binary_file_path;
         data["Materials"] = model.materials;
+
+        data["NumVertices"] = model.vertices.size();
+        data["NumIndices"] = model.indices.size();
+        data["NumMeshes"] = model.meshes.size();
 
         // Write the data to the native file format
         if (!file_system.write_json_data(native_model_file_path, data))
@@ -111,41 +119,37 @@ namespace mag
             return false;
         }
 
-        const u32 num_vertices = model.vertices.size();
-        const u32 num_indices = model.indices.size();
-        const u32 num_meshes = model.meshes.size();
-
         Buffer buffer;
 
         u64 buffer_size = 0;
-        buffer_size += sizeof(num_vertices) + VEC_SIZE_BYTES(model.vertices);
-        buffer_size += sizeof(num_indices) + VEC_SIZE_BYTES(model.indices);
-        buffer_size += sizeof(num_meshes) + VEC_SIZE_BYTES(model.meshes);
+        if (num_vertices > 0) buffer_size += VEC_SIZE_BYTES(model.vertices);
+        if (num_indices > 0) buffer_size += VEC_SIZE_BYTES(model.indices);
+        if (num_meshes > 0) buffer_size += VEC_SIZE_BYTES(model.meshes);
 
         buffer.data.resize(buffer_size);
 
         u8* ptr = buffer.data.data();
 
         // Write vertices
-        memcpy(ptr, &num_vertices, sizeof(num_vertices));
-        ptr += sizeof(num_vertices);
-
-        memcpy(ptr, model.vertices.data(), VEC_SIZE_BYTES(model.vertices));
-        ptr += VEC_SIZE_BYTES(model.vertices);
+        if (num_vertices > 0)
+        {
+            memcpy(ptr, model.vertices.data(), VEC_SIZE_BYTES(model.vertices));
+            ptr += VEC_SIZE_BYTES(model.vertices);
+        }
 
         // Write indices
-        memcpy(ptr, &num_indices, sizeof(num_indices));
-        ptr += sizeof(num_indices);
-
-        memcpy(ptr, model.indices.data(), VEC_SIZE_BYTES(model.indices));
-        ptr += VEC_SIZE_BYTES(model.indices);
+        if (num_indices > 0)
+        {
+            memcpy(ptr, model.indices.data(), VEC_SIZE_BYTES(model.indices));
+            ptr += VEC_SIZE_BYTES(model.indices);
+        }
 
         // Write meshes
-        memcpy(ptr, &num_meshes, sizeof(num_meshes));
-        ptr += sizeof(num_meshes);
-
-        memcpy(ptr, model.meshes.data(), VEC_SIZE_BYTES(model.meshes));
-        ptr += VEC_SIZE_BYTES(model.meshes);
+        if (num_meshes > 0)
+        {
+            memcpy(ptr, model.meshes.data(), VEC_SIZE_BYTES(model.meshes));
+            ptr += VEC_SIZE_BYTES(model.meshes);
+        }
 
         // Write binary model data to file
         if (!file_system.write_binary_data(binary_file_path, buffer))

@@ -34,6 +34,10 @@ namespace mag
         const str binary_file_path = data["File"];
         const std::vector<str> materials = data["Materials"];
 
+        const u32 num_vertices = data["NumVertices"].get<u32>();
+        const u32 num_indices = data["NumIndices"].get<u32>();
+        const u32 num_meshes = data["NumMeshes"].get<u32>();
+
         Buffer buffer;
         const b8 result = file_system.read_binary_data(binary_file_path, buffer);
 
@@ -50,10 +54,6 @@ namespace mag
 
         c8* model_data = buffer.cast<c8>();
 
-        // Read number of vertices
-        const u32 num_vertices = *reinterpret_cast<u32*>(model_data);
-        model_data += sizeof(u32);
-
         // Read vertices
         if (num_vertices > 0)
         {
@@ -62,10 +62,6 @@ namespace mag
             model_data += VEC_SIZE_BYTES(model->vertices);
         }
 
-        // Read number of indices
-        const u32 num_indices = *reinterpret_cast<u32*>(model_data);
-        model_data += sizeof(u32);
-
         // Read indices
         if (num_indices > 0)
         {
@@ -73,10 +69,6 @@ namespace mag
             memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
             model_data += VEC_SIZE_BYTES(model->indices);
         }
-
-        // Read number of meshes
-        const u32 num_meshes = *reinterpret_cast<u32*>(model_data);
-        model_data += sizeof(u32);
 
         // Read meshes
         if (num_meshes > 0)
