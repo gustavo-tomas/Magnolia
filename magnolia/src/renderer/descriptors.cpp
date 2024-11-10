@@ -382,4 +382,33 @@ namespace mag
 
         ASSERT(result, "Failed to build descriptor for textures");
     }
+
+    void DescriptorBuilder::create_descriptor_for_textures(const u32 binding,
+                                                           const std::vector<RendererImage*>& textures,
+                                                           vk::DescriptorSet& descriptor_set,
+                                                           vk::DescriptorSetLayout& descriptor_set_layout)
+    {
+        // Create descriptors for this texture
+        auto& descriptor_layout_cache = get_context().get_descriptor_layout_cache();
+        auto& descriptor_allocator = get_context().get_descriptor_allocator();
+
+        std::vector<vk::DescriptorImageInfo> descriptor_image_infos;
+
+        for (auto* texture : textures)
+        {
+            const vk::DescriptorImageInfo descriptor_image_info(
+                *static_cast<const vk::Sampler*>(texture->get_sampler().get_handle()), texture->get_image_view(),
+                vk::ImageLayout::eReadOnlyOptimal);
+
+            descriptor_image_infos.push_back(descriptor_image_info);
+        }
+
+        const b8 result =
+            DescriptorBuilder::begin(&descriptor_layout_cache, &descriptor_allocator)
+                .bind(binding, vk::DescriptorType::eCombinedImageSampler,
+                      vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, descriptor_image_infos)
+                .build(descriptor_set, descriptor_set_layout);
+
+        ASSERT(result, "Failed to build descriptor for textures");
+    }
 };  // namespace mag

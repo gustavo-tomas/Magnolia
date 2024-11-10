@@ -314,6 +314,39 @@ namespace mag
         bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
     }
 
+    void Shader::set_texture(const str& name, RendererImage* texture)
+    {
+        auto it = uniforms_map.find(name);
+        if (it == uniforms_map.end())
+        {
+            // Uniform not found
+            LOG_ERROR("Uniform texture '{0}' not found", name);
+            return;
+        }
+
+        auto& context = get_context();
+
+        const u32 curr_frame_number = context.get_curr_frame_number();
+
+        auto& ubo = it->second;
+
+        // Create descriptor for this texture
+        if (texture_descriptor_sets.count((Image*)(void*)texture) == 0)
+        {
+            vk::DescriptorSet descriptor_set;
+            vk::DescriptorSetLayout descriptor_set_layout;
+
+            DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, {texture},
+                                                              descriptor_set, descriptor_set_layout);
+
+            texture_descriptor_sets[(Image*)(void*)texture] = descriptor_set;
+        }
+
+        ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[(Image*)(void*)texture];
+
+        bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
+    }
+
     void Shader::set_material(const str& name, Material* material)
     {
         auto it = uniforms_map.find(name);

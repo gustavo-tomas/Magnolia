@@ -10,6 +10,7 @@ namespace mag
 {
     class Pipeline;
     class VulkanBuffer;
+    class RendererImage;
 
     struct Image;
     struct Material;
@@ -52,6 +53,7 @@ namespace mag
 
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
             void set_texture(const str& name, Image* texture);
+            void set_texture(const str& name, RendererImage* texture);
             void set_material(const str& name, Material* material);
 
             const ShaderConfiguration& get_shader_configuration() const;

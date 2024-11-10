@@ -89,6 +89,10 @@ namespace mag
                                                        vk::DescriptorSet& descriptor_set,
                                                        vk::DescriptorSetLayout& descriptor_set_layout);
 
+            static void create_descriptor_for_textures(const u32 binding, const std::vector<RendererImage*>& textures,
+                                                       vk::DescriptorSet& descriptor_set,
+                                                       vk::DescriptorSetLayout& descriptor_set_layout);
+
         private:
             std::vector<vk::WriteDescriptorSet> writes;
             std::vector<vk::DescriptorSetLayoutBinding> bindings;
