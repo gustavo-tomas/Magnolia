@@ -2,6 +2,7 @@
 
 #include "mesh.include.glsl"
 #include "include/utils.glsl"
+#include "include/tonemapping.glsl"
 #include "include/phong.glsl"
 
 layout (location = 0) in vec3 in_normal;
@@ -16,7 +17,9 @@ void main()
 	vec4 object_color = texture(ALBEDO_TEXTURE, in_tex_coords);
 	vec4 object_normal = texture(NORMAL_TEXTURE, in_tex_coords);
 
-	// Convert from linear to srgb
+	// @TODO: we are loading all images (including normal maps) in the srgb format, but they should be
+	// loaded with the linear format. In the future, there should be a import or json file describing
+	// information about an images color space and other relevant data
 	object_normal.rgb = linear_to_srgb(object_normal.rgb);
 
 	// @TODO: this is pretty slow, but for now its ok
