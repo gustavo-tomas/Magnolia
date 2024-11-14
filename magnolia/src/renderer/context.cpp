@@ -56,6 +56,7 @@ namespace mag
         else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
             LOG_ERROR("{0}\n", pCallbackData->pMessage);
+            DEBUG_BREAK();
         }
 
         else
@@ -63,7 +64,6 @@ namespace mag
             LOG_INFO("{0}\n", pCallbackData->pMessage);
         }
 
-        DEBUG_BREAK();
         return VK_FALSE;
     }
 
