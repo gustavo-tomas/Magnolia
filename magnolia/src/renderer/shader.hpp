@@ -60,11 +60,13 @@ namespace mag
             const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const;
             const std::vector<vk::VertexInputAttributeDescription>& get_vertex_attributes() const;
             const std::vector<vk::DescriptorSetLayout>& get_descriptor_set_layouts() const;
+            const std::vector<vk::PushConstantRange>& get_push_constant_ranges() const;
 
         private:
             struct UBO
             {
                     SpvReflectDescriptorBinding* descriptor_binding = nullptr;
+                    SpvReflectBlockVariable* push_constant_block = nullptr;
 
                     // Cache of the uniform members
                     std::map<str, SpvReflectBlockVariable*> members_cache;
@@ -82,6 +84,7 @@ namespace mag
             std::vector<vk::VertexInputBindingDescription> vertex_bindings;
             std::vector<vk::VertexInputAttributeDescription> vertex_attributes;
             std::vector<vk::DescriptorSetLayout> descriptor_set_layouts;
+            std::vector<vk::PushConstantRange> push_constant_ranges;
 
             unique<Pipeline> pipeline;
 

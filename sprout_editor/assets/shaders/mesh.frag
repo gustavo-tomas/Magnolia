@@ -27,7 +27,7 @@ void main()
 
 	// Select the fragment normal
 	vec3 normal = vec3(0);
-	if (u_shader.normal_output == 0)
+	if (u_push_constants.normal_output == 0)
 	{
 		normal = in_normal;
 	}
@@ -43,12 +43,12 @@ void main()
 
 	// Phong shading
 	vec3 phong_color = vec3(0);
-	for (uint i = 0; i < u_lights.number_of_lights; i++)
+	for (uint i = 0; i < u_push_constants.number_of_lights; i++)
 	{
 		phong_color += phong_shading(normal, in_frag_position, camera_position, u_lights.lights[i]);
 	}
 
-	switch (u_shader.texture_output)
+	switch (u_push_constants.texture_output)
 	{
 		case 0:
 			out_frag_color = vec4(phong_color * object_color.rgb, object_color.a);

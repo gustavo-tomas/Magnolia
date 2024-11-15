@@ -95,6 +95,30 @@ namespace mag
                 }
             }
 
+            // Initialize push constants
+            for (u32 i = 0; i < reflection->push_constant_block_count; i++)
+            {
+                auto* push_constant_block = new SpvReflectBlockVariable(reflection->push_constant_blocks[i]);
+
+                // Already initialized
+                if (uniforms_map.contains(push_constant_block->name)) continue;
+
+                const str scope = push_constant_block->name;
+                const u32 size = push_constant_block->size;
+
+                uniforms_map[scope].push_constant_block = push_constant_block;
+
+                // Store a pointer to each block member
+                for (u32 m = 0; m < push_constant_block->member_count; m++)
+                {
+                    const auto& member = &push_constant_block->members[m];
+                    uniforms_map[scope].members_cache[member->name] = member;
+                }
+
+                // @TODO: hardcoded stage
+                push_constant_ranges.push_back(vk::PushConstantRange(vk::ShaderStageFlagBits::eFragment, 0, size));
+            }
+
             for (u32 i = 0; i < reflection->descriptor_binding_count; i++)
             {
                 auto& descriptor_binding = reflection->descriptor_bindings[i];
@@ -213,7 +237,10 @@ namespace mag
             }
 
             delete ubo.descriptor_binding;
+            delete ubo.push_constant_block;
+
             ubo.descriptor_binding = nullptr;
+            ubo.push_constant_block = nullptr;
         }
 
         for (auto& shader_module : configuration.shader_modules)
@@ -256,6 +283,7 @@ namespace mag
 
         auto& context = get_context();
         const u32 curr_frame_number = context.get_curr_frame_number();
+        const auto& cmd = context.get_curr_frame().command_buffer;
 
         auto& ubo = uniform_it->second;
         auto& members_cache = ubo.members_cache;
@@ -266,10 +294,25 @@ namespace mag
             const u64 offset = it->second->offset;
             const u64 size = it->second->size;
 
-            auto& buffer = ubo.buffers[curr_frame_number];
-            buffer.copy(data, size, offset + data_offset);
+            // Check if uniform is a push constant or ubo
+            if (ubo.push_constant_block != nullptr)
+            {
+                vk::PipelineLayout pipeline_layout =
+                    *reinterpret_cast<const vk::PipelineLayout*>(pipeline->get_layout());
 
-            bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
+                // @TODO: hardcoded shader stage
+                cmd.get_handle().pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eFragment,
+                                               offset + data_offset, size, data);
+            }
+
+            else
+            {
+                auto& buffer = ubo.buffers[curr_frame_number];
+                buffer.copy(data, size, offset + data_offset);
+
+                bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
+            }
+
             return;
         }
 
@@ -423,4 +466,6 @@ namespace mag
     {
         return descriptor_set_layouts;
     }
+
+    const std::vector<vk::PushConstantRange>& Shader::get_push_constant_ranges() const { return push_constant_ranges; }
 };  // namespace mag

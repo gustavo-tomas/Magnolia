@@ -69,7 +69,9 @@ namespace mag
             }
         }
 
-        vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, shader.get_descriptor_set_layouts());
+        vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, shader.get_descriptor_set_layouts(),
+                                                                 shader.get_push_constant_ranges());
+
         impl->pipeline_layout = context.get_device().createPipelineLayout(pipeline_layout_create_info);
 
         const auto& shader_modules = shader_configuration.shader_modules;

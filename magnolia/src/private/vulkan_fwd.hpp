@@ -45,6 +45,7 @@ namespace vk
     struct DescriptorSetLayoutBinding;
     struct DescriptorSetLayoutCreateInfo;
     struct PhysicalDeviceDescriptorBufferPropertiesEXT;
+    struct PushConstantRange;
     struct RenderingInfo;
     struct SurfaceFormatKHR;
     struct VertexInputAttributeDescription;
