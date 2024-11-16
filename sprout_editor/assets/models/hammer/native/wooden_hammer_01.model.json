@@ -1,0 +1,12 @@
+{
+    "Type": "Model",
+    "Name": "wooden_hammer_01",
+    "File": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.bin",
+    "Materials": [
+        "sprout_editor/assets/models/hammer/native/wooden_hammer_01.mat.json",
+        "sprout_editor/assets/models/hammer/native/Default.mat.json"
+    ],
+    "NumVertices": 2508,
+    "NumIndices": 10851,
+    "NumMeshes": 1
+}

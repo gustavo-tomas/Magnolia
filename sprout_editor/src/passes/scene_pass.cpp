@@ -95,6 +95,16 @@ namespace sprout
             mesh_shader->set_uniform("u_lights", "lights", &point_light, sizeof(point_light) * l++);
         }
 
+        // Set light uniforms so vulkan stops complaining about unbound descriptor sets
+        if (number_of_lights == 0)
+        {
+            static const LightData dummy_light = {.color = vec3(0), .intensity = 0, .position = vec3(0)};
+            static const u32 num_lights = 1;
+
+            mesh_shader->set_uniform("u_push_constants", "number_of_lights", &num_lights);
+            mesh_shader->set_uniform("u_lights", "lights", &dummy_light);
+        }
+
         for (u32 i = 0; i < model_entities.size(); i++)
         {
             const auto& transform = std::get<0>(model_entities[i]);

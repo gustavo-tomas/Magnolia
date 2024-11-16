@@ -81,8 +81,8 @@ vec4 pbr_shading(Material material,
     vec3 f0 = vec3(0.04);
 
     baseColor = texture_color * material.base_color;
-    perceptualRoughness = texture_roughness.r;
-    metallic = texture_metalness.r;
+    perceptualRoughness = texture_roughness.g; // ARM -> r = AO, g = Roughness, b = Metalness
+    metallic = texture_metalness.b;
     perceptualRoughness = clamp(perceptualRoughness, c_MinRoughness, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
 

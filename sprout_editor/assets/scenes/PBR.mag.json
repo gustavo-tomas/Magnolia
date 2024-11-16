@@ -1,0 +1,92 @@
+{
+    "Type": "Scene",
+    "Name": "PBR",
+    "Entities": [
+        {
+            "NameComponent": {
+                "Name": "Hammer"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Light1"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    -8.842403411865234,
+                    22.458452224731445,
+                    -7.378072738647461
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 10.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Light2"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    16.14716339111328,
+                    -9.017000198364258,
+                    15.953475952148438
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "LightComponent": {
+                "Color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "Intensity": 20.0
+            }
+        }
+    ]
+}

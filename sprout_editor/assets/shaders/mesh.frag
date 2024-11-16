@@ -103,11 +103,11 @@ void main()
 			break;
 		
 		case 3:
-			out_frag_color = object_roughness;
+			out_frag_color = vec4(object_roughness.g);
 			break;
 			
 		case 4:
-			out_frag_color = object_metalness;
+			out_frag_color = vec4(object_metalness.b);
 			break;
 
 		default:
