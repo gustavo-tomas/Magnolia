@@ -289,10 +289,11 @@ namespace mag
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
             str material_name = ai_material->GetName().C_Str();
 
-            // Invalid material, use the default one instead
+            // Invalid material name, use placeholder instead
             if (material_name.empty())
             {
-                material_name = "Default";
+                material_name =
+                    "__Material_" + std::to_string(i) + "_" + std::to_string(ai_scene->mNumMaterials) + "__";
             }
 
             const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
@@ -376,7 +377,7 @@ namespace mag
             const str texture_path = directory + "/" + ai_tex_path.C_Str();
             texture_name = texture_path;
 
-            LOG_INFO("Loaded texture: {0}", texture_name);
+            LOG_INFO("Material '{0}': Loaded texture: {1}", material_name, texture_name);
             return texture_name;
         }
 
