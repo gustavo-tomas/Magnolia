@@ -1,0 +1,10 @@
+{
+    "Type": "Material",
+    "Name": "__Material_7_26__",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/sponza/glTF/6047387724914829168.jpg",
+        "Normal": "sprout_editor/assets/models/sponza/glTF/15722799267630235092.jpg",
+        "Roughness": "sprout_editor/assets/models/sponza/glTF/8051790464816141987.jpg",
+        "Metalness": "sprout_editor/assets/models/sponza/glTF/8051790464816141987.jpg"
+    }
+}

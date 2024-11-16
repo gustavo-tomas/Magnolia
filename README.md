@@ -40,3 +40,4 @@ python3 build.py debug
 - [[OpenGLTutorial](https://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/)] Billboarding
 - [[Vulkan-glTF-PBR](https://github.com/SaschaWillems/Vulkan-glTF-PBR)] PBR and tonemapping algorithms
 - [[Filmic Worlds](http://filmicworlds.com/blog/filmic-tonemapping-operators/)] Tonemapping algorithms
+- [[glTF-Sample-Models](https://github.com/KhronosGroup/glTF-Sample-Models)] Better quality test models
