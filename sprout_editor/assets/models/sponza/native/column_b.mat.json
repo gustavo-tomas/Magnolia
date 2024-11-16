@@ -3,6 +3,8 @@
     "Name": "column_b",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_column_b_diff.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/sponza_column_b_ddn.png"
+        "Normal": "sprout_editor/assets/models/sponza/textures/sponza_column_b_ddn.png",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
     }
 }

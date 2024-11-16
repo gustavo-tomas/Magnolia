@@ -28,6 +28,13 @@ namespace sprout
             mat4 model;
             vec4 size_const_face;  // Size + Constant Size + Always Face Camera
     };
+
+    struct alignas(16) MaterialData
+    {
+            vec4 base_color;  // 16 bytes
+            f32 roughness;    // 4 bytes
+            f32 metallic;     // 4 bytes
+    };
     // @TODO: temporary
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
@@ -123,6 +130,14 @@ namespace sprout
                 {
                     last_material_idx = mesh.material_index;
                     const auto& material = material_manager.get(model->materials[mesh.material_index]);
+
+                    // @TODO: hardcoded material parameters
+                    static MaterialData material_data;
+                    material_data.base_color = vec4(1, 1, 1, 1);
+
+                    mesh_shader->set_uniform("u_push_constants", "material_index", &mesh.material_index);
+                    mesh_shader->set_uniform("u_material", "materials", &material_data,
+                                             sizeof(MaterialData) * mesh.material_index);
                     mesh_shader->set_material("u_material_textures", material.get());
                 }
 

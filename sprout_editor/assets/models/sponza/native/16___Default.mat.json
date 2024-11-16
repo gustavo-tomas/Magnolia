@@ -3,6 +3,8 @@
     "Name": "16___Default",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/sponza/textures/gi_flag.png",
-        "Normal": "__mag_default_normal_texture__"
+        "Normal": "__mag_default_normal_texture__",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
     }
 }

@@ -8,6 +8,8 @@
 
 #define ALBEDO_TEXTURE u_material_textures[0]
 #define NORMAL_TEXTURE u_material_textures[1]
+#define ROUGHNESS_TEXTURE u_material_textures[2]
+#define METALNESS_TEXTURE u_material_textures[3]
 
 const float PI = 3.1415926535;
 

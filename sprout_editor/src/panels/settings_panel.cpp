@@ -15,7 +15,8 @@ namespace sprout
         ImGui::RadioButton("Show Final Output", reinterpret_cast<i32 *>(&texture_output), 0);
         ImGui::RadioButton("Show Albedo Output", reinterpret_cast<i32 *>(&texture_output), 1);
         ImGui::RadioButton("Show Normal Output", reinterpret_cast<i32 *>(&texture_output), 2);
-        ImGui::RadioButton("Show Lighting Output", reinterpret_cast<i32 *>(&texture_output), 3);
+        ImGui::RadioButton("Show Roughness Output", reinterpret_cast<i32 *>(&texture_output), 3);
+        ImGui::RadioButton("Show Metalness Output", reinterpret_cast<i32 *>(&texture_output), 4);
 
         ImGui::Text("Normals");
         ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);

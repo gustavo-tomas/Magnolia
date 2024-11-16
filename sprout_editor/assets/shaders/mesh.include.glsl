@@ -1,7 +1,14 @@
 #include "include/types.glsl"
 
+struct Material 
+{
+	vec4 base_color;
+    float roughness;
+    float metallic;
+};
+
 // @TODO: for now, only fragment shaders support push constants
-// Push constants (check size limits! -> 128)
+// Push constants (dont exceed 128 bytes)
 layout (push_constant) uniform PushConstants
 {
     // Shader debug parameters
@@ -10,6 +17,9 @@ layout (push_constant) uniform PushConstants
 
     // Scene parameters
     uint number_of_lights;
+
+    // Material parameters
+    uint material_index;
 } u_push_constants;
 
 // Global buffer
@@ -33,6 +43,12 @@ layout (std140, set = 2, binding = 0) readonly buffer InstanceBuffer
     Model models[];
 } u_instance;
 
-// Materials
+// Materials buffer
+layout (std140, set = 3, binding = 0) readonly buffer MaterialBuffer
+{
+    Material materials[];
+} u_material;
+
+// Material textures
 // 0 - Albedo | 1 - Normal
-layout (set = 3, binding = 0) uniform sampler2D u_material_textures[2];
+layout (set = 4, binding = 0) uniform sampler2D u_material_textures[4];

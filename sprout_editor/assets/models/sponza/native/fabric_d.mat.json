@@ -3,6 +3,8 @@
     "Name": "fabric_d",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_fabric_blue_diff.png",
-        "Normal": "__mag_default_normal_texture__"
+        "Normal": "__mag_default_normal_texture__",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
     }
 }

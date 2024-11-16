@@ -305,6 +305,8 @@ namespace mag
             data["Name"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
             data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
+            data["Textures"]["Roughness"] = find_texture(ai_material, aiTextureType_DIFFUSE_ROUGHNESS, model_directory);
+            data["Textures"]["Metalness"] = find_texture(ai_material, aiTextureType_METALNESS, model_directory);
 
             if (!file_system.write_json_data(material_file_path, data))
             {
@@ -340,6 +342,14 @@ namespace mag
             case aiTextureType_NORMALS:
             case aiTextureType_HEIGHT:
                 texture_name = material_manager.get_default()->textures[TextureSlot::Normal];
+                break;
+
+            case aiTextureType_DIFFUSE_ROUGHNESS:
+                texture_name = material_manager.get_default()->textures[TextureSlot::Roughness];
+                break;
+
+            case aiTextureType_METALNESS:
+                texture_name = material_manager.get_default()->textures[TextureSlot::Metalness];
                 break;
 
             default:

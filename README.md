@@ -38,3 +38,5 @@ python3 build.py debug
 - [[podgorskiy](https://gist.github.com/podgorskiy/e698d18879588ada9014768e3e82a644)] Frustum culling
 - [[Inigo Quilez](https://iquilezles.org/articles/frustumcorrect/)] Frustum culling algorithm
 - [[OpenGLTutorial](https://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/)] Billboarding
+- [[Vulkan-glTF-PBR](https://github.com/SaschaWillems/Vulkan-glTF-PBR)] PBR and tonemapping algorithms
+- [[Filmic Worlds](http://filmicworlds.com/blog/filmic-tonemapping-operators/)] Tonemapping algorithms
