@@ -288,14 +288,14 @@ namespace mag
         {
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
             str material_name = ai_material->GetName().C_Str();
-            str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
             // Invalid material, use the default one instead
             if (material_name.empty())
             {
                 material_name = "Default";
-                material_file_path = DEFAULT_MATERIAL_NAME;
             }
+
+            const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
             model.materials[i] = material_file_path;
 
