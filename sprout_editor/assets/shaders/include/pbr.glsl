@@ -71,7 +71,8 @@ vec4 pbr_shading(Material material,
                  vec3 camera_position,
                  vec3 frag_position,
                  vec3 light_dir,
-                 vec3 light_color)
+                 vec3 light_color,
+                 uint debug)
 {
     float perceptualRoughness;
     float metallic;
@@ -142,6 +143,31 @@ vec4 pbr_shading(Material material,
     
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
     vec3 color = NdotL * light_color * (diffuseContrib + specContrib);
+
+    // PBR equation debug visualization
+	// "Diff (l,n)", "F (l,h)", "G (l,v,h)", "D (h)", "Specular"
+	switch (debug)
+	{
+		case 5:
+			color.rgb = diffuseContrib;
+			break;
+
+		case 6:
+			color.rgb = F;
+			break;
+
+		case 7:
+			color.rgb = vec3(G);
+			break;
+
+		case 8: 
+			color.rgb = vec3(D);
+			break;
+
+		case 9:
+			color.rgb = specContrib;
+			break;				
+	}
 
     return vec4(color, baseColor.a);
 }

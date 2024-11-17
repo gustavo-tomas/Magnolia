@@ -81,12 +81,20 @@ void main()
 								 	   camera_position,
 								 	   in_frag_position,
 								 	   light_dir,
-								 	   light_color);
+								 	   light_color,
+									   u_push_constants.texture_output);
 
-		pbr_color_i.rgb *= attenuation * light.intensity;
+		// Only apply attenuation if not in debug mode
+		if (u_push_constants.texture_output == 0)
+		{
+			pbr_color_i.rgb *= attenuation * light.intensity;
+		}
+
 		pbr_color += pbr_color_i;
 	}
 
+	// Texture Outputs: 0 - "Combined", 1 - "Albedo", 2 - "Normal", 3 - "Roughness", 4 - "Metalness"
+	// PBR Outputs:     5 - "Diff (l,n)", 6 - "F (l,h)", 7 - "G (l,v,h)", 8 - "D (h)", 9 - "Specular"
 	switch (u_push_constants.texture_output)
 	{
 		case 0:
@@ -111,7 +119,7 @@ void main()
 			break;
 
 		default:
-			out_frag_color = vec4(1.0);
+			out_frag_color = pbr_color;
 			break;
 	}
 }
