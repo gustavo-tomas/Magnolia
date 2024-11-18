@@ -1,6 +1,7 @@
 #include "passes/scene_pass.hpp"
 
 #include "core/application.hpp"
+#include "ecs/components.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
 #include "math/generic.hpp"
@@ -9,6 +10,7 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
@@ -45,6 +47,7 @@ namespace sprout
         // Shaders
         mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
         sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
+        skydome_shader = shader_manager.get("sprout_editor/assets/shaders/skydome_shader.mag.json");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size);
         add_output_attachment("OutputDepth", AttachmentType::Depth, size);
@@ -73,6 +76,7 @@ namespace sprout
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
         auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
+        auto skydome_entities = ecs.get_all_components_of_types<SkydomeComponent>();
 
         // Render models
 
@@ -195,6 +199,33 @@ namespace sprout
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
+        }
+
+        // Render skydome
+
+        if (!skydome_entities.empty())
+        {
+            skydome_shader->bind();
+
+            const mat4 world_transform = math::translate(camera.get_position());
+
+            skydome_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+            skydome_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+            skydome_shader->set_uniform("u_global", "world", value_ptr(world_transform));
+
+            // There really should be only one skydome in a scene
+            for (const auto& [skydome_c] : skydome_entities)
+            {
+                Skydome* skydome = skydome_c->skydome;
+                renderer.bind_buffers(skydome);
+
+                // Draw the mesh
+                const u32 index_count = skydome->get_indices().size();
+                renderer.draw_indexed(index_count);
+
+                performance_results.draw_calls++;
+                performance_results.rendered_triangles += index_count / 3;
+            }
         }
     }
 };  // namespace sprout

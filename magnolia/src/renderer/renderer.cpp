@@ -100,6 +100,14 @@ namespace mag
         command_buffer.bind_vertex_buffer(line->get_vbo().get_buffer());
     }
 
+    void Renderer::bind_buffers(Skydome* skydome)
+    {
+        auto& command_buffer = impl->context->get_curr_frame().command_buffer;
+
+        command_buffer.bind_vertex_buffer(skydome->get_vbo().get_buffer());
+        command_buffer.bind_index_buffer(skydome->get_ibo().get_buffer());
+    }
+
     void Renderer::update_model(Model* model)
     {
         auto vbo_it = impl->vertex_buffers.find(model);

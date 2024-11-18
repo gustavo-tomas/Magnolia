@@ -9,6 +9,7 @@ namespace mag
     class Window;
     class RenderGraph;
     class Line;
+    class Skydome;
     class RendererImage;
 
     struct Event;
@@ -34,6 +35,7 @@ namespace mag
             // @TODO: temp?
             void bind_buffers(Model* model);
             void bind_buffers(Line* line);
+            void bind_buffers(Skydome* skydome);
             ref<RendererImage> get_renderer_image(Image* image);
             // @TODO: temp?
 

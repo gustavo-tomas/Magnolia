@@ -62,5 +62,30 @@ namespace mag
             unique<VertexBuffer> vbo;
             std::vector<LineVertex> vertices;
     };
+
+    struct SkydomeVertex
+    {
+            vec3 position;
+            vec2 tex_coords;
+    };
+
+    class Skydome
+    {
+        public:
+            Skydome(const uvec2& resolution);
+
+            VertexBuffer& get_vbo() { return *vbo; };
+            IndexBuffer& get_ibo() { return *ibo; };
+
+            const std::vector<SkydomeVertex>& get_vertices() const { return vertices; };
+            const std::vector<u32>& get_indices() const { return indices; };
+
+        private:
+            unique<VertexBuffer> vbo;
+            unique<IndexBuffer> ibo;
+
+            std::vector<SkydomeVertex> vertices;
+            std::vector<u32> indices;
+    };
     // @TODO: testing
 };  // namespace mag

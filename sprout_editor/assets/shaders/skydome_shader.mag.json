@@ -1,0 +1,19 @@
+{
+    "Shader": "Skydome",
+    "Files": [
+        "skydome.vert.spv",
+        "skydome.frag.spv"
+    ],
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "None"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        }
+    }
+}

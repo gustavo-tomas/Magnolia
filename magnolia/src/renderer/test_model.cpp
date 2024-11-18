@@ -179,4 +179,52 @@ namespace mag
 
         vbo = create_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
     }
+
+    Skydome::Skydome(const uvec2& resolution)
+    {
+        const u32 segments = resolution.x;
+        const u32 rings = resolution.y;
+
+        // Generate vertices
+        for (u32 ring = 0; ring <= rings; ring++)
+        {
+            const f32 phi = M_PI * static_cast<f32>(ring) / static_cast<f32>(rings);
+            for (u32 segment = 0; segment <= segments; segment++)
+            {
+                const f32 theta = 2.0f * M_PI * static_cast<f32>(segment) / static_cast<f32>(segments);
+
+                // Position
+                const f32 x = sin(phi) * cos(theta);
+                const f32 y = cos(phi);
+                const f32 z = sin(phi) * sin(theta);
+
+                // UV coordinates
+                const f32 u = static_cast<f32>(segment) / static_cast<f32>(segments);
+                const f32 v = static_cast<f32>(ring) / static_cast<f32>(rings);
+
+                vertices.push_back({vec3(x, y, z), vec2(u, v)});
+            }
+        }
+
+        // Generate indices
+        for (u32 ring = 0; ring < rings; ring++)
+        {
+            const u32 ring_start = ring * (segments + 1);
+            const u32 next_ring_start = (ring + 1) * (segments + 1);
+
+            for (u32 segment = 0; segment < segments; segment++)
+            {
+                indices.push_back(ring_start + segment);
+                indices.push_back(next_ring_start + segment);
+                indices.push_back(ring_start + segment + 1);
+
+                indices.push_back(next_ring_start + segment);
+                indices.push_back(next_ring_start + segment + 1);
+                indices.push_back(ring_start + segment + 1);
+            }
+        }
+
+        vbo = create_unique<VertexBuffer>(vertices.data(), VEC_SIZE_BYTES(vertices));
+        ibo = create_unique<IndexBuffer>(indices.data(), VEC_SIZE_BYTES(indices));
+    }
 };  // namespace mag

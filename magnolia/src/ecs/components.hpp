@@ -131,4 +131,17 @@ namespace mag
             void* handle = nullptr;
             ScriptableEntity* entity = nullptr;
     };
+
+    // @TODO: we are using raw pointers here because we are not treating the skydome as a resource. Maybe it should be
+    // changed in the future, but for now this is fine.
+    class Skydome;
+    struct SkydomeComponent : public Component
+    {
+            SkydomeComponent(Skydome* skydome);
+            ~SkydomeComponent();
+
+            CLONE_DECLARATION(SkydomeComponent);
+
+            Skydome* skydome = nullptr;
+    };
 };  // namespace mag

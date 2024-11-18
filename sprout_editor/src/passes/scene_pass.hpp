@@ -22,5 +22,6 @@ namespace sprout
         private:
             ref<Shader> mesh_shader;
             ref<Shader> sprite_shader;
+            ref<Shader> skydome_shader;
     };
 };  // namespace sprout

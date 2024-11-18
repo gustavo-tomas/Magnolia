@@ -1,6 +1,7 @@
 #include "ecs/components.hpp"
 
 #include "math/generic.hpp"
+#include "renderer/test_model.hpp"
 
 namespace mag
 {
@@ -50,13 +51,18 @@ namespace mag
     {
     }
 
-    CLONE_DEFINITION(NameComponent)
-    CLONE_DEFINITION(TransformComponent)
-    CLONE_DEFINITION(SpriteComponent)
-    CLONE_DEFINITION(ModelComponent)
-    CLONE_DEFINITION(BoxColliderComponent)
-    CLONE_DEFINITION(RigidBodyComponent)
-    CLONE_DEFINITION(LightComponent)
-    CLONE_DEFINITION(CameraComponent)
-    CLONE_DEFINITION(ScriptComponent)
+    SkydomeComponent::SkydomeComponent(Skydome* skydome) : skydome(skydome) {}
+
+    SkydomeComponent::~SkydomeComponent() { delete skydome; }
+
+    CLONE_DEFINITION(NameComponent);
+    CLONE_DEFINITION(TransformComponent);
+    CLONE_DEFINITION(SpriteComponent);
+    CLONE_DEFINITION(ModelComponent);
+    CLONE_DEFINITION(BoxColliderComponent);
+    CLONE_DEFINITION(RigidBodyComponent);
+    CLONE_DEFINITION(LightComponent);
+    CLONE_DEFINITION(CameraComponent);
+    CLONE_DEFINITION(ScriptComponent);
+    CLONE_DEFINITION(SkydomeComponent);
 };  // namespace mag
