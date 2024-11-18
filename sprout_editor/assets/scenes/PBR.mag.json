@@ -4,6 +4,37 @@
     "Entities": [
         {
             "NameComponent": {
+                "Name": "Camera"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    10.0,
+                    30.0,
+                    100.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "CameraComponent": {
+                "Fov": 60.0,
+                "Near": 1.0,
+                "Far": 10000.0,
+                "AspectRatio": 1.7285945415496826
+            },
+            "ScriptComponent": {
+                "FilePath": "sprout_editor/assets/scripts/example_script.cpp"
+            }
+        },
+        {
+            "NameComponent": {
                 "Name": "Hammer"
             },
             "TransformComponent": {
