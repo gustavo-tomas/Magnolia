@@ -31,9 +31,9 @@ namespace sprout
 
     struct alignas(16) MaterialData
     {
-            vec4 base_color;  // 16 bytes
-            f32 roughness;    // 4 bytes
-            f32 metallic;     // 4 bytes
+            vec4 albedo;    // 16 bytes
+            f32 roughness;  // 4 bytes
+            f32 metallic;   // 4 bytes
     };
     // @TODO: temporary
 
@@ -143,7 +143,9 @@ namespace sprout
 
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data;
-                    material_data.base_color = vec4(1, 1, 1, 1);
+                    material_data.albedo = vec4(1, 1, 1, 1);
+                    material_data.roughness = 1;
+                    material_data.metallic = 1;
 
                     mesh_shader->set_uniform("u_push_constants", "material_index", &mesh.material_index);
                     mesh_shader->set_uniform("u_material", "materials", &material_data,

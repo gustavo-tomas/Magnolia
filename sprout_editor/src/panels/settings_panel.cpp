@@ -16,8 +16,8 @@ namespace sprout
 
         ImGui::SeparatorText("Shader Settings");
 
-        const std::vector<str> items = {"Final",      "Albedo",  "Normal",    "Roughness", "Metalness",
-                                        "Diff (l,n)", "F (l,h)", "G (l,v,h)", "D (h)",     "Specular"};
+        const std::vector<str> items = {"Final", "Albedo", "Normal", "Roughness", "Metalness",
+                                        "D",     "F",      "G",      "Specular"};
 
         ImGui::Text("Shader Output");
         if (ImGui::BeginCombo("##Shader Output", items[texture_output].c_str()))

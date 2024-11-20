@@ -13,7 +13,7 @@ struct Model
 
 struct Material 
 {
-	vec4 base_color;
+	vec4 albedo;
     float roughness;
     float metallic;
 };

@@ -4,7 +4,6 @@
 
 #include "include/utils.glsl"
 #include "include/tonemapping.glsl"
-#include "include/phong.glsl"
 #include "include/pbr.glsl"
 
 layout (location = 0) in vec3 in_normal;
@@ -47,51 +46,28 @@ void main()
 		// normal = normalize(in_tbn * normal);
 	}
 
-	// Phong shading
-	vec3 phong_color = vec3(0);
-	for (uint i = 0; i < u_push_constants.number_of_lights; i++)
-	{
-		phong_color += phong_shading(normal, in_frag_position, camera_position, u_lights.lights[i]);
-	}
-
 	// PBR shading
 	vec4 pbr_color = vec4(0);
-	for (uint i = 0; i < u_push_constants.number_of_lights; i++)
-	{
-		Material material = u_material.materials[u_push_constants.material_index];
-		Light light = u_lights.lights[i];
+	
+	Material material = u_material.materials[u_push_constants.material_index];
+	material.albedo *= object_color;
+	material.roughness *= object_roughness.g;
+	material.metallic *= object_metalness.b;
 
-		vec3 light_dir = normalize(light.position - in_frag_position);
-		light_dir.y *= -1; // @TODO: remember why this is needed
-		vec3 light_color = light.color;
-		
-		float dist = length(light.position - in_frag_position);
-		float constant = 1.0;
-		float linear = 0.05;
-		float quadratic = 0.0075;
-		float attenuation = 1.0 / (constant +
-								   linear * dist +
-								   quadratic * dist * dist);
+	pbr_color.rgb = pbr_shading(material,
+								normal,
+								camera_position,
+								in_frag_position,
+								u_push_constants.texture_output);
 
-		vec4 pbr_color_i = pbr_shading(material,
-								 	   object_color,
-								 	   object_roughness,
-								 	   object_metalness,
-								 	   normal,
-								 	   camera_position,
-								 	   in_frag_position,
-								 	   light_dir,
-								 	   light_color,
-									   u_push_constants.texture_output);
+	pbr_color.a = object_color.a;
 
-		// Only apply attenuation if not in debug mode
-		if (u_push_constants.texture_output == 0)
-		{
-			pbr_color_i.rgb *= attenuation * light.intensity;
-		}
-
-		pbr_color += pbr_color_i;
-	}
+	// HDR tone mapping
+	pbr_color.rgb = tonemapping_reinhard(pbr_color.rgb);
+	// pbr_color.rgb = tonemapping_hdr(pbr_color.rgb);
+	
+	// Gamma correct (done during presentation)
+	// pbr_color.rgb = pow(pbr_color.rgb, vec3(0.4545));
 
 	// Texture Outputs: 0 - "Combined", 1 - "Albedo", 2 - "Normal", 3 - "Roughness", 4 - "Metalness"
 	// PBR Outputs:     5 - "Diff (l,n)", 6 - "F (l,h)", 7 - "G (l,v,h)", 8 - "D (h)", 9 - "Specular"
