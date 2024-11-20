@@ -1,4 +1,4 @@
-#include "include/types.glsl"
+#include "include/common.glsl"
 
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer

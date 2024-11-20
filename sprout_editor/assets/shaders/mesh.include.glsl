@@ -1,10 +1,28 @@
-#include "include/types.glsl"
+#include "include/common.glsl"
+
+#define ALBEDO_TEXTURE u_material_textures[0]
+#define NORMAL_TEXTURE u_material_textures[1]
+#define ROUGHNESS_TEXTURE u_material_textures[2]
+#define METALNESS_TEXTURE u_material_textures[3]
+
+// Types
+struct Model
+{
+	mat4 model;
+};
 
 struct Material 
 {
 	vec4 base_color;
     float roughness;
     float metallic;
+};
+
+struct Light
+{
+	vec3 color;
+	float intensity;
+	vec3 position;
 };
 
 // @TODO: for now, only fragment shaders support push constants
