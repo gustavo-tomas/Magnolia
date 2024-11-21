@@ -70,7 +70,7 @@ void main()
 	// pbr_color.rgb = pow(pbr_color.rgb, vec3(0.4545));
 
 	// Texture Outputs: 0 - "Combined", 1 - "Albedo", 2 - "Normal", 3 - "Roughness", 4 - "Metalness"
-	// PBR Outputs:     5 - "Diff (l,n)", 6 - "F (l,h)", 7 - "G (l,v,h)", 8 - "D (h)", 9 - "Specular"
+	// PBR Outputs:     5 - 8
 	switch (u_push_constants.texture_output)
 	{
 		case 0:
