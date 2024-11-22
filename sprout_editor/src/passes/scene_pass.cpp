@@ -28,6 +28,13 @@ namespace sprout
             mat4 model;
             vec4 size_const_face;  // Size + Constant Size + Always Face Camera
     };
+
+    struct alignas(16) MaterialData
+    {
+            vec4 albedo;    // 16 bytes
+            f32 roughness;  // 4 bytes
+            f32 metallic;   // 4 bytes
+    };
     // @TODO: temporary
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
@@ -88,6 +95,16 @@ namespace sprout
             mesh_shader->set_uniform("u_lights", "lights", &point_light, sizeof(point_light) * l++);
         }
 
+        // Set light uniforms so vulkan stops complaining about unbound descriptor sets
+        if (number_of_lights == 0)
+        {
+            static const LightData dummy_light = {.color = vec3(0), .intensity = 0, .position = vec3(0)};
+            static const u32 num_lights = 1;
+
+            mesh_shader->set_uniform("u_push_constants", "number_of_lights", &num_lights);
+            mesh_shader->set_uniform("u_lights", "lights", &dummy_light);
+        }
+
         for (u32 i = 0; i < model_entities.size(); i++)
         {
             const auto& transform = std::get<0>(model_entities[i]);
@@ -123,6 +140,16 @@ namespace sprout
                 {
                     last_material_idx = mesh.material_index;
                     const auto& material = material_manager.get(model->materials[mesh.material_index]);
+
+                    // @TODO: hardcoded material parameters
+                    static MaterialData material_data;
+                    material_data.albedo = vec4(1, 1, 1, 1);
+                    material_data.roughness = 1;
+                    material_data.metallic = 1;
+
+                    mesh_shader->set_uniform("u_push_constants", "material_index", &mesh.material_index);
+                    mesh_shader->set_uniform("u_material", "materials", &material_data,
+                                             sizeof(MaterialData) * mesh.material_index);
                     mesh_shader->set_material("u_material_textures", material.get());
                 }
 

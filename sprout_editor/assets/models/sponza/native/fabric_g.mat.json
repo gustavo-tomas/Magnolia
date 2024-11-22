@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "fabric_g",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_curtain_blue_diff.png",
-        "Normal": "__mag_default_normal_texture__"
-    }
-}

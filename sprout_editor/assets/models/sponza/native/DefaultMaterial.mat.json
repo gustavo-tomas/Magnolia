@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "DefaultMaterial",
-    "Textures": {
-        "Albedo": "__mag_default_albedo_texture__",
-        "Normal": "__mag_default_normal_texture__"
-    }
-}

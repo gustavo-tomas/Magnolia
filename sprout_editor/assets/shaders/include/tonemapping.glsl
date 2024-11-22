@@ -4,10 +4,15 @@
 // https://github.com/SaschaWillems/Vulkan-glTF-PBR/blob/master/data/shaders/includes/tonemapping.glsl
 // http://filmicworlds.com/blog/filmic-tonemapping-operators/
 
-vec3 tonemapping_linear(vec3 color)
+vec3 gamma_correction(vec3 color)
 {
-    // color *= 16; // Hardcoded Exposure Adjustment
-    vec3 corrected_color = pow(color, vec3(1 / 2.2));
+    vec3 corrected_color = pow(color, vec3(0.454545)); // 0.4545... == vec3(1.0 / 2.2)
+    return corrected_color;
+}
+
+vec3 tonemapping_hdr(vec3 color)
+{
+    vec3 corrected_color = color / (color + vec3(1.0));
     return corrected_color;
 }
 

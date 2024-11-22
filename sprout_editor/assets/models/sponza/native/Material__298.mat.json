@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "Material__298",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/background.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/background_ddn.png"
-    }
-}

@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "vase_hanging",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/vase_hanging.png",
-        "Normal": "__mag_default_normal_texture__"
-    }
-}

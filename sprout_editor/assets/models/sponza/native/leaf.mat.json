@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "leaf",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_thorn_diff.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/sponza_thorn_ddn.png"
-    }
-}

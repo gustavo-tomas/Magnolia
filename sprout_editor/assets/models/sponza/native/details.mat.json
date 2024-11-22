@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "details",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_details_diff.png",
-        "Normal": "__mag_default_normal_texture__"
-    }
-}

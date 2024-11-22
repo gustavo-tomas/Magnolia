@@ -3,6 +3,8 @@
     "Name": "nanosuit_helmet",
     "Textures": {
         "Albedo": "sprout_editor/assets/models/nanosuit/nanosuit_helmet_d.tga",
-        "Normal": "sprout_editor/assets/models/nanosuit/nanosuit_helmet_n.tga"
+        "Normal": "sprout_editor/assets/models/nanosuit/nanosuit_helmet_n.tga",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
     }
 }

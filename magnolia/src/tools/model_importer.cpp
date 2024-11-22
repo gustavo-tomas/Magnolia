@@ -288,14 +288,15 @@ namespace mag
         {
             const aiMaterial* ai_material = ai_scene->mMaterials[i];
             str material_name = ai_material->GetName().C_Str();
-            str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
-            // Invalid material, use the default one instead
+            // Invalid material name, use placeholder instead
             if (material_name.empty())
             {
-                material_name = "Default";
-                material_file_path = DEFAULT_MATERIAL_NAME;
+                material_name =
+                    "__Material_" + std::to_string(i) + "_" + std::to_string(ai_scene->mNumMaterials) + "__";
             }
+
+            const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
             model.materials[i] = material_file_path;
 
@@ -305,6 +306,8 @@ namespace mag
             data["Name"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
             data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
+            data["Textures"]["Roughness"] = find_texture(ai_material, aiTextureType_DIFFUSE_ROUGHNESS, model_directory);
+            data["Textures"]["Metalness"] = find_texture(ai_material, aiTextureType_METALNESS, model_directory);
 
             if (!file_system.write_json_data(material_file_path, data))
             {
@@ -342,6 +345,14 @@ namespace mag
                 texture_name = material_manager.get_default()->textures[TextureSlot::Normal];
                 break;
 
+            case aiTextureType_DIFFUSE_ROUGHNESS:
+                texture_name = material_manager.get_default()->textures[TextureSlot::Roughness];
+                break;
+
+            case aiTextureType_METALNESS:
+                texture_name = material_manager.get_default()->textures[TextureSlot::Metalness];
+                break;
+
             default:
                 break;
         }
@@ -366,7 +377,7 @@ namespace mag
             const str texture_path = directory + "/" + ai_tex_path.C_Str();
             texture_name = texture_path;
 
-            LOG_INFO("Loaded texture: {0}", texture_name);
+            LOG_INFO("Material '{0}': Loaded texture: {1}", material_name, texture_name);
             return texture_name;
         }
 

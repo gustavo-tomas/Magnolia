@@ -46,6 +46,8 @@ namespace mag
         material->name = name;
         material->textures[TextureSlot::Albedo] = textures["Albedo"];
         material->textures[TextureSlot::Normal] = textures["Normal"];
+        material->textures[TextureSlot::Roughness] = textures["Roughness"];
+        material->textures[TextureSlot::Metalness] = textures["Metalness"];
 
         LOG_SUCCESS("Loaded material: {0}", name);
         return true;

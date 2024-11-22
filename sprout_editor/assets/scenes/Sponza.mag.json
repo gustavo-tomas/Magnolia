@@ -169,14 +169,14 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    100.0,
+                    100.0,
+                    100.0
                 ]
             },
             "ModelComponent": {
-                "Name": "sponza.obj",
-                "FilePath": "sprout_editor/assets/models/sponza/native/sponza.obj.model.json"
+                "Name": "Sponza",
+                "FilePath": "sprout_editor/assets/models/sponza/glTF/native/nodes[0].model.json"
             }
         }
     ]

@@ -1,6 +1,7 @@
 #include "resources/image.hpp"
 
 #include "core/application.hpp"
+#include "core/logger.hpp"
 #include "renderer/renderer.hpp"
 #include "resources/image_loader.hpp"
 #include "threads/job_system.hpp"
@@ -13,20 +14,38 @@ namespace mag
         auto& renderer = app.get_renderer();
 
         textures[DEFAULT_ALBEDO_TEXTURE_NAME] = create_ref<Image>();
-        renderer.upload_image(textures[DEFAULT_ALBEDO_TEXTURE_NAME].get());
-
         textures[DEFAULT_NORMAL_TEXTURE_NAME] = create_ref<Image>();
-        for (u64 i = 0; i < textures[DEFAULT_NORMAL_TEXTURE_NAME]->pixels.size(); i += 4)
-        {
-            auto& pixels = textures[DEFAULT_NORMAL_TEXTURE_NAME]->pixels;
+        textures[DEFAULT_ROUGHNESS_TEXTURE_NAME] = create_ref<Image>();
+        textures[DEFAULT_METALNESS_TEXTURE_NAME] = create_ref<Image>();
 
-            pixels[i + 0] = 128;
-            pixels[i + 1] = 128;
-            pixels[i + 2] = 255;
-            pixels[i + 3] = 255;
+        for (u64 i = 0; i < textures[DEFAULT_ALBEDO_TEXTURE_NAME]->pixels.size(); i += 4)
+        {
+            auto& pixels_normal = textures[DEFAULT_NORMAL_TEXTURE_NAME]->pixels;
+
+            pixels_normal[i + 0] = 128;
+            pixels_normal[i + 1] = 128;
+            pixels_normal[i + 2] = 255;
+            pixels_normal[i + 3] = 255;
+
+            auto& pixels_roughness = textures[DEFAULT_ROUGHNESS_TEXTURE_NAME]->pixels;
+
+            pixels_roughness[i + 0] = 128;
+            pixels_roughness[i + 1] = 128;
+            pixels_roughness[i + 2] = 128;
+            pixels_roughness[i + 3] = 128;
+
+            auto& pixels_metalness = textures[DEFAULT_METALNESS_TEXTURE_NAME]->pixels;
+
+            pixels_metalness[i + 0] = 0;
+            pixels_metalness[i + 1] = 0;
+            pixels_metalness[i + 2] = 0;
+            pixels_metalness[i + 3] = 0;
         }
 
+        renderer.upload_image(textures[DEFAULT_ALBEDO_TEXTURE_NAME].get());
         renderer.upload_image(textures[DEFAULT_NORMAL_TEXTURE_NAME].get());
+        renderer.upload_image(textures[DEFAULT_ROUGHNESS_TEXTURE_NAME].get());
+        renderer.upload_image(textures[DEFAULT_METALNESS_TEXTURE_NAME].get());
     }
 
     ref<Image> TextureManager::get(const str& name)

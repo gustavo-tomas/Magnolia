@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "ceiling",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_ceiling_a_diff.png",
-        "Normal": "__mag_default_normal_texture__"
-    }
-}

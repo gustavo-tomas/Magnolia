@@ -1,6 +1,9 @@
 #include "panels/settings_panel.hpp"
 
+#include <vector>
+
 #include "icon_font_cpp/IconsFontAwesome6.h"
+#include "imgui.h"
 
 namespace sprout
 {
@@ -12,10 +15,29 @@ namespace sprout
         ImGui::Begin(ICON_FA_WRENCH " Settings", NULL, window_flags);
 
         ImGui::SeparatorText("Shader Settings");
-        ImGui::RadioButton("Show Final Output", reinterpret_cast<i32 *>(&texture_output), 0);
-        ImGui::RadioButton("Show Albedo Output", reinterpret_cast<i32 *>(&texture_output), 1);
-        ImGui::RadioButton("Show Normal Output", reinterpret_cast<i32 *>(&texture_output), 2);
-        ImGui::RadioButton("Show Lighting Output", reinterpret_cast<i32 *>(&texture_output), 3);
+
+        const std::vector<str> items = {"Final", "Albedo", "Normal", "Roughness", "Metalness",
+                                        "D",     "F",      "G",      "Specular"};
+
+        ImGui::Text("Shader Output");
+        if (ImGui::BeginCombo("##Shader Output", items[texture_output].c_str()))
+        {
+            for (u32 i = 0; i < items.size(); i++)
+            {
+                const b8 is_selected = (texture_output == i);
+                if (ImGui::Selectable(items[i].c_str(), is_selected))
+                {
+                    texture_output = i;
+                }
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (is_selected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
 
         ImGui::Text("Normals");
         ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);

@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "bricks",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/spnza_bricks_a_diff.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/spnza_bricks_a_ddn.png"
-    }
-}

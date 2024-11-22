@@ -12,6 +12,8 @@ namespace mag
     {
         Albedo = 0,
         Normal,
+        Roughness,
+        Metalness,
 
         TextureCount
     };

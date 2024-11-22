@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "floor",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/sponza_floor_a_diff.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/sponza_floor_a_diff_NRM.png"
-    }
-}

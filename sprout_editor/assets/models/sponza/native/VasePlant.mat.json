@@ -1,8 +1,0 @@
-{
-    "Type": "Material",
-    "Name": "VasePlant",
-    "Textures": {
-        "Albedo": "sprout_editor/assets/models/sponza/textures/vase_plant.png",
-        "Normal": "sprout_editor/assets/models/sponza/textures/vase_plant_NRM.png"
-    }
-}

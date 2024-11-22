@@ -1,0 +1,10 @@
+{
+    "Type": "Material",
+    "Name": "wooden_hammer_01",
+    "Textures": {
+        "Albedo": "sprout_editor/assets/models/hammer/textures/wooden_hammer_01_diff_2k.jpg",
+        "Normal": "sprout_editor/assets/models/hammer/textures/wooden_hammer_01_nor_gl_2k.jpg",
+        "Roughness": "sprout_editor/assets/models/hammer/textures/wooden_hammer_01_arm_2k.jpg",
+        "Metalness": "sprout_editor/assets/models/hammer/textures/wooden_hammer_01_arm_2k.jpg"
+    }
+}
