@@ -46,6 +46,7 @@ namespace sprout
             u32& get_normal_output();
             b8& is_bounding_box_enabled();
             b8& is_physics_colliders_enabled();
+            b8& is_gizmos_enabled();
             b8 is_disabled() const;
 
         private:

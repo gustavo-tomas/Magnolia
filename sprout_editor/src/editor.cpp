@@ -399,5 +399,6 @@ namespace sprout
     u32 &Editor::get_normal_output() { return impl->settings_panel->get_normal_output(); }
     b8 &Editor::is_bounding_box_enabled() { return impl->settings_panel->is_bounding_box_enabled(); }
     b8 &Editor::is_physics_colliders_enabled() { return impl->settings_panel->is_physics_colliders_enabled(); }
+    b8 &Editor::is_gizmos_enabled() { return impl->settings_panel->is_gizmos_enabled(); }
     b8 Editor::is_disabled() const { return impl->disabled; }
 };  // namespace sprout

@@ -44,6 +44,7 @@ namespace sprout
         ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
 
         ImGui::SeparatorText("Scene Settings");
+        ImGui::Checkbox("Show Gizmos", &enable_gizmos);
         ImGui::Checkbox("Show Bounding Boxes (AABB)", &enable_bounding_boxes);
         ImGui::Checkbox("Show Physics Colliders", &enable_physics_boxes);
 
@@ -54,4 +55,5 @@ namespace sprout
     u32 &SettingsPanel::get_normal_output() { return normal_output; }
     b8 &SettingsPanel::is_bounding_box_enabled() { return enable_bounding_boxes; }
     b8 &SettingsPanel::is_physics_colliders_enabled() { return enable_physics_boxes; }
+    b8 &SettingsPanel::is_gizmos_enabled() { return enable_gizmos; }
 };  // namespace sprout

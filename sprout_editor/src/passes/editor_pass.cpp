@@ -104,9 +104,12 @@ namespace sprout
 
         performance_results = {};
 
-        render_lines();
-        render_sprites();
-        render_grid();
+        if (get_editor().is_gizmos_enabled())
+        {
+            render_lines();
+            render_sprites();
+            render_grid();
+        }
     }
 
     void GizmoPass::render_lines()
