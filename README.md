@@ -13,6 +13,7 @@
 - Python 3.10.12
 - Cmake 3.22.1
 - Vulkan SDK 1.3.268
+- [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `linkoptions` field in the [`premake5.lua`](premake5.lua) file)
 
 ## Build
 To build and run the program use

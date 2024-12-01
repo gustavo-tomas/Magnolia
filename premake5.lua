@@ -62,6 +62,7 @@ workspace "magnolia"
 
     linkoptions
     {
+        -- Change your preferred linker here (or comment this line to use the system default)
         "-fuse-ld=mold -Wl,-v",
 
         -- For some reason, premake is having trouble finding assimp
