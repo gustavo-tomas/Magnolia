@@ -3,6 +3,7 @@
 #include "mesh.include.glsl"
 
 #include "include/utils.glsl"
+#include "include/depth.glsl"
 #include "include/tonemapping.glsl"
 #include "include/pbr.glsl"
 
@@ -73,24 +74,41 @@ void main()
 	// PBR Outputs:     5 - 8
 	switch (u_push_constants.texture_output)
 	{
+		// Final result
 		case 0:
 			out_frag_color = pbr_color;
 			if (out_frag_color.a < 0.5) discard; // Discard transparent fragments
 			break;
-		
-		case 1:
-			out_frag_color = vec4(object_color.rgb, object_color.a);
-			break;
 
-		case 2:
+		// Final normal
+		case 1:
 			out_frag_color = vec4(normal, 1.0);
 			break;
 		
+		// Depth
+		case 2:
+			float near = u_global.near_far.x;
+			float far = u_global.near_far.y;
+			out_frag_color = vec4(depth_to_color(gl_FragCoord.z, near, far), 1.0);
+			break;
+		
+		// Albedo
 		case 3:
+			out_frag_color = vec4(object_color.rgb, object_color.a);
+			break;
+
+		// Normal map
+		case 4:
+			out_frag_color = object_normal;
+			break;
+
+		// Roughness
+		case 5:
 			out_frag_color = vec4(object_roughness.g);
 			break;
 			
-		case 4:
+		// Metalness
+		case 6:
 			out_frag_color = vec4(object_metalness.b);
 			break;
 

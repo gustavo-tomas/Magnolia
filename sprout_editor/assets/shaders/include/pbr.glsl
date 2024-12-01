@@ -127,19 +127,19 @@ vec3 pbr_shading(Material material,
 	// "D , "F", "G", Specular"
 	switch (debug)
 	{
-		case 5:
+		case 7:
 			color.rgb = vec3(total_D);
 			break;
 
-		case 6:
+		case 8:
 			color.rgb = total_F;
 			break;
 
-		case 7:
+		case 9:
 			color.rgb = vec3(total_G);
 			break;
 
-		case 8:
+		case 10:
 			color.rgb = total_Specular;
 			break;				
 	}
