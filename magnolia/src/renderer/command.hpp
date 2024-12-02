@@ -45,9 +45,9 @@ namespace mag
             void transfer_layout(const RendererImage& image, const vk::ImageLayout curr_layout,
                                  const vk::ImageLayout new_layout, const u32 base_mip_levels = 0);
 
-            void transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,
-                                 const vk::ImageLayout new_layout, const u32 base_mip_levels = 0,
-                                 const u32 mip_levels = 1);
+            void transfer_layout(const vk::Image& image, const vk::ImageAspectFlags image_aspect,
+                                 const vk::ImageLayout curr_layout, const vk::ImageLayout new_layout,
+                                 const u32 base_mip_levels = 0, const u32 mip_levels = 1);
 
             const vk::CommandBuffer& get_handle() const;
 

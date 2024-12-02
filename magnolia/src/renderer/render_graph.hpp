@@ -13,7 +13,7 @@ namespace mag
     enum class AttachmentType
     {
         Color,
-        Depth
+        DepthStencil
     };
 
     enum class AttachmentStage

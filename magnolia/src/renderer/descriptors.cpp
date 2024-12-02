@@ -369,7 +369,7 @@ namespace mag
         {
             const vk::DescriptorImageInfo descriptor_image_info(
                 *static_cast<const vk::Sampler*>(texture->get_sampler().get_handle()), texture->get_image_view(),
-                vk::ImageLayout::eReadOnlyOptimal);
+                vk::ImageLayout::eShaderReadOnlyOptimal);
 
             descriptor_image_infos.push_back(descriptor_image_info);
         }
@@ -398,7 +398,7 @@ namespace mag
         {
             const vk::DescriptorImageInfo descriptor_image_info(
                 *static_cast<const vk::Sampler*>(texture->get_sampler().get_handle()), texture->get_image_view(),
-                vk::ImageLayout::eReadOnlyOptimal);
+                vk::ImageLayout::eShaderReadOnlyOptimal);
 
             descriptor_image_infos.push_back(descriptor_image_info);
         }

@@ -120,6 +120,9 @@ namespace mag
             shader->dst_alpha_blend_factor = pipeline_data["ColorBlend"]["DstAlphaBlendFactor"];
         }
 
+        shader->color_write_enabled = pipeline_data["ColorWrite"]["Enabled"].get<b8>();
+        shader->depth_write_enabled = pipeline_data["DepthWrite"]["Enabled"].get<b8>();
+
         return true;
     }
 

@@ -20,6 +20,12 @@
             "DstColorBlendFactor": "OneMinusSrcAlpha",
             "SrcAlphaBlendFactor": "One",
             "DstAlphaBlendFactor": "OneMinusSrcAlpha"
+        },
+        "ColorWrite": {
+            "Enabled": true
+        },
+        "DepthWrite": {
+            "Enabled": true
         }
     }
 }

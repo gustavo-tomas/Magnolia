@@ -41,6 +41,9 @@ namespace mag
             str dst_color_blend_factor;
             str src_alpha_blend_factor;
             str dst_alpha_blend_factor;
+
+            b8 color_write_enabled;
+            b8 depth_write_enabled;
     };
 
     class Shader

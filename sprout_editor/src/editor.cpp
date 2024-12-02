@@ -374,6 +374,7 @@ namespace sprout
 
         // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
 
+        DepthPrePass *depth_prepass = new DepthPrePass(viewport_size);
         ScenePass *scene_pass = new ScenePass(viewport_size);
         GizmoPass *gizmo_pass = new GizmoPass(viewport_size);
         EditorPass *editor_pass = new EditorPass(size);
@@ -381,6 +382,7 @@ namespace sprout
         impl->render_graph->set_output_attachment("EditorOutputColor");
         // impl->render_graph->set_output_attachment("OutputColor");
 
+        impl->render_graph->add_pass(depth_prepass);
         impl->render_graph->add_pass(scene_pass);
         impl->render_graph->add_pass(gizmo_pass);
         impl->render_graph->add_pass(editor_pass);
