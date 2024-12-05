@@ -45,7 +45,7 @@ namespace sprout
         // Shaders
         depth_prepass_shader = shader_manager.get("sprout_editor/assets/shaders/depth_prepass_shader.mag.json");
 
-        add_output_attachment("OutputDepthDepthPrepass", AttachmentType::DepthStencil, size);
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
         pass.size = size;
         pass.color_clear_value = vec4(0.0, 1.0, 1.0, 1.0);
@@ -123,8 +123,10 @@ namespace sprout
         mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
         sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
 
+        add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
+
         add_output_attachment("OutputColor", AttachmentType::Color, size);
-        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         pass.size = size;
         pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);

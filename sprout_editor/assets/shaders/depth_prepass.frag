@@ -3,4 +3,5 @@
 void main()
 {
 	// Empty
+	// @TODO: handle transparent pixels
 }
