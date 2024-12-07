@@ -4,7 +4,6 @@
 
 #include "include/utils.glsl"
 #include "include/depth.glsl"
-#include "include/tonemapping.glsl"
 #include "include/pbr.glsl"
 
 layout (location = 0) in vec3 in_normal;
@@ -62,13 +61,6 @@ void main()
 								u_push_constants.texture_output);
 
 	pbr_color.a = object_color.a;
-
-	// HDR tone mapping
-	pbr_color.rgb = tonemapping_reinhard(pbr_color.rgb);
-	// pbr_color.rgb = tonemapping_hdr(pbr_color.rgb);
-	
-	// Gamma correct (done during presentation)
-	// pbr_color.rgb = pow(pbr_color.rgb, vec3(0.4545));
 
 	// Texture Outputs: 0 - "Combined", 1 - "Albedo", 2 - "Normal", 3 - "Roughness", 4 - "Metalness"
 	// PBR Outputs:     5 - 8

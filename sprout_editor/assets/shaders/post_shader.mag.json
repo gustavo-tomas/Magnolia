@@ -1,0 +1,25 @@
+{
+    "Shader": "Post",
+    "Files": [
+        "post.vert.spv",
+        "post.frag.spv"
+    ],
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
+        },
+        "ColorBlend": {
+            "Enabled": false
+        },
+        "ColorWrite": {
+            "Enabled": true
+        },
+        "DepthWrite": {
+            "Enabled": false
+        }
+    }
+}

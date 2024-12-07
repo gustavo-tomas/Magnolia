@@ -125,7 +125,7 @@ namespace sprout
 
         add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
-        add_output_attachment("OutputColor", AttachmentType::Color, size);
+        add_output_attachment("OutputColorScene", AttachmentType::Color, size);
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         pass.size = size;
@@ -277,5 +277,46 @@ namespace sprout
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
         }
+    }
+
+    PostProcessingPass::PostProcessingPass(const uvec2& size) : RenderGraphPass("PostPass")
+    {
+        auto& app = get_application();
+        auto& shader_manager = app.get_shader_manager();
+
+        // Shaders
+        post_shader = shader_manager.get("sprout_editor/assets/shaders/post_shader.mag.json");
+
+        add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
+        add_output_attachment("OutputColor", AttachmentType::Color, size);
+
+        pass.size = size;
+        pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f, 1.0f);
+    }
+
+    PostProcessingPass::~PostProcessingPass() = default;
+
+    void PostProcessingPass::on_render(RenderGraph& render_graph)
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& editor = get_editor();
+
+        performance_results = {};
+
+        // Only apply post processing to the final combined result
+        const b8 apply_tonemapping = editor.get_texture_output() == 0;
+        post_shader->set_uniform("u_push_constants", "apply_tonemapping", &apply_tonemapping);
+
+        auto& screen_color = render_graph.get_attachment("OutputColorScene");
+
+        post_shader->bind();
+        post_shader->set_texture("u_screen_color_texture", &screen_color);
+
+        renderer.draw(6);
+
+        performance_results.rendered_triangles += 2;
+        performance_results.draw_calls++;
     }
 };  // namespace sprout

@@ -35,4 +35,16 @@ namespace sprout
             ref<Shader> mesh_shader;
             ref<Shader> sprite_shader;
     };
+
+    class PostProcessingPass : public RenderGraphPass
+    {
+        public:
+            PostProcessingPass(const uvec2& size);
+            ~PostProcessingPass();
+
+            virtual void on_render(RenderGraph& render_graph) override;
+
+        private:
+            ref<Shader> post_shader;
+    };
 };  // namespace sprout
