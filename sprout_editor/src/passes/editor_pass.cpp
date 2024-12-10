@@ -89,7 +89,7 @@ namespace sprout
         light_sprite = app.get_texture_manager().get("sprout_editor/assets/images/lightbulb-regular.png");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
-        add_output_attachment("OutputDepth", AttachmentType::Depth, size, AttachmentState::Load);
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         pass.size = size;
         pass.color_clear_value = vec4(0.1, 0.1, 0.3, 1.0);

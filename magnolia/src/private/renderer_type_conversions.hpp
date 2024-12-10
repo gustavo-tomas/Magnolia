@@ -35,6 +35,11 @@ namespace mag
     SampleCount vk_to_mag(const vk::SampleCountFlagBits sample_count);
     vk::SampleCountFlagBits mag_to_vk(const SampleCount sample_count);
 
+    enum class AttachmentType;
+
+    AttachmentType vk_to_mag(const vk::ImageAspectFlagBits image_aspect);
+    vk::ImageAspectFlags mag_to_vk(const AttachmentType image_aspect);
+
     vk::PrimitiveTopology str_to_vk_topology(const str& topology);
     vk::PolygonMode str_to_vk_polygon_mode(const str& polygon_mode);
     vk::CullModeFlags str_to_vk_cull_mode(const str& cull_mode);

@@ -128,12 +128,13 @@ namespace mag
     void CommandBuffer::transfer_layout(const RendererImage& image, const vk::ImageLayout curr_layout,
                                         const vk::ImageLayout new_layout, const u32 base_mip_levels)
     {
-        this->transfer_layout(image.get_image(), curr_layout, new_layout, base_mip_levels, image.get_mip_levels());
+        this->transfer_layout(image.get_image(), vk::ImageAspectFlagBits::eColor, curr_layout, new_layout,
+                              base_mip_levels, image.get_mip_levels());
     }
 
-    void CommandBuffer::transfer_layout(const vk::Image& image, const vk::ImageLayout curr_layout,
-                                        const vk::ImageLayout new_layout, const u32 base_mip_levels,
-                                        const u32 mip_levels)
+    void CommandBuffer::transfer_layout(const vk::Image& image, const vk::ImageAspectFlags image_aspect,
+                                        const vk::ImageLayout curr_layout, const vk::ImageLayout new_layout,
+                                        const u32 base_mip_levels, const u32 mip_levels)
     {
         // Select appropriate access and stage flags
         vk::AccessFlags src_access_flags = vk::AccessFlagBits::eMemoryWrite;
@@ -221,7 +222,7 @@ namespace mag
             .setDstAccessMask(dst_access_flags)
             .setSrcQueueFamilyIndex(vk::QueueFamilyIgnored)
             .setDstQueueFamilyIndex(vk::QueueFamilyIgnored)
-            .setSubresourceRange({vk::ImageAspectFlagBits::eColor, base_mip_levels, mip_levels, 0, 1});
+            .setSubresourceRange({image_aspect, base_mip_levels, mip_levels, 0, 1});
 
         this->get_handle().pipelineBarrier(src_stage_flags, dst_stage_flags, {}, nullptr, nullptr, image_barrier);
     }

@@ -126,9 +126,10 @@ namespace mag
                     image_format = context.get_supported_color_format(ImageFormat::Float);
                     break;
 
-                case AttachmentType::Depth:
+                case AttachmentType::DepthStencil:
                     image_aspect = vk::ImageAspectFlagBits::eDepth;
-                    image_usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+                    image_usage = vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled |
+                                  vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
                     image_format = context.get_supported_depth_format();
                     break;
 
@@ -167,13 +168,13 @@ namespace mag
             // Transition layout
             for (const auto& description : render_pass->attachment_descriptions)
             {
-                if (description.stage == AttachmentStage::Output && description.type == AttachmentType::Color)
+                if (description.stage == AttachmentStage::Output)
                 {
                     auto& attachment = attachments[description.name];
 
-                    vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
-
-                    command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
+                    const vk::ImageAspectFlags image_aspect = mag_to_vk(description.type);
+                    const vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
+                    command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(), image_aspect,
                                                    attachment[curr_frame].curr_layout, new_layout);
                     attachment[curr_frame].curr_layout = new_layout;
                 }
@@ -187,9 +188,10 @@ namespace mag
 
         if (description.stage == AttachmentStage::Output && description.type == AttachmentType::Color)
         {
-            vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
+            const vk::ImageLayout new_layout = vk::ImageLayout::eTransferSrcOptimal;
+            const vk::ImageAspectFlags image_aspect = mag_to_vk(description.type);
 
-            command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
+            command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(), image_aspect,
                                            attachment[curr_frame].curr_layout, new_layout);
             attachment[curr_frame].curr_layout = new_layout;
         }
@@ -220,9 +222,10 @@ namespace mag
 
             if (description.stage == AttachmentStage::Input)
             {
-                vk::ImageLayout new_layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                const vk::ImageLayout new_layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+                const vk::ImageAspectFlags image_aspect = mag_to_vk(description.type);
 
-                command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
+                command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(), image_aspect,
                                                attachment[curr_frame].curr_layout, new_layout);
 
                 attachment[curr_frame].curr_layout = new_layout;
@@ -243,13 +246,14 @@ namespace mag
                         new_layout = vk::ImageLayout::eColorAttachmentOptimal;
                         break;
 
-                    case AttachmentType::Depth:
+                    case AttachmentType::DepthStencil:
                         pass.depth_attachment = new vk::RenderingAttachmentInfo(
                             attachment[curr_frame].texture->get_image_view(),
                             vk::ImageLayout::eDepthStencilAttachmentOptimal, vk::ResolveModeFlagBits::eNone, {}, {},
                             load_op, vk::AttachmentStoreOp::eStore,
                             vk::ClearDepthStencilValue(pass.depth_stencil_clear_value.x,
                                                        pass.depth_stencil_clear_value.y));
+                        new_layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
                         break;
 
                     default:
@@ -257,13 +261,13 @@ namespace mag
                         break;
                 }
 
-                // This only transitions color attachments
-                if (description.type == AttachmentType::Color)
-                {
-                    command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(),
-                                                   attachment[curr_frame].curr_layout, new_layout);
-                    attachment[curr_frame].curr_layout = new_layout;
-                }
+                // Transitions attachments
+
+                const vk::ImageAspectFlags image_aspect = mag_to_vk(description.type);
+
+                command_buffer.transfer_layout(attachment[curr_frame].texture->get_image(), image_aspect,
+                                               attachment[curr_frame].curr_layout, new_layout);
+                attachment[curr_frame].curr_layout = new_layout;
             }
         }
 
@@ -274,9 +278,16 @@ namespace mag
         const vk::Viewport viewport(0, render_area.extent.height, render_area.extent.width,
                                     -static_cast<i32>(render_area.extent.height), 0.0f, 1.0f);
 
-        pass.rendering_info = new vk::RenderingInfo(
-            {}, render_area, 1, {}, *static_cast<vk::RenderingAttachmentInfo*>(pass.color_attachment),
-            static_cast<vk::RenderingAttachmentInfo*>(pass.depth_attachment), {});
+        std::vector<vk::RenderingAttachmentInfo> color_attachments;
+        if (pass.color_attachment != nullptr)
+        {
+            // Vulkan complains about color attachment count if we pass a null color attachment
+            color_attachments.push_back(*static_cast<vk::RenderingAttachmentInfo*>(pass.color_attachment));
+        }
+
+        pass.rendering_info =
+            new vk::RenderingInfo({}, render_area, 1, {}, color_attachments,
+                                  static_cast<vk::RenderingAttachmentInfo*>(pass.depth_attachment), {});
 
         command_buffer.get_handle().setViewport(0, viewport);
         command_buffer.get_handle().setScissor(0, scissor);

@@ -107,10 +107,22 @@ namespace mag
         const vk::PipelineDynamicStateCreateInfo dynamic_state({}, dynamic_states);
 
         const auto color_format = context.get_supported_color_format(ImageFormat::Float);
-        const auto depth_format = context.get_supported_depth_format();
+
+        std::vector<vk::Format> color_attachment_formats;
+        if (shader_configuration.color_write_enabled)
+        {
+            color_attachment_formats.push_back(color_format);
+        }
+
+        vk::Format depth_format = {};
+        if (shader_configuration.depth_write_enabled)
+        {
+            depth_format = context.get_supported_depth_format();
+        }
 
         // Create pipeline
-        const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info({}, color_format, depth_format);
+        const vk::PipelineRenderingCreateInfo pipeline_rendering_create_info({}, color_attachment_formats,
+                                                                             depth_format);
 
         const vk::GraphicsPipelineCreateInfo pipeline_create_info(
             {}, shader_stages, &vertex_input_state_create_info, &input_assembly_create_info, {}, &viewport_state,

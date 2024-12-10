@@ -1,16 +1,16 @@
 {
-    "Shader": "LineShader",
+    "Shader": "Post",
     "Files": [
-        "color.vert.spv",
-        "color.frag.spv"
+        "post.vert.spv",
+        "post.frag.spv"
     ],
     "Pipeline": {
         "InputAssembly": {
-            "Topology": "Line"
+            "Topology": "Triangle"
         },
         "Rasterization": {
-            "PolygonMode": "Line",
-            "CullMode": "None"
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
         },
         "ColorBlend": {
             "Enabled": false
@@ -19,7 +19,7 @@
             "Enabled": true
         },
         "DepthWrite": {
-            "Enabled": true
+            "Enabled": false
         }
     }
 }

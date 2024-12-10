@@ -37,6 +37,83 @@ namespace sprout
     };
     // @TODO: temporary
 
+    DepthPrePass::DepthPrePass(const uvec2& size) : RenderGraphPass("DepthPrePass")
+    {
+        auto& app = get_application();
+        auto& shader_manager = app.get_shader_manager();
+
+        // Shaders
+        depth_prepass_shader = shader_manager.get("sprout_editor/assets/shaders/depth_prepass_shader.mag.json");
+
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
+
+        pass.size = size;
+        pass.color_clear_value = vec4(0.0, 1.0, 1.0, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f, 1.0f);
+    }
+
+    DepthPrePass::~DepthPrePass() = default;
+
+    void DepthPrePass::on_render(RenderGraph& render_graph)
+    {
+        (void)render_graph;
+
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& editor = get_editor();
+        auto& scene = editor.get_active_scene();
+        auto& ecs = scene.get_ecs();
+        const auto& camera = scene.get_camera();
+
+        performance_results = {};
+
+        auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
+
+        // Render models
+
+        depth_prepass_shader->bind();
+
+        depth_prepass_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        depth_prepass_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        depth_prepass_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
+
+        for (u32 i = 0; i < model_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(model_entities[i]);
+            const auto& model = std::get<1>(model_entities[i])->model;
+
+            // @TODO: hardcoded data offset (should the shader deal with this automagically?)
+            const auto& model_matrix = transform->get_transformation_matrix();
+            depth_prepass_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
+
+            renderer.bind_buffers(model.get());
+
+            for (auto& mesh : model->meshes)
+            {
+                // @TODO: improve AABB calculation performance. I think its not a terrible ideia to apply the transform
+                // and use a dirty flag to recalculate the bounding box.
+
+                // Calculate transformed aabbs
+                BoundingBox mesh_aabb;
+                mesh_aabb.min = mesh.aabb_min;
+                mesh_aabb.max = mesh.aabb_max;
+                mesh_aabb = mesh_aabb.get_transformed_bounding_box(model_matrix);
+
+                // Skip rendering if not visible
+                if (!camera.is_aabb_visible(mesh_aabb))
+                {
+                    continue;
+                }
+
+                // Draw the mesh
+                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+
+                performance_results.draw_calls++;
+                performance_results.rendered_triangles += mesh.index_count / 3;
+            }
+        }
+    }
+
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
     {
         auto& app = get_application();
@@ -46,8 +123,10 @@ namespace sprout
         mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
         sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
 
-        add_output_attachment("OutputColor", AttachmentType::Color, size);
-        add_output_attachment("OutputDepth", AttachmentType::Depth, size);
+        add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
+
+        add_output_attachment("OutputColorScene", AttachmentType::Color, size);
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         pass.size = size;
         pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
@@ -198,5 +277,46 @@ namespace sprout
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
         }
+    }
+
+    PostProcessingPass::PostProcessingPass(const uvec2& size) : RenderGraphPass("PostPass")
+    {
+        auto& app = get_application();
+        auto& shader_manager = app.get_shader_manager();
+
+        // Shaders
+        post_shader = shader_manager.get("sprout_editor/assets/shaders/post_shader.mag.json");
+
+        add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
+        add_output_attachment("OutputColor", AttachmentType::Color, size);
+
+        pass.size = size;
+        pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);
+        pass.depth_stencil_clear_value = vec2(1.0f, 1.0f);
+    }
+
+    PostProcessingPass::~PostProcessingPass() = default;
+
+    void PostProcessingPass::on_render(RenderGraph& render_graph)
+    {
+        auto& app = get_application();
+        auto& renderer = app.get_renderer();
+        auto& editor = get_editor();
+
+        performance_results = {};
+
+        // Only apply post processing to the final combined result
+        const b8 apply_tonemapping = editor.get_texture_output() == 0;
+        post_shader->set_uniform("u_push_constants", "apply_tonemapping", &apply_tonemapping);
+
+        auto& screen_color = render_graph.get_attachment("OutputColorScene");
+
+        post_shader->bind();
+        post_shader->set_texture("u_screen_color_texture", &screen_color);
+
+        renderer.draw(6);
+
+        performance_results.rendered_triangles += 2;
+        performance_results.draw_calls++;
     }
 };  // namespace sprout

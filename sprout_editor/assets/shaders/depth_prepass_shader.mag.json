@@ -1,22 +1,22 @@
 {
-    "Shader": "LineShader",
+    "Shader": "DepthPrepass",
     "Files": [
-        "color.vert.spv",
-        "color.frag.spv"
+        "depth_prepass.vert.spv",
+        "depth_prepass.frag.spv"
     ],
     "Pipeline": {
         "InputAssembly": {
-            "Topology": "Line"
+            "Topology": "Triangle"
         },
         "Rasterization": {
-            "PolygonMode": "Line",
-            "CullMode": "None"
+            "PolygonMode": "Fill",
+            "CullMode": "Back"
         },
         "ColorBlend": {
             "Enabled": false
         },
         "ColorWrite": {
-            "Enabled": true
+            "Enabled": false
         },
         "DepthWrite": {
             "Enabled": true

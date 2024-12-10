@@ -280,6 +280,45 @@ namespace mag
         }
     }
 
+    AttachmentType vk_to_mag(const vk::ImageAspectFlagBits image_aspect)
+    {
+        switch (image_aspect)
+        {
+            case vk::ImageAspectFlagBits::eColor:
+                return AttachmentType::Color;
+                break;
+
+            case vk::ImageAspectFlagBits::eDepth:
+            case vk::ImageAspectFlagBits::eStencil:
+                return AttachmentType::DepthStencil;
+                break;
+
+            default:
+                LOG_ERROR("Invalid ImageAspect");
+                return AttachmentType::Color;
+                break;
+        }
+    }
+
+    vk::ImageAspectFlags mag_to_vk(const AttachmentType image_aspect)
+    {
+        switch (image_aspect)
+        {
+            case AttachmentType::Color:
+                return vk::ImageAspectFlagBits::eColor;
+                break;
+
+            case AttachmentType::DepthStencil:
+                return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+                break;
+
+            default:
+                LOG_ERROR("Invalid ImageAspect");
+                return vk::ImageAspectFlagBits::eColor;
+                break;
+        }
+    }
+
     vk::PrimitiveTopology str_to_vk_topology(const str& topology)
     {
         if (topology == "Triangle") return vk::PrimitiveTopology::eTriangleList;

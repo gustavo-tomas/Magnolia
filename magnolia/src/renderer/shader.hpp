@@ -41,6 +41,9 @@ namespace mag
             str dst_color_blend_factor;
             str src_alpha_blend_factor;
             str dst_alpha_blend_factor;
+
+            b8 color_write_enabled;
+            b8 depth_write_enabled;
     };
 
     class Shader
@@ -52,6 +55,10 @@ namespace mag
             void bind();
 
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
+
+            // @TODO: there is a huge issue with this system. Because we map descriptors to a resource pointer, a
+            // resource might be recreated (i.e. deleted and then instanciated) but the mapped descriptor wont be
+            // deleted and the new one wont be mapped correclty either.
             void set_texture(const str& name, Image* texture);
             void set_texture(const str& name, RendererImage* texture);
             void set_material(const str& name, Material* material);
@@ -92,9 +99,8 @@ namespace mag
             u32 stride = 0;
             std::map<str, UBO> uniforms_map;
 
-            // Keep track of the descriptors for each texture
-            std::map<Image*, vk::DescriptorSet> texture_descriptor_sets;
-            std::map<Material*, vk::DescriptorSet> material_descriptor_sets;
+            // Keep track of the descriptors for each texture/material
+            std::map<void*, vk::DescriptorSet> texture_descriptor_sets;
     };
 
     class ShaderManager
