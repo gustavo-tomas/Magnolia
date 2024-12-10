@@ -374,7 +374,7 @@ namespace mag
         auto& ubo = it->second;
 
         // Create descriptor for this texture
-        if (texture_descriptor_sets.count((Image*)(void*)texture) == 0)
+        if (texture_descriptor_sets.count(static_cast<void*>(texture)) == 0)
         {
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
@@ -382,10 +382,10 @@ namespace mag
             DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, {texture},
                                                               descriptor_set, descriptor_set_layout);
 
-            texture_descriptor_sets[(Image*)(void*)texture] = descriptor_set;
+            texture_descriptor_sets[static_cast<void*>(texture)] = descriptor_set;
         }
 
-        ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[(Image*)(void*)texture];
+        ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[static_cast<void*>(texture)];
 
         bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
     }
@@ -411,7 +411,7 @@ namespace mag
 
         // @TODO: this blocks the main thread and should be paralelized when the renderer supports it.
         // Create/Update descriptor for this material
-        if (material_descriptor_sets.count(material) == 0 ||
+        if (texture_descriptor_sets.count(material) == 0 ||
             material->loading_state == MaterialLoadingState::LoadingFinished)
         {
             vk::DescriptorSet descriptor_set;
@@ -430,12 +430,12 @@ namespace mag
             DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, renderer_textures,
                                                               descriptor_set, descriptor_set_layout);
 
-            material_descriptor_sets[material] = descriptor_set;
+            texture_descriptor_sets[material] = descriptor_set;
 
             material->loading_state = MaterialLoadingState::UploadedToGPU;
         }
 
-        ubo.descriptor_sets[curr_frame_number] = material_descriptor_sets[material];
+        ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[material];
 
         bind_descriptor(ubo.descriptor_binding->set, ubo.descriptor_sets[curr_frame_number]);
     }

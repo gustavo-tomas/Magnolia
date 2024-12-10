@@ -95,9 +95,8 @@ namespace mag
             u32 stride = 0;
             std::map<str, UBO> uniforms_map;
 
-            // Keep track of the descriptors for each texture
-            std::map<Image*, vk::DescriptorSet> texture_descriptor_sets;
-            std::map<Material*, vk::DescriptorSet> material_descriptor_sets;
+            // Keep track of the descriptors for each texture/material
+            std::map<void*, vk::DescriptorSet> texture_descriptor_sets;
     };
 
     class ShaderManager
