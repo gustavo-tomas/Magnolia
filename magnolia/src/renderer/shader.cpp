@@ -374,7 +374,7 @@ namespace mag
         auto& ubo = it->second;
 
         // Create descriptor for this texture
-        if (texture_descriptor_sets.count(static_cast<void*>(texture)) == 0)
+        if (texture_descriptor_sets.count(static_cast<void*>(texture)) == 0 || texture->dirty)
         {
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
@@ -383,6 +383,7 @@ namespace mag
                                                               descriptor_set, descriptor_set_layout);
 
             texture_descriptor_sets[static_cast<void*>(texture)] = descriptor_set;
+            texture->dirty = false;
         }
 
         ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[static_cast<void*>(texture)];

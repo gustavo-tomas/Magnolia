@@ -55,6 +55,10 @@ namespace mag
             void bind();
 
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
+
+            // @TODO: there is a huge issue with this system. Because we map descriptors to a resource pointer, a
+            // resource might be recreated (i.e. deleted and then instanciated) but the mapped descriptor wont be
+            // deleted and the new one wont be mapped correclty either.
             void set_texture(const str& name, Image* texture);
             void set_texture(const str& name, RendererImage* texture);
             void set_material(const str& name, Material* material);

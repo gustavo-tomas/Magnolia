@@ -46,6 +46,10 @@ namespace mag
             // The dimensions, mip levels, channels, etc are not changed, only the image pixels
             void set_pixels(const std::vector<u8>& pixels);
 
+            // @TODO: ugly fix
+            // Indicates if the corresponding descriptor sets should be updated.
+            b8 dirty = true;
+
             const vk::Image& get_image() const;
             const vk::ImageView& get_image_view() const;
             const vk::Format& get_format() const;
