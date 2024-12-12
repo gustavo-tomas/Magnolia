@@ -16,6 +16,7 @@
 #include "math/generic.hpp"
 #include "renderer/renderer_image.hpp"
 #include "renderer/sampler.hpp"
+#include "renderer/shader.hpp"
 #include "resources/image_loader.hpp"
 #include "scene/scene_serializer.hpp"
 #include "threads/job_system.hpp"
@@ -66,6 +67,61 @@ namespace sprout
             // @NOTE: keep the runtime switch in the end
             const str button_label = scene.is_running() ? ICON_FA_STOP : ICON_FA_PLAY;
             swap_state = ImGui::Button(button_label.c_str());
+
+            // Recompile shaders
+            if (ImGui::Button("Rebuild Shaders"))
+            {
+                auto &job_system = app.get_job_system();
+
+                // Execute python script on another thread
+                auto execute = []
+                {
+                    b8 result = true;
+
+                    LOG_INFO("Recompiling shaders...");
+
+                    // @TODO: cleanup
+                    str configuration = "debug";
+#if defined(MAG_PROFILE)
+                    configuration = "profile";
+#elif defined(MAG_RELEASE)
+                    configuration = "release";
+#endif
+                    // @TODO: cleanup
+
+                    // @TODO: might be better to recompile only changed shaders, not all of them
+                    const str rebuild_script = "python3 build.py shaders " + configuration;
+                    if (system(rebuild_script.c_str()) == 0)
+                    {
+                        LOG_INFO("Finished recompiling shaders");
+                    }
+
+                    else
+                    {
+                        LOG_ERROR("Failed to recompile shaders");
+                        result = false;
+                    }
+
+                    return result;
+                };
+
+                // Callback when finished executing
+                auto on_execute_finished = [](const b8 result)
+                {
+                    // Restart the scene if everything went ok
+                    if (result)
+                    {
+                        auto &app = get_application();
+                        auto &shader_manager = app.get_shader_manager();
+
+                        shader_manager.recompile_all_shaders();
+                        LOG_SUCCESS("Shaders recompiled");
+                    }
+                };
+
+                Job load_job = Job(execute, on_execute_finished);
+                job_system.add_job(load_job);
+            }
 
             ImGui::End();
         }

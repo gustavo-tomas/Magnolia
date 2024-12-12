@@ -139,6 +139,9 @@ def main():
     
     elif command == "clean":
       clean(configuration)
+    
+    elif command == "shaders":
+      shaders(system)
 
     elif command == "lint":
       lint()

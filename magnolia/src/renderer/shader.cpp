@@ -42,10 +42,36 @@ namespace mag
         return shaders[file_path];
     }
 
+    void ShaderManager::recompile_all_shaders()
+    {
+        for (const auto& [file_path, shader] : shaders)
+        {
+            auto& app = get_application();
+            auto& shader_loader = app.get_shader_loader();
+
+            ShaderConfiguration shader_configuration;
+
+            if (!shader_loader.load(file_path, &shader_configuration))
+            {
+                LOG_ERROR("Failed to load shader: '{0}'", file_path);
+                continue;
+            }
+
+            shaders[file_path]->rebuild(shader_configuration);
+        }
+    }
+
     Shader::Shader(const ShaderConfiguration& shader_configuration) : configuration(shader_configuration)
+    {
+        build(shader_configuration);
+    }
+
+    void Shader::build(const ShaderConfiguration& shader_configuration)
     {
         auto& context = get_context();
         const u32 frame_count = context.get_frame_count();
+
+        this->configuration = shader_configuration;
 
         // Find total number of descriptor set layouts
         {
@@ -223,7 +249,7 @@ namespace mag
         pipeline = create_unique<Pipeline>(*this);
     }
 
-    Shader::~Shader()
+    void Shader::destroy()
     {
         auto& context = get_context();
         context.get_device().waitIdle();
@@ -254,9 +280,30 @@ namespace mag
             shader_module.module = nullptr;
             shader_module.spv_module = nullptr;
         }
+
+        configuration = {};
+        vertex_bindings.clear();
+        vertex_attributes.clear();
+        descriptor_set_layouts.clear();
+        push_constant_ranges.clear();
+        uniforms_map.clear();
+        texture_descriptor_sets.clear();
+
+        pipeline.reset();
+
+        location = 0;
+        stride = 0;
     }
 
+    Shader::~Shader() { destroy(); }
+
     void Shader::bind() { pipeline->bind(); }
+
+    void Shader::rebuild(const ShaderConfiguration& shader_configuration)
+    {
+        destroy();
+        build(shader_configuration);
+    }
 
     // We can automate some of these steps with spv reflect but it is better to set this values manually
     void Shader::add_attribute(const vk::Format format, const u32 size, const u32 offset)

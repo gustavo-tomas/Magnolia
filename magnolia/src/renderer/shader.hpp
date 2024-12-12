@@ -52,6 +52,10 @@ namespace mag
             Shader(const ShaderConfiguration& shader_configuration);
             ~Shader();
 
+            void build(const ShaderConfiguration& shader_configuration);
+            void rebuild(const ShaderConfiguration& shader_configuration);
+            void destroy();
+
             void bind();
 
             void set_uniform(const str& scope, const str& name, const void* data, const u64 data_offset = 0);
@@ -107,6 +111,7 @@ namespace mag
     {
         public:
             ref<Shader> get(const str& file_path);
+            void recompile_all_shaders();
 
         private:
             std::map<str, ref<Shader>> shaders;
