@@ -66,7 +66,7 @@ float attenuation(vec3 light_position, vec3 frag_position)
     return attenuation;
 }
 
-vec3 pbr_shading(Material material,
+vec3 pbr_shading(MaterialData material,
                  vec3 normal,
                  vec3 camera_position,
                  vec3 frag_position,

@@ -6,19 +6,19 @@
 #define METALNESS_TEXTURE u_material_textures[3]
 
 // Types
-struct Model
+struct ModelData
 {
 	mat4 model;
 };
 
-struct Material 
+struct MaterialData
 {
 	vec4 albedo;
     float roughness;
     float metallic;
 };
 
-struct Light
+struct LightData
 {
 	vec3 color;
 	float intensity;
@@ -52,19 +52,19 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 // Lights buffer
 layout (std140, set = 1, binding = 0) readonly buffer LightBuffer
 {
-    Light lights[];
+    LightData lights[];
 } u_lights;
 
 // Instance buffer
 layout (std140, set = 2, binding = 0) readonly buffer InstanceBuffer
 {
-    Model models[];
+    ModelData models[];
 } u_instance;
 
 // Materials buffer
 layout (std140, set = 3, binding = 0) readonly buffer MaterialBuffer
 {
-    Material materials[];
+    MaterialData materials[];
 } u_material;
 
 // Material textures

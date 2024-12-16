@@ -49,7 +49,7 @@ void main()
 	// PBR shading
 	vec4 pbr_color = vec4(0);
 	
-	Material material = u_material.materials[u_push_constants.material_index];
+	MaterialData material = u_material.materials[u_push_constants.material_index];
 	material.albedo *= object_color;
 	material.roughness *= object_roughness.g;
 	material.metallic *= object_metalness.b;

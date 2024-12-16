@@ -9,7 +9,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
     vec2 screen_size;
 } u_global;
 
-struct Sprite
+struct SpriteData
 {
     mat4 model;
     vec4 size_const_face;
@@ -18,7 +18,7 @@ struct Sprite
 // Instance buffer
 layout (std140, set = 1, binding = 0) readonly buffer InstanceBuffer
 {
-    Sprite sprites[];
+    SpriteData sprites[];
 } u_instance;
 
 // Texture

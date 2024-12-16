@@ -20,7 +20,7 @@ vec2 tex_coords[6] = vec2[]
 
 void main()
 {
-	Sprite sprite = u_instance.sprites[gl_InstanceIndex];
+	SpriteData sprite = u_instance.sprites[gl_InstanceIndex];
 
 	vec2 sprite_size = sprite.size_const_face.xy;
 	float constant_size = sprite.size_const_face.z;

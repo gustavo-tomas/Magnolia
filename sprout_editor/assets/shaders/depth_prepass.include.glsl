@@ -1,7 +1,7 @@
 #include "include/common.glsl"
 
 // Types
-struct Model
+struct ModelData
 {
 	mat4 model;
 };
@@ -18,5 +18,5 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 // Instance buffer
 layout (std140, set = 1, binding = 0) readonly buffer InstanceBuffer
 {
-    Model models[];
+    ModelData models[];
 } u_instance;
