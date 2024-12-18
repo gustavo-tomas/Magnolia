@@ -1,10 +1,4 @@
-#include "include/common.glsl"
-
-// Types
-struct ModelData
-{
-	mat4 model;
-};
+#include "include/common.h"
 
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer

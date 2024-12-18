@@ -1,5 +1,6 @@
 #include "passes/scene_pass.hpp"
 
+#include "../assets/shaders/include/common.h"
 #include "core/application.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
@@ -15,28 +16,6 @@
 
 namespace sprout
 {
-    // @TODO: temporary
-    struct alignas(16) LightData
-    {
-            vec3 color;     // 12 bytes (3 x 4)
-            f32 intensity;  // 4 bytes  (1 x 4)
-            vec3 position;  // 12 bytes (3 x 4)
-    };
-
-    struct alignas(16) SpriteData
-    {
-            mat4 model;
-            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
-    };
-
-    struct alignas(16) MaterialData
-    {
-            vec4 albedo;    // 16 bytes
-            f32 roughness;  // 4 bytes
-            f32 metallic;   // 4 bytes
-    };
-    // @TODO: temporary
-
     DepthPrePass::DepthPrePass(const uvec2& size) : RenderGraphPass("DepthPrePass")
     {
         auto& app = get_application();

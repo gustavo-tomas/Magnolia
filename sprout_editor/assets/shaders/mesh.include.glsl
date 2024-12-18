@@ -1,29 +1,9 @@
-#include "include/common.glsl"
+#include "include/common.h"
 
 #define ALBEDO_TEXTURE u_material_textures[0]
 #define NORMAL_TEXTURE u_material_textures[1]
 #define ROUGHNESS_TEXTURE u_material_textures[2]
 #define METALNESS_TEXTURE u_material_textures[3]
-
-// Types
-struct ModelData
-{
-	mat4 model;
-};
-
-struct MaterialData
-{
-	vec4 albedo;
-    float roughness;
-    float metallic;
-};
-
-struct LightData
-{
-	vec3 color;
-	float intensity;
-	vec3 position;
-};
 
 // @TODO: for now, only fragment shaders support push constants
 // Push constants (dont exceed 128 bytes)

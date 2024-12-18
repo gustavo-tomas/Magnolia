@@ -1,4 +1,4 @@
-#include "include/common.glsl"
+#include "include/common.h"
 
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
@@ -8,12 +8,6 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
     mat4 projection;
     vec2 screen_size;
 } u_global;
-
-struct SpriteData
-{
-    mat4 model;
-    vec4 size_const_face;
-};
 
 // Instance buffer
 layout (std140, set = 1, binding = 0) readonly buffer InstanceBuffer

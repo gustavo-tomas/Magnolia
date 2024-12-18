@@ -1,4 +1,4 @@
-#include "include/common.glsl"
+#include "include/common.h"
 
 // Push constants (dont exceed 128 bytes)
 layout (push_constant) uniform PushConstants
