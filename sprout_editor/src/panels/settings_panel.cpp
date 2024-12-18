@@ -44,7 +44,7 @@ namespace sprout
 
         ImGui::Text("Normals");
         ImGui::RadioButton("Use Default Normals", reinterpret_cast<i32 *>(&normal_output), 0);
-        ImGui::RadioButton("Use TBN Normals", reinterpret_cast<i32 *>(&normal_output), 1);
+        ImGui::RadioButton("Use Normal Map", reinterpret_cast<i32 *>(&normal_output), 1);
 
         ImGui::SeparatorText("Scene Settings");
         ImGui::Checkbox("Show Gizmos", &enable_gizmos);

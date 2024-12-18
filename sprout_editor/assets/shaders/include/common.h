@@ -1,4 +1,5 @@
 #ifdef __cplusplus
+    #pragma once
 
     #include "core/types.hpp"
     #include "math/mat.hpp"
