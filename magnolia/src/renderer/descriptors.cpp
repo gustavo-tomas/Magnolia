@@ -86,6 +86,7 @@ namespace mag
 
             // unrecoverable error
             default:
+                LOG_ERROR("Error during descriptor allocation: '{0}'", vk::to_string(alloc_result));
                 return false;
         }
 
@@ -101,6 +102,7 @@ namespace mag
         }
 
         // if it still fails then we have big issues
+        LOG_ERROR("Error during descriptor allocation: '{0}'", vk::to_string(alloc_result));
         return false;
     }
 

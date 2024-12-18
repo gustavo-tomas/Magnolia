@@ -55,6 +55,9 @@ namespace mag
             std::unordered_map<DescriptorLayoutInfo, vk::DescriptorSetLayout, DescriptorLayoutHash> layout_cache;
     };
 
+    // @TODO: for now descriptors are only freed when the application is closed. This means that eventually, we will run
+    // out of pool memory to create descriptors. If you resize the viewport enough times, this error happens.
+
     // DescriptorBuilder
     // ---------------------------------------------------------------------------------------------------------------------
     class RendererImage;
