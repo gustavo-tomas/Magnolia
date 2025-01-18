@@ -74,6 +74,7 @@ void main()
 
 		// Final normal
 		case 1:
+			normal = normal * 0.5 + 0.5; // Normalize from [-1, 1] to [0, 1]
 			out_frag_color = vec4(normal, 1.0);
 			break;
 		
