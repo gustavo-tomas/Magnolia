@@ -45,7 +45,7 @@ namespace mag
 
         i32 width = 800, height = 600;
 
-        if (options.size == WindowOptions::MAX_SIZE)
+        if (options.size == WindowOptions::MaxSize)
         {
             SDL_DisplayMode display_mode;
             if (SDL_GetDesktopDisplayMode(0, &display_mode) != 0)
@@ -63,8 +63,8 @@ namespace mag
         const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
         impl->handle = SDL_CreateWindow(
-            options.title.c_str(), (options.position.x == MAX_I32) ? SDL_WINDOWPOS_CENTERED : options.position.x,
-            (options.position.y == MAX_I32) ? SDL_WINDOWPOS_CENTERED : options.position.y, width, height, flags);
+            options.title.c_str(), (options.position.x == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.x,
+            (options.position.y == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.y, width, height, flags);
 
         ASSERT(impl->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
 

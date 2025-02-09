@@ -331,7 +331,7 @@ namespace sprout
         serializer.serialize(file_path);
 
         // @TODO: linear search but w e. It is unlikely that this will hinder the performance
-        u32 idx = INVALID_ID;
+        u32 idx = Invalid_ID;
         for (u32 i = 0; i < impl->open_scenes.size(); i++)
         {
             if (impl->open_scenes[i] == scene)

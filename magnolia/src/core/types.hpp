@@ -70,14 +70,15 @@ namespace mag
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 
-// Common macros
-#define INVALID_ID 1e9
+    // Constants
+    const u32 Invalid_ID = 1e9;
+    const u64 Timeout = 1'000'000'000; /* 1 second in nanoseconds */
+    const u32 Max_U32 = 0xFFFFFFFF;
+    const i32 Max_I32 = 0xFFFFFFFF / 2;
+
+    // Common macros
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0]))           /* Vector size in bytes */
-#define MAG_TIMEOUT 1'000'000'000                                                     /* 1 second in nanoseconds */
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)                         /* Shortcut to bind methods */
 #define BIND_FN2(x) std::bind(&x, this, std::placeholders::_1, std::placeholders::_2) /* Shortcut to bind methods */
-
-#define MAX_U32 static_cast<u32>(0xFFFFFFFF)
-#define MAX_I32 static_cast<i32>(0xFFFFFFFF)
 
 };  // namespace mag

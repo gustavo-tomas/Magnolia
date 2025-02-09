@@ -101,7 +101,7 @@ namespace mag
                     const auto& variable = reflection->input_variables[i];
 
                     // Filter built-in variables
-                    if (variable->location < MAX_U32)
+                    if (variable->location < Max_U32)
                     {
                         sorted_input_variables[variable->location] = variable;
                     }

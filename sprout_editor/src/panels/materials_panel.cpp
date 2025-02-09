@@ -19,7 +19,7 @@ namespace sprout
         auto &app = get_application();
         auto &material_manager = app.get_material_manager();
 
-        if (selected_entity_id == INVALID_ID) goto end;
+        if (selected_entity_id == Invalid_ID) goto end;
 
         if (auto model_c = ecs.get_component<ModelComponent>(selected_entity_id))
         {

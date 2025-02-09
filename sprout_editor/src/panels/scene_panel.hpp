@@ -24,6 +24,6 @@ namespace sprout
             u32 get_selected_entity_id() const;
 
         private:
-            u32 selected_entity_id = INVALID_ID;
+            u32 selected_entity_id = Invalid_ID;
     };
 };  // namespace sprout

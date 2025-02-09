@@ -141,7 +141,7 @@ namespace sprout
             const str tab_id = "##" + std::to_string(i);
 
             // Edit scene name
-            static u32 edited_scene_index = INVALID_ID;
+            static u32 edited_scene_index = Invalid_ID;
 
             b8 open = true;
             if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str(), &open))
@@ -155,7 +155,7 @@ namespace sprout
                 // Tab changed or lost focus -> quit editing
                 if (edited_scene_index != i || !ImGui::IsWindowFocused())
                 {
-                    edited_scene_index = INVALID_ID;
+                    edited_scene_index = Invalid_ID;
                 }
 
                 str name = open_scenes[i]->get_name();
@@ -163,7 +163,7 @@ namespace sprout
                 if (edited_scene_index == i && ImGui::InputText("##SceneNameClicked", &name, 0))
                 {
                     open_scenes[i]->set_name(name);
-                    edited_scene_index = INVALID_ID;
+                    edited_scene_index = Invalid_ID;
                 }
 
                 editor.set_selected_scene_index(i);
@@ -298,7 +298,7 @@ namespace sprout
         ImGui::EndTabBar();
 
         // Render gizmos for selected model
-        if (!editor.is_disabled() && selected_entity_id != INVALID_ID)
+        if (!editor.is_disabled() && selected_entity_id != Invalid_ID)
         {
             // Check if entity has a transform before rendering gizmo
             auto *transform = ecs.get_component<TransformComponent>(selected_entity_id);

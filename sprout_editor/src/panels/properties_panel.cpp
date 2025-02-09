@@ -11,8 +11,8 @@
 
 namespace sprout
 {
-#define MIN_VALUE -1'000'000'000
-#define MAX_VALUE +1'000'000'000
+    const int MinValue = -1'000'000'000;
+    const int MaxValue = +1'000'000'000;
 
     b8 check_file(const str &file_path)
     {
@@ -32,16 +32,16 @@ namespace sprout
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
 
         // Only render properties if an entity is selected
-        if (selected_entity_id == INVALID_ID) goto end;
+        if (selected_entity_id == Invalid_ID) goto end;
 
         // Transform
         if (auto transform = ecs.get_component<TransformComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Translation", transform->translation, vec3(0), vec3(MIN_VALUE), vec3(MAX_VALUE));
+                editable_field("Translation", transform->translation, vec3(0), vec3(MinValue), vec3(MaxValue));
                 editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
-                editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MAX_VALUE));
+                editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
             }
         }
 
@@ -87,7 +87,7 @@ namespace sprout
                 ImGui::SameLine(left_offset);
                 ImGui::ColorEdit4("##Color", value_ptr(light->color), flags);
 
-                editable_field("Intensity", light->intensity, 1.0f, 0.0f, MAX_VALUE);
+                editable_field("Intensity", light->intensity, 1.0f, 0.0f, MaxValue);
             }
         }
 
@@ -96,7 +96,7 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MAX_VALUE));
+                editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MaxValue));
             }
         }
 
@@ -104,7 +104,7 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Mass", component->mass, 1.0f, 0.0f, MAX_VALUE);
+                editable_field("Mass", component->mass, 1.0f, 0.0f, MaxValue);
             }
         }
 
@@ -116,8 +116,8 @@ namespace sprout
                 f32 far = component->camera.get_far();
                 f32 fov = component->camera.get_fov();
 
-                editable_field("Near", near, 1.0f, 0.1f, MAX_VALUE);
-                editable_field("Far", far, 1.0f, 0.1f, MAX_VALUE);
+                editable_field("Near", near, 1.0f, 0.1f, MaxValue);
+                editable_field("Far", far, 1.0f, 0.1f, MaxValue);
                 editable_field("Fov", fov, 60.0f, 30.0f, 120.0f);
 
                 component->camera.set_near_far({near, far});

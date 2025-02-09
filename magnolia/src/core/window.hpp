@@ -15,12 +15,12 @@ namespace mag
 
     struct WindowOptions
     {
-            static constexpr uvec2 MAX_SIZE = uvec2(MAX_U32);
-            static constexpr ivec2 CENTER_POS = ivec2(MAX_I32);
+            static constexpr uvec2 MaxSize = uvec2(Max_U32);
+            static constexpr ivec2 CenterPos = ivec2(Max_I32);
 
             const EventCallback& event_callback;
-            uvec2 size = MAX_SIZE;
-            ivec2 position = CENTER_POS;
+            uvec2 size = MaxSize;
+            ivec2 position = CenterPos;
             str title = "Magnolia";
             str window_icon = "";
     };

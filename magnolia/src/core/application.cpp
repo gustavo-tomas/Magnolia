@@ -62,8 +62,8 @@ namespace mag
 
         json config;
 
-        uvec2 window_size = WindowOptions::MAX_SIZE;
-        ivec2 window_position = WindowOptions::CENTER_POS;
+        uvec2 window_size = WindowOptions::MaxSize;
+        ivec2 window_position = WindowOptions::CenterPos;
         str window_title = "Magnolia";
         str window_icon = "";
 
