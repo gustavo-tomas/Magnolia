@@ -1,6 +1,7 @@
 #include "resources/image_loader.hpp"
 
-#include "core/application.hpp"
+#include <set>
+
 #include "core/buffer.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
@@ -19,11 +20,8 @@ namespace mag
             return false;
         }
 
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         Buffer buffer;
-        file_system.read_binary_data(file_path, buffer);
+        fs::read_binary_data(file_path, buffer);
 
         i32 tex_width = 0, tex_height = 0, tex_channels = 0;
         stbi_uc* pixels = stbi_load_from_memory(buffer.data.data(), buffer.get_size(), &tex_width, &tex_height,
@@ -56,10 +54,7 @@ namespace mag
 
     b8 ImageLoader::get_info(const str& raw_file_path, u32* width, u32* height, u32* channels, u32* mip_levels) const
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
-        const str file_path = file_system.get_fixed_path(raw_file_path);
+        const str file_path = fs::get_fixed_path(raw_file_path);
 
         const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width), reinterpret_cast<i32*>(height),
                                     reinterpret_cast<i32*>(channels));

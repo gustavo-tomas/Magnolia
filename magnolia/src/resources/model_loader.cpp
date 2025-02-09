@@ -1,6 +1,5 @@
 #include "resources/model_loader.hpp"
 
-#include "core/application.hpp"
 #include "core/buffer.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
@@ -10,15 +9,12 @@ namespace mag
 {
     b8 ModelLoader::load(const str& file_path, Model* model)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         // Reset model data
         *model = {};
 
         json data;
 
-        if (!file_system.read_json_data(file_path, data))
+        if (!fs::read_json_data(file_path, data))
         {
             LOG_ERROR("Failed to load native model file: '{0}'", file_path);
             return false;
@@ -39,7 +35,7 @@ namespace mag
         const u32 num_meshes = data["NumMeshes"].get<u32>();
 
         Buffer buffer;
-        const b8 result = file_system.read_binary_data(binary_file_path, buffer);
+        const b8 result = fs::read_binary_data(binary_file_path, buffer);
 
         if (!result)
         {

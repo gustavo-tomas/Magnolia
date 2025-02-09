@@ -183,21 +183,20 @@ namespace sprout
                     if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
                     {
                         auto &app = get_application();
-                        auto &file_system = app.get_file_system();
 
                         const c8 *path = static_cast<const c8 *>(payload->Data);
-                        const str extension = file_system.get_file_extension(path);
+                        const str extension = fs::get_file_extension(path);
 
                         ModelImporter importer;
 
                         // First check if the path exists
-                        if (!file_system.exists(path))
+                        if (!fs::exists(path))
                         {
                             LOG_ERROR("File not found: {0}", path);
                         }
 
                         // Then check if its a directory
-                        else if (file_system.is_directory(path))
+                        else if (fs::is_directory(path))
                         {
                             LOG_ERROR("Path is a directory: {0}", path);
                         }
@@ -206,7 +205,7 @@ namespace sprout
                         else if (extension == ".json")
                         {
                             json data;
-                            if (!file_system.read_json_data(path, data) || !data.contains("Type"))
+                            if (!fs::read_json_data(path, data) || !data.contains("Type"))
                             {
                                 goto end_drag_drop_target;
                             }

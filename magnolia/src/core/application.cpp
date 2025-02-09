@@ -36,7 +36,6 @@ namespace mag
 
             unique<Window> window;
             unique<Renderer> renderer;
-            unique<FileSystem> file_system;
             unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
             unique<ImageLoader> image_loader;
@@ -59,10 +58,6 @@ namespace mag
 
         // Remember that smart pointers are destroyed in the reverse order of creation
 
-        // Create the file system
-        impl->file_system = create_unique<FileSystem>();
-        LOG_SUCCESS("FileSystem initialized");
-
         // Read config file
 
         json config;
@@ -72,7 +67,7 @@ namespace mag
         str window_title = "Magnolia";
         str window_icon = "";
 
-        if (impl->file_system->read_json_data(config_file_path, config))
+        if (fs::read_json_data(config_file_path, config))
         {
             u32 count = 0;
             for (const auto& num : config["WindowSize"])
@@ -229,7 +224,6 @@ namespace mag
 
     Window& Application::get_window() { return *impl->window; }
     Renderer& Application::get_renderer() { return *impl->renderer; }
-    FileSystem& Application::get_file_system() { return *impl->file_system; }
     FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
     JobSystem& Application::get_job_system() { return *impl->job_system; }
     ImageLoader& Application::get_image_loader() { return *impl->image_loader; }

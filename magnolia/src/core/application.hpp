@@ -7,7 +7,6 @@ namespace mag
     class Window;
     class Renderer;
     class PhysicsEngine;
-    class FileSystem;
     class FileWatcher;
     class JobSystem;
 
@@ -43,7 +42,6 @@ namespace mag
 
             Window& get_window();
             Renderer& get_renderer();
-            FileSystem& get_file_system();
             FileWatcher& get_file_watcher();
             JobSystem& get_job_system();
             ImageLoader& get_image_loader();

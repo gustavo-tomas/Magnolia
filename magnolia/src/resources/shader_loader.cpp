@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "core/application.hpp"
 #include "core/buffer.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
@@ -20,12 +19,9 @@ namespace mag
             return false;
         }
 
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         json data;
 
-        if (!file_system.read_json_data(file_path, data))
+        if (!fs::read_json_data(file_path, data))
         {
             LOG_ERROR("Failed to load shader file: {0}", file_path);
             return false;
@@ -129,11 +125,9 @@ namespace mag
     b8 ShaderLoader::load_module(const str& file_path, ShaderModule* shader_module)
     {
         auto& context = get_context();
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
 
         Buffer buffer;
-        if (!file_system.read_binary_data(file_path, buffer))
+        if (!fs::read_binary_data(file_path, buffer))
         {
             LOG_ERROR("Failed to load module: '{0}'", file_path);
             return false;

@@ -13,23 +13,22 @@ namespace mag
 
     struct Buffer;
 
-    class FileSystem
+    namespace fs
     {
-        public:
-            b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const;
-            b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer) const;
+        b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
+        b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
 
-            b8 read_json_data(const std::filesystem::path& file_path, json& data) const;
-            b8 write_json_data(const std::filesystem::path& file_path, json& data) const;
+        b8 read_json_data(const std::filesystem::path& file_path, json& data);
+        b8 write_json_data(const std::filesystem::path& file_path, json& data);
 
-            b8 create_directories(const std::filesystem::path& path) const;
+        b8 create_directories(const std::filesystem::path& path);
 
-            str get_file_extension(const std::filesystem::path& file_path) const;
-            std::filesystem::path get_fixed_path(const std::filesystem::path& file_path) const;
+        str get_file_extension(const std::filesystem::path& file_path);
+        std::filesystem::path get_fixed_path(const std::filesystem::path& file_path);
 
-            b8 exists(const std::filesystem::path& path) const;
-            b8 is_directory(const std::filesystem::path& path) const;
-    };
+        b8 exists(const std::filesystem::path& path);
+        b8 is_directory(const std::filesystem::path& path);
+    };  // namespace fs
 
     class FileWatcher
     {

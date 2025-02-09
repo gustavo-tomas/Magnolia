@@ -28,9 +28,6 @@ namespace mag
 
     void SceneSerializer::serialize(const str& file_path)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         // Serialize scene data to file
         json data;
         data["Type"] = "Scene";
@@ -114,7 +111,7 @@ namespace mag
             data["Entities"].push_back(entity);
         }
 
-        if (!file_system.write_json_data(file_path, data))
+        if (!fs::write_json_data(file_path, data))
         {
             LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
             return;
@@ -124,11 +121,10 @@ namespace mag
     void SceneSerializer::deserialize(const str& file_path)
     {
         auto& app = get_application();
-        auto& file_system = app.get_file_system();
 
         json data;
 
-        if (!file_system.read_json_data(file_path, data))
+        if (!fs::read_json_data(file_path, data))
         {
             LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
             return;

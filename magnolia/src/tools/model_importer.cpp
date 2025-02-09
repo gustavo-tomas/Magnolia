@@ -42,9 +42,6 @@ namespace mag
 
     b8 ModelImporter::import(const str& file_path, str& imported_model_path)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes |
                           aiProcess_PreTransformVertices | aiProcess_Debone;
 
@@ -79,7 +76,7 @@ namespace mag
                   [](const Mesh& a, const Mesh& b) { return a.material_index < b.material_index; });
 
         const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
-        if (!file_system.create_directories(output_directory))
+        if (!fs::create_directories(output_directory))
         {
             LOG_ERROR("Failed to create directory: '{0}'", output_directory);
             return false;
@@ -92,9 +89,6 @@ namespace mag
     b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const Model& model,
                                                str& imported_model_path)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         const str native_model_file_path = output_directory + "/" + model.name + MODEL_FILE_EXTENSION;
         const str binary_file_path = output_directory + "/" + model.name + BINARY_FILE_EXTENSION;
 
@@ -113,7 +107,7 @@ namespace mag
         data["NumMeshes"] = model.meshes.size();
 
         // Write the data to the native file format
-        if (!file_system.write_json_data(native_model_file_path, data))
+        if (!fs::write_json_data(native_model_file_path, data))
         {
             LOG_ERROR("Failed to create native model file: '{0}'", native_model_file_path);
             return false;
@@ -152,7 +146,7 @@ namespace mag
         }
 
         // Write binary model data to file
-        if (!file_system.write_binary_data(binary_file_path, buffer))
+        if (!fs::write_binary_data(binary_file_path, buffer))
         {
             LOG_ERROR("Failed to create binary model file: '{0}'", binary_file_path);
             return false;
@@ -277,9 +271,6 @@ namespace mag
     void ModelImporter::IMPL::initialize_materials(const aiScene* ai_scene, const str& file_path,
                                                    const str& output_directory, Model& model)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         const str model_directory = file_path.substr(0, file_path.find_last_of('/'));
 
         model.materials.resize(ai_scene->mNumMaterials);
@@ -309,7 +300,7 @@ namespace mag
             data["Textures"]["Roughness"] = find_texture(ai_material, aiTextureType_DIFFUSE_ROUGHNESS, model_directory);
             data["Textures"]["Metalness"] = find_texture(ai_material, aiTextureType_METALNESS, model_directory);
 
-            if (!file_system.write_json_data(material_file_path, data))
+            if (!fs::write_json_data(material_file_path, data))
             {
                 LOG_ERROR("Failed to create material file: {0}", material_file_path);
                 continue;

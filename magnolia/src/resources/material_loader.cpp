@@ -1,6 +1,5 @@
 #include "resources/material_loader.hpp"
 
-#include "core/application.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "resources/material.hpp"
@@ -9,12 +8,9 @@ namespace mag
 {
     b8 MaterialLoader::load(const str& name, Material* material)
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         json data;
 
-        if (!file_system.read_json_data(name, data))
+        if (!fs::read_json_data(name, data))
         {
             LOG_ERROR("Failed to load material: '{0}'", name);
             return false;

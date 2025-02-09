@@ -229,11 +229,8 @@ namespace mag
 
     b8 Window::set_window_icon(const str& bmp_file) const
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         Buffer buffer;
-        if (!file_system.read_binary_data(bmp_file, buffer))
+        if (!fs::read_binary_data(bmp_file, buffer))
         {
             LOG_ERROR("Failed to read file: '{0}'", bmp_file);
             return false;

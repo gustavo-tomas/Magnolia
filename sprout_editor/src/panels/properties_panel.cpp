@@ -1,6 +1,5 @@
 #include "panels/properties_panel.hpp"
 
-#include "core/application.hpp"
 #include "core/file_system.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
@@ -17,12 +16,9 @@ namespace sprout
 
     b8 check_file(const str &file_path)
     {
-        auto &app = get_application();
-        auto &file_system = app.get_file_system();
-
-        if (file_system.exists(file_path) && !file_system.is_directory(file_path))
+        if (fs::exists(file_path) && !fs::is_directory(file_path))
         {
-            return file_system.get_file_extension(file_path) == ".cpp";
+            return fs::get_file_extension(file_path) == ".cpp";
         }
 
         return false;
