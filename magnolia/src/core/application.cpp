@@ -199,12 +199,11 @@ namespace mag
         }
     }
 
-    void Application::process_event(Event& e)
+    void Application::process_event(const Event& e)
     {
         // Process the event internally
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
-        dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
+        dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
+        dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
 
         impl->renderer->on_event(e);
 
@@ -212,15 +211,15 @@ namespace mag
         on_event(e);
     }
 
-    void Application::process_user_application_event(Event& e) { process_event(e); }
+    void Application::process_user_application_event(const Event& e) { process_event(e); }
 
-    void Application::on_quit(QuitEvent& e)
+    void Application::on_quit(const QuitEvent& e)
     {
         (void)e;
         impl->running = false;
     }
 
-    void Application::on_window_close(WindowCloseEvent& e)
+    void Application::on_window_close(const WindowCloseEvent& e)
     {
         (void)e;
         impl->running = false;

@@ -23,7 +23,7 @@ namespace sprout
             ~MenuBar();
 
             void render(const ImGuiWindowFlags window_flags);
-            void on_event(Event& e);
+            void on_event(const Event& e);
 
             b8 quit_requested() const;
 
@@ -34,7 +34,7 @@ namespace sprout
             void open_scene();
             void quit_application();
 
-            void on_key_press(KeyPressEvent& e);
+            void on_key_press(const KeyPressEvent& e);
 
             unique<InfoMenu> info_menu;
             b8 quit = false;

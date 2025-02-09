@@ -6,6 +6,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/camera.hpp"
 #include "core/application.hpp"
+#include "core/event.hpp"
 #include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "ecs/ecs.hpp"
@@ -360,13 +361,12 @@ namespace sprout
         ImGui::PopStyleVar();
     }
 
-    void ViewportPanel::on_event(Event &e)
+    void ViewportPanel::on_event(const Event &e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<KeyPressEvent>(BIND_FN(ViewportPanel::on_key_press));
+        dispatch_event<KeyPressEvent>(e, BIND_FN(ViewportPanel::on_key_press));
     }
 
-    void ViewportPanel::on_key_press(KeyPressEvent &e)
+    void ViewportPanel::on_key_press(const KeyPressEvent &e)
     {
         auto &editor = get_editor();
 

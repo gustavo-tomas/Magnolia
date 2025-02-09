@@ -35,7 +35,7 @@ namespace mag
             // The main function will call this, not the user
             void run();
 
-            virtual void on_event(Event& e) = 0;
+            virtual void on_event(const Event& e) = 0;
             virtual void on_update(const f32 dt) = 0;
 
             // -1 is no limits
@@ -58,12 +58,12 @@ namespace mag
 
         protected:
             // Process events from the user application
-            void process_user_application_event(Event& e);
+            void process_user_application_event(const Event& e);
 
         private:
-            void process_event(Event& e);
-            void on_window_close(WindowCloseEvent& e);
-            void on_quit(QuitEvent& e);
+            void process_event(const Event& e);
+            void on_window_close(const WindowCloseEvent& e);
+            void on_quit(const QuitEvent& e);
 
             struct IMPL;
             unique<IMPL> impl;

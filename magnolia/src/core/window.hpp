@@ -11,7 +11,7 @@
 namespace mag
 {
     using namespace mag::math;
-    using EventCallback = std::function<void(Event&)>;
+    using EventCallback = std::function<void(const Event&)>;
 
     struct WindowOptions
     {

@@ -18,11 +18,11 @@ namespace sprout
             ~EditorCameraController();
 
             void on_update(const f32 dt);
-            void on_event(Event& e);
+            void on_event(const Event& e);
 
         private:
-            void on_mouse_move(MouseMoveEvent& e);
-            void on_mouse_scroll(MouseScrollEvent& e);
+            void on_mouse_move(const MouseMoveEvent& e);
+            void on_mouse_scroll(const MouseScrollEvent& e);
 
             Camera& camera;
     };

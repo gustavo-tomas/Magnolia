@@ -23,7 +23,7 @@ namespace mag
             ~Renderer();
 
             void on_update(RenderGraph& render_graph);
-            void on_event(Event& e);
+            void on_event(const Event& e);
 
             void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
                       const u32 first_instance = 0);
@@ -46,7 +46,7 @@ namespace mag
             void update_image(Image* image);
 
         private:
-            void on_resize(WindowResizeEvent& e);
+            void on_resize(const WindowResizeEvent& e);
 
             struct IMPL;
             unique<IMPL> impl;

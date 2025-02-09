@@ -17,7 +17,7 @@ namespace mag
             virtual void on_create();
             virtual void on_destroy();
             virtual void on_update(const f32 dt);
-            virtual void on_event(Event& e);
+            virtual void on_event(const Event& e);
 
             template <typename T>
             T* get_component()

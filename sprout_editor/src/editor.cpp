@@ -6,6 +6,7 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "core/application.hpp"
+#include "core/event.hpp"
 #include "editor_scene.hpp"
 #include "editor_style.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
@@ -272,12 +273,11 @@ namespace sprout
         impl->viewport_panel->render(window_flags, camera, ecs, selected_entity_id, viewport_image);
     }
 
-    void Editor::on_event(Event &e)
+    void Editor::on_event(const Event &e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<NativeEvent>(BIND_FN(Editor::on_sdl_event));
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Editor::on_resize));
-        dispatcher.dispatch<QuitEvent>(BIND_FN(Editor::on_quit));
+        dispatch_event<NativeEvent>(e, BIND_FN(Editor::on_sdl_event));
+        dispatch_event<WindowResizeEvent>(e, BIND_FN(Editor::on_resize));
+        dispatch_event<QuitEvent>(e, BIND_FN(Editor::on_quit));
 
         get_active_scene().on_event(e);
         impl->menu_bar->on_event(e);
@@ -287,7 +287,7 @@ namespace sprout
     // @TODO: use file dialogs to ask about saving files when the file dialog is implemented. For now this is a
     // temporary solution to avoid losing work after closing. Also the scene names must be different form one another or
     // else the files will be overwritten.
-    void Editor::on_quit(QuitEvent &e)
+    void Editor::on_quit(const QuitEvent &e)
     {
         (void)e;
 
@@ -298,9 +298,12 @@ namespace sprout
         }
     }
 
-    void Editor::on_sdl_event(NativeEvent &e) { ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<const SDL_Event *>(e.e)); }
+    void Editor::on_sdl_event(const NativeEvent &e)
+    {
+        ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<const SDL_Event *>(e.e));
+    }
 
-    void Editor::on_resize(WindowResizeEvent &e)
+    void Editor::on_resize(const WindowResizeEvent &e)
     {
         const uvec2 window_size = {e.width, e.height};
 
