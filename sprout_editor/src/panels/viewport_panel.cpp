@@ -18,7 +18,7 @@
 #include "renderer/renderer_image.hpp"
 #include "renderer/sampler.hpp"
 #include "renderer/shader.hpp"
-#include "resources/image_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "scene/scene_serializer.hpp"
 #include "threads/job_system.hpp"
 #include "tools/model_importer.hpp"
@@ -45,7 +45,6 @@ namespace sprout
     {
         auto &app = get_application();
         auto &editor = get_editor();
-        auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
         auto &open_scenes = editor.get_open_scenes();
 
@@ -263,7 +262,7 @@ namespace sprout
                         }
 
                         // Check if asset is an image
-                        else if (image_loader.is_extension_supported(extension))
+                        else if (resource::is_image_extension_supported(extension))
                         {
                             scene.add_sprite(path);
                         }

@@ -15,7 +15,7 @@
 #include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
-#include "resources/shader_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
@@ -27,12 +27,9 @@ namespace mag
         auto it = shaders.find(file_path);
         if (it != shaders.end()) return it->second;
 
-        auto& app = get_application();
-        auto& shader_loader = app.get_shader_loader();
-
         ShaderConfiguration shader_configuration;
 
-        if (!shader_loader.load(file_path, &shader_configuration))
+        if (!resource::load(file_path, &shader_configuration))
         {
             LOG_ERROR("Failed to load shader: '{0}'", file_path);
             return nullptr;
@@ -46,12 +43,9 @@ namespace mag
     {
         for (const auto& [file_path, shader] : shaders)
         {
-            auto& app = get_application();
-            auto& shader_loader = app.get_shader_loader();
-
             ShaderConfiguration shader_configuration;
 
-            if (!shader_loader.load(file_path, &shader_configuration))
+            if (!resource::load(file_path, &shader_configuration))
             {
                 LOG_ERROR("Failed to load shader: '{0}'", file_path);
                 continue;

@@ -3,7 +3,7 @@
 #include "core/application.hpp"
 #include "core/logger.hpp"
 #include "renderer/renderer.hpp"
-#include "resources/image_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
@@ -60,7 +60,6 @@ namespace mag
         auto& app = get_application();
         auto& job_system = app.get_job_system();
         auto& renderer = app.get_renderer();
-        auto& image_loader = app.get_image_loader();
 
         // Create a new texture
         Image* image = new Image();
@@ -68,8 +67,8 @@ namespace mag
         textures[name] = ref<Image>(image);
 
         // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
-        if (image_loader.get_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
-                                  &image->mip_levels))
+        if (resource::get_image_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
+                                     &image->mip_levels))
         {
             image->pixels.resize(image->width * image->height * image->channels, image->pixels[0]);
         }
@@ -86,10 +85,10 @@ namespace mag
         Image* transfer_image = new Image(*image);
 
         // Load in another thread
-        auto execute = [&image_loader, name, transfer_image]
+        auto execute = [name, transfer_image]
         {
             // If the load fails we still have valid data
-            return image_loader.load(name, transfer_image);
+            return resource::load(name, transfer_image);
         };
 
         // Callback when finished loading

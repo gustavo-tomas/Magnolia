@@ -3,7 +3,7 @@
 #include "core/application.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
-#include "resources/model_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
@@ -34,7 +34,6 @@ namespace mag
 
         auto& app = get_application();
         auto& job_system = app.get_job_system();
-        auto& model_loader = app.get_model_loader();
         auto& renderer = app.get_renderer();
 
         // Create a new model
@@ -48,10 +47,10 @@ namespace mag
         Model* transfer_model = new Model(*model);
 
         // Load in another thread
-        auto execute = [&model_loader, name, transfer_model]
+        auto execute = [name, transfer_model]
         {
             // If the load fails we still have valid data
-            return model_loader.load(name, transfer_model);
+            return resource::load(name, transfer_model);
         };
 
         // Callback when finished loading

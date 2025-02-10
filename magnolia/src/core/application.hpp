@@ -15,11 +15,6 @@ namespace mag
     class ModelManager;
     class MaterialManager;
 
-    class ImageLoader;
-    class MaterialLoader;
-    class ModelLoader;
-    class ShaderLoader;
-
     struct Event;
     struct QuitEvent;
     struct WindowCloseEvent;
@@ -44,13 +39,9 @@ namespace mag
             Renderer& get_renderer();
             FileWatcher& get_file_watcher();
             JobSystem& get_job_system();
-            ImageLoader& get_image_loader();
-            MaterialLoader& get_material_loader();
-            ModelLoader& get_model_loader();
             TextureManager& get_texture_manager();
             MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
-            ShaderLoader& get_shader_loader();
             ShaderManager& get_shader_manager();
             PhysicsEngine& get_physics_engine();
 
