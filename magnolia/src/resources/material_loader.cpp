@@ -2,8 +2,8 @@
 #include "resources/resource_loader.hpp"
 // this header on top
 
-#include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "platform/file_system.hpp"
 #include "resources/material.hpp"
 
 namespace mag

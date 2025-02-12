@@ -8,9 +8,9 @@
 #include "assimp/scene.h"
 #include "core/application.hpp"
 #include "core/buffer.hpp"
-#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
+#include "platform/file_system.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 

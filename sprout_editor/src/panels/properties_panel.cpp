@@ -1,12 +1,12 @@
 #include "panels/properties_panel.hpp"
 
-#include "core/file_system.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "math/generic.hpp"
 #include "misc/cpp/imgui_stdlib.h"
+#include "platform/file_system.hpp"
 #include "resources/model.hpp"
 
 namespace sprout

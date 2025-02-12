@@ -11,8 +11,8 @@
 #include "core/assert.hpp"
 #include "core/buffer.hpp"
 #include "core/event.hpp"
-#include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "platform/file_system.hpp"
 #include "private/key_mappings.hpp"
 
 namespace mag
