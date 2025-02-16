@@ -50,14 +50,13 @@ class CameraController : public ScriptableEntity
             camera.set_position(transform->translation);
         }
 
-        virtual void on_event(Event& e) override
+        virtual void on_event(const Event& e) override
         {
-            EventDispatcher dispatcher(e);
-            dispatcher.dispatch<MouseMoveEvent>(BIND_FN(CameraController::on_mouse_move));
-            dispatcher.dispatch<MousePressEvent>(BIND_FN(CameraController::on_mouse_click));
+            dispatch_event<MouseMoveEvent>(e, BIND_FN(CameraController::on_mouse_move));
+            dispatch_event<MousePressEvent>(e, BIND_FN(CameraController::on_mouse_click));
         }
 
-        void on_mouse_click(MousePressEvent& e)
+        void on_mouse_click(const MousePressEvent& e)
         {
             // Capture/Release the cursor
             if (e.button == Button::Right)
@@ -69,7 +68,7 @@ class CameraController : public ScriptableEntity
             }
         }
 
-        void on_mouse_move(MouseMoveEvent& e)
+        void on_mouse_move(const MouseMoveEvent& e)
         {
             // This is not as good as updating on the loop with dt, but its a nice example
             auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();

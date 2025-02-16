@@ -15,9 +15,9 @@ namespace sprout
     void ScenePanel::render(const ImGuiWindowFlags window_flags, ECS& ecs)
     {
         // Check if selected id is valid
-        if (selected_entity_id != INVALID_ID && !ecs.entity_exists(selected_entity_id))
+        if (selected_entity_id != Invalid_ID && !ecs.entity_exists(selected_entity_id))
         {
-            selected_entity_id = INVALID_ID;
+            selected_entity_id = Invalid_ID;
         }
 
         ImGui::Begin(ICON_FA_CUBES " Scene", NULL, window_flags);
@@ -92,7 +92,7 @@ namespace sprout
                     auto& scene = get_editor().get_active_scene();
                     scene.remove_entity(entity_id);
 
-                    if (selected_entity_id == entity_id) selected_entity_id = INVALID_ID;
+                    if (selected_entity_id == entity_id) selected_entity_id = Invalid_ID;
                 }
 
                 ImGui::EndPopup();

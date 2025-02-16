@@ -50,5 +50,8 @@ namespace mag
             static DialogButton message(const str& title, const str& message, const DialogChoice choice,
                                         const DialogIcon icon);
             static str select_folder(const str& title);
+
+        private:
+            static b8 initialized;
     };
 };  // namespace mag

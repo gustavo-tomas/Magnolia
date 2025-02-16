@@ -2,20 +2,16 @@
 
 #include "core/assert.hpp"
 #include "core/event.hpp"
-#include "core/file_system.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_dialog.hpp"
+#include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/image.hpp"
-#include "resources/image_loader.hpp"
 #include "resources/material.hpp"
-#include "resources/material_loader.hpp"
 #include "resources/model.hpp"
-#include "resources/model_loader.hpp"
-#include "resources/shader_loader.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
 
@@ -36,13 +32,8 @@ namespace mag
 
             unique<Window> window;
             unique<Renderer> renderer;
-            unique<FileSystem> file_system;
             unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
-            unique<ImageLoader> image_loader;
-            unique<MaterialLoader> material_loader;
-            unique<ModelLoader> model_loader;
-            unique<ShaderLoader> shader_loader;
             unique<TextureManager> texture_loader;
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
@@ -59,20 +50,16 @@ namespace mag
 
         // Remember that smart pointers are destroyed in the reverse order of creation
 
-        // Create the file system
-        impl->file_system = create_unique<FileSystem>();
-        LOG_SUCCESS("FileSystem initialized");
-
         // Read config file
 
         json config;
 
-        uvec2 window_size = WindowOptions::MAX_SIZE;
-        ivec2 window_position = WindowOptions::CENTER_POS;
+        uvec2 window_size = WindowOptions::MaxSize;
+        ivec2 window_position = WindowOptions::CenterPos;
         str window_title = "Magnolia";
         str window_icon = "";
 
-        if (impl->file_system->read_json_data(config_file_path, config))
+        if (fs::read_json_data(config_file_path, config))
         {
             u32 count = 0;
             for (const auto& num : config["WindowSize"])
@@ -113,22 +100,6 @@ namespace mag
         // Create the job system
         impl->job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
         LOG_SUCCESS("JobSystem initialized");
-
-        // Create the image loader
-        impl->image_loader = create_unique<ImageLoader>();
-        LOG_SUCCESS("ImageLoader initialized");
-
-        // Create the material loader
-        impl->material_loader = create_unique<MaterialLoader>();
-        LOG_SUCCESS("MaterialLoader initialized");
-
-        // Create the model loader
-        impl->model_loader = create_unique<ModelLoader>();
-        LOG_SUCCESS("ModelLoader initialized");
-
-        // Create the shader loader
-        impl->shader_loader = create_unique<ShaderLoader>();
-        LOG_SUCCESS("ShaderLoader initialized");
 
         // Create the texture manager
         impl->texture_loader = create_unique<TextureManager>();
@@ -199,12 +170,11 @@ namespace mag
         }
     }
 
-    void Application::process_event(Event& e)
+    void Application::process_event(const Event& e)
     {
         // Process the event internally
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<WindowCloseEvent>(BIND_FN(Application::on_window_close));
-        dispatcher.dispatch<QuitEvent>(BIND_FN(Application::on_quit));
+        dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
+        dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
 
         impl->renderer->on_event(e);
 
@@ -212,15 +182,15 @@ namespace mag
         on_event(e);
     }
 
-    void Application::process_user_application_event(Event& e) { process_event(e); }
+    void Application::process_user_application_event(const Event& e) { process_event(e); }
 
-    void Application::on_quit(QuitEvent& e)
+    void Application::on_quit(const QuitEvent& e)
     {
         (void)e;
         impl->running = false;
     }
 
-    void Application::on_window_close(WindowCloseEvent& e)
+    void Application::on_window_close(const WindowCloseEvent& e)
     {
         (void)e;
         impl->running = false;
@@ -230,16 +200,11 @@ namespace mag
 
     Window& Application::get_window() { return *impl->window; }
     Renderer& Application::get_renderer() { return *impl->renderer; }
-    FileSystem& Application::get_file_system() { return *impl->file_system; }
     FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
     JobSystem& Application::get_job_system() { return *impl->job_system; }
-    ImageLoader& Application::get_image_loader() { return *impl->image_loader; }
-    MaterialLoader& Application::get_material_loader() { return *impl->material_loader; }
-    ModelLoader& Application::get_model_loader() { return *impl->model_loader; }
     TextureManager& Application::get_texture_manager() { return *impl->texture_loader; }
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }
-    ShaderLoader& Application::get_shader_loader() { return *impl->shader_loader; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
     PhysicsEngine& Application::get_physics_engine() { return *impl->physics_engine; }
 };  // namespace mag

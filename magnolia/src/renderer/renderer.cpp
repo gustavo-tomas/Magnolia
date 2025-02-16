@@ -206,13 +206,9 @@ namespace mag
         impl->images.erase(it);
     }
 
-    void Renderer::on_event(Event& e)
-    {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Renderer::on_resize));
-    }
+    void Renderer::on_event(const Event& e) { dispatch_event<WindowResizeEvent>(e, BIND_FN(Renderer::on_resize)); }
 
-    void Renderer::on_resize(WindowResizeEvent& e)
+    void Renderer::on_resize(const WindowResizeEvent& e)
     {
         const uvec2& size = {e.width, e.height};
 

@@ -65,8 +65,8 @@ namespace mag
         // Acquire
         try
         {
-            auto result = device.acquireNextImageKHR(context.get_swapchain(), MAG_TIMEOUT,
-                                                     *curr_frame.present_semaphore, nullptr, &swapchain_image_index);
+            auto result = device.acquireNextImageKHR(context.get_swapchain(), Timeout, *curr_frame.present_semaphore,
+                                                     nullptr, &swapchain_image_index);
 
             if (result != vk::Result::eSuccess)
             {
@@ -93,7 +93,7 @@ namespace mag
             ASSERT(false, "Failed to acquire swapchain image");
         }
 
-        VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, MAG_TIMEOUT));
+        VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, Timeout));
         device.resetFences(*curr_frame.render_fence);
 
         context.get_device().resetCommandPool(*curr_frame.command_pool);

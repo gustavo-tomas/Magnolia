@@ -145,13 +145,9 @@ namespace sprout
 
     void MenuBar::quit_application() { quit = true; }
 
-    void MenuBar::on_event(Event& e)
-    {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<KeyPressEvent>(BIND_FN(MenuBar::on_key_press));
-    }
+    void MenuBar::on_event(const Event& e) { dispatch_event<KeyPressEvent>(e, BIND_FN(MenuBar::on_key_press)); }
 
-    void MenuBar::on_key_press(KeyPressEvent& e)
+    void MenuBar::on_key_press(const KeyPressEvent& e)
     {
         auto& window = get_application().get_window();
 

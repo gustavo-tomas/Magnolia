@@ -2,7 +2,7 @@
 
 #include "core/application.hpp"
 #include "resources/image.hpp"
-#include "resources/material_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
@@ -27,7 +27,6 @@ namespace mag
 
         auto& app = get_application();
         auto& job_system = app.get_job_system();
-        auto& material_loader = app.get_material_loader();
 
         // Create a new material
         Material* material = new Material(*materials[DEFAULT_MATERIAL_NAME]);
@@ -37,11 +36,11 @@ namespace mag
         Material* transfer_material = new Material(*material);
 
         // Load in another thread
-        auto execute = [&material_loader, name, transfer_material]
+        auto execute = [name, transfer_material]
         {
             // If the load fails we still have valid data
             transfer_material->loading_state = MaterialLoadingState::LoadingInProgress;
-            return material_loader.load(name, transfer_material);
+            return resource::load(name, transfer_material);
         };
 
         // Callback when finished loading

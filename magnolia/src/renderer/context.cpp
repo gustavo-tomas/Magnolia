@@ -534,7 +534,7 @@ namespace mag
         submit.setCommandBuffers(cmd.get_handle());
 
         impl->graphics_queue.submit(submit, impl->upload_fence);
-        VK_CHECK(impl->device.waitForFences(impl->upload_fence, true, MAG_TIMEOUT));
+        VK_CHECK(impl->device.waitForFences(impl->upload_fence, true, Timeout));
         impl->device.resetFences(impl->upload_fence);
         impl->device.resetCommandPool(impl->immediate_command_pool);
     }

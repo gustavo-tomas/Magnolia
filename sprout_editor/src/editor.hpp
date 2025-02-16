@@ -24,7 +24,7 @@ namespace sprout
             ~Editor();
 
             virtual void on_update(const f32 dt) override;
-            virtual void on_event(Event& e) override;
+            virtual void on_event(const Event& e) override;
 
             void add_scene(EditorScene* scene);
             void close_scene(const ref<EditorScene>& scene);
@@ -54,9 +54,9 @@ namespace sprout
 
             void render(ECS& ecs, Camera& camera, RendererImage& viewport_image);
 
-            void on_sdl_event(NativeEvent& e);
-            void on_resize(WindowResizeEvent& e);
-            void on_quit(QuitEvent& e);
+            void on_sdl_event(const NativeEvent& e);
+            void on_resize(const WindowResizeEvent& e);
+            void on_quit(const QuitEvent& e);
             void on_viewport_resize(const uvec2& new_viewport_size);
 
             void set_active_scene(const u32 index);

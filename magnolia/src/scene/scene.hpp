@@ -19,7 +19,7 @@ namespace mag
             void on_start();
             void on_stop();
 
-            void on_event(Event& e);
+            void on_event(const Event& e);
             void on_update(const f32 dt);
 
             // @TODO: this should extend to all components (and maybe be a bit more generic). This way if we ever need
@@ -41,9 +41,9 @@ namespace mag
             // The user can override these if they want
             virtual void on_start_internal();
             virtual void on_stop_internal();
-            virtual void on_event_internal(Event& e);
+            virtual void on_event_internal(const Event& e);
             virtual void on_update_internal(const f32 dt);
-            virtual void on_resize(WindowResizeEvent& e);
+            virtual void on_resize(const WindowResizeEvent& e);
             virtual void on_component_added(const u32 id, Component* component);
 
             str name;

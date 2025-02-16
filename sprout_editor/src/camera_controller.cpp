@@ -2,6 +2,7 @@
 
 #include "camera/camera.hpp"
 #include "core/application.hpp"
+#include "core/event.hpp"
 #include "core/window.hpp"
 
 namespace sprout
@@ -12,14 +13,13 @@ namespace sprout
 
     void EditorCameraController::on_update(const f32 dt) { (void)dt; }
 
-    void EditorCameraController::on_event(Event& e)
+    void EditorCameraController::on_event(const Event& e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<MouseMoveEvent>(BIND_FN(EditorCameraController::on_mouse_move));
-        dispatcher.dispatch<MouseScrollEvent>(BIND_FN(EditorCameraController::on_mouse_scroll));
+        dispatch_event<MouseMoveEvent>(e, BIND_FN(EditorCameraController::on_mouse_move));
+        dispatch_event<MouseScrollEvent>(e, BIND_FN(EditorCameraController::on_mouse_scroll));
     }
 
-    void EditorCameraController::on_mouse_move(MouseMoveEvent& e)
+    void EditorCameraController::on_mouse_move(const MouseMoveEvent& e)
     {
         auto& window = get_application().get_window();
 
@@ -46,7 +46,7 @@ namespace sprout
         }
     }
 
-    void EditorCameraController::on_mouse_scroll(MouseScrollEvent& e)
+    void EditorCameraController::on_mouse_scroll(const MouseScrollEvent& e)
     {
         auto& window = get_application().get_window();
 

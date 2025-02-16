@@ -4,70 +4,32 @@
 
 namespace mag
 {
-    // Dark magic
-#define EVENT_CLASS_TYPE_DECLARATION    \
-    static EventType get_static_type(); \
-    virtual EventType get_type() const override;
-
     enum class Keys : u64;
     enum class Buttons : u64;
-
-    enum class EventType
-    {
-        // Window events
-        WindowClose = 0,
-        WindowResize,
-        KeyPress,
-        KeyRelease,
-        MouseMove,
-        MouseScroll,
-        MousePress,
-        NativeEvent,
-
-        // Client events
-        Quit
-    };
 
     struct Event
     {
             virtual ~Event();
-
-            virtual EventType get_type() const = 0;
     };
 
-    // Automatic type deduction
-    // https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Events/Event.h
-    class EventDispatcher
+    // Call the provided callback if T matches the event type
+    template <typename T, typename F>
+    void dispatch_event(const Event& event, const F& func)
     {
-        public:
-            explicit EventDispatcher(Event& event);
-
-            // F will be deduced by the compiler
-            template <typename T, typename F>
-            void dispatch(const F& func)
-            {
-                if (event.get_type() == T::get_static_type())
-                {
-                    func(static_cast<T&>(event));
-                }
-            }
-
-        private:
-            Event& event;
-    };
+        if (const auto* e = dynamic_cast<const T*>(&event))
+        {
+            func(*e);
+        }
+    }
 
     struct WindowCloseEvent : public Event
     {
-            EVENT_CLASS_TYPE_DECLARATION;
-
             // Empty
     };
 
     struct WindowResizeEvent : public Event
     {
             WindowResizeEvent(const u32 width, const u32 height);
-
-            EVENT_CLASS_TYPE_DECLARATION;
 
             u32 width;
             u32 height;
@@ -77,8 +39,6 @@ namespace mag
     {
             explicit KeyPressEvent(const Keys key);
 
-            EVENT_CLASS_TYPE_DECLARATION;
-
             Keys key;
     };
 
@@ -86,16 +46,12 @@ namespace mag
     {
             explicit KeyReleaseEvent(const Keys key);
 
-            EVENT_CLASS_TYPE_DECLARATION;
-
             Keys key;
     };
 
     struct MouseMoveEvent : public Event
     {
             MouseMoveEvent(const i32 x_direction, const i32 y_direction);
-
-            EVENT_CLASS_TYPE_DECLARATION;
 
             i32 x_direction;
             i32 y_direction;
@@ -105,8 +61,6 @@ namespace mag
     {
             MouseScrollEvent(const f64 x_offset, const f64 y_offset);
 
-            EVENT_CLASS_TYPE_DECLARATION;
-
             f64 x_offset;
             f64 y_offset;
     };
@@ -115,8 +69,6 @@ namespace mag
     {
             explicit MousePressEvent(const Buttons button);
 
-            EVENT_CLASS_TYPE_DECLARATION;
-
             Buttons button;
     };
 
@@ -124,15 +76,11 @@ namespace mag
     {
             explicit NativeEvent(const void* e);
 
-            EVENT_CLASS_TYPE_DECLARATION;
-
             const void* e;
     };
 
     struct QuitEvent : public Event
     {
-            EVENT_CLASS_TYPE_DECLARATION;
-
             // Empty
     };
 };  // namespace mag

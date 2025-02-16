@@ -3,10 +3,10 @@
 #include "camera_controller.hpp"
 #include "core/application.hpp"
 #include "core/assert.hpp"
-#include "core/file_system.hpp"
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
+#include "platform/file_system.hpp"
 #include "threads/job_system.hpp"
 
 namespace sprout
@@ -144,7 +144,7 @@ namespace sprout
         }
     }
 
-    void EditorScene::on_event_internal(Event& e) { camera_controller->on_event(e); }
+    void EditorScene::on_event_internal(const Event& e) { camera_controller->on_event(e); }
 
     void EditorScene::on_viewport_resize(const uvec2& new_viewport_size)
     {
@@ -163,7 +163,7 @@ namespace sprout
         }
     }
 
-    void EditorScene::on_resize(WindowResizeEvent& e)
+    void EditorScene::on_resize(const WindowResizeEvent& e)
     {
         // Don't do anything on window resize (we handle the viewport resize only)
         (void)e;

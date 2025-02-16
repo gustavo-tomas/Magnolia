@@ -6,7 +6,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/camera.hpp"
 #include "core/application.hpp"
-#include "core/file_system.hpp"
+#include "core/event.hpp"
 #include "core/logger.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
@@ -14,10 +14,11 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
 #include "math/generic.hpp"
+#include "platform/file_system.hpp"
 #include "renderer/renderer_image.hpp"
 #include "renderer/sampler.hpp"
 #include "renderer/shader.hpp"
-#include "resources/image_loader.hpp"
+#include "resources/resource_loader.hpp"
 #include "scene/scene_serializer.hpp"
 #include "threads/job_system.hpp"
 #include "tools/model_importer.hpp"
@@ -44,7 +45,6 @@ namespace sprout
     {
         auto &app = get_application();
         auto &editor = get_editor();
-        auto &image_loader = app.get_image_loader();
         auto &scene = editor.get_active_scene();
         auto &open_scenes = editor.get_open_scenes();
 
@@ -140,7 +140,7 @@ namespace sprout
             const str tab_id = "##" + std::to_string(i);
 
             // Edit scene name
-            static u32 edited_scene_index = INVALID_ID;
+            static u32 edited_scene_index = Invalid_ID;
 
             b8 open = true;
             if (ImGui::BeginTabItem((open_scenes[i]->get_name() + tab_id).c_str(), &open))
@@ -154,7 +154,7 @@ namespace sprout
                 // Tab changed or lost focus -> quit editing
                 if (edited_scene_index != i || !ImGui::IsWindowFocused())
                 {
-                    edited_scene_index = INVALID_ID;
+                    edited_scene_index = Invalid_ID;
                 }
 
                 str name = open_scenes[i]->get_name();
@@ -162,7 +162,7 @@ namespace sprout
                 if (edited_scene_index == i && ImGui::InputText("##SceneNameClicked", &name, 0))
                 {
                     open_scenes[i]->set_name(name);
-                    edited_scene_index = INVALID_ID;
+                    edited_scene_index = Invalid_ID;
                 }
 
                 editor.set_selected_scene_index(i);
@@ -182,21 +182,20 @@ namespace sprout
                     if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
                     {
                         auto &app = get_application();
-                        auto &file_system = app.get_file_system();
 
                         const c8 *path = static_cast<const c8 *>(payload->Data);
-                        const str extension = file_system.get_file_extension(path);
+                        const str extension = fs::get_file_extension(path);
 
                         ModelImporter importer;
 
                         // First check if the path exists
-                        if (!file_system.exists(path))
+                        if (!fs::exists(path))
                         {
                             LOG_ERROR("File not found: {0}", path);
                         }
 
                         // Then check if its a directory
-                        else if (file_system.is_directory(path))
+                        else if (fs::is_directory(path))
                         {
                             LOG_ERROR("Path is a directory: {0}", path);
                         }
@@ -205,7 +204,7 @@ namespace sprout
                         else if (extension == ".json")
                         {
                             json data;
-                            if (!file_system.read_json_data(path, data) || !data.contains("Type"))
+                            if (!fs::read_json_data(path, data) || !data.contains("Type"))
                             {
                                 goto end_drag_drop_target;
                             }
@@ -263,7 +262,7 @@ namespace sprout
                         }
 
                         // Check if asset is an image
-                        else if (image_loader.is_extension_supported(extension))
+                        else if (resource::is_image_extension_supported(extension))
                         {
                             scene.add_sprite(path);
                         }
@@ -298,7 +297,7 @@ namespace sprout
         ImGui::EndTabBar();
 
         // Render gizmos for selected model
-        if (!editor.is_disabled() && selected_entity_id != INVALID_ID)
+        if (!editor.is_disabled() && selected_entity_id != Invalid_ID)
         {
             // Check if entity has a transform before rendering gizmo
             auto *transform = ecs.get_component<TransformComponent>(selected_entity_id);
@@ -360,13 +359,12 @@ namespace sprout
         ImGui::PopStyleVar();
     }
 
-    void ViewportPanel::on_event(Event &e)
+    void ViewportPanel::on_event(const Event &e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<KeyPressEvent>(BIND_FN(ViewportPanel::on_key_press));
+        dispatch_event<KeyPressEvent>(e, BIND_FN(ViewportPanel::on_key_press));
     }
 
-    void ViewportPanel::on_key_press(KeyPressEvent &e)
+    void ViewportPanel::on_key_press(const KeyPressEvent &e)
     {
         auto &editor = get_editor();
 

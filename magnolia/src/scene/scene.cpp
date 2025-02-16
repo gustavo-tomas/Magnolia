@@ -3,6 +3,7 @@
 #include "camera/camera.hpp"
 #include "core/application.hpp"
 #include "core/assert.hpp"
+#include "core/event.hpp"
 #include "physics/physics.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
@@ -124,10 +125,9 @@ namespace mag
         (void)component;
     }
 
-    void Scene::on_event(Event& e)
+    void Scene::on_event(const Event& e)
     {
-        EventDispatcher dispatcher(e);
-        dispatcher.dispatch<WindowResizeEvent>(BIND_FN(Scene::on_resize));
+        dispatch_event<WindowResizeEvent>(e, BIND_FN(Scene::on_resize));
 
         // Emit events to the native scripts
         for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
@@ -141,7 +141,7 @@ namespace mag
         on_event_internal(e);
     }
 
-    void Scene::on_resize(WindowResizeEvent& e)
+    void Scene::on_resize(const WindowResizeEvent& e)
     {
         const uvec2& size = {e.width, e.height};
 
@@ -209,7 +209,7 @@ namespace mag
 
     void Scene::on_start_internal() {}
     void Scene::on_stop_internal() {}
-    void Scene::on_event_internal(Event& e) { (void)e; }
+    void Scene::on_event_internal(const Event& e) { (void)e; }
     void Scene::on_update_internal(const f32 dt) { (void)dt; }
 
     // @TODO

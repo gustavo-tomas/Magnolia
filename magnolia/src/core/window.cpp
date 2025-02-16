@@ -11,8 +11,8 @@
 #include "core/assert.hpp"
 #include "core/buffer.hpp"
 #include "core/event.hpp"
-#include "core/file_system.hpp"
 #include "core/logger.hpp"
+#include "platform/file_system.hpp"
 #include "private/key_mappings.hpp"
 
 namespace mag
@@ -45,7 +45,7 @@ namespace mag
 
         i32 width = 800, height = 600;
 
-        if (options.size == WindowOptions::MAX_SIZE)
+        if (options.size == WindowOptions::MaxSize)
         {
             SDL_DisplayMode display_mode;
             if (SDL_GetDesktopDisplayMode(0, &display_mode) != 0)
@@ -63,8 +63,8 @@ namespace mag
         const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
 
         impl->handle = SDL_CreateWindow(
-            options.title.c_str(), (options.position.x == MAX_I32) ? SDL_WINDOWPOS_CENTERED : options.position.x,
-            (options.position.y == MAX_I32) ? SDL_WINDOWPOS_CENTERED : options.position.y, width, height, flags);
+            options.title.c_str(), (options.position.x == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.x,
+            (options.position.y == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.y, width, height, flags);
 
         ASSERT(impl->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
 
@@ -229,11 +229,8 @@ namespace mag
 
     b8 Window::set_window_icon(const str& bmp_file) const
     {
-        auto& app = get_application();
-        auto& file_system = app.get_file_system();
-
         Buffer buffer;
-        if (!file_system.read_binary_data(bmp_file, buffer))
+        if (!fs::read_binary_data(bmp_file, buffer))
         {
             LOG_ERROR("Failed to read file: '{0}'", bmp_file);
             return false;
