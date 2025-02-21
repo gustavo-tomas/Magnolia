@@ -125,7 +125,7 @@ namespace mag
     void PhysicsEngine::add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
                                        RigidBodyComponent& rigid_body)
     {
-        auto* shape = new btBoxShape(mag_vec_to_bt_vec(collider.dimensions));
+        btBoxShape* shape = new btBoxShape(mag_vec_to_bt_vec(collider.dimensions));
 
         // Rigidbody is dynamic if and only if mass is non zero, otherwise static
         btVector3 local_inertia(0, 0, 0);
@@ -137,10 +137,9 @@ namespace mag
 
         btRigidBody* bt_rigid_body = new btRigidBody(rb_info);
 
-        internal_data->dynamics_world->addRigidBody(bt_rigid_body);
+        rigid_body.index = internal_data->dynamics_world->getNumCollisionObjects();
 
-        collider.internal = shape;
-        rigid_body.internal = bt_rigid_body;
+        internal_data->dynamics_world->addRigidBody(bt_rigid_body);
     }
 
     void PhysicsEngine::remove_rigid_body(const u32 index)
@@ -178,7 +177,11 @@ namespace mag
             for (i32 i = objects.size() - 1; i >= 0; i--)
             {
                 auto [transform, rigid_body_c] = objects[i];
-                auto* body = static_cast<btRigidBody*>(rigid_body_c->internal);
+
+                btCollisionObject* bt_object =
+                    internal_data->dynamics_world->getCollisionObjectArray().at(rigid_body_c->index);
+
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
                 btTransform trans(btQuaternion(0, 0, 0, 0));
 
