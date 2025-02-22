@@ -27,7 +27,7 @@
                 "Fov": 60.0,
                 "Near": 1.0,
                 "Far": 10000.0,
-                "AspectRatio": 1.7285945415496826
+                "AspectRatio": 1.7302100658416748
             },
             "ScriptComponent": {
                 "FilePath": "sprout_editor/assets/scripts/example_script.cpp"
@@ -93,6 +93,153 @@
                     1.0
                 ],
                 "Intensity": 100.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity3"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    87.581787109375,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    5.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            },
+            "ScriptComponent": {
+                "FilePath": "sprout_editor/assets/scripts/physics_script.cpp"
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity4"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    32.96977233886719,
+                    87.581787109375,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    5.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity5"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    62.54661560058594,
+                    87.581787109375,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    5.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Entity6"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    103.64220428466797,
+                    87.581787109375,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    100.0,
+                    100.0,
+                    100.0
+                ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    5.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
             }
         }
     ]

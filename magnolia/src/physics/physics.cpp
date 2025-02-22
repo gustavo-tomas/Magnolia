@@ -204,6 +204,48 @@ namespace mag
         internal_data->dynamics_world->debugDrawWorld();
     }
 
+    void PhysicsEngine::apply_force(const u32 object_index, const math::vec3& force)
+    {
+        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
+
+        btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+        body->applyCentralForce(mag_vec_to_bt_vec(force));
+    }
+
+    void PhysicsEngine::apply_impulse(const u32 object_index, const math::vec3& impulse)
+    {
+        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
+
+        btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+        // Don't forget to activate the body if it's sleeping
+        body->activate(true);
+
+        body->applyCentralImpulse(mag_vec_to_bt_vec(impulse));
+    }
+
+    void PhysicsEngine::apply_torque(const u32 object_index, const math::vec3& torque)
+    {
+        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
+
+        btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+        body->applyTorque(mag_vec_to_bt_vec(torque));
+    }
+
+    void PhysicsEngine::apply_torque_impulse(const u32 object_index, const math::vec3& torque)
+    {
+        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
+
+        btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+        // Don't forget to activate the body if it's sleeping
+        body->activate(true);
+
+        body->applyTorqueImpulse(mag_vec_to_bt_vec(torque));
+    }
+
     const LineList& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
 
     void PhysicsDebugDraw::reset_lines()

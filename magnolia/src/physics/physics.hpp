@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "math/types.hpp"
 
 namespace mag::math
 {
@@ -27,6 +28,18 @@ namespace mag
             void on_simulation_end();
 
             void on_update(const f32 dt);
+
+            // Applies continuous force over time
+            void apply_force(const u32 object_index, const math::vec3& force);
+
+            // Applies an instantaneous change in momentum
+            void apply_impulse(const u32 object_index, const math::vec3& impulse);
+
+            // Applies continuous torque over time
+            void apply_torque(const u32 object_index, const math::vec3& force);
+
+            // Applies an instantaneous change in momentum
+            void apply_torque_impulse(const u32 object_index, const math::vec3& force);
 
             const math::LineList& get_line_list() const;
 
