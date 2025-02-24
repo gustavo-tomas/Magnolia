@@ -6,6 +6,7 @@
 namespace mag
 {
     struct Event;
+    class PhysicsWorld;
 
     class ScriptableEntity
     {
@@ -31,9 +32,12 @@ namespace mag
                 return ecs->get_components<Ts...>(entity_id);
             }
 
+            PhysicsWorld& get_physics_world() const;
+
         private:
             friend class Scene;
 
+            PhysicsWorld* physics_world = nullptr;
             ECS* ecs = nullptr;
             u32 entity_id;
     };

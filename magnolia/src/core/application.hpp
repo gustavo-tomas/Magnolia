@@ -6,7 +6,6 @@ namespace mag
 {
     class Window;
     class Renderer;
-    class PhysicsEngine;
     class FileWatcher;
     class JobSystem;
 
@@ -43,7 +42,6 @@ namespace mag
             MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
             ShaderManager& get_shader_manager();
-            PhysicsEngine& get_physics_engine();
 
         protected:
             // Process events from the user application

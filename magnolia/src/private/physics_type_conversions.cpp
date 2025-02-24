@@ -22,7 +22,20 @@ namespace mag
         return bt_transform;
     }
 
-    TransformComponent const bt_transform_to_mag_transform(const btTransform& t, const vec3& scale)
+    btTransform const mag_transform_to_bt_transform(const math::vec3& position, const math::quat& rotation)
+    {
+        btTransform bt_transform;
+        bt_transform.setIdentity();
+        bt_transform.setOrigin(mag_vec_to_bt_vec(position));
+
+        const btQuaternion q(rotation.x, rotation.y, rotation.z, rotation.w);
+
+        bt_transform.setRotation(q);
+
+        return bt_transform;
+    }
+
+    TransformComponent const bt_transform_to_mag_transform(const btTransform& t)
     {
         TransformComponent transform;
         transform.translation = math::vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
@@ -30,9 +43,6 @@ namespace mag
         btScalar pitch, yaw, roll;
         t.getRotation().getEulerZYX(roll, yaw, pitch);
         transform.rotation = degrees(vec3(pitch, yaw, roll));
-
-        // btTransform has no scale so we need to ask the user for that value
-        transform.scale = scale;
 
         return transform;
     }

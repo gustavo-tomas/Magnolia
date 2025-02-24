@@ -85,7 +85,7 @@ namespace mag
             f32 mass;
 
             // Storage for physics engine use
-            u32 index = Invalid_ID;
+            void* collision_object = nullptr;
 
             b8 is_dynamic() const;
     };

@@ -117,8 +117,8 @@ namespace sprout
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& editor = get_editor();
-        auto& physics_engine = app.get_physics_engine();
         auto& scene = editor.get_active_scene();
+        auto* physics_world = scene.get_physics_world();
         const auto& camera = scene.get_camera();
 
         lines.reset(nullptr);
@@ -155,9 +155,9 @@ namespace sprout
 
         // Get lines from physics
 
-        if (editor.is_physics_colliders_enabled())
+        if (editor.is_physics_colliders_enabled() && physics_world != nullptr)
         {
-            const auto& physics_lines = physics_engine.get_line_list();
+            const auto& physics_lines = physics_world->get_line_list();
 
             if (!physics_lines.starts.empty())
             {

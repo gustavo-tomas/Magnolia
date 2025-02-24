@@ -11,9 +11,9 @@ class PhysicsController : public ScriptableEntity
 
         virtual void on_update(const f32 dt) override
         {
-            auto& app = get_application();
-            auto& window = get_application().get_window();
-            auto& physics = app.get_physics_engine();
+            Application& app = get_application();
+            Window& window = app.get_window();
+            PhysicsWorld& physics_world = get_physics_world();
 
             auto [transform, rigidbody] = get_components<TransformComponent, RigidBodyComponent>();
             if (!transform || !rigidbody)
@@ -25,7 +25,7 @@ class PhysicsController : public ScriptableEntity
             if (window.is_key_pressed(Key::i))
             {
                 const vec3 impulse = vec3(0, 2000, 0) * dt;
-                physics.apply_impulse(rigidbody->index, impulse);
+                physics_world.apply_torque_impulse(rigidbody->collision_object, impulse);
             }
         }
 

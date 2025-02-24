@@ -2,7 +2,7 @@
 
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
-#include "ecs/ecs.hpp"
+#include "ecs/components.hpp"
 #include "math/type_definitions.hpp"
 #include "private/physics_type_conversions.hpp"
 #include "scene/scene.hpp"
@@ -57,23 +57,8 @@ namespace mag
             LineList line_list;
     };
 
-    PhysicsEngine::PhysicsEngine()
-        : internal_data(new PhysicsInternalData()), physics_debug_draw(new PhysicsDebugDraw())
+    PhysicsWorld::PhysicsWorld() : internal_data(new PhysicsInternalData()), physics_debug_draw(new PhysicsDebugDraw())
     {
-    }
-
-    PhysicsEngine::~PhysicsEngine()
-    {
-        on_simulation_end();
-        delete internal_data;
-    }
-
-    void PhysicsEngine::on_simulation_start(Scene* scene)
-    {
-        if (internal_data->dynamics_world) on_simulation_end();
-
-        this->scene = scene;
-
         internal_data->collision_configuration = new btDefaultCollisionConfiguration();
 
         internal_data->dispatcher = new btCollisionDispatcher(internal_data->collision_configuration);
@@ -89,24 +74,15 @@ namespace mag
         internal_data->dynamics_world->setGravity(btVector3(0, -10, 0));
 
         internal_data->dynamics_world->setDebugDrawer(physics_debug_draw.get());
-
-        auto& ecs = scene->get_ecs();
-        auto objects = ecs.get_all_components_of_types<TransformComponent, BoxColliderComponent, RigidBodyComponent>();
-        for (auto [transform, collider, rigid_body] : objects)
-        {
-            add_rigid_body(*transform, *collider, *rigid_body);
-        }
     }
 
-    void PhysicsEngine::on_simulation_end()
+    PhysicsWorld::~PhysicsWorld()
     {
         // Cleanup in the reverse order of creation/initialization
 
-        if (!internal_data->dynamics_world) return;
-
         for (i32 i = internal_data->dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
         {
-            remove_rigid_body(i);
+            remove_rigid_body(internal_data->dynamics_world->getCollisionObjectArray().at(i));
         }
 
         delete internal_data->dynamics_world;
@@ -114,109 +90,114 @@ namespace mag
         delete internal_data->overlapping_pair_cache;
         delete internal_data->dispatcher;
         delete internal_data->collision_configuration;
-
-        internal_data->dynamics_world = nullptr;
-        internal_data->solver = nullptr;
-        internal_data->overlapping_pair_cache = nullptr;
-        internal_data->dispatcher = nullptr;
-        internal_data->collision_configuration = nullptr;
+        delete internal_data;
     }
 
-    void PhysicsEngine::add_rigid_body(const TransformComponent& transform, BoxColliderComponent& collider,
-                                       RigidBodyComponent& rigid_body)
+    void* PhysicsWorld::add_rigid_body(const math::vec3& position, const math::quat& rotation,
+                                       const math::vec3& collider_dimensions, const f32 mass) const
     {
-        btBoxShape* shape = new btBoxShape(mag_vec_to_bt_vec(collider.dimensions));
+        btBoxShape* shape = new btBoxShape(mag_vec_to_bt_vec(collider_dimensions));
 
         // Rigidbody is dynamic if and only if mass is non zero, otherwise static
         btVector3 local_inertia(0, 0, 0);
-        if (rigid_body.is_dynamic()) shape->calculateLocalInertia(rigid_body.mass, local_inertia);
+        if (mass > 0.0f)
+        {
+            shape->calculateLocalInertia(mass, local_inertia);
+        }
 
-        btDefaultMotionState* motion_state = new btDefaultMotionState(mag_transform_to_bt_transform(transform));
+        btDefaultMotionState* motion_state =
+            new btDefaultMotionState(mag_transform_to_bt_transform(position, rotation));
 
-        btRigidBody::btRigidBodyConstructionInfo rb_info(rigid_body.mass, motion_state, shape, local_inertia);
+        btRigidBody::btRigidBodyConstructionInfo rb_info(mass, motion_state, shape, local_inertia);
 
         btRigidBody* bt_rigid_body = new btRigidBody(rb_info);
 
-        rigid_body.index = internal_data->dynamics_world->getNumCollisionObjects();
-
         internal_data->dynamics_world->addRigidBody(bt_rigid_body);
+
+        return bt_rigid_body;
     }
 
-    void PhysicsEngine::remove_rigid_body(const u32 index)
+    void PhysicsWorld::remove_rigid_body(void* collision_object)
     {
-        btCollisionObject* obj = internal_data->dynamics_world->getCollisionObjectArray()[index];
-        btRigidBody* body = btRigidBody::upcast(obj);
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+        btRigidBody* bt_rigid_body = btRigidBody::upcast(bt_object);
 
-        if (body && body->getMotionState())
+        if (bt_rigid_body && bt_rigid_body->getMotionState())
         {
-            delete body->getMotionState();
+            delete bt_rigid_body->getMotionState();
         }
 
-        internal_data->dynamics_world->removeCollisionObject(obj);
+        internal_data->dynamics_world->removeCollisionObject(bt_object);
 
-        if (obj->getCollisionShape())
+        if (bt_object->getCollisionShape())
         {
-            delete obj->getCollisionShape();
+            delete bt_object->getCollisionShape();
         }
 
-        delete obj;
+        delete bt_object;
     }
 
-    void PhysicsEngine::on_update(const f32 dt)
+    void PhysicsWorld::reset_rigid_body(void* collision_object, const math::vec3& position, const math::vec3& rotation,
+                                        const math::vec3& collider_dimensions, const f32 mass) const
     {
-        auto& ecs = scene->get_ecs();
-        auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+        btRigidBody* bt_rigid_body = btRigidBody::upcast(bt_object);
 
-        if (!internal_data->dynamics_world) return;
+        // Update the collision shape
+        btBoxShape* shape = new btBoxShape(mag_vec_to_bt_vec(collider_dimensions));
 
-        if (scene->is_running())
+        btVector3 local_inertia(0, 0, 0);
+
+        f32 new_mass = mass;
+        if (mass < 0.0f)
         {
-            // @TODO: investigate the jittering that happens when maxSubSteps > 0.
-            internal_data->dynamics_world->stepSimulation(dt, 0);
-
-            for (i32 i = objects.size() - 1; i >= 0; i--)
-            {
-                auto [transform, rigid_body_c] = objects[i];
-
-                btCollisionObject* bt_object =
-                    internal_data->dynamics_world->getCollisionObjectArray().at(rigid_body_c->index);
-
-                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
-
-                btTransform trans(btQuaternion(0, 0, 0, 0));
-
-                if (body && body->getMotionState())
-                {
-                    body->getMotionState()->getWorldTransform(trans);
-                }
-
-                else if (body)
-                {
-                    trans = body->getWorldTransform();
-                }
-
-                *transform = bt_transform_to_mag_transform(trans, transform->scale);
-            }
+            new_mass = bt_rigid_body->getMass();
         }
+
+        shape->calculateLocalInertia(new_mass, local_inertia);
+
+        if (bt_rigid_body->getCollisionShape())
+        {
+            delete bt_rigid_body->getCollisionShape();
+        }
+
+        bt_rigid_body->setCollisionShape(shape);
+
+        // Update collider properties
+        TransformComponent transform = TransformComponent(position, rotation);
+
+        bt_rigid_body->getMotionState()->setWorldTransform(mag_transform_to_bt_transform(transform));
+        bt_rigid_body->setWorldTransform(mag_transform_to_bt_transform(transform));
+        bt_rigid_body->setLinearVelocity(btVector3(0, 0, 0));
+        bt_rigid_body->setAngularVelocity(btVector3(0, 0, 0));
+        bt_rigid_body->setMassProps(new_mass, local_inertia);
+
+        bt_rigid_body->clearForces();
+        bt_rigid_body->clearGravity();
+
+        bt_rigid_body->activate(true);
+    }
+
+    void PhysicsWorld::on_update(const f32 dt)
+    {
+        // @TODO: investigate the jittering that happens when maxSubSteps > 0.
+        internal_data->dynamics_world->stepSimulation(dt, 0);
 
         // 'Draw' the debug lines before sending to the renderer
-        physics_debug_draw->reset_lines();
-        internal_data->dynamics_world->debugDrawWorld();
+        render_debug_lines();
     }
 
-    void PhysicsEngine::apply_force(const u32 object_index, const math::vec3& force)
+    void PhysicsWorld::apply_force(void* collision_object, const math::vec3& force)
     {
-        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
-
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
         btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
         body->applyCentralForce(mag_vec_to_bt_vec(force));
     }
 
-    void PhysicsEngine::apply_impulse(const u32 object_index, const math::vec3& impulse)
+    void PhysicsWorld::apply_impulse(void* collision_object, const math::vec3& impulse)
     {
-        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
-
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
         btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
         // Don't forget to activate the body if it's sleeping
@@ -225,19 +206,17 @@ namespace mag
         body->applyCentralImpulse(mag_vec_to_bt_vec(impulse));
     }
 
-    void PhysicsEngine::apply_torque(const u32 object_index, const math::vec3& torque)
+    void PhysicsWorld::apply_torque(void* collision_object, const math::vec3& torque)
     {
-        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
-
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
         btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
         body->applyTorque(mag_vec_to_bt_vec(torque));
     }
 
-    void PhysicsEngine::apply_torque_impulse(const u32 object_index, const math::vec3& torque)
+    void PhysicsWorld::apply_torque_impulse(void* collision_object, const math::vec3& torque)
     {
-        btCollisionObject* bt_object = internal_data->dynamics_world->getCollisionObjectArray().at(object_index);
-
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
         btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
         // Don't forget to activate the body if it's sleeping
@@ -246,7 +225,37 @@ namespace mag
         body->applyTorqueImpulse(mag_vec_to_bt_vec(torque));
     }
 
-    const LineList& PhysicsEngine::get_line_list() const { return physics_debug_draw->get_line_list(); };
+    void PhysicsWorld::render_debug_lines()
+    {
+        physics_debug_draw->reset_lines();
+        internal_data->dynamics_world->debugDrawWorld();
+    }
+
+    void PhysicsWorld::get_collision_object_transform(void* collision_object, math::vec3& position,
+                                                      math::vec3& rotation) const
+    {
+        btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+        btRigidBody* bt_body = static_cast<btRigidBody*>(bt_object);
+
+        btTransform bt_transform(btQuaternion(0, 0, 0, 0));
+
+        if (bt_body && bt_body->getMotionState())
+        {
+            bt_body->getMotionState()->getWorldTransform(bt_transform);
+        }
+
+        else if (bt_body)
+        {
+            bt_transform = bt_body->getWorldTransform();
+        }
+
+        TransformComponent transform = bt_transform_to_mag_transform(bt_transform);
+
+        position = transform.translation;
+        rotation = transform.rotation;
+    }
+
+    const LineList& PhysicsWorld::get_line_list() const { return physics_debug_draw->get_line_list(); }
 
     void PhysicsDebugDraw::reset_lines()
     {

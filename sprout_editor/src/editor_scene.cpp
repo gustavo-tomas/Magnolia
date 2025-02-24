@@ -6,6 +6,7 @@
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
+#include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "threads/job_system.hpp"
 
@@ -38,6 +39,15 @@ namespace sprout
         ecs.reset();
         ecs = create_unique<ECS>(*temporary_ecs);
         temporary_ecs.reset();
+
+        // Reset physics world state
+        auto objects = ecs->get_all_components_of_types<TransformComponent, RigidBodyComponent, BoxColliderComponent>();
+
+        for (auto [transform, rigid_body, collider] : objects)
+        {
+            physics_world->reset_rigid_body(rigid_body->collision_object, transform->translation, transform->rotation,
+                                            collider->dimensions, rigid_body->mass);
+        }
     }
 
     void EditorScene::on_update_internal(const f32 dt)
@@ -131,7 +141,7 @@ namespace sprout
         job_system.add_job(load_job);
     }
 
-    void EditorScene::on_component_added(const u32 id, Component* component)
+    void EditorScene::on_component_added_internal(const u32 id, Component* component)
     {
         (void)id;
 

@@ -1,7 +1,9 @@
 #include "panels/properties_panel.hpp"
 
+#include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
+#include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "math/generic.hpp"
@@ -24,12 +26,28 @@ namespace sprout
         return false;
     }
 
+    void reset_physics_collider_object(Scene &scene, ECS &ecs, const u32 entity_id)
+    {
+        TransformComponent *transform = ecs.get_component<TransformComponent>(entity_id);
+        RigidBodyComponent *rigid_body = ecs.get_component<RigidBodyComponent>(entity_id);
+        BoxColliderComponent *collider = ecs.get_component<BoxColliderComponent>(entity_id);
+
+        if (rigid_body && collider && transform && !scene.is_running())
+        {
+            scene.get_physics_world()->reset_rigid_body(rigid_body->collision_object, transform->translation,
+                                                        transform->rotation, collider->dimensions, rigid_body->mass);
+        }
+    }
+
     PropertiesPanel::PropertiesPanel() = default;
     PropertiesPanel::~PropertiesPanel() = default;
 
     void PropertiesPanel::render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id)
     {
         ImGui::Begin(ICON_FA_LIST " Properties", NULL, window_flags);
+
+        Editor &editor = get_editor();
+        EditorScene &scene = editor.get_active_scene();
 
         // Only render properties if an entity is selected
         if (selected_entity_id == Invalid_ID) goto end;
@@ -42,6 +60,11 @@ namespace sprout
                 editable_field("Translation", transform->translation, vec3(0), vec3(MinValue), vec3(MaxValue));
                 editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
                 editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
+
+                if (!scene.is_running())
+                {
+                    reset_physics_collider_object(scene, ecs, selected_entity_id);
+                }
             }
         }
 
@@ -97,17 +120,29 @@ namespace sprout
             if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MaxValue));
+
+                if (!scene.is_running())
+                {
+                    reset_physics_collider_object(scene, ecs, selected_entity_id);
+                }
             }
         }
 
+        // Rigidbody
         if (auto component = ecs.get_component<RigidBodyComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 editable_field("Mass", component->mass, 1.0f, 0.0f, MaxValue);
+
+                if (!scene.is_running())
+                {
+                    reset_physics_collider_object(scene, ecs, selected_entity_id);
+                }
             }
         }
 
+        // Camera
         if (auto component = ecs.get_component<CameraComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
@@ -125,6 +160,7 @@ namespace sprout
             }
         }
 
+        // Script
         if (auto component = ecs.get_component<ScriptComponent>(selected_entity_id))
         {
             if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))

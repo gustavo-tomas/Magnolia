@@ -348,9 +348,6 @@ namespace sprout
 
     void Editor::set_active_scene(const u32 index)
     {
-        auto &app = get_application();
-        auto &physics_engine = app.get_physics_engine();
-
         auto &active_scene = get_active_scene();
         if (active_scene.is_running())
         {
@@ -358,8 +355,6 @@ namespace sprout
         }
 
         impl->selected_scene_index = math::clamp(index, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
-
-        physics_engine.on_simulation_start(impl->open_scenes[impl->selected_scene_index].get());
     }
 
     void Editor::set_input_disabled(const b8 disable) { impl->disabled = disable; }
