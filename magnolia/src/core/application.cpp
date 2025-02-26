@@ -4,7 +4,6 @@
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "core/window.hpp"
-#include "physics/physics.hpp"
 #include "platform/file_dialog.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
@@ -38,7 +37,6 @@ namespace mag
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
-            unique<PhysicsEngine> physics_engine;
 
             b8 running;
             f32 target_frame_rate;
@@ -117,10 +115,6 @@ namespace mag
         impl->shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
-        // Create the physics engine
-        impl->physics_engine = create_unique<PhysicsEngine>();
-        LOG_SUCCESS("Physics initialized");
-
         // Initialize file dialogs
         if (FileDialog::initialize())
         {
@@ -153,8 +147,6 @@ namespace mag
                 impl->window->sleep(50);
                 continue;
             }
-
-            impl->physics_engine->on_update(dt);
 
             impl->job_system->process_callbacks();
 
@@ -206,5 +198,4 @@ namespace mag
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
-    PhysicsEngine& Application::get_physics_engine() { return *impl->physics_engine; }
 };  // namespace mag

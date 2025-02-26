@@ -32,7 +32,7 @@ namespace sprout
             virtual void on_event_internal(const Event& e) override;
             virtual void on_update_internal(const f32 dt) override;
             virtual void on_resize(const WindowResizeEvent& e) override;
-            virtual void on_component_added(const u32 id, Component* component) override;
+            virtual void on_component_added_internal(const u32 id, Component* component) override;
 
         private:
             unique<ECS> temporary_ecs;

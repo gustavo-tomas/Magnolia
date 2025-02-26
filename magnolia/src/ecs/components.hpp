@@ -74,9 +74,6 @@ namespace mag
             CLONE_DECLARATION(BoxColliderComponent);
 
             vec3 dimensions;
-
-            // Storage for physics engine use
-            void* internal = nullptr;
     };
 
     struct RigidBodyComponent : public Component
@@ -88,9 +85,7 @@ namespace mag
             f32 mass;
 
             // Storage for physics engine use
-            void* internal = nullptr;
-
-            b8 is_dynamic() const;
+            void* collision_object = nullptr;
     };
 
     struct LightComponent : public Component

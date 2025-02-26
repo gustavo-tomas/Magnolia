@@ -8,6 +8,7 @@ namespace mag
 {
     class ECS;
     class Camera;
+    class PhysicsWorld;
     struct Component;
 
     class Scene
@@ -34,6 +35,7 @@ namespace mag
             b8 is_running() const;
 
             const str& get_name() const;
+            const PhysicsWorld* get_physics_world() const;
             ECS& get_ecs();
             virtual Camera& get_camera();
 
@@ -43,13 +45,18 @@ namespace mag
             virtual void on_stop_internal();
             virtual void on_event_internal(const Event& e);
             virtual void on_update_internal(const f32 dt);
+            virtual void on_component_added_internal(const u32 id, Component* component);
             virtual void on_resize(const WindowResizeEvent& e);
-            virtual void on_component_added(const u32 id, Component* component);
 
             str name;
             unique<ECS> ecs;
+            unique<PhysicsWorld> physics_world;
 
         private:
+            void on_component_added(const u32 id, Component* component);
+            void instantiate_scripts();
+            void destroy_scripts();
+
             std::vector<u32> entity_deletion_queue;
             b8 running = false;
     };
