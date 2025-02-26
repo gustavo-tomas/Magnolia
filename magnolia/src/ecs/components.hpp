@@ -86,8 +86,6 @@ namespace mag
 
             // Storage for physics engine use
             void* collision_object = nullptr;
-
-            b8 is_dynamic() const;
     };
 
     struct LightComponent : public Component

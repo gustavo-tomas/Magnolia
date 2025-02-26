@@ -38,8 +38,6 @@ namespace mag
 
     RigidBodyComponent::RigidBodyComponent(const f32 mass) : mass(mass) {}
 
-    b8 RigidBodyComponent::is_dynamic() const { return mass != 0.0f; }
-
     LightComponent::LightComponent(const vec3& color, const f32 intensity) : color(color), intensity(intensity) {}
 
     CameraComponent::CameraComponent(const Camera& camera) : camera(camera) {}
