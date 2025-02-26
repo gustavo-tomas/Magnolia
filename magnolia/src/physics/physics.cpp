@@ -120,7 +120,7 @@ namespace mag
     void PhysicsWorld::remove_rigid_body(void* collision_object)
     {
         btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
-        btRigidBody* bt_rigid_body = btRigidBody::upcast(bt_object);
+        btRigidBody* bt_rigid_body = static_cast<btRigidBody*>(bt_object);
 
         if (bt_rigid_body && bt_rigid_body->getMotionState())
         {
@@ -141,7 +141,7 @@ namespace mag
                                         const math::vec3& collider_dimensions, const f32 mass) const
     {
         btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
-        btRigidBody* bt_rigid_body = btRigidBody::upcast(bt_object);
+        btRigidBody* bt_rigid_body = static_cast<btRigidBody*>(bt_object);
 
         // Update the collision shape
         btBoxShape* shape = new btBoxShape(mag_vec_to_bt_vec(collider_dimensions));
@@ -154,7 +154,11 @@ namespace mag
             new_mass = bt_rigid_body->getMass();
         }
 
-        shape->calculateLocalInertia(new_mass, local_inertia);
+        // Calculate inertia if mass is non-zero
+        if (new_mass > 0.0f)
+        {
+            shape->calculateLocalInertia(new_mass, local_inertia);
+        }
 
         if (bt_rigid_body->getCollisionShape())
         {
@@ -173,9 +177,12 @@ namespace mag
         bt_rigid_body->setMassProps(new_mass, local_inertia);
 
         bt_rigid_body->clearForces();
-        bt_rigid_body->clearGravity();
 
-        bt_rigid_body->activate(true);
+        // Remove and add body to the world
+        internal_data->dynamics_world->removeRigidBody(bt_rigid_body);
+        internal_data->dynamics_world->addRigidBody(bt_rigid_body);
+
+        bt_rigid_body->activate();
     }
 
     void PhysicsWorld::on_update(const f32 dt)
