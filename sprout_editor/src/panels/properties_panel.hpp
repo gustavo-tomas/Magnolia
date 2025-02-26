@@ -23,10 +23,10 @@ namespace sprout
             void render(const ImGuiWindowFlags window_flags, ECS &ecs, const u32 selected_entity_id);
 
         private:
-            void editable_field(const str &field_name, math::vec3 &value, const math::vec3 &reset_value,
-                                const math::vec3 &min_value, const math::vec3 &max_value);
+            b8 editable_field(const str &field_name, math::vec3 &value, const math::vec3 &reset_value,
+                              const math::vec3 &min_value, const math::vec3 &max_value) const;
 
-            void editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
-                                const f32 max_value);
+            b8 editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
+                              const f32 max_value) const;
     };
 };  // namespace sprout

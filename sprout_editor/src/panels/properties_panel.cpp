@@ -57,11 +57,18 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Translation", transform->translation, vec3(0), vec3(MinValue), vec3(MaxValue));
-                editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
-                editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
+                b8 field_edited = false;
 
-                if (!scene.is_running())
+                field_edited = field_edited || editable_field("Translation", transform->translation, vec3(0),
+                                                              vec3(MinValue), vec3(MaxValue));
+
+                field_edited =
+                    field_edited || editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
+
+                field_edited =
+                    field_edited || editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
+
+                if (field_edited && !scene.is_running())
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
@@ -119,9 +126,10 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("BoxCollider", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MaxValue));
+                b8 field_edited =
+                    editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MaxValue));
 
-                if (!scene.is_running())
+                if (field_edited && !scene.is_running())
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
@@ -133,9 +141,9 @@ namespace sprout
         {
             if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                editable_field("Mass", component->mass, 1.0f, 0.0f, MaxValue);
+                b8 field_edited = editable_field("Mass", component->mass, 1.0f, 0.0f, MaxValue);
 
-                if (!scene.is_running())
+                if (field_edited && !scene.is_running())
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
@@ -208,8 +216,8 @@ namespace sprout
         ImGui::End();
     }
 
-    void PropertiesPanel::editable_field(const str &field_name, vec3 &value, const vec3 &reset_value,
-                                         const vec3 &min_value, const vec3 &max_value)
+    b8 PropertiesPanel::editable_field(const str &field_name, vec3 &value, const vec3 &reset_value,
+                                       const vec3 &min_value, const vec3 &max_value) const
     {
         const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
@@ -221,7 +229,8 @@ namespace sprout
         ImGui::SameLine(left_offset);
 
         const str label = str("##") + field_name.c_str();
-        if (ImGui::InputFloat3(label.c_str(), value_ptr(editable_value), format, input_flags))
+        const b8 field_changed = ImGui::InputFloat3(label.c_str(), value_ptr(editable_value), format, input_flags);
+        if (field_changed)
         {
             value = clamp(editable_value, min_value, max_value);
         }
@@ -229,14 +238,18 @@ namespace sprout
         // Reset
         const str reset_label = str(ICON_FA_CIRCLE) + label;
         ImGui::SameLine();
-        if (ImGui::Button(reset_label.c_str()))
+
+        const b8 field_reseted = ImGui::Button(reset_label.c_str());
+        if (field_reseted)
         {
             value = reset_value;
         }
+
+        return field_changed || field_reseted;
     }
 
-    void PropertiesPanel::editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
-                                         const f32 max_value)
+    b8 PropertiesPanel::editable_field(const str &field_name, f32 &value, const f32 reset_value, const f32 min_value,
+                                       const f32 max_value) const
     {
         const c8 *format = "%.2f";
         const f32 left_offset = 100.0f;
@@ -248,7 +261,8 @@ namespace sprout
         ImGui::SameLine(left_offset);
 
         const str label = str("##") + field_name.c_str();
-        if (ImGui::InputFloat(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags))
+        const b8 field_changed = ImGui::InputFloat(label.c_str(), &editable_value, 0.0f, 0.0f, format, input_flags);
+        if (field_changed)
         {
             value = clamp(editable_value, min_value, max_value);
         }
@@ -256,9 +270,13 @@ namespace sprout
         // Reset
         const str reset_label = str(ICON_FA_CIRCLE) + label;
         ImGui::SameLine();
-        if (ImGui::Button(reset_label.c_str()))
+
+        const b8 field_reseted = ImGui::Button(reset_label.c_str());
+        if (field_reseted)
         {
             value = reset_value;
         }
+
+        return field_changed || field_reseted;
     }
 };  // namespace sprout
