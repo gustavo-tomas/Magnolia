@@ -14,6 +14,7 @@
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
 #include "math/generic.hpp"
+#include "panels/properties_panel.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/renderer_image.hpp"
 #include "renderer/sampler.hpp"
@@ -326,6 +327,8 @@ namespace sprout
                     transform->translation = translation;
                     transform->rotation = rotation;
                     transform->scale = scale;
+
+                    reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
 
                 else
