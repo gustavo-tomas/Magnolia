@@ -30,7 +30,7 @@
                 "AspectRatio": 1.7302100658416748
             },
             "ScriptComponent": {
-                "FilePath": "sprout_editor/assets/scripts/example_script.cpp"
+                "FilePath": "sprout_editor/assets/scripts/camera_controller.cpp"
             }
         },
         {
@@ -240,6 +240,41 @@
             },
             "RigidBodyComponent": {
                 "Mass": 1.0
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Player"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    10.0,
+                    0.0
+                ],
+                "Rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "Scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    10.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
+            },
+            "ScriptComponent": {
+                "FilePath": "sprout_editor/assets/scripts/player_controller.cpp"
             }
         }
     ]

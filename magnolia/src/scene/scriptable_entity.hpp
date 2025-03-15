@@ -32,6 +32,18 @@ namespace mag
                 return ecs->get_components<Ts...>(entity_id);
             }
 
+            template <typename... Ts>
+            std::tuple<Ts*...> get_external_entity_components(const u32 external_entity_id)
+            {
+                return ecs->get_components<Ts...>(external_entity_id);
+            }
+
+            template <typename... Ts>
+            std::vector<u32> get_entities_with_components_of_type()
+            {
+                return ecs->get_entities_with_components_of_type<Ts...>();
+            }
+
             PhysicsWorld& get_physics_world() const;
 
         private:
