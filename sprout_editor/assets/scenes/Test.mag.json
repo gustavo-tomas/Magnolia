@@ -24,7 +24,7 @@
                 ]
             },
             "CameraComponent": {
-                "Fov": 60.0,
+                "Fov": 1.047198,
                 "Near": 1.0,
                 "Far": 10000.0,
                 "AspectRatio": 1.7302100658416748

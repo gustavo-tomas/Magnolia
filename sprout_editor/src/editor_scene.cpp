@@ -6,6 +6,7 @@
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
+#include "math/generic.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "threads/job_system.hpp"
@@ -14,7 +15,7 @@ namespace sprout
 {
     EditorScene::EditorScene()
         : Scene(),
-          camera(new Camera({0.0f, 50.0f, 150.0f}, vec3(0.0f), 60.0f, 800.0f / 600.0f, 1.0f, 10000.0f)),
+          camera(new Camera({0.0f, 50.0f, 150.0f}, vec3(0.0f), math::radians(60.0f), 800.0f / 600.0f, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera))
     {
         auto& app = get_application();

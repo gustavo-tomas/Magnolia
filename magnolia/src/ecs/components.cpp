@@ -18,7 +18,7 @@ namespace mag
 
     mat4 TransformComponent::get_transformation_matrix() const
     {
-        const mat4 rotation_mat = math::toMat4(quat(math::radians(rotation)));
+        const mat4 rotation_mat = math::toMat4(quat(rotation));
 
         return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
     }

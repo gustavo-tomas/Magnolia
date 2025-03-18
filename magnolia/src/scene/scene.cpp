@@ -168,9 +168,8 @@ namespace mag
             auto* collider = ecs->get_component<BoxColliderComponent>(id);
             if (transform && rigid_body && collider)
             {
-                rigid_body->collision_object =
-                    physics_world->add_rigid_body(transform->translation, quat(math::radians(transform->rotation)),
-                                                  collider->dimensions, rigid_body->mass);
+                rigid_body->collision_object = physics_world->add_rigid_body(
+                    transform->translation, quat(transform->rotation), collider->dimensions, rigid_body->mass);
             }
         }
 

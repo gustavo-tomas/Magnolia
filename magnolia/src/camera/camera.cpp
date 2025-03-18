@@ -50,7 +50,7 @@ namespace mag
 
     void Camera::calculate_projection()
     {
-        impl->projection = perspective(radians(impl->fov), impl->aspect_ratio, impl->near, impl->far);
+        impl->projection = perspective(impl->fov, impl->aspect_ratio, impl->near, impl->far);
         calculate_frustum();
     }
 
@@ -65,9 +65,9 @@ namespace mag
         // Constrain rotation between [-180, 180)
         for (u32 i = 0; i < 3; i++)
         {
-            impl->rotation[i] = fmod(rotation[i] + 180.0f, 360.0f);
-            if (impl->rotation[i] < 0.0f) impl->rotation[i] += 360.0f;
-            impl->rotation[i] -= 180.0f;
+            impl->rotation[i] = fmod(rotation[i] + math::pi<f32>(), math::two_pi<f32>());
+            if (impl->rotation[i] < 0.0f) impl->rotation[i] += math::two_pi<f32>();
+            impl->rotation[i] -= math::pi<f32>();
         }
 
         calculate_view();

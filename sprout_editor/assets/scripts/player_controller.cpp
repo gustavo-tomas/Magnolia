@@ -80,7 +80,7 @@ class PlayerController : public ScriptableEntity
             const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
             // Rotate
-            transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 10.0f;
+            transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f;
         }
 };
 

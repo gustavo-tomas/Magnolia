@@ -22,9 +22,9 @@ namespace sprout
         const ImGuiInputTextFlags input_flags = 0;
 
         vec3 translation = camera.get_position();
-        vec3 rotation = camera.get_rotation();
+        vec3 rotation = math::degrees(camera.get_rotation());
         vec2 near_far = camera.get_near_far();
-        f32 fov = camera.get_fov();
+        f32 fov = math::degrees(camera.get_fov());
 
         ImGui::Text("Translation");
         ImGui::SameLine(left_offset);
@@ -39,7 +39,7 @@ namespace sprout
 
         if (ImGui::InputFloat3("##Rotation", value_ptr(rotation), format, input_flags))
         {
-            camera.set_rotation(rotation);
+            camera.set_rotation(math::radians(rotation));
         }
 
         ImGui::Text("FOV");
@@ -47,7 +47,7 @@ namespace sprout
 
         if (ImGui::InputFloat("##FOV", &fov, 0, 0, format, input_flags))
         {
-            camera.set_fov(fov);
+            camera.set_fov(math::radians(fov));
         }
 
         ImGui::Text("Near/Far");

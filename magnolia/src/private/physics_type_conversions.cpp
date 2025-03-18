@@ -14,7 +14,7 @@ namespace mag
         bt_transform.setIdentity();
         bt_transform.setOrigin(btVector3(t.translation.x, t.translation.y, t.translation.z));
 
-        const quat mag_q(radians(t.rotation));
+        const quat mag_q(t.rotation);
         const btQuaternion q(mag_q.x, mag_q.y, mag_q.z, mag_q.w);
 
         bt_transform.setRotation(q);
@@ -42,7 +42,7 @@ namespace mag
 
         btScalar pitch, yaw, roll;
         t.getRotation().getEulerZYX(roll, yaw, pitch);
-        transform.rotation = degrees(vec3(pitch, yaw, roll));
+        transform.rotation = vec3(pitch, yaw, roll);
 
         return transform;
     }

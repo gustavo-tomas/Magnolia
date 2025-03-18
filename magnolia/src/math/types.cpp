@@ -12,16 +12,16 @@ namespace mag::math
         vec4 perspective;
 
         const b8 result = glm::decompose(model_matrix, scale, orientation, translation, skew, perspective);
-        rotation = degrees(glm::eulerAngles(orientation));
+        rotation = glm::eulerAngles(orientation);
 
         return result;
     }
 
     mat4 calculate_rotation_mat(const vec3& rotation)
     {
-        const quat pitch_rotation = angleAxis(radians(rotation.x), vec3(1, 0, 0));
-        const quat yaw_rotation = angleAxis(radians(rotation.y), vec3(0, 1, 0));
-        const quat roll_rotation = angleAxis(radians(rotation.z), vec3(0, 0, 1));
+        const quat pitch_rotation = angleAxis(rotation.x, vec3(1, 0, 0));
+        const quat yaw_rotation = angleAxis(rotation.y, vec3(0, 1, 0));
+        const quat roll_rotation = angleAxis(rotation.z, vec3(0, 0, 1));
 
         const mat4 rotation_mat = toMat4(roll_rotation) * toMat4(yaw_rotation) * toMat4(pitch_rotation);
 

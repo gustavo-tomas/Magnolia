@@ -41,7 +41,7 @@ namespace sprout
         // Rotate
         else if (window.is_button_down(Button::Middle))
         {
-            const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 10.0f);
+            const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f);
             this->camera.set_rotation(new_rot);
         }
     }

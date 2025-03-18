@@ -59,11 +59,12 @@ namespace sprout
             {
                 b8 field_edited = false;
 
+                vec3 rotation_deg = math::degrees(transform->rotation);
+
                 field_edited = field_edited || editable_field("Translation", transform->translation, vec3(0),
                                                               vec3(MinValue), vec3(MaxValue));
 
-                field_edited =
-                    field_edited || editable_field("Rotation", transform->rotation, vec3(0), vec3(-180), vec3(180));
+                field_edited = field_edited || editable_field("Rotation", rotation_deg, vec3(0), vec3(-180), vec3(180));
 
                 field_edited =
                     field_edited || editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
@@ -72,6 +73,8 @@ namespace sprout
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
+
+                transform->rotation = math::radians(rotation_deg);
             }
         }
 
@@ -157,14 +160,14 @@ namespace sprout
             {
                 f32 near = component->camera.get_near();
                 f32 far = component->camera.get_far();
-                f32 fov = component->camera.get_fov();
+                f32 fov = math::degrees(component->camera.get_fov());
 
                 editable_field("Near", near, 1.0f, 0.1f, MaxValue);
                 editable_field("Far", far, 1.0f, 0.1f, MaxValue);
-                editable_field("Fov", fov, 60.0f, 30.0f, 120.0f);
+                editable_field("Fov", fov, 60.0f, 1.0f, 179.0f);
 
                 component->camera.set_near_far({near, far});
-                component->camera.set_fov(fov);
+                component->camera.set_fov(math::radians(fov));
             }
         }
 
