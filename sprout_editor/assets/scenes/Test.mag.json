@@ -4,37 +4,6 @@
     "Entities": [
         {
             "NameComponent": {
-                "Name": "Camera"
-            },
-            "TransformComponent": {
-                "Translation": [
-                    10.0,
-                    30.0,
-                    100.0
-                ],
-                "Rotation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "CameraComponent": {
-                "Fov": 1.0471980571746826,
-                "Near": 1.0,
-                "Far": 10000.0,
-                "AspectRatio": 1.7302100658416748
-            },
-            "ScriptComponent": {
-                "FilePath": "sprout_editor/assets/scripts/camera_controller.cpp"
-            }
-        },
-        {
-            "NameComponent": {
                 "Name": "Floor"
             },
             "TransformComponent": {
@@ -248,10 +217,20 @@
                     0.0
                 ],
                 "Scale": [
-                    1.0,
-                    1.0,
-                    1.0
+                    100.0,
+                    100.0,
+                    100.0
                 ]
+            },
+            "ModelComponent": {
+                "Name": "wooden_hammer_01",
+                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
+            },
+            "CameraComponent": {
+                "Fov": 1.0471980571746826,
+                "Near": 1.0,
+                "Far": 10000.0,
+                "AspectRatio": 1.7302100658416748
             },
             "ScriptComponent": {
                 "FilePath": "sprout_editor/assets/scripts/player_controller.cpp"

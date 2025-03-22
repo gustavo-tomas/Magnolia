@@ -56,17 +56,14 @@ namespace sprout
         camera_controller->on_update(dt);
 
         // Set camera positions the same as the transform
-        // @TODO: there should be only one value for the camera position. I feel that data duplication
-        // could cause issues in the future.
-
-        // @TODO: this is interfering with scripts camera calculations. Find a way to decouple gizmos from the ECS
-        // logic. Instead, a gizmo should reflect the state of a particular ECS component (collider, camera, light)
-
-        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : components)
+        if (!is_running())
         {
-            camera_c->camera.set_position(transform->translation);
-            camera_c->camera.set_rotation(transform->rotation);
+            auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+            for (auto [camera_c, transform] : components)
+            {
+                camera_c->camera.set_position(transform->translation);
+                camera_c->camera.set_rotation(transform->rotation);
+            }
         }
 
         auto& app = get_application();

@@ -16,7 +16,7 @@ class PlayerController : public ScriptableEntity
             Application& app = get_application();
             Window& window = app.get_window();
 
-            auto [transform] = get_components<TransformComponent>();
+            auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
             if (!transform)
             {
                 LOG_WARNING("Missing transform/camera");
@@ -44,6 +44,13 @@ class PlayerController : public ScriptableEntity
                 direction = normalize(direction) * dt;
                 transform->translation += direction * speed;
             }
+
+            // Update the camera transform
+            const mat4 cam_rotation_mat = calculate_rotation_mat(transform->rotation);
+            const vec3 cam_forward = math::normalize(cam_rotation_mat[2]);
+
+            camera_c->camera.set_rotation(transform->rotation);
+            camera_c->camera.set_position(transform->translation + cam_forward * vec3(50));
         }
 
         virtual void on_event(const Event& e) override
