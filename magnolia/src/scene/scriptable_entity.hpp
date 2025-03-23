@@ -7,6 +7,7 @@ namespace mag
 {
     struct Event;
     class PhysicsWorld;
+    class Scene;
 
     class ScriptableEntity
     {
@@ -19,6 +20,8 @@ namespace mag
             virtual void on_destroy();
             virtual void on_update(const f32 dt);
             virtual void on_event(const Event& e);
+
+            void add_entity_to_deletion_queue();
 
             template <typename T>
             T* get_component()
@@ -49,6 +52,7 @@ namespace mag
         private:
             friend class Scene;
 
+            Scene* scene = nullptr;
             PhysicsWorld* physics_world = nullptr;
             ECS* ecs = nullptr;
             u32 entity_id;

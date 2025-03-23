@@ -38,6 +38,7 @@ class EnemyController : public ScriptableEntity
             const f32 dist_to_player = math::distance(transform->translation, target_entity_transform->translation);
             if (dist_to_player <= 20.0f)
             {
+                add_entity_to_deletion_queue();
                 return;
             }
 

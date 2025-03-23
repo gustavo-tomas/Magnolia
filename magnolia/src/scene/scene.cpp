@@ -71,6 +71,7 @@ namespace mag
                 script->entity->entity_id = id;
                 script->entity->ecs = ecs.get();
                 script->entity->physics_world = physics_world.get();
+                script->entity->scene = this;
                 script->entity->on_create();
             }
         }
@@ -115,6 +116,19 @@ namespace mag
             if (rigid_body && collider && transform)
             {
                 physics_world->remove_rigid_body(rigid_body->collision_object);
+            }
+
+            // Delete script instance if entity has a script component
+            ScriptComponent* script = ecs->get_component<ScriptComponent>(entity_id);
+
+            if (script)
+            {
+                script->entity->on_destroy();
+                script->destroy_entity(script->entity);
+                script->entity = nullptr;
+
+                ScriptingEngine::unload_script(script->handle);
+                script->handle = nullptr;
             }
 
             ecs->erase_entity(entity_id);
