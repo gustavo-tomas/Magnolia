@@ -6,16 +6,9 @@ namespace mag
 {
     class Scene;
 
-    class SceneSerializer
+    namespace scene
     {
-        public:
-            SceneSerializer(Scene& scene);
-            ~SceneSerializer();
-
-            void serialize(const str& file_path);
-            void deserialize(const str& file_path);
-
-        private:
-            Scene& scene;
-    };
-};  // namespace mag
+        b8 load(const str& file_path, Scene& scene);
+        b8 save(const str& file_path, Scene& scene);
+    };  // namespace scene
+};      // namespace mag

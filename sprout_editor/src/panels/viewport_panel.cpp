@@ -221,8 +221,7 @@ namespace sprout
                             {
                                 EditorScene *new_scene = new EditorScene();
 
-                                SceneSerializer serializer(*new_scene);
-                                serializer.deserialize(path);
+                                scene::load(path, *new_scene);
 
                                 editor.add_scene(new_scene);
                             }

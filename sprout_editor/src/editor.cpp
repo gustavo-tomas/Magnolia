@@ -160,8 +160,7 @@ namespace sprout
         build_render_graph(window_size, get_viewport_size());
 
         EditorScene *scene = new EditorScene();
-        SceneSerializer scene_serializer(*scene);
-        scene_serializer.deserialize("sprout_editor/assets/scenes/Test.mag.json");
+        scene::load("sprout_editor/assets/scenes/Test.mag.json", *scene);
 
         add_scene(scene);
         set_active_scene(0);
@@ -327,8 +326,7 @@ namespace sprout
     {
         const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
 
-        SceneSerializer serializer(*scene);
-        serializer.serialize(file_path);
+        scene::save(file_path, *scene);
 
         // @TODO: linear search but w e. It is unlikely that this will hinder the performance
         u32 idx = Invalid_ID;

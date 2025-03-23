@@ -22,121 +22,124 @@ namespace mag
         return out;
     }
 
-    SceneSerializer::SceneSerializer(Scene& scene) : scene(scene) {}
-
-    SceneSerializer::~SceneSerializer() = default;
-
-    void SceneSerializer::serialize(const str& file_path)
+    namespace scene
     {
-        // Serialize scene data to file
-        json data;
-        data["Type"] = "Scene";
-        data["Name"] = scene.get_name();
-
-        auto& ecs = scene.get_ecs();
-        for (const auto entity_id : ecs.get_entities_ids())
+        b8 save(const str& file_path, Scene& scene)
         {
-            json entity;
+            // Serialize scene data to file
+            json data;
+            data["Type"] = "Scene";
+            data["Name"] = scene.get_name();
 
-            if (auto component = ecs.get_component<NameComponent>(entity_id))
+            auto& ecs = scene.get_ecs();
+            for (const auto entity_id : ecs.get_entities_ids())
             {
-                entity["NameComponent"]["Name"] = component->name;
-            }
+                json entity;
 
-            if (auto component = ecs.get_component<TransformComponent>(entity_id))
-            {
-                entity["TransformComponent"]["Translation"] << component->translation;
-                entity["TransformComponent"]["Rotation"] << component->rotation;
-                entity["TransformComponent"]["Scale"] << component->scale;
-            }
-
-            if (auto component = ecs.get_component<ModelComponent>(entity_id))
-            {
-                if (component->model->file_path.empty())
+                if (auto component = ecs.get_component<NameComponent>(entity_id))
                 {
-                    LOG_WARNING("Model {0} has no file path and will not be serialized", component->model->name);
+                    entity["NameComponent"]["Name"] = component->name;
                 }
 
-                else
+                if (auto component = ecs.get_component<TransformComponent>(entity_id))
                 {
-                    entity["ModelComponent"]["Name"] = component->model->name;
-                    entity["ModelComponent"]["FilePath"] = component->model->file_path;
-                }
-            }
-
-            if (auto component = ecs.get_component<SpriteComponent>(entity_id))
-            {
-                if (component->texture_file_path.empty())
-                {
-                    LOG_WARNING("Sprite has no file path and will not be serialized");
+                    entity["TransformComponent"]["Translation"] << component->translation;
+                    entity["TransformComponent"]["Rotation"] << component->rotation;
+                    entity["TransformComponent"]["Scale"] << component->scale;
                 }
 
-                else
+                if (auto component = ecs.get_component<ModelComponent>(entity_id))
                 {
-                    entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
-                    entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
-                    entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
+                    if (component->model->file_path.empty())
+                    {
+                        LOG_WARNING("Model {0} has no file path and will not be serialized", component->model->name);
+                    }
+
+                    else
+                    {
+                        entity["ModelComponent"]["Name"] = component->model->name;
+                        entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                    }
                 }
+
+                if (auto component = ecs.get_component<SpriteComponent>(entity_id))
+                {
+                    if (component->texture_file_path.empty())
+                    {
+                        LOG_WARNING("Sprite has no file path and will not be serialized");
+                    }
+
+                    else
+                    {
+                        entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
+                        entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
+                        entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
+                    }
+                }
+
+                if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
+                {
+                    entity["BoxColliderComponent"]["Dimensions"] << component->dimensions;
+                }
+
+                if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
+                {
+                    entity["RigidBodyComponent"]["Mass"] = component->mass;
+                }
+
+                if (auto component = ecs.get_component<LightComponent>(entity_id))
+                {
+                    entity["LightComponent"]["Color"] << component->color;
+                    entity["LightComponent"]["Intensity"] = component->intensity;
+                }
+
+                if (auto component = ecs.get_component<CameraComponent>(entity_id))
+                {
+                    entity["CameraComponent"]["Fov"] = component->camera.get_fov();
+                    entity["CameraComponent"]["Near"] = component->camera.get_near();
+                    entity["CameraComponent"]["Far"] = component->camera.get_far();
+                    entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
+                }
+
+                if (auto component = ecs.get_component<ScriptComponent>(entity_id))
+                {
+                    entity["ScriptComponent"]["FilePath"] = component->file_path;
+                }
+
+                data["Entities"].push_back(entity);
             }
 
-            if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
+            if (!fs::write_json_data(file_path, data))
             {
-                entity["BoxColliderComponent"]["Dimensions"] << component->dimensions;
+                LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
+                return false;
             }
 
-            if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
-            {
-                entity["RigidBodyComponent"]["Mass"] = component->mass;
-            }
-
-            if (auto component = ecs.get_component<LightComponent>(entity_id))
-            {
-                entity["LightComponent"]["Color"] << component->color;
-                entity["LightComponent"]["Intensity"] = component->intensity;
-            }
-
-            if (auto component = ecs.get_component<CameraComponent>(entity_id))
-            {
-                entity["CameraComponent"]["Fov"] = component->camera.get_fov();
-                entity["CameraComponent"]["Near"] = component->camera.get_near();
-                entity["CameraComponent"]["Far"] = component->camera.get_far();
-                entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
-            }
-
-            if (auto component = ecs.get_component<ScriptComponent>(entity_id))
-            {
-                entity["ScriptComponent"]["FilePath"] = component->file_path;
-            }
-
-            data["Entities"].push_back(entity);
+            return true;
         }
 
-        if (!fs::write_json_data(file_path, data))
+        b8 load(const str& file_path, Scene& scene)
         {
-            LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
-            return;
-        }
-    }
+            auto& app = get_application();
 
-    void SceneSerializer::deserialize(const str& file_path)
-    {
-        auto& app = get_application();
+            json data;
 
-        json data;
+            if (!fs::read_json_data(file_path, data))
+            {
+                LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
+                return false;
+            }
 
-        if (!fs::read_json_data(file_path, data))
-        {
-            LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
-            return;
-        }
+            const str scene_name = data["Name"];
+            scene.set_name(scene_name);
 
-        const str scene_name = data["Name"];
-        scene.set_name(scene_name);
+            LOG_INFO("Deserializing scene '{0}'", scene_name);
 
-        LOG_INFO("Deserializing scene '{0}'", scene_name);
+            if (!data.contains("Entities"))
+            {
+                return true;
+            }
 
-        if (data.contains("Entities"))
-        {
             auto& ecs = scene.get_ecs();
 
             for (auto& entity : data["Entities"])
@@ -247,6 +250,8 @@ namespace mag
                     ecs.add_component(entity_id, new ScriptComponent(file_path));
                 }
             }
+
+            return true;
         }
-    }
-};  // namespace mag
+    };  // namespace scene
+};      // namespace mag

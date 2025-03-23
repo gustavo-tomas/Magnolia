@@ -82,10 +82,9 @@ namespace sprout
             return;
         }
 
-        auto& scene = get_editor().get_active_scene();
+        EditorScene& scene = get_editor().get_active_scene();
 
-        SceneSerializer scene_serializer(scene);
-        scene_serializer.serialize(scene_file_path);
+        scene::save(scene_file_path, scene);
 
         LOG_SUCCESS("Saved active scene to '{0}'", scene_file_path);
     }
@@ -115,10 +114,9 @@ namespace sprout
 
         if (!file_path.empty())
         {
-            auto* scene = new EditorScene();
+            EditorScene* scene = new EditorScene();
 
-            SceneSerializer scene_serializer(*scene);
-            scene_serializer.deserialize(file_path);
+            scene::load(file_path, *scene);
 
             scene_file_path = file_path;
 
