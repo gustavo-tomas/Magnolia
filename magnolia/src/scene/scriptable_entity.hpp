@@ -47,6 +47,14 @@ namespace mag
                 return ecs->get_entities_with_components_of_type<Ts...>();
             }
 
+            u32 create_entity(const str& name = {}) const;
+
+            template <typename T>
+            void add_component_to_entity(const u32 entity_id, T* c)
+            {
+                ecs->add_component(entity_id, c);
+            }
+
             PhysicsWorld& get_physics_world() const;
 
         private:

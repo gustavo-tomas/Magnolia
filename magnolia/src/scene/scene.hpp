@@ -10,6 +10,7 @@ namespace mag
     class Camera;
     class PhysicsWorld;
     struct Component;
+    struct ScriptComponent;
 
     class Scene
     {
@@ -54,8 +55,8 @@ namespace mag
 
         private:
             void on_component_added(const u32 id, Component* component);
-            void instantiate_scripts();
-            void destroy_scripts();
+            void create_script(const u32 id);
+            void destroy_script(ScriptComponent* script);
 
             std::vector<u32> entity_deletion_queue;
             b8 running = false;

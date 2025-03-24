@@ -66,12 +66,12 @@
         },
         {
             "NameComponent": {
-                "Name": "Menacing Hammer"
+                "Name": "Hammer Spawner"
             },
             "TransformComponent": {
                 "Translation": [
                     0.0,
-                    26.246448516845703,
+                    0.0,
                     0.0
                 ],
                 "Rotation": [
@@ -80,17 +80,13 @@
                     0.0
                 ],
                 "Scale": [
-                    100.0,
-                    100.0,
-                    100.0
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             },
-            "ModelComponent": {
-                "Name": "wooden_hammer_01",
-                "FilePath": "sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json"
-            },
             "ScriptComponent": {
-                "FilePath": "sprout_editor/assets/scripts/enemy_controller.cpp"
+                "FilePath": "sprout_editor/assets/scripts/enemy_spawner.cpp"
             }
         },
         {

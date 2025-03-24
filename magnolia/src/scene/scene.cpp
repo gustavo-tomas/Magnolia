@@ -31,75 +31,83 @@ namespace mag
     {
         on_start_internal();
 
-        instantiate_scripts();
+        // Instantiate scripts
+        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        {
+            create_script(id);
+        }
 
         running = true;
     }
 
-    void Scene::instantiate_scripts()
+    void Scene::create_script(const u32 id)
     {
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        ScriptComponent* script = ecs->get_component<ScriptComponent>(id);
+
+        // Already instantiated
+        if (script->entity)
         {
-            auto* script = ecs->get_component<ScriptComponent>(id);
-            if (!script->entity)
-            {
-                void* handle = ScriptingEngine::load_script(script->file_path);
-                if (!handle)
-                {
-                    continue;
-                }
-
-                void* raw_create_script_fn = ScriptingEngine::get_symbol(handle, "create_script");
-                void* raw_destroy_script_fn = ScriptingEngine::get_symbol(handle, "destroy_script");
-
-                if (!raw_create_script_fn || !raw_destroy_script_fn)
-                {
-                    continue;
-                }
-
-                using CreateScriptFnPtr = ScriptableEntity* (*)();
-                using DestroyScriptFnPtr = void (*)(ScriptableEntity*);
-
-                CreateScriptFn create_script_fn = reinterpret_cast<CreateScriptFnPtr>(raw_create_script_fn);
-                DestroyScriptFn destroy_script_fn = reinterpret_cast<DestroyScriptFnPtr>(raw_destroy_script_fn);
-
-                script->handle = handle;
-                script->create_entity = create_script_fn;
-                script->destroy_entity = destroy_script_fn;
-
-                script->entity = script->create_entity();
-                script->entity->entity_id = id;
-                script->entity->ecs = ecs.get();
-                script->entity->physics_world = physics_world.get();
-                script->entity->scene = this;
-                script->entity->on_create();
-            }
+            return;
         }
+
+        void* handle = ScriptingEngine::load_script(script->file_path);
+        if (!handle)
+        {
+            return;
+        }
+
+        void* raw_create_script_fn = ScriptingEngine::get_symbol(handle, "create_script");
+        void* raw_destroy_script_fn = ScriptingEngine::get_symbol(handle, "destroy_script");
+
+        if (!raw_create_script_fn || !raw_destroy_script_fn)
+        {
+            return;
+        }
+
+        using CreateScriptFnPtr = ScriptableEntity* (*)();
+        using DestroyScriptFnPtr = void (*)(ScriptableEntity*);
+
+        CreateScriptFn create_script_fn = reinterpret_cast<CreateScriptFnPtr>(raw_create_script_fn);
+        DestroyScriptFn destroy_script_fn = reinterpret_cast<DestroyScriptFnPtr>(raw_destroy_script_fn);
+
+        script->handle = handle;
+        script->create_entity = create_script_fn;
+        script->destroy_entity = destroy_script_fn;
+
+        script->entity = script->create_entity();
+        script->entity->entity_id = id;
+        script->entity->ecs = ecs.get();
+        script->entity->physics_world = physics_world.get();
+        script->entity->scene = this;
+        script->entity->on_create();
+    }
+
+    void Scene::destroy_script(ScriptComponent* script)
+    {
+        if (!script->entity)
+        {
+            return;
+        }
+
+        script->entity->on_destroy();
+        script->destroy_entity(script->entity);
+        script->entity = nullptr;
+
+        ScriptingEngine::unload_script(script->handle);
+        script->handle = nullptr;
     }
 
     void Scene::on_stop()
     {
-        destroy_scripts();
+        // Destroy instantiated scripts
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        {
+            destroy_script(script);
+        }
 
         on_stop_internal();
 
         running = false;
-    }
-
-    void Scene::destroy_scripts()
-    {
-        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            if (script->entity)
-            {
-                script->entity->on_destroy();
-                script->destroy_entity(script->entity);
-                script->entity = nullptr;
-
-                ScriptingEngine::unload_script(script->handle);
-                script->handle = nullptr;
-            }
-        }
     }
 
     void Scene::on_update(const f32 dt)
@@ -123,12 +131,7 @@ namespace mag
 
             if (script)
             {
-                script->entity->on_destroy();
-                script->destroy_entity(script->entity);
-                script->entity = nullptr;
-
-                ScriptingEngine::unload_script(script->handle);
-                script->handle = nullptr;
+                destroy_script(script);
             }
 
             ecs->erase_entity(entity_id);
@@ -185,6 +188,13 @@ namespace mag
                 rigid_body->collision_object = physics_world->add_rigid_body(
                     transform->translation, quat(transform->rotation), collider->dimensions, rigid_body->mass);
             }
+        }
+
+        // Instantiate scripts during runtime
+        const b8 is_script_component = dynamic_cast<ScriptComponent*>(component) != nullptr;
+        if (is_running() && is_script_component)
+        {
+            create_script(id);
         }
 
         on_component_added_internal(id, component);
