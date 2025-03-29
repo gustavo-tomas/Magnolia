@@ -155,8 +155,81 @@ project "magnolia"
         optimize "full" -- '-O3'
         runtime "release"
 
--- Client Application --------------------------------------------------------------------------------------------------
+-- Editor --------------------------------------------------------------------------------------------------------------
 project "sprout_editor"
+    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    kind "consoleapp"
+
+    files
+    {
+        "%{prj.name}/src/**.hpp",
+        "%{prj.name}/src/**.cpp"
+    }
+
+    includedirs 
+    { 
+        "%{prj.name}/src",
+        "magnolia/src",
+
+        lib_includes
+    }
+
+    libdirs
+    { 
+        libdir
+    }
+
+    links
+    {
+        "magnolia", lib_links
+    }
+
+    filter "system:linux"
+        pic "on"
+        links
+        {
+            "vulkan", "sdl"
+        }
+
+    filter "system:windows"
+        systemversion "latest"
+
+        defines
+        {
+            "_CRT_SECURE_NO_WARNINGS"
+        }
+
+        links
+        {
+            "vulkan-1",
+            "SDL2",
+            "SDL2main",
+        }
+        -- entrypoint("mainCRTStartup")            
+        
+    filter "configurations:debug"
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
+        symbols "on" -- '-g'
+        optimize "off" -- '-O0'
+        runtime "debug"
+
+    filter "configurations:profile"
+        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
+        symbols "off"
+        optimize "on" -- '-O2'
+        runtime "release"
+
+    filter "configurations:release"
+        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        flags { build_flags }
+        symbols "off"
+        optimize "full" -- '-O3'
+        runtime "release"
+
+-- Client Application --------------------------------------------------------------------------------------------------
+project "test_game"
     targetname ("%{prj.name}_%{cfg.buildcfg}")
     kind "consoleapp"
 
