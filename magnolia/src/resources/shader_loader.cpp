@@ -56,7 +56,7 @@ namespace mag
                 str system = "linux";
 
 // @TODO: clean this up (maybe use a filesystem class)
-#if defined(_WIN32)
+#if MAG_PLATFORM_WINDOWS
                 system = "windows";
 #endif
                 if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;

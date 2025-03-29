@@ -43,7 +43,7 @@ namespace mag
 };  // namespace mag
 
 // Don't use this macro twice in the same scope
-#if defined(MAG_PROFILE_ENABLED)
+#if MAG_PROFILE_ENABLED
     #define SCOPED_PROFILE(name, ...) mag::ScopedProfiler scoped_profiler(name, ##__VA_ARGS__)
 #else
     #define SCOPED_PROFILE(name, ...)

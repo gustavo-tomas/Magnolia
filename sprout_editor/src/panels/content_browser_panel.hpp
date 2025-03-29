@@ -6,8 +6,6 @@ typedef int ImGuiWindowFlags;
 
 namespace sprout
 {
-    using namespace mag;
-
     class ContentBrowserPanel
     {
         public:

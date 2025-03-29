@@ -60,7 +60,7 @@ namespace mag
     };
 };  // namespace mag
 
-#if !defined(MAG_RELEASE)
+#if MAG_CONFIG_DEBUG
     #define LOG_ERROR(message, ...) \
         mag::Logger::log(std::source_location::current(), mag::LogType::Error, message __VA_OPT__(, ) __VA_ARGS__)
 

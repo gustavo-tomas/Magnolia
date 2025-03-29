@@ -1,4 +1,4 @@
-#ifdef __cplusplus
+#if defined(__cplusplus)
     #pragma once
 
     #include "core/types.hpp"

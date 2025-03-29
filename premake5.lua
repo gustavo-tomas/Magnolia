@@ -136,20 +136,20 @@ project "magnolia"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
+        defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
-        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'
@@ -209,20 +209,20 @@ project "sprout_editor"
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
+        defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
-        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'
@@ -272,20 +272,20 @@ common_settings = function()
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
-        defines { "MAG_DEBUG", "MAG_ASSERTIONS_ENABLED", "MAG_PROFILE_ENABLED" }
+        defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        defines { "NDEBUG", "MAG_PROFILE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "on" -- '-O2'
         runtime "release"
 
     filter "configurations:release"
-        defines { "NDEBUG", "MAG_RELEASE", "MAG_PROFILE_ENABLED" }
+        defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
         optimize "full" -- '-O3'

@@ -20,14 +20,14 @@ namespace mag
             const str last_folder = cwd.filename().string();
             str system = "linux";
 
-#if defined(_WIN32)
+#if MAG_PLATFORM_WINDOWS
             system = "windows";
             extension = ".dll";
 #endif
 
-#if defined(MAG_PROFILE)
+#if MAG_CONFIG_PROFILE
             configuration = "_profile";
-#elif defined(MAG_RELEASE)
+#elif MAG_CONFIG_RELEASE
             configuration = "_release";
 #endif
 

@@ -11,7 +11,7 @@ namespace mag
 
     b8 FileDialog::initialize()
     {
-#if defined(MAG_DEBUG)
+#if MAG_CONFIG_DEBUG
         pfd::settings::verbose(true);
 #endif
 

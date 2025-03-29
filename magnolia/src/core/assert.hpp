@@ -5,7 +5,7 @@
 namespace mag
 {
 // Assert
-#if defined(MAG_ASSERTIONS_ENABLED)
+#if MAG_ASSERTIONS_ENABLED
     #define ASSERT(assertion, ...)                                                              \
         {                                                                                       \
             if (!(assertion))                                                                   \
