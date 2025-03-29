@@ -16,5 +16,5 @@ namespace game
         LOG_INFO("Updating game. DT: {0}", dt);
     }
 
-    void TestGame::on_event(const Event &e) { (void)e; }
+    void TestGame::on_event(const mag::Event &e) { (void)e; }
 };  // namespace game
