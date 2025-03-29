@@ -2,7 +2,7 @@
 
 namespace mag
 {
-#if defined(MAG_DEBUG) && (defined(__GNUC__) || defined(__clang__))
+#if MAG_CONFIG_DEBUG && (__GNUC__ || __clang__)
     #include <signal.h>
     #define DEBUG_BREAK()   \
         {                   \

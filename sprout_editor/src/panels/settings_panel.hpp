@@ -5,8 +5,6 @@
 
 namespace sprout
 {
-    using namespace mag;
-
     class SettingsPanel
     {
         public:

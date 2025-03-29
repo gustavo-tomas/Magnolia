@@ -4,7 +4,7 @@
 
 extern mag::Application* mag::create_application();
 
-#ifdef _WIN32
+#if MAG_PLATFORM_WINDOWS
 int WinMain(int argc, char* argv[])  // @TODO: moises fix pls tyty
 #else
 int main(int argc, char* argv[])

@@ -11,7 +11,7 @@
 #include "tools/profiler.hpp"
 
 // Use to trace VMA allocations
-#ifdef MAG_DEBUG_TRACE
+#if MAG_CONFIG_DEBUG_TRACE
     #define VMA_DEBUG_LOG_FORMAT(format, ...) \
         do                                    \
         {                                     \
@@ -145,7 +145,7 @@ namespace mag
         instance_extensions.insert(instance_extensions.begin(), window_extensions.begin(), window_extensions.end());
 
         // Validation only on debug
-#if defined(MAG_DEBUG)
+#if MAG_CONFIG_DEBUG
         instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         validation_layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif
@@ -386,7 +386,7 @@ namespace mag
         impl->graphics_queue = impl->device.getQueue(impl->queue_family_index, 0);
 
         // Debug callback
-#if defined(MAG_DEBUG)
+#if MAG_CONFIG_DEBUG
         vk::DebugUtilsMessengerCreateInfoEXT debug_utils_messenger_create_info;
         debug_utils_messenger_create_info
             .setMessageSeverity(vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
@@ -467,7 +467,7 @@ namespace mag
         impl->device.destroy();
 
         impl->instance.destroySurfaceKHR(impl->surface);
-#if defined(MAG_DEBUG)
+#if MAG_CONFIG_DEBUG
         impl->instance.destroyDebugUtilsMessengerEXT(impl->debug_utils_messenger);
 #endif
         impl->instance.destroy();

@@ -100,9 +100,9 @@ namespace sprout
 
                 // @TODO: cleanup
                 str configuration = "debug";
-#if defined(MAG_PROFILE)
+#if MAG_CONFIG_PROFILE
                 configuration = "profile";
-#elif defined(MAG_RELEASE)
+#elif MAG_CONFIG_RELEASE
                 configuration = "release";
 #endif
                 // @TODO: cleanup
