@@ -1,5 +1,8 @@
 {
-    "WindowSize": [],
+    "WindowSize": [
+        1280,
+        720
+    ],
     "WindowPosition": [],
     "WindowTitle": "TestGame",
     "WindowIcon": "",

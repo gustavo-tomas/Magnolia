@@ -6,7 +6,6 @@
 
 namespace mag
 {
-
     Job::Job(const JobExecuteFn& execute, const JobCallbackFn& on_execute_finished)
         : execute_fn(std::move(execute)), callback_fn(std::move(on_execute_finished))
     {

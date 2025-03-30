@@ -45,7 +45,8 @@ namespace mag
 
         i32 width = 800, height = 600;
 
-        if (options.size == WindowOptions::MaxSize)
+        // Determines window size automatically
+        if (options.size.x == WindowOptions::MaxSize.x || options.size.y == WindowOptions::MaxSize.y)
         {
             SDL_DisplayMode display_mode;
             if (SDL_GetDesktopDisplayMode(0, &display_mode) != 0)
@@ -58,6 +59,13 @@ namespace mag
                 width = display_mode.w;
                 height = display_mode.h;
             }
+        }
+
+        // User provided window size
+        else
+        {
+            width = options.size.x;
+            height = options.size.y;
         }
 
         const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
