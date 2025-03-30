@@ -373,9 +373,17 @@ namespace sprout
 
     void Editor::start_game_process()
     {
+        // Stop running game process if any
         if (is_game_process_running())
         {
             stop_game_process();
+        }
+
+        // Save the active scene before running
+        const str file_path = "sprout_editor/assets/scenes/" + this->get_active_scene().get_name() + ".mag.json";
+        if (!scene::save(file_path, this->get_active_scene()))
+        {
+            LOG_ERROR("Failed to save active scene before running");
         }
 
         // @TODO: this is hardcoded for now
