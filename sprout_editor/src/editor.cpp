@@ -30,6 +30,7 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
+#include "threads/process_manager.hpp"
 
 mag::Application *mag::create_application() { return new sprout::Editor("sprout_editor/config.json"); }
 
@@ -60,6 +61,7 @@ namespace sprout
 
             u32 selected_scene_index = 0;
             u32 next_scene_index = 0;
+            Process *game_process = nullptr;
 
             uvec2 curr_viewport_size;
             b8 disabled = false;
@@ -177,6 +179,11 @@ namespace sprout
         ImGui::DestroyContext();
 
         context.get_device().destroyDescriptorPool(impl->descriptor_pool);
+
+        if (impl->game_process)
+        {
+            stop_game_process();
+        }
     }
 
     void Editor::on_update(const f32 dt)
@@ -346,10 +353,10 @@ namespace sprout
 
     void Editor::set_active_scene(const u32 index)
     {
-        auto &active_scene = get_active_scene();
-        if (active_scene.is_running())
+        // Kill game process if it exists
+        if (is_game_process_running())
         {
-            active_scene.on_stop();
+            stop_game_process();
         }
 
         impl->selected_scene_index = math::clamp(index, 0u, static_cast<u32>(impl->open_scenes.size() - 1));
@@ -363,6 +370,28 @@ namespace sprout
     }
 
     b8 Editor::is_viewport_window_active() const { return impl->viewport_panel->is_viewport_window_active(); }
+
+    void Editor::start_game_process()
+    {
+        if (is_game_process_running())
+        {
+            stop_game_process();
+        }
+
+        // @TODO: this is hardcoded for now
+        const str game_executable_path = "build/linux/test_game/test_game_debug";
+
+        impl->game_process = thread::start_process(game_executable_path);
+    }
+
+    void Editor::stop_game_process()
+    {
+        if (impl->game_process)
+        {
+            thread::kill_process(impl->game_process);
+            impl->game_process = nullptr;
+        }
+    }
 
     void Editor::build_render_graph(const uvec2 &size, const uvec2 &viewport_size)
     {
@@ -401,4 +430,9 @@ namespace sprout
     b8 &Editor::is_physics_colliders_enabled() { return impl->settings_panel->is_physics_colliders_enabled(); }
     b8 &Editor::is_gizmos_enabled() { return impl->settings_panel->is_gizmos_enabled(); }
     b8 Editor::is_disabled() const { return impl->disabled; }
+
+    b8 Editor::is_game_process_running() const
+    {
+        return impl->game_process != nullptr && thread::is_process_running(impl->game_process);
+    }
 };  // namespace sprout

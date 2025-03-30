@@ -32,7 +32,7 @@ namespace sprout
         RigidBodyComponent *rigid_body = ecs.get_component<RigidBodyComponent>(entity_id);
         BoxColliderComponent *collider = ecs.get_component<BoxColliderComponent>(entity_id);
 
-        if (rigid_body && collider && transform && !scene.is_running())
+        if (rigid_body && collider && transform)
         {
             scene.get_physics_world()->reset_rigid_body(rigid_body->collision_object, transform->translation,
                                                         transform->rotation, collider->dimensions, rigid_body->mass);
@@ -69,7 +69,7 @@ namespace sprout
                 field_edited =
                     field_edited || editable_field("Scale", transform->scale, vec3(1), vec3(0.0001), vec3(MaxValue));
 
-                if (field_edited && !scene.is_running())
+                if (field_edited)
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
@@ -132,7 +132,7 @@ namespace sprout
                 b8 field_edited =
                     editable_field("Dimensions", component->dimensions, vec3(1), vec3(0.001), vec3(MaxValue));
 
-                if (field_edited && !scene.is_running())
+                if (field_edited)
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }
@@ -146,7 +146,7 @@ namespace sprout
             {
                 b8 field_edited = editable_field("Mass", component->mass, 1.0f, 0.0f, MaxValue);
 
-                if (field_edited && !scene.is_running())
+                if (field_edited)
                 {
                     reset_physics_collider_object(scene, ecs, selected_entity_id);
                 }

@@ -32,6 +32,9 @@ namespace sprout
             void set_input_disabled(const b8 disable);
             void set_selected_scene_index(const u32 index);
 
+            void start_game_process();
+            void stop_game_process();
+
             // @TODO: this can be extended to query by window name if needed
             b8 is_viewport_window_active() const;
 
@@ -47,6 +50,7 @@ namespace sprout
             b8& is_bounding_box_enabled();
             b8& is_physics_colliders_enabled();
             b8& is_gizmos_enabled();
+            b8 is_game_process_running() const;
             b8 is_disabled() const;
 
         private:

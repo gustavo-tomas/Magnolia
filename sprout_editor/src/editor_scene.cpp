@@ -6,6 +6,7 @@
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
+#include "editor.hpp"
 #include "math/generic.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
@@ -29,41 +30,16 @@ namespace sprout
 
     EditorScene::~EditorScene() = default;
 
-    void EditorScene::on_start_internal()
-    {
-        // Save current state
-        temporary_ecs = create_unique<ECS>(*ecs);
-    }
-
-    void EditorScene::on_stop_internal()
-    {
-        ecs.reset();
-        ecs = create_unique<ECS>(*temporary_ecs);
-        temporary_ecs.reset();
-
-        // Reset physics world state
-        auto objects = ecs->get_all_components_of_types<TransformComponent, RigidBodyComponent, BoxColliderComponent>();
-
-        for (auto [transform, rigid_body, collider] : objects)
-        {
-            physics_world->reset_rigid_body(rigid_body->collision_object, transform->translation, transform->rotation,
-                                            collider->dimensions, rigid_body->mass);
-        }
-    }
-
     void EditorScene::on_update_internal(const f32 dt)
     {
         camera_controller->on_update(dt);
 
         // Set camera positions the same as the transform
-        if (!is_running())
+        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : components)
         {
-            auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
-            for (auto [camera_c, transform] : components)
-            {
-                camera_c->camera.set_position(transform->translation);
-                camera_c->camera.set_rotation(transform->rotation);
-            }
+            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(transform->rotation);
         }
 
         auto& app = get_application();
@@ -125,13 +101,14 @@ namespace sprout
         };
 
         // Callback when finished executing
-        auto on_execute_finished = [this](const b8 result)
+        auto on_execute_finished = [](const b8 result)
         {
             // Restart the scene if everything went ok
-            if (result && is_running())
+            Editor& editor = get_editor();
+            if (result && editor.is_game_process_running())
             {
-                this->on_stop();
-                this->on_start();
+                editor.stop_game_process();
+                editor.start_game_process();
             }
         };
 
@@ -164,11 +141,6 @@ namespace sprout
         current_viewport_size = new_viewport_size;
 
         camera->set_aspect_ratio(current_viewport_size);
-
-        for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
-        {
-            camera_c->camera.set_aspect_ratio(current_viewport_size);
-        }
     }
 
     void EditorScene::on_resize(const WindowResizeEvent& e)
@@ -177,23 +149,5 @@ namespace sprout
         (void)e;
     }
 
-    Camera& EditorScene::get_camera()
-    {
-        if (is_running())
-        {
-            auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
-            for (auto [camera_c, transform] : components)
-            {
-                return camera_c->camera;
-            }
-
-            ASSERT(false, "No runtime camera!");
-            return std::get<0>(components[0])->camera;
-        }
-
-        else
-        {
-            return *camera;
-        }
-    }
+    Camera& EditorScene::get_camera() { return *camera; }
 };  // namespace sprout

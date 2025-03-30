@@ -66,7 +66,7 @@ namespace sprout
 
             // @TODO: make a prettier button
             // @NOTE: keep the runtime switch in the end
-            const str button_label = scene.is_running() ? ICON_FA_STOP : ICON_FA_PLAY;
+            const str button_label = editor.is_game_process_running() ? ICON_FA_STOP : ICON_FA_PLAY;
             swap_state = ImGui::Button(button_label.c_str());
 
             // Recompile shaders
@@ -338,19 +338,17 @@ namespace sprout
         }
 
     no_transform:
-        // Play/Pause simulation
+        // Play/Pause the game
+        if (swap_state)
         {
-            if (swap_state)
+            if (editor.is_game_process_running())
             {
-                if (scene.is_running())
-                {
-                    editor.get_active_scene().on_stop();
-                }
+                editor.stop_game_process();
+            }
 
-                else
-                {
-                    editor.get_active_scene().on_start();
-                }
+            else
+            {
+                editor.start_game_process();
             }
         }
 

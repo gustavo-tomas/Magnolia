@@ -165,17 +165,14 @@ namespace sprout
             }
         }
 
-        // Get lines from camera gizmos (show in editor only)
+        // Get lines from camera gizmos
 
-        if (!scene.is_running())
+        const auto& camera_entities =
+            scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();
+
+        for (const auto& [transform, camera_c] : camera_entities)
         {
-            const auto& camera_entities =
-                scene.get_ecs().get_all_components_of_types<TransformComponent, CameraComponent>();
-
-            for (const auto& [transform, camera_c] : camera_entities)
-            {
-                total_lines.append(get_camera_gizmo(camera_c->camera));
-            }
+            total_lines.append(get_camera_gizmo(camera_c->camera));
         }
 
         if (total_lines.starts.empty())
