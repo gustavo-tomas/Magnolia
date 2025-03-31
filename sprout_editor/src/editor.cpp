@@ -180,7 +180,7 @@ namespace sprout
 
         context.get_device().destroyDescriptorPool(impl->descriptor_pool);
 
-        if (impl->game_process)
+        if (is_game_process_running())
         {
             stop_game_process();
         }
