@@ -204,7 +204,7 @@ namespace sprout
                         // Check if asset is a json file
                         else if (extension == ".json")
                         {
-                            json data;
+                            fs::json data;
                             if (!fs::read_json_data(path, data) || !data.contains("Type"))
                             {
                                 goto end_drag_drop_target;

@@ -16,7 +16,7 @@ namespace mag
             // Reset model data
             *model = {};
 
-            json data;
+            fs::json data;
 
             if (!fs::read_json_data(file_path, data))
             {

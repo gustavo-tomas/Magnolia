@@ -25,7 +25,7 @@ namespace mag
                 return false;
             }
 
-            json data;
+            fs::json data;
 
             if (!fs::read_json_data(file_path, data))
             {
@@ -101,7 +101,7 @@ namespace mag
                 return false;
             }
 
-            const json pipeline_data = data["Pipeline"];
+            const fs::json pipeline_data = data["Pipeline"];
 
             shader->name = shader_name;
             shader->file_path = file_path;

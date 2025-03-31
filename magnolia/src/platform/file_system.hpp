@@ -9,19 +9,18 @@
 
 namespace mag
 {
-    using json = nlohmann::ordered_json;
-
     struct Buffer;
 
     namespace fs
     {
         using path = std::filesystem::path;
+        using json = nlohmann::ordered_json;
 
         b8 read_binary_data(const fs::path& file_path, Buffer& buffer);
         b8 write_binary_data(const fs::path& file_path, Buffer& buffer);
 
-        b8 read_json_data(const fs::path& file_path, json& data);
-        b8 write_json_data(const fs::path& file_path, json& data);
+        b8 read_json_data(const fs::path& file_path, fs::json& data);
+        b8 write_json_data(const fs::path& file_path, fs::json& data);
 
         b8 create_directories(const fs::path& path);
 

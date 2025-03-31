@@ -96,7 +96,7 @@ namespace mag
         const u32 num_indices = model.indices.size();
         const u32 num_meshes = model.meshes.size();
 
-        json data;
+        fs::json data;
         data["Type"] = "Model";
         data["Name"] = model.name;
         data["File"] = binary_file_path;
@@ -292,7 +292,7 @@ namespace mag
             model.materials[i] = material_file_path;
 
             // Write material data to file
-            json data;
+            fs::json data;
             data["Type"] = "Material";
             data["Name"] = material_name;
             data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);

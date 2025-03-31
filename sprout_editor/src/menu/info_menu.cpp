@@ -17,7 +17,7 @@ namespace sprout
         // Parse instructions from the json file
         const str file_path = "sprout_editor/assets/json/editor_instructions.json";
 
-        json data;
+        fs::json data;
 
         if (!fs::read_json_data(file_path, data))
         {

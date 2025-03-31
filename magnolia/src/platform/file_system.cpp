@@ -66,7 +66,7 @@ namespace mag
             return true;
         }
 
-        b8 read_json_data(const fs::path& raw_file_path, json& data)
+        b8 read_json_data(const fs::path& raw_file_path, fs::json& data)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
@@ -79,7 +79,7 @@ namespace mag
                 return false;
             }
 
-            data = json::parse(file, nullptr, false);
+            data = fs::json::parse(file, nullptr, false);
 
             if (data.is_discarded())
             {
@@ -90,7 +90,7 @@ namespace mag
             return true;
         }
 
-        b8 write_json_data(const fs::path& raw_file_path, json& data)
+        b8 write_json_data(const fs::path& raw_file_path, fs::json& data)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 

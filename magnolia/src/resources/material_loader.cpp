@@ -12,7 +12,7 @@ namespace mag
     {
         b8 load(const str& file_path, Material* material)
         {
-            json data;
+            fs::json data;
 
             if (!fs::read_json_data(file_path, data))
             {
@@ -34,7 +34,7 @@ namespace mag
 
             const str material_name = data["Name"];
 
-            const json textures = data["Textures"];
+            const fs::json textures = data["Textures"];
 
             if (!textures.contains("Albedo") || !textures.contains("Normal"))
             {

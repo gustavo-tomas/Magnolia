@@ -10,13 +10,13 @@
 
 namespace mag
 {
-    json& operator<<(json& out, const vec2& v)
+    fs::json& operator<<(fs::json& out, const vec2& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
     }
 
-    json& operator<<(json& out, const vec3& v)
+    fs::json& operator<<(fs::json& out, const vec3& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
@@ -27,14 +27,14 @@ namespace mag
         b8 save(const str& file_path, Scene& scene)
         {
             // Serialize scene data to file
-            json data;
+            fs::json data;
             data["Type"] = "Scene";
             data["Name"] = scene.get_name();
 
             auto& ecs = scene.get_ecs();
             for (const auto entity_id : ecs.get_entities_ids())
             {
-                json entity;
+                fs::json entity;
 
                 if (auto component = ecs.get_component<NameComponent>(entity_id))
                 {
@@ -122,7 +122,7 @@ namespace mag
         {
             auto& app = get_application();
 
-            json data;
+            fs::json data;
 
             if (!fs::read_json_data(file_path, data))
             {

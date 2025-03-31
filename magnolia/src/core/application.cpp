@@ -50,7 +50,7 @@ namespace mag
 
         // Read config file
 
-        json config;
+        fs::json config;
 
         uvec2 window_size = WindowOptions::MaxSize;
         ivec2 window_position = WindowOptions::CenterPos;
