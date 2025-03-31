@@ -15,19 +15,21 @@ namespace mag
 
     namespace fs
     {
-        b8 read_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
-        b8 write_binary_data(const std::filesystem::path& file_path, Buffer& buffer);
+        using path = std::filesystem::path;
 
-        b8 read_json_data(const std::filesystem::path& file_path, json& data);
-        b8 write_json_data(const std::filesystem::path& file_path, json& data);
+        b8 read_binary_data(const fs::path& file_path, Buffer& buffer);
+        b8 write_binary_data(const fs::path& file_path, Buffer& buffer);
 
-        b8 create_directories(const std::filesystem::path& path);
+        b8 read_json_data(const fs::path& file_path, json& data);
+        b8 write_json_data(const fs::path& file_path, json& data);
 
-        str get_file_extension(const std::filesystem::path& file_path);
-        std::filesystem::path get_fixed_path(const std::filesystem::path& file_path);
+        b8 create_directories(const fs::path& path);
 
-        b8 exists(const std::filesystem::path& path);
-        b8 is_directory(const std::filesystem::path& path);
+        str get_file_extension(const fs::path& file_path);
+        fs::path get_fixed_path(const fs::path& file_path);
+
+        b8 exists(const fs::path& path);
+        b8 is_directory(const fs::path& path);
     };  // namespace fs
 
     class FileWatcher
@@ -36,11 +38,11 @@ namespace mag
             FileWatcher();
             ~FileWatcher();
 
-            void watch_file(const std::filesystem::path& file_path);
-            void stop_watching_file(const std::filesystem::path& file_path);
-            void reset_file_status(const std::filesystem::path& file_path);
+            void watch_file(const fs::path& file_path);
+            void stop_watching_file(const fs::path& file_path);
+            void reset_file_status(const fs::path& file_path);
 
-            b8 was_file_modified(const std::filesystem::path& file_path);
+            b8 was_file_modified(const fs::path& file_path);
 
         private:
             struct FileStatus

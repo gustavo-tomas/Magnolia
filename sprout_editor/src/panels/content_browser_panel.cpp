@@ -8,6 +8,7 @@
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
+#include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/renderer_image.hpp"
 #include "renderer/sampler.hpp"
@@ -51,11 +52,11 @@ namespace sprout
     {
         ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
-        const std::filesystem::path base_directory = std::filesystem::path("sprout_editor/assets");
-        static std::filesystem::path current_directory = base_directory;
+        const fs::path base_directory = fs::path("sprout_editor/assets");
+        static fs::path current_directory = base_directory;
 
         // Traverse directories
-        if (current_directory != std::filesystem::path(base_directory))
+        if (current_directory != fs::path(base_directory))
         {
             if (ImGui::Button(ICON_FA_CHEVRON_LEFT))
             {
@@ -105,7 +106,7 @@ namespace sprout
 
             if (ImGui::BeginDragDropSource())
             {
-                std::filesystem::path relative_path(path);
+                const fs::path relative_path(path);
                 const wchar_t* item_path = reinterpret_cast<const wchar_t*>(relative_path.c_str());
                 ImGui::SetDragDropPayload(CONTENT_BROWSER_ITEM, item_path, (wcslen(item_path) + 1) * sizeof(wchar_t));
                 ImGui::EndDragDropSource();

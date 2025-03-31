@@ -1,7 +1,5 @@
 #include "menu/menu_bar.hpp"
 
-#include <filesystem>
-
 #include "core/application.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
@@ -11,6 +9,7 @@
 #include "imgui.h"
 #include "menu/info_menu.hpp"
 #include "platform/file_dialog.hpp"
+#include "platform/file_system.hpp"
 #include "scene/scene_serializer.hpp"
 
 namespace sprout
@@ -134,7 +133,7 @@ namespace sprout
 
         // @TODO: this is incorrect and can possibly overwrite the path of an open scene.
         // This is old code and should be updated to handle multiple open scenes.
-        scene_file_path = std::filesystem::path();
+        scene_file_path = fs::path();
 
         get_editor().add_scene(scene);
 

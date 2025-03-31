@@ -83,8 +83,8 @@ namespace sprout
 #endif
                 // @TODO: cleanup
 
-                const str rebuild_script = "python3 build.py scripts " + configuration + " " +
-                                           std::filesystem::path(script_file).stem().string();
+                const str rebuild_script =
+                    "python3 build.py scripts " + configuration + " " + fs::path(script_file).stem().string();
                 if (system(rebuild_script.c_str()) == 0)
                 {
                     LOG_INFO("Finished rebuilding DLL for '{0}'", script_file);

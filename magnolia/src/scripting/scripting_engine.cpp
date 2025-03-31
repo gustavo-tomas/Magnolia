@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "core/logger.hpp"
+#include "platform/file_system.hpp"
 
 namespace mag
 {
@@ -16,7 +17,7 @@ namespace mag
         str extension = ".so";
         str configuration = "_debug";
         {
-            const std::filesystem::path cwd = std::filesystem::current_path();
+            const fs::path cwd = std::filesystem::current_path();
             const str last_folder = cwd.filename().string();
             str system = "linux";
 
@@ -35,7 +36,7 @@ namespace mag
         }
         // @TODO: cleanup
 
-        const str script_src = std::filesystem::path(file_path).stem();
+        const str script_src = fs::path(file_path).stem();
         const str script_dll = scripts_bin_folder + "lib" + script_src + configuration + extension;
 
         // @TODO: see if we can load this from memory

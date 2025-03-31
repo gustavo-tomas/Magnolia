@@ -51,7 +51,7 @@ namespace mag
             str shader_folder = "shaders/";
             {
                 // Shaders
-                const std::filesystem::path cwd = std::filesystem::current_path();
+                const fs::path cwd = std::filesystem::current_path();
                 const str last_folder = cwd.filename().string();
                 str system = "linux";
 

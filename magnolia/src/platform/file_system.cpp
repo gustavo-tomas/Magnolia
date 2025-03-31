@@ -10,7 +10,7 @@ namespace mag
 {
     namespace fs
     {
-        b8 read_binary_data(const std::filesystem::path& raw_file_path, Buffer& buffer)
+        b8 read_binary_data(const fs::path& raw_file_path, Buffer& buffer)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
@@ -42,7 +42,7 @@ namespace mag
             return true;
         }
 
-        b8 write_binary_data(const std::filesystem::path& raw_file_path, Buffer& buffer)
+        b8 write_binary_data(const fs::path& raw_file_path, Buffer& buffer)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
@@ -66,7 +66,7 @@ namespace mag
             return true;
         }
 
-        b8 read_json_data(const std::filesystem::path& raw_file_path, json& data)
+        b8 read_json_data(const fs::path& raw_file_path, json& data)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
@@ -90,7 +90,7 @@ namespace mag
             return true;
         }
 
-        b8 write_json_data(const std::filesystem::path& raw_file_path, json& data)
+        b8 write_json_data(const fs::path& raw_file_path, json& data)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
@@ -108,7 +108,7 @@ namespace mag
             return true;
         }
 
-        b8 create_directories(const std::filesystem::path& raw_file_path)
+        b8 create_directories(const fs::path& raw_file_path)
         {
             const auto path = get_fixed_path(raw_file_path);
 
@@ -120,7 +120,7 @@ namespace mag
             return std::filesystem::create_directories(path);
         }
 
-        std::filesystem::path get_fixed_path(const std::filesystem::path& file_path)
+        fs::path get_fixed_path(const fs::path& file_path)
         {
             str fixed_path = file_path.string();
 
@@ -131,19 +131,19 @@ namespace mag
             return fixed_path;
         }
 
-        str get_file_extension(const std::filesystem::path& raw_file_path)
+        str get_file_extension(const fs::path& raw_file_path)
         {
             const auto file_path = get_fixed_path(raw_file_path);
             return file_path.extension().c_str();
         }
 
-        b8 exists(const std::filesystem::path& raw_file_path)
+        b8 exists(const fs::path& raw_file_path)
         {
             const auto path = get_fixed_path(raw_file_path);
             return std::filesystem::exists(path);
         }
 
-        b8 is_directory(const std::filesystem::path& raw_file_path)
+        b8 is_directory(const fs::path& raw_file_path)
         {
             const auto path = get_fixed_path(raw_file_path);
             return std::filesystem::is_directory(path);
@@ -199,7 +199,7 @@ namespace mag
         }
     }
 
-    void FileWatcher::watch_file(const std::filesystem::path& file_path)
+    void FileWatcher::watch_file(const fs::path& file_path)
     {
         std::lock_guard<std::mutex> lock(files_mutex);
         if (!fs::exists(file_path) || files_on_watch.contains(file_path))
@@ -211,7 +211,7 @@ namespace mag
         files_on_watch[file_path].modified = false;
     }
 
-    void FileWatcher::stop_watching_file(const std::filesystem::path& file_path)
+    void FileWatcher::stop_watching_file(const fs::path& file_path)
     {
         std::lock_guard<std::mutex> lock(files_mutex);
         if (files_on_watch.contains(file_path))
@@ -220,7 +220,7 @@ namespace mag
         }
     }
 
-    void FileWatcher::reset_file_status(const std::filesystem::path& file_path)
+    void FileWatcher::reset_file_status(const fs::path& file_path)
     {
         std::unique_lock<std::mutex> lock(files_mutex);
         if (files_on_watch.contains(file_path))
@@ -232,7 +232,7 @@ namespace mag
         }
     }
 
-    b8 FileWatcher::was_file_modified(const std::filesystem::path& file_path)
+    b8 FileWatcher::was_file_modified(const fs::path& file_path)
     {
         std::lock_guard<std::mutex> lock(files_mutex);
         return files_on_watch.contains(file_path) && files_on_watch[file_path].modified;
