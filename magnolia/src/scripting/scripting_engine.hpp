@@ -4,11 +4,14 @@
 
 namespace mag
 {
-    class ScriptingEngine
+    namespace script
     {
-        public:
-            static void* load_script(const str& file_path);  // returns nullptr on error
-            static void unload_script(void* handle);
-            static void* get_symbol(void* handle, const str& name);  // returns nullptr on error
-    };
-};  // namespace mag
+        // returns nullptr on error
+        void* load_script(const str& file_path);
+
+        void unload_script(void* handle);
+
+        // returns nullptr on error
+        void* get_symbol(void* handle, const str& name);
+    };  // namespace script
+};      // namespace mag

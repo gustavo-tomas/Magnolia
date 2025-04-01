@@ -50,14 +50,14 @@ namespace mag
             return;
         }
 
-        void* handle = ScriptingEngine::load_script(script->file_path);
+        void* handle = script::load_script(script->file_path);
         if (!handle)
         {
             return;
         }
 
-        void* raw_create_script_fn = ScriptingEngine::get_symbol(handle, "create_script");
-        void* raw_destroy_script_fn = ScriptingEngine::get_symbol(handle, "destroy_script");
+        void* raw_create_script_fn = script::get_symbol(handle, "create_script");
+        void* raw_destroy_script_fn = script::get_symbol(handle, "destroy_script");
 
         if (!raw_create_script_fn || !raw_destroy_script_fn)
         {
@@ -93,7 +93,7 @@ namespace mag
         script->destroy_entity(script->entity);
         script->entity = nullptr;
 
-        ScriptingEngine::unload_script(script->handle);
+        script::unload_script(script->handle);
         script->handle = nullptr;
     }
 
