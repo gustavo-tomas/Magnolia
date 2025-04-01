@@ -84,6 +84,8 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 // Windows
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(_WIN64)
     #define MAG_PLATFORM_WINDOWS 1
+    #define MAG_BUILD_DIR_SHADERS "build/windows/shaders/"
+    #define MAG_BUILD_DIR_SCRIPTS "build/windows/scripts/"
     #ifndef _WIN64
         #error "Windows platform is not 64-bit"
     #endif
@@ -91,6 +93,10 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 // Linux
 #elif defined(__linux) || defined(__linux__) || defined(__gnu_linux__)
     #define MAG_PLATFORM_LINUX 1
+
+// @TODO: idk if defining these macros is the best solution, but it'll keep things simple for now
+    #define MAG_BUILD_DIR_SHADERS "build/linux/shaders/"
+    #define MAG_BUILD_DIR_SCRIPTS "build/linux/scripts/"
 
 // Unknown
 #else

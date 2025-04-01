@@ -47,29 +47,13 @@ namespace mag
 
             const str shader_name = data["Shader"];
 
-            // @TODO: cleanup
-            str shader_folder = "shaders/";
-            {
-                // Shaders
-                const fs::path cwd = std::filesystem::current_path();
-                const str last_folder = cwd.filename().string();
-                str system = "linux";
-
-// @TODO: clean this up (maybe use a filesystem class)
-#if MAG_PLATFORM_WINDOWS
-                system = "windows";
-#endif
-                if (last_folder == "Magnolia") shader_folder = "build/" + system + "/" + shader_folder;
-            }
-            // @TODO: cleanup
-
             b8 contains_vertex_stage = false;
             b8 contains_fragment_stage = false;
 
             std::vector<str> shader_modules = data["Files"];
             for (auto& shader_module_file : shader_modules)
             {
-                const str shader_module_path = shader_folder + shader_module_file;
+                const str shader_module_path = MAG_BUILD_DIR_SHADERS + shader_module_file;
 
                 ShaderModule shader_module;
 

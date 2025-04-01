@@ -1,9 +1,11 @@
 #include "scripting/scripting_engine.hpp"
 
 // @TODO: this is unix only, create an interface for the windows build
-#include <dlfcn.h>
-
-#include <filesystem>
+#if MAG_PLATFORM_LINUX
+    #include <dlfcn.h>
+#else
+    #error "Unsupported platform"
+#endif
 
 #include "core/logger.hpp"
 #include "platform/file_system.hpp"
@@ -13,16 +15,10 @@ namespace mag
     void* ScriptingEngine::load_script(const str& file_path)
     {
         // @TODO: cleanup
-        str scripts_bin_folder = "scripts/";
         str extension = ".so";
         str configuration = "_debug";
         {
-            const fs::path cwd = std::filesystem::current_path();
-            const str last_folder = cwd.filename().string();
-            str system = "linux";
-
 #if MAG_PLATFORM_WINDOWS
-            system = "windows";
             extension = ".dll";
 #endif
 
@@ -31,13 +27,11 @@ namespace mag
 #elif MAG_CONFIG_RELEASE
             configuration = "_release";
 #endif
-
-            if (last_folder == "Magnolia") scripts_bin_folder = "build/" + system + "/" + scripts_bin_folder;
         }
         // @TODO: cleanup
 
         const str script_src = fs::path(file_path).stem();
-        const str script_dll = scripts_bin_folder + "lib" + script_src + configuration + extension;
+        const str script_dll = MAG_BUILD_DIR_SCRIPTS "lib" + script_src + configuration + extension;
 
         // @TODO: see if we can load this from memory
         void* handle = dlopen(script_dll.c_str(), RTLD_NOW | RTLD_GLOBAL);
