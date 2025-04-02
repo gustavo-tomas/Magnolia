@@ -53,7 +53,7 @@ namespace mag
             std::vector<str> shader_modules = data["Files"];
             for (auto& shader_module_file : shader_modules)
             {
-                const str shader_module_path = MAG_BUILD_DIR_SHADERS + shader_module_file;
+                const str shader_module_path = MAG_BUILD_SHADER_NAME(shader_module_file);
 
                 ShaderModule shader_module;
 
