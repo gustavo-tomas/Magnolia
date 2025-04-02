@@ -42,14 +42,6 @@ def build(system, configuration):
   print(f"(Python) Number of cores: {number_of_cores}")
   assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j{number_of_cores}") == 0
 
-  # Copy shared libs and executables to the same folder
-  shaders_src_dir = f"build{bar}{system}{bar}shaders"
-  shaders_dst_dir = f"build{bar}{system}{bar}magnolia{bar}shaders"
-  
-  try:
-    shutil.copytree(shaders_src_dir, shaders_dst_dir, dirs_exist_ok=True)
-  except Exception as e:
-    print(f"Error copying folders: {e}")
   return
 
 # ----- Run -----
@@ -74,10 +66,10 @@ def lint():
   return
 
 # ----- Shaders -----
-def shaders(system):
+def shaders(system, configuration):
   glslc_exe = "glslc" + executable_extension
   shader_dir = f"sprout_editor{bar}assets{bar}shaders"
-  output_dir = f"build{bar}{system}{bar}shaders"
+  output_dir = f"build{bar}{system}{bar}{configuration}{bar}bin{bar}shaders"
 
   print("----- Compiling shaders -----")
   if system == "linux":
@@ -118,7 +110,7 @@ def main():
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
-    shaders(system)
+    shaders(system, configuration)
     lint()
     build(system, configuration)
     run(system, configuration)
@@ -131,7 +123,7 @@ def main():
     configuration = str(sys.argv[2])
 
     if command == "build":
-      shaders(system)
+      shaders(system, configuration)
       build(system, configuration)
     
     elif command == "run":
@@ -141,7 +133,7 @@ def main():
       clean(configuration)
     
     elif command == "shaders":
-      shaders(system)
+      shaders(system, configuration)
 
     elif command == "lint":
       lint()

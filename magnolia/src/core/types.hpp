@@ -83,9 +83,7 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 
 // Windows
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(_WIN64)
-    #define MAG_PLATFORM_WINDOWS 1
-    #define MAG_BUILD_DIR_SHADERS "build/windows/shaders/"
-    #define MAG_BUILD_DIR_SCRIPTS "build/windows/scripts/"
+    #error "Windows platform is not implemented"
     #ifndef _WIN64
         #error "Windows platform is not 64-bit"
     #endif
@@ -94,11 +92,26 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 #elif defined(__linux) || defined(__linux__) || defined(__gnu_linux__)
     #define MAG_PLATFORM_LINUX 1
 
-// @TODO: idk if defining these macros is the best solution, but it'll keep things simple for now
-    #define MAG_BUILD_DIR_SHADERS "build/linux/shaders/"
-    #define MAG_BUILD_DIR_SCRIPTS "build/linux/scripts/"
-
 // Unknown
 #else
     #error "Unknown platform"
 #endif
+
+// Paths and build configurations
+
+// @TODO: idk if defining these macros is the best solution, but it'll keep things simple for now
+#if MAG_PLATFORM_LINUX
+    #define MAG_BUILD_DIR_PLATFORM "linux/"
+#elif MAG_PLATFORM_WINDOWS
+    #define MAG_BUILD_DIR_PLATFORM "windows/"
+#endif
+
+#if MAG_CONFIG_DEBUG
+    #define MAG_BUILD_DIR_CONFIG "debug/"
+#elif MAG_CONFIG_RELEASE
+    #define MAG_BUILD_DIR_CONFIG "release/"
+#endif
+
+#define MAG_BUILD_DIR_BIN "build/" MAG_BUILD_DIR_PLATFORM MAG_BUILD_DIR_CONFIG "bin/"
+#define MAG_BUILD_DIR_SHADERS MAG_BUILD_DIR_BIN "shaders/"
+#define MAG_BUILD_DIR_SCRIPTS MAG_BUILD_DIR_BIN "scripts/"

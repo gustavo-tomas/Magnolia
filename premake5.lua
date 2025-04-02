@@ -9,8 +9,8 @@ workspace "magnolia"
     staticruntime "on"
     
     -- Output directories
-    targetdir ("build/%{cfg.system}/%{prj.name}")
-    objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/%{prj.name}")
+    targetdir ("build/%{cfg.system}/%{cfg.buildcfg}/bin/%{prj.name}")
+    objdir ("build/%{cfg.system}/%{cfg.buildcfg}/obj/%{prj.name}")
     
     libdir = ""
     if os.host() == "linux" then
@@ -74,7 +74,7 @@ workspace "magnolia"
 
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
-    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    targetname ("%{prj.name}")
     kind "sharedlib"
 
     pchheader "%{prj.name}/src/pch.hpp"
@@ -157,7 +157,7 @@ project "magnolia"
 
 -- Editor --------------------------------------------------------------------------------------------------------------
 project "sprout_editor"
-    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    targetname ("%{prj.name}")
     kind "consoleapp"
 
     files
@@ -230,7 +230,7 @@ project "sprout_editor"
 
 -- Client Application --------------------------------------------------------------------------------------------------
 project "test_game"
-    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    targetname ("%{prj.name}")
     kind "consoleapp"
 
     files
@@ -306,11 +306,11 @@ local script_dir = "sprout_editor/assets/scripts/"
 local script_files = os.matchfiles(script_dir .. "*.cpp")
 
 common_settings = function()
-    targetname ("%{prj.name}_%{cfg.buildcfg}")
+    targetname ("%{prj.name}")
     kind "sharedlib"
 
-    targetdir ("build/%{cfg.system}/scripts")
-    objdir ("build/%{cfg.system}/obj/%{cfg.buildcfg}/scripts/%{prj.name}")
+    targetdir ("build/%{cfg.system}/%{cfg.buildcfg}/bin/scripts")
+    objdir ("build/%{cfg.system}/%{cfg.buildcfg}/obj/scripts/%{prj.name}")
 
     includedirs 
     { 
@@ -422,7 +422,6 @@ project "vulkan"
             os.execute("echo Skipping vulkan copy commands...")
         else
             os.execute("mkdir -p " .. libdir)
-            os.execute("mkdir -p build/linux/magnolia")
             os.execute("cp ext/linux/libvulkan.so " .. libdir .. "/libvulkan.so")
             os.execute("cp ext/linux/libvulkan.so.1 " .. libdir .. "/libvulkan.so.1")
             os.execute("cp ext/linux/libvulkan.so.1.3.268 " .. libdir .. "/libvulkan.so.1.3.268")
@@ -491,7 +490,6 @@ project "imgui"
 	cppdialect "c++20"
 
 	targetdir (libdir)
-    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
 
 	includedirs { ".", "libs/imgui", "libs/sdl/include", "libs/vulkan/include"}
 
@@ -533,7 +531,6 @@ project "imguizmo"
 	cppdialect "c++20"
 
 	targetdir (libdir)
-    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
 
 	includedirs { ".", "libs/imguizmo", "libs/imgui" }
 
@@ -633,7 +630,6 @@ project "implot"
     cppdialect "c++20"
 
     targetdir (libdir)
-    objdir ("build/%{cfg.system}/%{prj.name}/%{cfg.buildcfg}")
 
     includedirs { ".", "libs/implot", "libs/imgui" }
 

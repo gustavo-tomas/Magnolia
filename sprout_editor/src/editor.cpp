@@ -387,7 +387,7 @@ namespace sprout
         }
 
         // @TODO: this is hardcoded for now
-        const str game_executable_path = "build/linux/test_game/test_game_debug";
+        const str game_executable_path = MAG_BUILD_DIR_BIN "test_game/test_game";
 
         impl->game_process = thread::start_process(game_executable_path);
     }
