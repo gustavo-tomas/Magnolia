@@ -1,8 +1,8 @@
 {
     "Shader": "Grid",
     "Files": [
-        "grid.vert.spv",
-        "grid.frag.spv"
+        "grid.vert",
+        "grid.frag"
     ],
     "Pipeline": {
         "InputAssembly": {

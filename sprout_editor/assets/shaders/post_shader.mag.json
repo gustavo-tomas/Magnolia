@@ -1,8 +1,8 @@
 {
     "Shader": "Post",
     "Files": [
-        "post.vert.spv",
-        "post.frag.spv"
+        "post.vert",
+        "post.frag"
     ],
     "Pipeline": {
         "InputAssembly": {

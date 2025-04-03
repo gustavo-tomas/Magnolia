@@ -74,50 +74,23 @@ namespace sprout
             {
                 auto &job_system = app.get_job_system();
 
-                // Execute python script on another thread
-                auto execute = []
-                {
-                    b8 result = true;
+                // @TODO: this kinda sucks. we have to keep the recompilation on the main thread in the beginning of the
+                // loop (i.e. the callback) otherwise vulkan starts acting up
 
-                    LOG_INFO("Recompiling shaders...");
-
-                    // @TODO: cleanup
-                    str configuration = "debug";
-#if MAG_CONFIG_PROFILE
-                    configuration = "profile";
-#elif MAG_CONFIG_RELEASE
-                    configuration = "release";
-#endif
-                    // @TODO: cleanup
-
-                    // @TODO: might be better to recompile only changed shaders, not all of them
-                    const str rebuild_script = "python3 build.py shaders " + configuration;
-                    if (system(rebuild_script.c_str()) == 0)
-                    {
-                        LOG_INFO("Finished recompiling shaders");
-                    }
-
-                    else
-                    {
-                        LOG_ERROR("Failed to recompile shaders");
-                        result = false;
-                    }
-
-                    return result;
-                };
+                // Recompile shaders on another thread
+                auto execute = [] { return true; };
 
                 // Callback when finished executing
                 auto on_execute_finished = [](const b8 result)
                 {
-                    // Restart the scene if everything went ok
-                    if (result)
-                    {
-                        auto &app = get_application();
-                        auto &shader_manager = app.get_shader_manager();
+                    (void)result;
 
-                        shader_manager.recompile_all_shaders();
-                        LOG_SUCCESS("Shaders recompiled");
-                    }
+                    LOG_INFO("Recompiling shaders...");
+
+                    Application &app = get_application();
+                    ShaderManager &shader_manager = app.get_shader_manager();
+
+                    shader_manager.recompile_all_shaders();
                 };
 
                 Job load_job = Job(execute, on_execute_finished);

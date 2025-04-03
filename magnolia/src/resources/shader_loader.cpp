@@ -11,13 +11,21 @@
 #include "renderer/shader.hpp"
 #include "spirv_reflect.h"
 
+// @TODO: for now i think the shader manager should be in charge of compiling the shaders. its ugly and slow,
+// but it will allow for greater flexibility and will also decouple the shader compilation from the editor (rn
+// we can only build shaders for the editor and nothing else). we should also be careful with collisions so that
+// we dont overwrite any shader. in the end, we should be able to separate editor assets from the application
+// assets without worrying too much about build directories.
+
 namespace mag
 {
     namespace resource
     {
+        static b8 compile_module(const str& input_file_path, const str& output_file_path,
+                                 const std::vector<str>& include_paths);
         static b8 load_module(const str& file_path, ShaderModule* shader_module);
 
-        b8 load(const str& file_path, ShaderConfiguration* shader)
+        b8 load(const str& file_path, ShaderConfiguration* shader, const b8 force_recompilation)
         {
             if (!shader)
             {
@@ -51,15 +59,38 @@ namespace mag
             b8 contains_fragment_stage = false;
 
             std::vector<str> shader_modules = data["Files"];
+
+            // Compile shader modules
             for (auto& shader_module_file : shader_modules)
             {
-                const str shader_module_path = MAG_BUILD_SHADER_NAME(shader_module_file);
+                // Skip shader compilation if binary module already exists
+                const str bin_shader_file_path = MAG_BUILD_SHADER_NAME(shader_module_file);
+
+                if (!force_recompilation && fs::exists(bin_shader_file_path))
+                {
+                    continue;
+                }
+
+                const str shader_file_path = fs::path(file_path).parent_path().string() / fs::path(shader_module_file);
+                const std::vector<str> include_paths = {"sprout_editor/assets/shaders"};
+
+                if (!compile_module(shader_file_path, bin_shader_file_path, include_paths))
+                {
+                    LOG_ERROR("Failed to compile module: '{0}'", shader_file_path);
+                    return false;
+                }
+            }
+
+            // Load compiled shader modules
+            for (auto& shader_module_file : shader_modules)
+            {
+                const str bin_shader_file_path = MAG_BUILD_SHADER_NAME(shader_module_file);
 
                 ShaderModule shader_module;
 
-                if (!load_module(shader_module_path, &shader_module))
+                if (!load_module(bin_shader_file_path, &shader_module))
                 {
-                    LOG_ERROR("Failed to load module: '{0}'", shader_module_path);
+                    LOG_ERROR("Failed to load module: '{0}'", bin_shader_file_path);
                     return false;
                 }
 
@@ -110,6 +141,25 @@ namespace mag
             shader->depth_write_enabled = pipeline_data["DepthWrite"]["Enabled"].get<b8>();
 
             return true;
+        }
+
+        static b8 compile_module(const str& input_file_path, const str& output_file_path,
+                                 const std::vector<str>& include_paths)
+        {
+            LOG_INFO("Compiling '{0}'...", input_file_path);
+
+            // Create directories if they dont exist
+            fs::create_directories(fs::path(output_file_path).parent_path());
+
+            str compile_shader_cmd = MAG_EXT_GLSLC;
+            for (const str& include_path : include_paths)
+            {
+                compile_shader_cmd += " -I" + include_path;
+            }
+            compile_shader_cmd += " " + input_file_path + " -o " + output_file_path;
+
+            // Execute glslc
+            return system(compile_shader_cmd.c_str()) == 0;
         }
 
         static b8 load_module(const str& file_path, ShaderModule* shader_module)

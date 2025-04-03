@@ -1,8 +1,8 @@
 {
     "Shader": "DepthPrepass",
     "Files": [
-        "depth_prepass.vert.spv",
-        "depth_prepass.frag.spv"
+        "depth_prepass.vert",
+        "depth_prepass.frag"
     ],
     "Pipeline": {
         "InputAssembly": {

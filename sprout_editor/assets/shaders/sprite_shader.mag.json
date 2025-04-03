@@ -1,8 +1,8 @@
 {
     "Shader": "Sprite",
     "Files": [
-        "sprite.vert.spv",
-        "sprite.frag.spv"
+        "sprite.vert",
+        "sprite.frag"
     ],
     "Pipeline": {
         "InputAssembly": {

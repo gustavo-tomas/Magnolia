@@ -45,7 +45,7 @@ namespace mag
         {
             ShaderConfiguration shader_configuration;
 
-            if (!resource::load(file_path, &shader_configuration))
+            if (!resource::load(file_path, &shader_configuration, true))
             {
                 LOG_ERROR("Failed to load shader: '{0}'", file_path);
                 continue;

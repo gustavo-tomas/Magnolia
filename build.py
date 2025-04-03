@@ -65,34 +65,6 @@ def lint():
   os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
   return
 
-# ----- Shaders -----
-def shaders(system, configuration):
-  glslc_exe = "glslc" + executable_extension
-  shader_dir = f"sprout_editor{bar}assets{bar}shaders"
-  output_dir = f"build{bar}{system}{bar}{configuration}{bar}bin{bar}shaders"
-
-  print("----- Compiling shaders -----")
-  if system == "linux":
-    os.system(f"mkdir -p {output_dir}")
-  else:
-    os.system(f"mkdir {output_dir} 2>NUL")
-
-  # Find all shader files
-  shader_files = [f for f in os.listdir(shader_dir) if f.endswith(".vert") or f.endswith(".frag")]
-
-  # Compile shaders
-  for shader_file in shader_files:
-    input_path = os.path.join(shader_dir, shader_file)
-    output_path = os.path.join(output_dir, f"{shader_file}.spv")
-    include_path = "sprout_editor/assets/shaders"
-
-    print(f"Compiling {input_path}")
-
-    # @TODO: we cant use -O flags to optimize yet. Some data (for example the descriptor binding name) is still
-    # needed to set uniform variables.
-    assert os.system(f"ext{bar}{system}{bar}{glslc_exe} -I{include_path} {input_path} -o {output_path}") == 0
-  return
-
 # Scripts
 def scripts(configuration, script_name):
   number_of_cores = get_number_of_cores()
@@ -110,7 +82,6 @@ def main():
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])
-    shaders(system, configuration)
     lint()
     build(system, configuration)
     run(system, configuration)
@@ -123,7 +94,6 @@ def main():
     configuration = str(sys.argv[2])
 
     if command == "build":
-      shaders(system, configuration)
       build(system, configuration)
     
     elif command == "run":
@@ -131,9 +101,6 @@ def main():
     
     elif command == "clean":
       clean(configuration)
-    
-    elif command == "shaders":
-      shaders(system, configuration)
 
     elif command == "lint":
       lint()

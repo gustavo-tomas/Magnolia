@@ -1,8 +1,8 @@
 {
     "Shader": "Mesh",
     "Files": [
-        "mesh.vert.spv",
-        "mesh.frag.spv"
+        "mesh.vert",
+        "mesh.frag"
     ],
     "Pipeline": {
         "InputAssembly": {
