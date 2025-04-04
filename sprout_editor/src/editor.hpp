@@ -10,6 +10,8 @@ namespace mag
 
 namespace sprout
 {
+#define SPROUT_EDITOR_ASSET_DIR "sprout_editor/assets/"
+
     using namespace mag;
 
     // ImGui drag and drop types

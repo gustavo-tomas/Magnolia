@@ -22,7 +22,7 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        depth_prepass_shader = shader_manager.get("sprout_editor/assets/shaders/depth_prepass_shader.mag.json");
+        depth_prepass_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
 
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
@@ -99,8 +99,8 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        mesh_shader = shader_manager.get("sprout_editor/assets/shaders/mesh_shader.mag.json");
-        sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
+        mesh_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/mesh_shader.mag.json");
+        sprite_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
@@ -264,7 +264,7 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        post_shader = shader_manager.get("sprout_editor/assets/shaders/post_shader.mag.json");
+        post_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/post_shader.mag.json");
 
         add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputColor", AttachmentType::Color, size);

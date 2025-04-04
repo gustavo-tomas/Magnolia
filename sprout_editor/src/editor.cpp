@@ -111,8 +111,8 @@ namespace sprout
         icons_config.PixelSnapH = true;
         icons_config.GlyphMinAdvanceX = icon_font_size;
 
-        const str icon_path = "sprout_editor/assets/fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS;
-        const str font_path = "sprout_editor/assets/fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
+        const str icon_path = SPROUT_EDITOR_ASSET_DIR "fonts/FontAwesome/" FONT_ICON_FILE_NAME_FAS;
+        const str font_path = SPROUT_EDITOR_ASSET_DIR "fonts/Source_Code_Pro/static/SourceCodePro-Regular.ttf";
 
         io.Fonts->AddFontFromFileTTF(font_path.c_str(), font_size);
         io.Fonts->AddFontFromFileTTF(icon_path.c_str(), icon_font_size, &icons_config, icons_ranges);
@@ -332,7 +332,8 @@ namespace sprout
 
     void Editor::close_scene(const ref<EditorScene> &scene)
     {
-        const str file_path = "sprout_editor/assets/scenes/" + scene->get_name() + ".mag.json";
+        // @TODO: hardcoded
+        const str file_path = "test_game/assets/scenes/" + scene->get_name() + ".mag.json";
 
         scene::save(file_path, *scene);
 
@@ -381,7 +382,8 @@ namespace sprout
         }
 
         // Save the active scene before running
-        const str file_path = "sprout_editor/assets/scenes/" + this->get_active_scene().get_name() + ".mag.json";
+        // @TODO: hardcoded
+        const str file_path = "test_game/assets/scenes/" + this->get_active_scene().get_name() + ".mag.json";
         if (!scene::save(file_path, this->get_active_scene()))
         {
             LOG_ERROR("Failed to save active scene before running");

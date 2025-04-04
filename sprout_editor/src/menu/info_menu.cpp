@@ -1,6 +1,7 @@
 #include "menu/info_menu.hpp"
 
 #include "core/logger.hpp"
+#include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
 #include "platform/file_system.hpp"
@@ -15,7 +16,7 @@ namespace sprout
     void InfoMenu::render(const ImGuiWindowFlags window_flags)
     {
         // Parse instructions from the json file
-        const str file_path = "sprout_editor/assets/json/editor_instructions.json";
+        const str file_path = SPROUT_EDITOR_ASSET_DIR "json/editor_instructions.json";
 
         fs::json data;
 

@@ -80,13 +80,13 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        line_shader = shader_manager.get("sprout_editor/assets/shaders/line_shader.mag.json");
-        grid_shader = shader_manager.get("sprout_editor/assets/shaders/grid_shader.mag.json");
-        sprite_shader = shader_manager.get("sprout_editor/assets/shaders/sprite_shader.mag.json");
+        line_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/line_shader.mag.json");
+        grid_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/grid_shader.mag.json");
+        sprite_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         // Sprites
-        camera_sprite = app.get_texture_manager().get("sprout_editor/assets/images/video-solid.png");
-        light_sprite = app.get_texture_manager().get("sprout_editor/assets/images/lightbulb-regular.png");
+        camera_sprite = app.get_texture_manager().get(SPROUT_EDITOR_ASSET_DIR "icons/video-solid.png");
+        light_sprite = app.get_texture_manager().get(SPROUT_EDITOR_ASSET_DIR "icons/lightbulb-regular.png");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
