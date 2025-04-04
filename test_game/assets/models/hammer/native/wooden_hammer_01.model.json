@@ -1,0 +1,12 @@
+{
+    "Type": "Model",
+    "Name": "wooden_hammer_01",
+    "File": "test_game/assets/models/hammer/native/wooden_hammer_01.model.bin",
+    "Materials": [
+        "test_game/assets/models/hammer/native/wooden_hammer_01.mat.json",
+        "test_game/assets/models/hammer/native/__Material_1_2__.mat.json"
+    ],
+    "NumVertices": 2508,
+    "NumIndices": 10851,
+    "NumMeshes": 1
+}

@@ -1,0 +1,10 @@
+{
+    "Type": "Material",
+    "Name": "nanosuit_legs",
+    "Textures": {
+        "Albedo": "test_game/assets/models/nanosuit/nanosuit_legs_d.tga",
+        "Normal": "test_game/assets/models/nanosuit/nanosuit_legs_n.tga",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
+    }
+}

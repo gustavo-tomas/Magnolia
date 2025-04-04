@@ -161,8 +161,9 @@ namespace sprout
 
         build_render_graph(window_size, get_viewport_size());
 
+        // @TODO: hardcoded path
         EditorScene *scene = new EditorScene();
-        scene::load("sprout_editor/assets/scenes/Test.mag.json", *scene);
+        scene::load("test_game/assets/scenes/Main.mag.json", *scene);
 
         add_scene(scene);
         set_active_scene(0);

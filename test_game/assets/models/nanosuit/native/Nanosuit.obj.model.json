@@ -1,0 +1,18 @@
+{
+    "Type": "Model",
+    "Name": "Nanosuit.obj",
+    "File": "test_game/assets/models/nanosuit/native/Nanosuit.obj.model.bin",
+    "Materials": [
+        "test_game/assets/models/nanosuit/native/DefaultMaterial.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_arms.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_hands.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_helmet.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_helmet_pt.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_legs.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_torso.mat.json",
+        "test_game/assets/models/nanosuit/native/nanosuit_visor.mat.json"
+    ],
+    "NumVertices": 15103,
+    "NumIndices": 65913,
+    "NumMeshes": 7
+}

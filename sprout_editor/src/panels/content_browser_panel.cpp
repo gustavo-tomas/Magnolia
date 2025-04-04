@@ -52,7 +52,8 @@ namespace sprout
     {
         ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Browser", NULL, window_flags);
 
-        const fs::path base_directory = fs::path("sprout_editor/assets");
+        // @TODO: this shouldn't be hardcoded
+        const fs::path base_directory = fs::path("test_game/assets");
         static fs::path current_directory = base_directory;
 
         // Traverse directories

@@ -1,0 +1,10 @@
+{
+    "Type": "Material",
+    "Name": "nanosuit_hands",
+    "Textures": {
+        "Albedo": "test_game/assets/models/nanosuit/nanosuit_hands_d.tga",
+        "Normal": "test_game/assets/models/nanosuit/nanosuit_hands_n.tga",
+        "Roughness": "__mag_default_roughness_texture__",
+        "Metalness": "__mag_default_metalness_texture__"
+    }
+}

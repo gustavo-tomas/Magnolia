@@ -75,7 +75,7 @@ namespace mag
         std::sort(model.meshes.begin(), model.meshes.end(),
                   [](const Mesh& a, const Mesh& b) { return a.material_index < b.material_index; });
 
-        const str output_directory = file_path.substr(0, file_path.find_last_of('/')) + "/native";
+        const str output_directory = fs::path(file_path).parent_path() / fs::path("native");
         if (!fs::create_directories(output_directory))
         {
             LOG_ERROR("Failed to create directory: '{0}'", output_directory);
@@ -271,7 +271,7 @@ namespace mag
     void ModelImporter::IMPL::initialize_materials(const aiScene* ai_scene, const str& file_path,
                                                    const str& output_directory, Model& model)
     {
-        const str model_directory = file_path.substr(0, file_path.find_last_of('/'));
+        const str model_directory = fs::path(file_path).parent_path();
 
         model.materials.resize(ai_scene->mNumMaterials);
 
