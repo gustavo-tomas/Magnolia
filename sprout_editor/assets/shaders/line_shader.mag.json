@@ -1,8 +1,8 @@
 {
     "Shader": "LineShader",
     "Files": [
-        "color.vert",
-        "color.frag"
+        "line.vert",
+        "line.frag"
     ],
     "Pipeline": {
         "InputAssembly": {
