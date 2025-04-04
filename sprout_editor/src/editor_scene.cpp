@@ -10,6 +10,7 @@
 #include "math/generic.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
+#include "scripting/scripting_engine.hpp"
 #include "threads/job_system.hpp"
 
 namespace sprout
@@ -73,26 +74,8 @@ namespace sprout
             for (const auto& script_file : rebuild_dlls)
             {
                 LOG_INFO("Script '{0}' was modified, rebuilding DLL...", script_file);
-
-                // @TODO: cleanup
-                str configuration = "debug";
-#if MAG_CONFIG_PROFILE
-                configuration = "profile";
-#elif MAG_CONFIG_RELEASE
-                configuration = "release";
-#endif
-                // @TODO: cleanup
-
-                const str rebuild_script =
-                    "python3 build.py scripts " + configuration + " " + fs::path(script_file).stem().string();
-                if (system(rebuild_script.c_str()) == 0)
+                if (!script::recompile_script(script_file, true))
                 {
-                    LOG_INFO("Finished rebuilding DLL for '{0}'", script_file);
-                }
-
-                else
-                {
-                    LOG_ERROR("Failed to rebuild DLL for '{0}'", script_file);
                     result = false;
                 }
             }

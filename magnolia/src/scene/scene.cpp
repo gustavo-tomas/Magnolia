@@ -7,6 +7,7 @@
 #include "ecs/components.hpp"
 #include "math/generic.hpp"
 #include "physics/physics.hpp"
+#include "platform/file_system.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "scene/scriptable_entity.hpp"
@@ -50,6 +51,13 @@ namespace mag
             return;
         }
 
+        // Recompile if necessary
+        if (!script::recompile_script(script->file_path))
+        {
+            return;
+        }
+
+        // Now we can safely load
         void* handle = script::load_script(script->file_path);
         if (!handle)
         {

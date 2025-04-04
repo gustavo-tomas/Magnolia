@@ -65,14 +65,6 @@ def lint():
   os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
   return
 
-# Scripts
-def scripts(configuration, script_name):
-  number_of_cores = get_number_of_cores()
-  
-  print("Building scripts...")
-  assert os.system(f"cd build && make config={configuration} {script_name} -j{number_of_cores}") == 0
-  return
-
 def main():
 
   # Check for system support
@@ -104,14 +96,6 @@ def main():
 
     elif command == "lint":
       lint()
-
-    elif command == "scripts":
-      if len(sys.argv) < 4:
-        print("Usage: <command> <configuration> <target>")
-        return
-
-      target = str(sys.argv[3])
-      scripts(configuration, target)
 
     else:
       print(f"Invalid command: '{command}'")

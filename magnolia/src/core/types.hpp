@@ -116,13 +116,14 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 #define MAG_BUILD_DIR_SHADERS MAG_BUILD_DIR_BIN "shaders/"
 #define MAG_BUILD_DIR_SCRIPTS MAG_BUILD_DIR_BIN "scripts/"
 
+// Returns the build path for a shader file
 #define MAG_BUILD_SHADER_NAME(name) (MAG_BUILD_DIR_SHADERS + str(name) + ".spv")
 
 // Returns the build path for a script file
 #if MAG_PLATFORM_LINUX
-    #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS "lib" + str(name) + ".so")
+    #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS + str(name) + ".so")
 #elif MAG_PLATFORM_WINDOWS
-    #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS "lib" name ".dll")
+    #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS + str(name) + ".dll")
 #endif
 
 // Ext paths

@@ -146,7 +146,7 @@ namespace mag
         static b8 compile_module(const str& input_file_path, const str& output_file_path,
                                  const std::vector<str>& include_paths)
         {
-            LOG_INFO("Compiling '{0}'...", input_file_path);
+            LOG_INFO("Compiling shader module '{0}'...", input_file_path);
 
             // Create directories if they dont exist
             fs::create_directories(fs::path(output_file_path).parent_path());
