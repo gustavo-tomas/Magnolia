@@ -3,5 +3,6 @@
     "WindowPosition": [],
     "WindowTitle": "Sprout",
     "WindowIcon": "sprout_editor/assets/icons/application_icon.bmp",
-    "TargetFrameRate": -1
+    "TargetFrameRate": -1,
+    "OpenProject": "test_game/TestGame.proj.json"
 }

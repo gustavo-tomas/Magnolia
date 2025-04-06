@@ -26,6 +26,8 @@
 #include "passes/editor_pass.hpp"
 #include "passes/scene_pass.hpp"
 #include "physics/physics.hpp"
+#include "platform/file_system.hpp"
+#include "project.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
@@ -161,12 +163,47 @@ namespace sprout
 
         build_render_graph(window_size, get_viewport_size());
 
-        // @TODO: hardcoded path
+        // Add an empty scene
+
         EditorScene *scene = new EditorScene();
-        scene::load("test_game/assets/scenes/Main.mag.json", *scene);
 
         add_scene(scene);
         set_active_scene(0);
+
+        // Check for open projects
+
+        fs::json config;
+        if (!fs::read_json_data(config_file_path, config))
+        {
+            LOG_ERROR("Failed to read editor config file: '{0}'", config_file_path);
+            return;
+        }
+
+        if (!config.contains("OpenProject"))
+        {
+            LOG_ERROR("'OpenProject' field is missing from editor config file");
+            return;
+        }
+
+        // Try to load the project
+
+        Project project;
+
+        const str project_file_path = config["OpenProject"].get<str>();
+        if (!project::load(project_file_path, project))
+        {
+            LOG_ERROR("Failed to load project: '{0}'", project_file_path);
+            return;
+        }
+
+        // Then load starting scene
+
+        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
+        if (!scene::load(start_scene_file_path, *scene))
+        {
+            LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
+            return;
+        }
     }
 
     Editor::~Editor()

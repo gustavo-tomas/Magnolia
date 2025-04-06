@@ -1,0 +1,5 @@
+{
+    "Name": "TestGame",
+    "AssetDirectory": "test_game/assets",
+    "StartScene": "scenes/Main.mag.json"
+}
