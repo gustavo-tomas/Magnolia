@@ -19,20 +19,24 @@ workspace "magnolia"
     target_libdir = "build/" .. os.host() .. "/" .. "debug/bin"
     obj_libdir = "build/" .. os.host() .. "/" .. "debug/obj"
     
-    libdir =
+    engine_libdir =
     {
         target_libdir .. "/fmt",
         target_libdir .. "/sdl",
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
         target_libdir .. "/meshoptimizer",
-        target_libdir .. "/bullet",
+        target_libdir .. "/bullet"
+    }
+
+    editor_libdir =
+    {
         target_libdir .. "/imgui",
         target_libdir .. "/implot",
         target_libdir .. "/imguizmo"
     }
 
-    lib_includes = 
+    engine_lib_includes =
     {
         "libs",
         "libs/sdl/include",
@@ -40,9 +44,6 @@ workspace "magnolia"
         "libs/vulkan/include",
         "libs/vma/include",
         "libs/assimp/include",
-        "libs/imgui",
-        "libs/imguizmo",
-        "libs/implot",
         "libs/glm",
         "libs/stb",
         "libs/spirv_reflect",
@@ -54,12 +55,25 @@ workspace "magnolia"
         obj_libdir .. "/assimp/include"
     }
 
-    lib_links = 
+    editor_lib_includes = 
     {
-        "fmt", "imgui", "imguizmo", "implot", "SDL2", "SDL2main", "assimp", "meshoptimizer",
+        "libs/imgui",
+        "libs/imguizmo",
+        "libs/implot",
+    }
+
+    engine_lib_links = 
+    {
+        "vulkan",
+        "fmt", "SDL2", "SDL2main", "assimp", "meshoptimizer",
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "LinearMath"
+    }
+
+    editor_lib_links = 
+    {
+        "imgui", "imguizmo", "implot"
     }
 
     -- @NOTE: don't use LTO on debug, it might interfere with ClangBuildAnalyzer
@@ -103,7 +117,7 @@ project "magnolia"
     {
         "%{prj.name}/src",
 
-        lib_includes
+        engine_lib_includes
     }
 
     defines
@@ -113,12 +127,12 @@ project "magnolia"
 
     links
     {
-        lib_links
+        engine_lib_links
     }
 
     libdirs
     { 
-        libdir
+        engine_libdir
     }
 
     dependson
@@ -136,10 +150,6 @@ project "magnolia"
 
     filter "system:linux"
         pic "on"
-        links
-        {
-            "vulkan"
-        }
 
     filter "system:windows"
         systemversion "latest"
@@ -148,12 +158,6 @@ project "magnolia"
         {
             "_CRT_SECURE_NO_WARNINGS"
         }
-
-        links
-        {
-            "vulkan-1"
-        }
-        -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
@@ -192,17 +196,17 @@ project "sprout_editor"
         "%{prj.name}/src",
         "magnolia/src",
 
-        lib_includes
+        engine_lib_includes, editor_lib_includes
     }
 
     libdirs
     { 
-        libdir
+        engine_libdir, editor_libdir
     }
 
     links
     {
-        "magnolia", lib_links
+        "magnolia", engine_lib_links, editor_lib_links
     }
 
     dependson
@@ -212,10 +216,6 @@ project "sprout_editor"
 
     filter "system:linux"
         pic "on"
-        links
-        {
-            "vulkan"
-        }
 
     filter "system:windows"
         systemversion "latest"
@@ -224,12 +224,6 @@ project "sprout_editor"
         {
             "_CRT_SECURE_NO_WARNINGS"
         }
-
-        links
-        {
-            "vulkan-1"
-        }
-        -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
@@ -268,17 +262,18 @@ project "test_game"
         "%{prj.name}/src",
         "magnolia/src",
 
-        lib_includes
+        engine_lib_includes -- @TODO: remove when fmt is removed
     }
 
     libdirs
     { 
-        libdir
+        engine_libdir -- @TODO: remove when fmt is removed
     }
 
     links
     {
-        "magnolia", lib_links
+        "magnolia", 
+        "fmt" -- @TODO: remove when fmt is removed
     }
 
     dependson
@@ -288,10 +283,6 @@ project "test_game"
 
     filter "system:linux"
         pic "on"
-        links
-        {
-            "vulkan"
-        }
 
     filter "system:windows"
         systemversion "latest"
@@ -300,12 +291,6 @@ project "test_game"
         {
             "_CRT_SECURE_NO_WARNINGS"
         }
-
-        links
-        {
-            "vulkan-1"
-        }
-        -- entrypoint("mainCRTStartup")            
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
