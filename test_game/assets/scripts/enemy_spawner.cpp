@@ -55,14 +55,14 @@ class EnemySpawner : public ScriptableEntity
             const u32 enemy_id = create_entity("MenacingHammer" + std::to_string(counter));
 
             const ref<Model> model =
-                model_manager.get("sprout_editor/assets/models/hammer/native/wooden_hammer_01.model.json");
+                model_manager.get("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             TransformComponent* enemy_transform = new TransformComponent(*spawner_transform);
             enemy_transform->scale = vec3(100.0f);
 
             add_component_to_entity(enemy_id, enemy_transform);
             add_component_to_entity(enemy_id, new ModelComponent(model));
-            add_component_to_entity(enemy_id, new ScriptComponent("sprout_editor/assets/scripts/enemy_controller.cpp"));
+            add_component_to_entity(enemy_id, new ScriptComponent("test_game/assets/scripts/enemy_controller.cpp"));
         }
 
         virtual void on_event(const Event& e) override { (void)e; }
