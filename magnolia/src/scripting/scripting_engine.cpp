@@ -81,6 +81,11 @@ namespace mag
                 return false;
             }
 
+            else
+            {
+                LOG_SUCCESS("Finished compiling script: '{0}'", file_path);
+            }
+
             return true;
         }
 
