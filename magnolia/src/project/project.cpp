@@ -1,6 +1,8 @@
 #include "project.hpp"
 
-namespace sprout
+#include "core/logger.hpp"
+
+namespace mag
 {
     Project::Project() = default;
     Project::~Project() = default;
@@ -61,4 +63,4 @@ namespace sprout
             return true;
         }
     };  // namespace project
-};      // namespace sprout
+};      // namespace mag

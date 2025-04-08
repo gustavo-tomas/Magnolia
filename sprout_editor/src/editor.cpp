@@ -27,7 +27,7 @@
 #include "passes/scene_pass.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
-#include "project.hpp"
+#include "project/project.hpp"
 #include "renderer/context.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"

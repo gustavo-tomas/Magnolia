@@ -1,12 +1,9 @@
 #pragma once
 
-#include "core/logger.hpp"
 #include "platform/file_system.hpp"
 
-namespace sprout
+namespace mag
 {
-    using namespace mag;
-
     class Project
     {
         public:
@@ -32,4 +29,4 @@ namespace sprout
         b8 load(const str& file_path, Project& project);
         b8 save(const str& file_path, Project& project);
     };  // namespace project
-};      // namespace sprout
+};      // namespace mag
