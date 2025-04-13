@@ -1,5 +1,4 @@
 #include <magnolia.hpp>
-#include <math/generic.hpp>
 
 using namespace mag;
 

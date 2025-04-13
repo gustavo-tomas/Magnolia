@@ -1,6 +1,4 @@
 #include <magnolia.hpp>
-#include <math/quat.hpp>
-#include <math/types.hpp>
 
 using namespace mag;
 

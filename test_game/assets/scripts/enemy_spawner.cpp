@@ -1,6 +1,5 @@
 #include <ecs/components.hpp>
 #include <magnolia.hpp>
-#include <math/generic.hpp>
 #include <resources/model.hpp>
 
 using namespace mag;
