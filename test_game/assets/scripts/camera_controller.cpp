@@ -2,12 +2,12 @@
 
 using namespace mag;
 
-class PlayerController : public ScriptableEntity
+class CameraController : public ScriptableEntity
 {
     public:
-        virtual void on_create() override { LOG_SUCCESS("Created PlayerController"); }
+        virtual void on_create() override { LOG_SUCCESS("Created CameraController"); }
 
-        virtual void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
+        virtual void on_destroy() override { LOG_SUCCESS("Destroyed CameraController"); }
 
         virtual void on_update(const f32 dt) override
         {
@@ -44,18 +44,15 @@ class PlayerController : public ScriptableEntity
             }
 
             // Update the camera transform
-            const mat4 cam_rotation_mat = calculate_rotation_mat(transform->rotation);
-            const vec3 cam_forward = math::normalize(cam_rotation_mat[2]);
-
             camera_c->camera.set_rotation(transform->rotation);
-            camera_c->camera.set_position(transform->translation + cam_forward * vec3(50));
+            camera_c->camera.set_position(transform->translation);
         }
 
         virtual void on_event(const Event& e) override
         {
-            dispatch_event<MouseMoveEvent>(e, BIND_FN(PlayerController::on_mouse_move));
-            dispatch_event<MousePressEvent>(e, BIND_FN(PlayerController::on_mouse_click));
-            dispatch_event<KeyPressEvent>(e, BIND_FN(PlayerController::on_key_press));
+            dispatch_event<MouseMoveEvent>(e, BIND_FN(CameraController::on_mouse_move));
+            dispatch_event<MousePressEvent>(e, BIND_FN(CameraController::on_mouse_click));
+            dispatch_event<KeyPressEvent>(e, BIND_FN(CameraController::on_key_press));
         }
 
         void on_key_press(const KeyPressEvent& e)
@@ -63,7 +60,7 @@ class PlayerController : public ScriptableEntity
             // Swap scenes
             if (e.key == Key::Tab)
             {
-                set_active_scene("test_game/assets/scenes/Sponza.mag.json");
+                set_active_scene("test_game/assets/scenes/Main.mag.json");
             }
         }
 
@@ -96,5 +93,5 @@ class PlayerController : public ScriptableEntity
         }
 };
 
-extern "C" ScriptableEntity* create_script() { return new PlayerController(); }
+extern "C" ScriptableEntity* create_script() { return new CameraController(); }
 extern "C" void destroy_script(ScriptableEntity* script) { delete script; }

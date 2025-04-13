@@ -14,7 +14,7 @@
                 ],
                 "Rotation": [
                     0.0,
-                    -1.570796,
+                    -1.570796012878418,
                     0.0
                 ],
                 "Scale": [
@@ -24,10 +24,13 @@
                 ]
             },
             "CameraComponent": {
-                "Fov": 1.047198,
+                "Fov": 1.0471980571746826,
                 "Near": 1.0,
                 "Far": 10000.0,
                 "AspectRatio": 1.7302100658416748
+            },
+            "ScriptComponent": {
+                "FilePath": "test_game/assets/scripts/camera_controller.cpp"
             }
         },
         {
@@ -172,7 +175,7 @@
                 ]
             },
             "ModelComponent": {
-                "Name": "Sponza",
+                "Name": "nodes[0]",
                 "FilePath": "test_game/assets/models/sponza/glTF/native/nodes[0].model.json"
             }
         }

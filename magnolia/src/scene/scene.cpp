@@ -271,9 +271,13 @@ namespace mag
 
     void Scene::set_name(const str& name) { this->name = name; }
 
+    void Scene::set_next_scene(const str& scene_file_path) { next_scene = scene_file_path; }
+
     b8 Scene::is_running() const { return running; }
 
     const str& Scene::get_name() const { return name; }
+
+    const str& Scene::get_next_scene() const { return next_scene; }
 
     const PhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
 

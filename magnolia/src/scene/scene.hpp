@@ -32,10 +32,12 @@ namespace mag
             void remove_entity(const u32 id);
 
             void set_name(const str& name);
+            void set_next_scene(const str& scene_file_path);
 
             b8 is_running() const;
 
             const str& get_name() const;
+            const str& get_next_scene() const;
             const PhysicsWorld* get_physics_world() const;
             ECS& get_ecs();
             virtual Camera& get_camera();
@@ -59,6 +61,7 @@ namespace mag
             void destroy_script(ScriptComponent* script);
 
             std::vector<u32> entity_deletion_queue;
+            str next_scene = "";
             b8 running = false;
     };
 };  // namespace mag

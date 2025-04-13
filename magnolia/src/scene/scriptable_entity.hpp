@@ -22,6 +22,7 @@ namespace mag
             virtual void on_event(const Event& e);
 
             void add_entity_to_deletion_queue();
+            void set_active_scene(const str& scene_file_path);
 
             template <typename T>
             T* get_component()
@@ -63,6 +64,6 @@ namespace mag
             Scene* scene = nullptr;
             PhysicsWorld* physics_world = nullptr;
             ECS* ecs = nullptr;
-            u32 entity_id;
+            u32 entity_id = Invalid_ID;
     };
 };  // namespace mag

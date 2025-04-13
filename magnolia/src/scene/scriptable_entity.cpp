@@ -15,6 +15,8 @@ namespace mag
 
     void ScriptableEntity::add_entity_to_deletion_queue() { scene->remove_entity(entity_id); }
 
+    void ScriptableEntity::set_active_scene(const str& scene_file_path) { scene->set_next_scene(scene_file_path); }
+
     u32 ScriptableEntity::create_entity(const str& name) const { return ecs->create_entity(name); }
 
     PhysicsWorld& ScriptableEntity::get_physics_world() const { return *physics_world; }

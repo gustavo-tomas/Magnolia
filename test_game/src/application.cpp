@@ -48,6 +48,26 @@ namespace game
 
     void TestGame::on_update(const f32 dt)
     {
+        // Check for scene swaps
+        const str &next_scene_file_path = scene->get_next_scene();
+        if (!next_scene_file_path.empty())
+        {
+            mag::Scene *next_scene = new mag::Scene();
+            if (!mag::scene::load(next_scene_file_path, *next_scene))
+            {
+                LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);
+                delete next_scene;
+            }
+
+            else
+            {
+                scene.reset(next_scene);
+                scene->on_start();
+            }
+
+            scene->set_next_scene("");
+        }
+
         scene->on_update(dt);
 
         mag::Application &app = mag::get_application();
