@@ -7,6 +7,7 @@
 namespace mag
 {
     class Window;
+    class Scene;
     class RenderGraph;
     class Line;
     class RendererImage;
@@ -22,7 +23,7 @@ namespace mag
             Renderer(Window& window);
             ~Renderer();
 
-            void on_update(RenderGraph& render_graph);
+            void on_update(RenderGraph& render_graph, Scene& scene);
             void on_event(const Event& e);
 
             void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,

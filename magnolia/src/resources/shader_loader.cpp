@@ -1,4 +1,5 @@
 // this header on top
+#include "core/types.hpp"
 #include "resources/resource_loader.hpp"
 // this header on top
 
@@ -72,7 +73,9 @@ namespace mag
                 }
 
                 const str shader_file_path = fs::path(file_path).parent_path().string() / fs::path(shader_module_file);
-                const std::vector<str> include_paths = {"sprout_editor/assets/shaders"};
+
+                // @TODO: hardcoded editor paths
+                const std::vector<str> include_paths = {MAG_ASSET_DIR "shaders", "sprout_editor/assets/shaders"};
 
                 if (!compile_module(shader_file_path, bin_shader_file_path, include_paths))
                 {

@@ -1,9 +1,9 @@
-#include "passes/scene_pass.hpp"
+#include "scene_pass.hpp"
 
 #include "../assets/shaders/include/common.h"
 #include "core/application.hpp"
-#include "editor.hpp"
-#include "editor_scene.hpp"
+#include "ecs/components.hpp"
+#include "ecs/ecs.hpp"
 #include "math/generic.hpp"
 #include "math/type_definitions.hpp"
 #include "private/renderer_type_conversions.hpp"
@@ -13,8 +13,9 @@
 #include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
+#include "scene/scene.hpp"
 
-namespace sprout
+namespace mag
 {
     DepthPrePass::DepthPrePass(const uvec2& size) : RenderGraphPass("DepthPrePass")
     {
@@ -22,7 +23,7 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        depth_prepass_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
+        depth_prepass_shader = shader_manager.get(MAG_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
 
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
@@ -33,14 +34,12 @@ namespace sprout
 
     DepthPrePass::~DepthPrePass() = default;
 
-    void DepthPrePass::on_render(RenderGraph& render_graph)
+    void DepthPrePass::on_render(RenderGraph& render_graph, Scene& scene)
     {
         (void)render_graph;
 
         auto& app = get_application();
         auto& renderer = app.get_renderer();
-        auto& editor = get_editor();
-        auto& scene = editor.get_active_scene();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -99,8 +98,8 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        mesh_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/mesh_shader.mag.json");
-        sprite_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/sprite_shader.mag.json");
+        mesh_shader = shader_manager.get(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
+        sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
@@ -114,15 +113,13 @@ namespace sprout
 
     ScenePass::~ScenePass() = default;
 
-    void ScenePass::on_render(RenderGraph& render_graph)
+    void ScenePass::on_render(RenderGraph& render_graph, Scene& scene)
     {
         (void)render_graph;
 
         auto& app = get_application();
         auto& renderer = app.get_renderer();
         auto& material_manager = app.get_material_manager();
-        auto& editor = get_editor();
-        auto& scene = editor.get_active_scene();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -134,13 +131,16 @@ namespace sprout
 
         // Render models
 
+        // @TODO: move debug outputs to some editor shader
+        const u32 texture_output = 0;
+
         mesh_shader->bind();
 
         mesh_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         mesh_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
         mesh_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
-        mesh_shader->set_uniform("u_push_constants", "texture_output", &editor.get_texture_output());
-        mesh_shader->set_uniform("u_push_constants", "normal_output", &editor.get_normal_output());
+        mesh_shader->set_uniform("u_push_constants", "texture_output", &texture_output);
+        mesh_shader->set_uniform("u_push_constants", "normal_output", &texture_output);
 
         u32 l = 0;
         const u32 number_of_lights = light_entities.size();
@@ -264,7 +264,7 @@ namespace sprout
         auto& shader_manager = app.get_shader_manager();
 
         // Shaders
-        post_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/post_shader.mag.json");
+        post_shader = shader_manager.get(MAG_ASSET_DIR "shaders/post_shader.mag.json");
 
         add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputColor", AttachmentType::Color, size);
@@ -276,16 +276,17 @@ namespace sprout
 
     PostProcessingPass::~PostProcessingPass() = default;
 
-    void PostProcessingPass::on_render(RenderGraph& render_graph)
+    void PostProcessingPass::on_render(RenderGraph& render_graph, Scene& scene)
     {
+        (void)scene;
+
         auto& app = get_application();
         auto& renderer = app.get_renderer();
-        auto& editor = get_editor();
 
         performance_results = {};
 
         // Only apply post processing to the final combined result
-        const b8 apply_tonemapping = editor.get_texture_output() == 0;
+        const b8 apply_tonemapping = true;
         post_shader->set_uniform("u_push_constants", "apply_tonemapping", &apply_tonemapping);
 
         auto& screen_color = render_graph.get_attachment("OutputColorScene");
@@ -298,4 +299,4 @@ namespace sprout
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;
     }
-};  // namespace sprout
+};  // namespace mag

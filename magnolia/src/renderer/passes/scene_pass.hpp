@@ -7,17 +7,15 @@ namespace mag
     class Shader;
 };
 
-namespace sprout
+namespace mag
 {
-    using namespace mag;
-
     class DepthPrePass : public RenderGraphPass
     {
         public:
             DepthPrePass(const uvec2& size);
             ~DepthPrePass();
 
-            virtual void on_render(RenderGraph& render_graph) override;
+            virtual void on_render(RenderGraph& render_graph, Scene& scene) override;
 
         private:
             ref<Shader> depth_prepass_shader;
@@ -29,7 +27,7 @@ namespace sprout
             ScenePass(const uvec2& size);
             ~ScenePass();
 
-            virtual void on_render(RenderGraph& render_graph) override;
+            virtual void on_render(RenderGraph& render_graph, Scene& scene) override;
 
         private:
             ref<Shader> mesh_shader;
@@ -42,9 +40,9 @@ namespace sprout
             PostProcessingPass(const uvec2& size);
             ~PostProcessingPass();
 
-            virtual void on_render(RenderGraph& render_graph) override;
+            virtual void on_render(RenderGraph& render_graph, Scene& scene) override;
 
         private:
             ref<Shader> post_shader;
     };
-};  // namespace sprout
+};  // namespace mag

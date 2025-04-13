@@ -17,7 +17,11 @@ namespace mag
     RenderGraphPass::RenderGraphPass(const str& name) : name(name) {}
     RenderGraphPass::~RenderGraphPass() = default;
 
-    void RenderGraphPass::on_render(RenderGraph& render_graph) { (void)render_graph; }
+    void RenderGraphPass::on_render(RenderGraph& render_graph, Scene& scene)
+    {
+        (void)render_graph;
+        (void)scene;
+    }
 
     void RenderGraphPass::add_input_attachment(const str& attachment_name, const AttachmentType attachment_type,
                                                const uvec2& size, const AttachmentState attachment_state)
@@ -151,7 +155,7 @@ namespace mag
                "Output attachment '" + output_attachment_name + "' is not a valid attachment");
     }
 
-    void RenderGraph::execute()
+    void RenderGraph::execute(Scene& scene)
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -163,7 +167,7 @@ namespace mag
         {
             SCOPED_PROFILE(render_pass->get_name());
 
-            execute_render_pass(render_pass);
+            execute_render_pass(render_pass, scene);
 
             // Transition layout
             for (const auto& description : render_pass->attachment_descriptions)
@@ -197,7 +201,7 @@ namespace mag
         }
     }
 
-    void RenderGraph::execute_render_pass(RenderGraphPass* render_pass)
+    void RenderGraph::execute_render_pass(RenderGraphPass* render_pass, Scene& scene)
     {
         auto& context = get_context();
         auto& command_buffer = context.get_curr_frame().command_buffer;
@@ -294,7 +298,7 @@ namespace mag
 
         command_buffer.begin_rendering(*static_cast<vk::RenderingInfo*>(render_pass->pass.rendering_info));
 
-        render_pass->on_render(*this);
+        render_pass->on_render(*this, scene);
 
         command_buffer.end_rendering();
     }

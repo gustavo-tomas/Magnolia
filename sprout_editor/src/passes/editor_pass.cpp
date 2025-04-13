@@ -6,6 +6,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/frustum.hpp"
 #include "core/application.hpp"
+#include "core/types.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
 #include "imgui.h"
@@ -35,11 +36,10 @@ namespace sprout
 
     EditorPass::~EditorPass() = default;
 
-    void EditorPass::on_render(RenderGraph& render_graph)
+    void EditorPass::on_render(RenderGraph& render_graph, Scene& scene)
     {
         auto& context = get_context();
         auto& cmd = context.get_curr_frame().command_buffer;
-        auto& scene = get_editor().get_active_scene();
         auto& ecs = scene.get_ecs();
         auto& camera = scene.get_camera();
         auto& viewport_image = render_graph.get_attachment("OutputColor");
@@ -82,7 +82,7 @@ namespace sprout
         // Shaders
         line_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/line_shader.mag.json");
         grid_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/grid_shader.mag.json");
-        sprite_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/sprite_shader.mag.json");
+        sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         // Sprites
         camera_sprite = app.get_texture_manager().get(SPROUT_EDITOR_ASSET_DIR "icons/video-solid.png");
@@ -92,15 +92,16 @@ namespace sprout
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         pass.size = size;
-        pass.color_clear_value = vec4(0.1, 0.1, 0.3, 1.0);
+        pass.color_clear_value = vec4(0.6, 0.6, 0.6, 1.0);
         pass.depth_stencil_clear_value = vec2(1.0f);
     }
 
     GizmoPass::~GizmoPass() = default;
 
-    void GizmoPass::on_render(RenderGraph& render_graph)
+    void GizmoPass::on_render(RenderGraph& render_graph, Scene& scene)
     {
         (void)render_graph;
+        (void)scene;
 
         performance_results = {};
 

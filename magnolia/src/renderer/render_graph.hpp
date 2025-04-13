@@ -10,6 +10,9 @@ namespace mag
 {
     using namespace mag::math;
 
+    class RenderGraph;
+    class Scene;
+
     enum class AttachmentType
     {
         Color,
@@ -61,14 +64,13 @@ namespace mag
             uvec2 size = {};
     };
 
-    class RenderGraph;
     class RenderGraphPass
     {
         public:
             RenderGraphPass(const str& name);
             virtual ~RenderGraphPass();
 
-            virtual void on_render(RenderGraph& render_graph);
+            virtual void on_render(RenderGraph& render_graph, Scene& scene);
 
             const PerformanceResults& get_performance_results() const;
             const str& get_name() const;
@@ -106,14 +108,14 @@ namespace mag
             void set_output_attachment(const str& attachment_name);
 
             void build();
-            void execute();
+            void execute(Scene& scene);
 
             RendererImage& get_attachment(const str& attachment_name);
             RendererImage& get_output_attachment();
             const std::vector<RenderGraphPass*>& get_passes() const;
 
         private:
-            void execute_render_pass(RenderGraphPass* render_pass);
+            void execute_render_pass(RenderGraphPass* render_pass, Scene& scene);
 
             std::vector<RenderGraphPass*> passes;
             std::map<str, std::vector<Attachment>> attachments;  // One per frame in flight

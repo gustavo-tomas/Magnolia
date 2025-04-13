@@ -22,7 +22,7 @@ namespace sprout
             EditorPass(const uvec2& size);
             ~EditorPass();
 
-            virtual void on_render(RenderGraph& render_graph) override;
+            virtual void on_render(RenderGraph& render_graph, Scene& scene) override;
     };
 
     class GizmoPass : public RenderGraphPass
@@ -31,7 +31,7 @@ namespace sprout
             GizmoPass(const uvec2& size);
             ~GizmoPass();
 
-            virtual void on_render(RenderGraph& render_graph) override;
+            virtual void on_render(RenderGraph& render_graph, Scene& scene) override;
 
         private:
             void render_sprites();

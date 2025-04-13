@@ -24,11 +24,10 @@
 #include "panels/status_panel.hpp"
 #include "panels/viewport_panel.hpp"
 #include "passes/editor_pass.hpp"
-#include "passes/scene_pass.hpp"
-#include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "project/project.hpp"
 #include "renderer/context.hpp"
+#include "renderer/passes/scene_pass.hpp"
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
@@ -282,7 +281,7 @@ namespace sprout
             window.set_fullscreen(!window.is_fullscreen());
         }
 
-        renderer.on_update(get_render_graph());
+        renderer.on_update(get_render_graph(), static_cast<Scene &>(active_scene));
     }
 
     void Editor::render(ECS &ecs, Camera &camera, RendererImage &viewport_image)

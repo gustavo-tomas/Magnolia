@@ -15,6 +15,7 @@
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 #include "resources/model.hpp"
+#include "scene/scene.hpp"
 
 namespace mag
 {
@@ -43,12 +44,12 @@ namespace mag
 
     Renderer::~Renderer() = default;
 
-    void Renderer::on_update(RenderGraph& render_graph)
+    void Renderer::on_update(RenderGraph& render_graph, Scene& scene)
     {
         if (!impl->context->begin_frame()) return;
         impl->context->begin_timestamp();  // Performance query
 
-        render_graph.execute();
+        render_graph.execute(scene);
 
         impl->context->end_timestamp();
 

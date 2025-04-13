@@ -126,6 +126,10 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
     #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS + str(name) + ".dll")
 #endif
 
+// Asset paths
+
+#define MAG_ASSET_DIR "magnolia/assets/"
+
 // Ext paths
 
 #define MAG_EXT_DIR "ext/" MAG_BUILD_DIR_PLATFORM
