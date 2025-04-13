@@ -2,9 +2,7 @@
     #pragma once
 
     #include "core/types.hpp"
-    #include "math/mat.hpp"
     #include "math/types.hpp"
-    #include "math/vec.hpp"
 
 using namespace mag;
 using namespace mag::math;

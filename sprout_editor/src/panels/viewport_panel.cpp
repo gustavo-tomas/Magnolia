@@ -13,7 +13,7 @@
 #include "editor_scene.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
-#include "math/generic.hpp"
+#include "math/types.hpp"
 #include "panels/properties_panel.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/renderer_image.hpp"

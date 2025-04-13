@@ -1,8 +1,6 @@
 #include "camera/camera.hpp"
 
 #include "camera/frustum.hpp"
-#include "math/mat.hpp"
-#include "math/quat.hpp"
 #include "math/types.hpp"
 
 namespace mag

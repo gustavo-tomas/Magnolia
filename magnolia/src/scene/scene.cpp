@@ -5,7 +5,7 @@
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "ecs/components.hpp"
-#include "math/generic.hpp"
+#include "math/types.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/test_model.hpp"

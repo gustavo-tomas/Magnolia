@@ -7,7 +7,7 @@
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
-#include "math/generic.hpp"
+#include "math/types.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "scripting/scripting_engine.hpp"

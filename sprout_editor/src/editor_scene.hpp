@@ -1,7 +1,6 @@
 #pragma once
 
 #include "math/types.hpp"
-#include "math/vec.hpp"
 #include "scene/scene.hpp"
 
 namespace mag

@@ -3,7 +3,7 @@
 #include "btBulletDynamicsCommon.h"
 #include "core/logger.hpp"
 #include "ecs/components.hpp"
-#include "math/type_definitions.hpp"
+#include "math/types.hpp"
 #include "private/physics_type_conversions.hpp"
 #include "scene/scene.hpp"
 

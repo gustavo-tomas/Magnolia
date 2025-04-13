@@ -1,6 +1,6 @@
 #include "ecs/components.hpp"
 
-#include "math/generic.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {

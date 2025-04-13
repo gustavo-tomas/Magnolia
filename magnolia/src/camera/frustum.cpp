@@ -1,7 +1,6 @@
 #include "camera/frustum.hpp"
 
-#include "math/mat.hpp"
-#include "math/type_definitions.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {

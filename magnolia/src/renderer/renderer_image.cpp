@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "math/vec.hpp"
+#include "math/types.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/buffers.hpp"
 #include "renderer/command.hpp"

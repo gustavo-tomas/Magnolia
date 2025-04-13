@@ -4,7 +4,7 @@
 
 #include "camera/camera.hpp"
 #include "core/types.hpp"
-#include "math/vec.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {

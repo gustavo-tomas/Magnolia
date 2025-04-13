@@ -8,6 +8,6 @@
 #include "core/logger.hpp"
 #include "core/types.hpp"
 #include "core/window.hpp"
-#include "math/type_definitions.hpp"
+#include "math/types.hpp"
 #include "physics/physics.hpp"
 #include "scene/scriptable_entity.hpp"

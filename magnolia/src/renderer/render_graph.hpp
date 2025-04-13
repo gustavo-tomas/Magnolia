@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "math/vec.hpp"
+#include "math/types.hpp"
 #include "private/vulkan_fwd.hpp"
 #include "renderer/renderer_image.hpp"
 
