@@ -49,11 +49,10 @@ namespace sprout
 
         std::vector<str> rebuild_dlls;
 
+        // Check if a script was modified
         const auto& scripts = ecs->get_all_components_of_type<ScriptComponent>();
         for (auto* script : scripts)
         {
-            // Rebuild script
-            // @NOTE: this uses the python script
             if (file_watcher.was_file_modified(script->file_path))
             {
                 rebuild_dlls.push_back(script->file_path);
@@ -66,7 +65,7 @@ namespace sprout
             return;
         }
 
-        // Execute python script on another thread
+        // Recompile scripts on another thread
         auto execute = [rebuild_dlls]
         {
             b8 result = true;
