@@ -31,6 +31,8 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
 #include "scene/scene_serializer.hpp"
+#include "scripting/scripting_engine.hpp"
+#include "threads/job_system.hpp"
 #include "threads/process_manager.hpp"
 
 mag::Application *mag::create_application() { return new sprout::Editor("sprout_editor/config.json"); }
@@ -59,6 +61,8 @@ namespace sprout
             unique<RenderGraph> render_graph;
             std::vector<ref<EditorScene>> open_scenes;
             std::vector<u32> open_scenes_marked_for_deletion;
+            std::set<str> scripts_on_watch;
+            Project active_project;
 
             u32 selected_scene_index = 0;
             u32 next_scene_index = 0;
@@ -186,10 +190,8 @@ namespace sprout
 
         // Try to load the project
 
-        Project project;
-
         const str project_file_path = config["OpenProject"].get<str>();
-        if (!project::load(project_file_path, project))
+        if (!project::load(project_file_path, impl->active_project))
         {
             LOG_ERROR("Failed to load project: '{0}'", project_file_path);
             return;
@@ -197,7 +199,8 @@ namespace sprout
 
         // Then load starting scene
 
-        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
+        const str start_scene_file_path =
+            impl->active_project.get_asset_dir() / impl->active_project.get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
         {
             LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
@@ -227,9 +230,9 @@ namespace sprout
     {
         (void)dt;
 
-        auto &app = get_application();
-        auto &window = app.get_window();
-        auto &renderer = app.get_renderer();
+        Application &app = get_application();
+        Window &window = app.get_window();
+        Renderer &renderer = app.get_renderer();
 
         // Delete closed scenes from back to front
         for (i32 i = impl->open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
@@ -258,6 +261,18 @@ namespace sprout
         {
             set_active_scene(impl->next_scene_index);
         }
+
+        // Set a small timer to slow down file checks
+        static f32 script_check_timer = 2.0f;
+        script_check_timer += dt;
+
+        if (script_check_timer >= 2.0f)
+        {
+            script_check_timer = 0.0f;
+            watch_scripts();
+        }
+
+        recompile_scripts();
 
         auto &active_scene = get_active_scene();
 
@@ -462,6 +477,90 @@ namespace sprout
         impl->render_graph->add_pass(editor_pass);
 
         impl->render_graph->build();
+    }
+
+    // @TODO: this can be done in a separate thread
+    void Editor::watch_scripts()
+    {
+        Application &app = get_application();
+        FileWatcher &file_watcher = app.get_file_watcher();
+
+        // First remove file if it no longer exists
+        for (const str &file_path : impl->scripts_on_watch)
+        {
+            if (!fs::exists(file_path))
+            {
+                impl->scripts_on_watch.erase(file_path);
+            }
+        }
+
+        // Add script files to file watcher
+        const fs::path script_dir = impl->active_project.get_asset_dir();
+        for (const auto &directory_entry : std::filesystem::recursive_directory_iterator(script_dir))
+        {
+            const str file_path = directory_entry.path();
+            if (fs::get_file_extension(file_path) == ".cpp")
+            {
+                impl->scripts_on_watch.insert(file_path);
+                file_watcher.watch_file(file_path);
+            }
+        }
+    }
+
+    void Editor::recompile_scripts()
+    {
+        Application &app = get_application();
+        FileWatcher &file_watcher = app.get_file_watcher();
+        JobSystem &job_system = app.get_job_system();
+
+        std::vector<str> modified_scripts;
+
+        // Check if a script was modified
+        for (const str &script_file_path : impl->scripts_on_watch)
+        {
+            if (file_watcher.was_file_modified(script_file_path))
+            {
+                modified_scripts.push_back(script_file_path);
+                file_watcher.reset_file_status(script_file_path);
+            }
+        }
+
+        if (modified_scripts.empty())
+        {
+            return;
+        }
+
+        // Recompile modified scripts on another thread
+        auto execute = [modified_scripts]
+        {
+            b8 result = true;
+
+            for (const auto &script_file : modified_scripts)
+            {
+                LOG_INFO("Script '{0}' was modified, rebuilding DLL...", script_file);
+                if (!script::recompile_script(script_file, true))
+                {
+                    result = false;
+                }
+            }
+
+            return result;
+        };
+
+        // Callback when finished executing
+        auto on_execute_finished = [](const b8 result)
+        {
+            // Restart the scene if everything went ok
+            Editor &editor = get_editor();
+            if (result && editor.is_game_process_running())
+            {
+                editor.stop_game_process();
+                editor.start_game_process();
+            }
+        };
+
+        Job load_job = Job(execute, on_execute_finished);
+        job_system.add_job(load_job);
     }
 
     EditorScene &Editor::get_active_scene() { return *impl->open_scenes[impl->selected_scene_index]; }

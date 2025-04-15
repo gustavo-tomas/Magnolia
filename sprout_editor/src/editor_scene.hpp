@@ -26,12 +26,9 @@ namespace sprout
             void on_viewport_resize(const math::uvec2& new_viewport_size);
 
         protected:
-            // virtual void on_start_internal() override;
-            // virtual void on_stop_internal() override;
             virtual void on_event_internal(const Event& e) override;
             virtual void on_update_internal(const f32 dt) override;
             virtual void on_resize(const WindowResizeEvent& e) override;
-            virtual void on_component_added_internal(const u32 id, Component* component) override;
 
         private:
             unique<Camera> camera;

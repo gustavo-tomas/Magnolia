@@ -67,6 +67,8 @@ namespace sprout
 
             void set_active_scene(const u32 index);
             void build_render_graph(const uvec2& size, const uvec2& viewport_size);
+            void watch_scripts();
+            void recompile_scripts();
 
             struct IMPL;
             unique<IMPL> impl;

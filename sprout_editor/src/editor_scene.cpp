@@ -2,16 +2,10 @@
 
 #include "camera_controller.hpp"
 #include "core/application.hpp"
-#include "core/assert.hpp"
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "editor.hpp"
-#include "math/types.hpp"
-#include "physics/physics.hpp"
-#include "platform/file_system.hpp"
-#include "scripting/scripting_engine.hpp"
-#include "threads/job_system.hpp"
 
 namespace sprout
 {
@@ -41,73 +35,6 @@ namespace sprout
         {
             camera_c->camera.set_position(transform->translation);
             camera_c->camera.set_rotation(transform->rotation);
-        }
-
-        auto& app = get_application();
-        auto& file_watcher = app.get_file_watcher();
-        auto& job_system = app.get_job_system();
-
-        std::vector<str> rebuild_dlls;
-
-        // Check if a script was modified
-        const auto& scripts = ecs->get_all_components_of_type<ScriptComponent>();
-        for (auto* script : scripts)
-        {
-            if (file_watcher.was_file_modified(script->file_path))
-            {
-                rebuild_dlls.push_back(script->file_path);
-                file_watcher.reset_file_status(script->file_path);
-            }
-        }
-
-        if (rebuild_dlls.empty())
-        {
-            return;
-        }
-
-        // Recompile scripts on another thread
-        auto execute = [rebuild_dlls]
-        {
-            b8 result = true;
-
-            for (const auto& script_file : rebuild_dlls)
-            {
-                LOG_INFO("Script '{0}' was modified, rebuilding DLL...", script_file);
-                if (!script::recompile_script(script_file, true))
-                {
-                    result = false;
-                }
-            }
-
-            return result;
-        };
-
-        // Callback when finished executing
-        auto on_execute_finished = [](const b8 result)
-        {
-            // Restart the scene if everything went ok
-            Editor& editor = get_editor();
-            if (result && editor.is_game_process_running())
-            {
-                editor.stop_game_process();
-                editor.start_game_process();
-            }
-        };
-
-        Job load_job = Job(execute, on_execute_finished);
-        job_system.add_job(load_job);
-    }
-
-    void EditorScene::on_component_added_internal(const u32 id, Component* component)
-    {
-        (void)id;
-
-        // Add script file to file watcher if component is a script
-        const auto* script_component = dynamic_cast<ScriptComponent*>(component);
-        if (script_component)
-        {
-            auto& file_watcher = get_application().get_file_watcher();
-            file_watcher.watch_file(script_component->file_path);
         }
     }
 
