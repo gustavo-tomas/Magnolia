@@ -172,7 +172,8 @@ namespace mag
         it->second->set_pixels(image->pixels);
     }
 
-    ref<RendererImage> Renderer::upload_image(Image* image)
+    ref<RendererImage> Renderer::upload_image(Image* image, const SamplerAddressMode address_mode,
+                                              const Filter min_mag_filter, const SamplerMipmapMode mip_map_mode)
     {
         auto it = impl->images.find(image);
 
@@ -203,10 +204,11 @@ namespace mag
         const vk::Format format = get_context().get_supported_color_format(image_format);
 
         impl->images[image] =
-            create_ref<RendererImage>(extent, ImageType::Texture, image->pixels, format,
+            create_ref<RendererImage>(extent, ImageType::Texture, format,
                                       vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc |
                                           vk::ImageUsageFlagBits::eTransferDst,
-                                      vk::ImageAspectFlagBits::eColor, image->mip_levels, SampleCount::_1);
+                                      vk::ImageAspectFlagBits::eColor, min_mag_filter, address_mode, mip_map_mode,
+                                      image->mip_levels, SampleCount::_1, image->pixels);
 
         return impl->images[image];
     }

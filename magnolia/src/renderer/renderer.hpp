@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "renderer/sampler.hpp"
 
 // @TODO: refactor this API to be more consistent
 
@@ -42,7 +43,10 @@ namespace mag
             void remove_model(Model* model);
             void update_model(Model* model);
 
-            ref<RendererImage> upload_image(Image* image);
+            ref<RendererImage> upload_image(Image* image,
+                                            const SamplerAddressMode address_mode = SamplerAddressMode::Repeat,
+                                            const Filter min_mag_filter = Filter::Linear,
+                                            const SamplerMipmapMode mip_map_mode = SamplerMipmapMode::Linear);
             void remove_image(Image* image);
             void update_image(Image* image);
 

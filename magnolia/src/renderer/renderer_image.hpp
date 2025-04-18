@@ -4,6 +4,7 @@
 
 #include "math/types.hpp"
 #include "private/vulkan_fwd.hpp"
+#include "renderer/sampler.hpp"
 
 namespace mag
 {
@@ -26,21 +27,16 @@ namespace mag
         Attachment
     };
 
-    class Sampler;
-
     class RendererImage
     {
         public:
             RendererImage(const uvec3& extent, const ImageType image_type, const vk::Format format,
                           const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                          const u32 mip_levels = 1, const SampleCount msaa_samples = SampleCount::_1,
+                          const Filter min_mag_filter = Filter::Linear,
+                          const SamplerAddressMode address_mode = SamplerAddressMode::Repeat,
+                          const SamplerMipmapMode mip_map_mode = SamplerMipmapMode::Linear, const u32 mip_levels = 1,
+                          const SampleCount msaa_samples = SampleCount::_1, const std::vector<u8>& pixels = {},
                           const str& name = "");
-
-            RendererImage(const uvec3& extent, const ImageType image_type, const std::vector<u8>& pixels,
-                          const vk::Format format, const vk::ImageUsageFlags image_usage,
-                          const vk::ImageAspectFlags image_aspect, const u32 mip_levels = 1,
-                          const SampleCount msaa_samples = SampleCount::_1, const str& name = "");
-
             ~RendererImage();
 
             // The dimensions, mip levels, channels, etc are not changed, only the image pixels

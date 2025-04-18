@@ -14,8 +14,10 @@ namespace mag
     struct RendererImage::IMPL
     {
             IMPL(const uvec3& extent, const ImageType image_type, const vk::Format format,
-                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                 const SampleCount msaa_samples, const str& name)
+                 const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
+                 const Filter min_mag_filter, const SamplerAddressMode address_mode,
+                 const SamplerMipmapMode mip_map_mode, const u32 mip_levels, const SampleCount msaa_samples,
+                 const str& name)
                 : name(name),
                   mip_levels(mip_levels),
                   format(format),
@@ -23,7 +25,7 @@ namespace mag
                   image_aspect(image_aspect),
                   extent(extent),
                   type(image_type),
-                  sampler(Filter::Linear, SamplerAddressMode::Repeat, SamplerMipmapMode::Linear, mip_levels),
+                  sampler(min_mag_filter, address_mode, mip_map_mode, mip_levels),
                   msaa_samples(msaa_samples)
             {
             }
@@ -49,21 +51,18 @@ namespace mag
 
     RendererImage::RendererImage(const uvec3& extent, const ImageType image_type, const vk::Format format,
                                  const vk::ImageUsageFlags image_usage, const vk::ImageAspectFlags image_aspect,
-                                 const u32 mip_levels, const SampleCount msaa_samples, const str& name)
-        : impl(new IMPL(extent, image_type, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
-    {
-        create_image_and_view();
-    }
-
-    RendererImage::RendererImage(const uvec3& extent, const ImageType image_type, const std::vector<u8>& pixels,
-                                 const vk::Format format, const vk::ImageUsageFlags image_usage,
-                                 const vk::ImageAspectFlags image_aspect, const u32 mip_levels,
-                                 const SampleCount msaa_samples, const str& name)
-        : impl(new IMPL(extent, image_type, format, image_usage, image_aspect, mip_levels, msaa_samples, name))
+                                 const Filter min_mag_filter, const SamplerAddressMode address_mode,
+                                 const SamplerMipmapMode mip_map_mode, const u32 mip_levels,
+                                 const SampleCount msaa_samples, const std::vector<u8>& pixels, const str& name)
+        : impl(new IMPL(extent, image_type, format, image_usage, image_aspect, min_mag_filter, address_mode,
+                        mip_map_mode, mip_levels, msaa_samples, name))
     {
         create_image_and_view();
 
-        set_pixels(pixels);
+        if (!pixels.empty())
+        {
+            set_pixels(pixels);
+        }
     }
 
     RendererImage::~RendererImage()
