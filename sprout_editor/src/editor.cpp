@@ -127,7 +127,7 @@ namespace sprout
         ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
                "Failed to initialize editor window backend");
 
-        const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::Float);
+        const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
 
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance = context.get_instance();

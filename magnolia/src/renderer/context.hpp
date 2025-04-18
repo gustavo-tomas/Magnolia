@@ -32,8 +32,9 @@ namespace mag
 
     enum class ImageFormat
     {
-        Srgb,
-        Float
+        RGBA8_Srgb,     // RGB color space
+        RGBA16_Sfloat,  // Floating point
+        R8_Unorm        // Normalized between [0.0, 1.0]
     };
 
     class Context

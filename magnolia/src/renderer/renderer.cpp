@@ -182,8 +182,25 @@ namespace mag
             return it->second;
         }
 
+        // Use image channels to get color format
+        ImageFormat image_format = ImageFormat::R8_Unorm;
+        if (image->channels == 1)
+        {
+            image_format = ImageFormat::R8_Unorm;
+        }
+
+        else if (image->channels == 4)
+        {
+            image_format = ImageFormat::RGBA8_Srgb;
+        }
+
+        else
+        {
+            LOG_ERROR("Invalid texture format");
+        }
+
         const uvec3 extent(image->width, image->height, 1);
-        const vk::Format format = get_context().get_supported_color_format(ImageFormat::Srgb);
+        const vk::Format format = get_context().get_supported_color_format(image_format);
 
         impl->images[image] =
             create_ref<RendererImage>(extent, ImageType::Texture, image->pixels, format,

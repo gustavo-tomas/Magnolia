@@ -641,15 +641,20 @@ namespace mag
     {
         switch (desired_format)
         {
-            case ImageFormat::Srgb:
+            case ImageFormat::RGBA8_Srgb:
                 return get_supported_format({vk::Format::eR8G8B8A8Srgb, vk::Format::eB8G8R8A8Srgb},
                                             vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eColorAttachment);
                 break;
 
-            case ImageFormat::Float:
+            case ImageFormat::RGBA16_Sfloat:
                 return get_supported_format(
                     {vk::Format::eR16G16B16A16Sfloat, vk::Format::eR32G32B32A32Sfloat, vk::Format::eR64G64B64A64Sfloat},
                     vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eColorAttachment);
+                break;
+
+            case ImageFormat::R8_Unorm:
+                return get_supported_format({vk::Format::eR8Unorm}, vk::ImageTiling::eOptimal,
+                                            vk::FormatFeatureFlagBits::eColorAttachment);
                 break;
 
             default:

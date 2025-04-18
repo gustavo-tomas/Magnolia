@@ -127,7 +127,7 @@ namespace mag
                     image_aspect = vk::ImageAspectFlagBits::eColor;
                     image_usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled |
                                   vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst;
-                    image_format = context.get_supported_color_format(ImageFormat::Float);
+                    image_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
                     break;
 
                 case AttachmentType::DepthStencil:

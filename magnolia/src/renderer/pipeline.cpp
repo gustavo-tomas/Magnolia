@@ -106,7 +106,7 @@ namespace mag
         const std::vector<vk::DynamicState> dynamic_states = {vk::DynamicState::eViewport, vk::DynamicState::eScissor};
         const vk::PipelineDynamicStateCreateInfo dynamic_state({}, dynamic_states);
 
-        const auto color_format = context.get_supported_color_format(ImageFormat::Float);
+        const auto color_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
 
         std::vector<vk::Format> color_attachment_formats;
         if (shader_configuration.color_write_enabled)
