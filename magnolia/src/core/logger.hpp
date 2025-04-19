@@ -9,69 +9,43 @@
 
 namespace mag
 {
-    enum class LogType
+    namespace log
     {
-        Error,
-        Warning,
-        Info,
-        Success
-    };
+        struct LogData
+        {
+                fmt::color color;
+        };
 
-    class Logger
-    {
-        public:
-            template <typename... Args>
-            static void log(const std::source_location& location, const LogType log_type, const str& format,
-                            const Args&... args)
-            {
-                fmt::color color = fmt::color::white;
-                switch (log_type)
-                {
-                    case LogType::Error:
-                        color = fmt::color::orange_red;
-                        break;
+        str timestamp();
 
-                    case LogType::Warning:
-                        color = fmt::color::yellow;
-                        break;
+        template <typename... Args>
+        void log_message(const std::source_location& location, const LogData log_data, const str& message,
+                         const Args&... args)
+        {
+            fmt::print(fmt::emphasis::bold | fg(fmt::color::violet), "[{0}]", timestamp());
 
-                    case LogType::Info:
-                        color = fmt::color::white;
-                        break;
+            fmt::print(fmt::emphasis::bold | fg(fmt::color::royal_blue), "[{0}:{1}]: ", location.file_name(),
+                       location.line());
 
-                    case LogType::Success:
-                        color = fmt::color::spring_green;
-                        break;
-
-                    default:
-                        break;
-                }
-
-                fmt::print(fmt::emphasis::bold | fg(fmt::color::violet), "[{0}]", timestamp());
-
-                fmt::print(fmt::emphasis::bold | fg(fmt::color::royal_blue), "[{0}:{1}]: ", location.file_name(),
-                           location.line());
-
-                fmt::print(fmt::emphasis::bold | fg(color), format + "\n", args...);
-            }
-
-        private:
-            static str const timestamp();
-    };
-};  // namespace mag
+            fmt::print(fmt::emphasis::bold | fg(log_data.color), message + "\n", args...);
+        }
+    };  // namespace log
+};      // namespace mag
 
 #if MAG_CONFIG_DEBUG
-    #define LOG_ERROR(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Error, message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_ERROR(message, ...)                                                      \
+        mag::log::log_message(std::source_location::current(), {fmt::color::orange_red}, \
+                              message __VA_OPT__(, ) __VA_ARGS__)
 
     #define LOG_WARNING(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Warning, message __VA_OPT__(, ) __VA_ARGS__)
+        mag::log::log_message(std::source_location::current(), {fmt::color::yellow}, message __VA_OPT__(, ) __VA_ARGS__)
 
     #define LOG_INFO(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Info, message __VA_OPT__(, ) __VA_ARGS__)
+        mag::log::log_message(std::source_location::current(), {fmt::color::white}, message __VA_OPT__(, ) __VA_ARGS__)
 
-    #define LOG_SUCCESS(message, ...) \
-        mag::Logger::log(std::source_location::current(), mag::LogType::Success, message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_SUCCESS(message, ...)                                                      \
+        mag::log::log_message(std::source_location::current(), {fmt::color::spring_green}, \
+                              message __VA_OPT__(, ) __VA_ARGS__)
 #else
     #define LOG_ERROR(message, ...)
     #define LOG_WARNING(message, ...)
