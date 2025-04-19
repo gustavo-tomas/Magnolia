@@ -11,6 +11,7 @@ namespace mag
 
     class ShaderManager;
     class TextureManager;
+    class FontManager;
     class ModelManager;
     class MaterialManager;
 
@@ -39,6 +40,7 @@ namespace mag
             FileWatcher& get_file_watcher();
             JobSystem& get_job_system();
             TextureManager& get_texture_manager();
+            FontManager& get_font_manager();
             MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
             ShaderManager& get_shader_manager();

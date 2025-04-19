@@ -32,6 +32,7 @@ namespace mag
         private:
             ref<Shader> mesh_shader;
             ref<Shader> sprite_shader;
+            ref<Shader> text_shader;
     };
 
     class PostProcessingPass : public RenderGraphPass

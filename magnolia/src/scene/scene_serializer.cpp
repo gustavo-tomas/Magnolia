@@ -5,6 +5,7 @@
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/font.hpp"
 #include "resources/image.hpp"
 #include "scene/scene.hpp"
 
@@ -17,6 +18,12 @@ namespace mag
     }
 
     fs::json& operator<<(fs::json& out, const vec3& v)
+    {
+        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        return out;
+    }
+
+    fs::json& operator<<(fs::json& out, const vec4& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
@@ -75,6 +82,13 @@ namespace mag
                         entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
                         entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
                     }
+                }
+
+                if (auto component = ecs.get_component<TextComponent>(entity_id))
+                {
+                    entity["TextComponent"]["FilePath"] = component->font->name;
+                    entity["TextComponent"]["Text"] = component->text;
+                    entity["TextComponent"]["Color"] << component->color;
                 }
 
                 if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
@@ -192,6 +206,20 @@ namespace mag
 
                     ecs.add_component(entity_id,
                                       new SpriteComponent(sprite, file_path, constant_size, always_face_camera));
+                }
+
+                if (entity.contains("TextComponent"))
+                {
+                    const auto& component = entity["TextComponent"];
+                    const str file_path = component["FilePath"];
+                    const str text = component["Text"];
+                    vec4 color = vec4(0.0f);
+
+                    for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
+
+                    const auto& font = app.get_font_manager().get(file_path);
+
+                    ecs.add_component(entity_id, new TextComponent(font, color, text));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

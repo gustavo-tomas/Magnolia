@@ -68,7 +68,8 @@ workspace "magnolia"
         "fmt", "SDL2", "SDL2main", "assimp", "meshoptimizer",
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
-        "LinearMath"
+        "LinearMath",
+        "freetype"
     }
 
     editor_lib_links = 
@@ -116,6 +117,7 @@ project "magnolia"
     includedirs
     {
         "%{prj.name}/src",
+        "/usr/include/freetype2", -- @TODO: package this
 
         engine_lib_includes
     }

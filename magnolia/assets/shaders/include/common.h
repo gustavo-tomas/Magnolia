@@ -45,6 +45,12 @@ struct alignas(16) SpriteData
         vec4 size_const_face;  // Size + Constant Size + Always Face Camera
 };
 
+struct alignas(16) TextData
+{
+        mat4 model;  // 64 bytes (16 x 4)
+        vec4 color;  // 16 bytes ( 4 x 4)
+};
+
 struct alignas(16) MaterialData
 {
         vec4 albedo;    // 16 bytes

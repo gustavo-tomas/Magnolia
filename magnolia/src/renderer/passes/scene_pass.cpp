@@ -9,6 +9,7 @@
 #include "renderer/render_graph.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "resources/font.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
@@ -99,6 +100,7 @@ namespace mag
         // Shaders
         mesh_shader = shader_manager.get(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
         sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
+        text_shader = shader_manager.get(MAG_ASSET_DIR "shaders/text_shader.mag.json");
 
         add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
@@ -127,6 +129,7 @@ namespace mag
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
         auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
+        auto text_entities = ecs.get_all_components_of_types<TransformComponent, TextComponent>();
 
         // Render models
 
@@ -254,6 +257,57 @@ namespace mag
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
+        }
+
+        // Render text
+
+        text_shader->bind();
+
+        text_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
+        text_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
+        text_shader->set_uniform("u_global", "screen_size", value_ptr(pass.size));
+
+        u32 data_offset = 0;
+        for (u32 i = 0; i < text_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(text_entities[i]);
+            const auto& text = std::get<1>(text_entities[i]);
+
+            const f32 scale = transform->scale.x;
+            f32 x = transform->translation.x;
+            f32 y = transform->translation.y;
+            f32 z = transform->translation.z;
+
+            for (auto& c : text->text)
+            {
+                Character& ch = text->font->characters[c];
+
+                const f32 xpos = x + ch.bearing.x * scale;
+                const f32 ypos = y - (ch.size.y - ch.bearing.y) * scale;
+                const f32 zpos = z;
+
+                TransformComponent char_transform;
+                char_transform.translation = vec3(xpos, ypos, zpos);
+                char_transform.scale = vec3(ch.size.x * scale, ch.size.y * scale, 1.0f);
+                char_transform.rotation = transform->rotation;
+
+                // @TODO: rotation is a bit iffy but for now its ok
+                const mat4 model_matrix = char_transform.get_transformation_matrix();
+
+                TextData text_data;
+                text_data.color = text->color;
+                text_data.model = model_matrix;
+
+                text_shader->set_uniform("u_instance", "texts", &text_data, sizeof(TextData) * data_offset);
+                text_shader->set_texture("u_char_texture", &ch.texture);
+
+                renderer.draw(6, 1, 0, data_offset);
+                data_offset++;
+
+                // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to get
+                // value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+                x += (ch.advance.x >> 6) * scale;
+            }
         }
     }
 

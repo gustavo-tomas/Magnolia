@@ -7,6 +7,7 @@ namespace mag
     struct Image;
     struct Material;
     struct Model;
+    struct Font;
     struct ShaderConfiguration;
     struct ShaderModule;
 
@@ -15,6 +16,7 @@ namespace mag
         b8 load(const str& file_path, Image* image);
         b8 load(const str& file_path, Material* material);
         b8 load(const str& file_path, Model* model);
+        b8 load(const str& file_path, Font* font);
         b8 load(const str& file_path, ShaderConfiguration* shader, const b8 force_recompilation = false);
 
         b8 get_image_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels);

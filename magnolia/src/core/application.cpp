@@ -8,6 +8,7 @@
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "resources/font.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
@@ -33,7 +34,8 @@ namespace mag
             unique<Renderer> renderer;
             unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
-            unique<TextureManager> texture_loader;
+            unique<TextureManager> texture_manager;
+            unique<FontManager> font_manager;
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
@@ -100,8 +102,12 @@ namespace mag
         LOG_SUCCESS("JobSystem initialized");
 
         // Create the texture manager
-        impl->texture_loader = create_unique<TextureManager>();
+        impl->texture_manager = create_unique<TextureManager>();
         LOG_SUCCESS("TextureManager initialized");
+
+        // Create the font manager
+        impl->font_manager = create_unique<FontManager>();
+        LOG_SUCCESS("FontManager initialized");
 
         // Create the material manager
         impl->material_manager = create_unique<MaterialManager>();
@@ -194,7 +200,8 @@ namespace mag
     Renderer& Application::get_renderer() { return *impl->renderer; }
     FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
     JobSystem& Application::get_job_system() { return *impl->job_system; }
-    TextureManager& Application::get_texture_manager() { return *impl->texture_loader; }
+    TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
+    FontManager& Application::get_font_manager() { return *impl->font_manager; }
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }

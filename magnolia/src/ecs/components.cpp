@@ -34,6 +34,11 @@ namespace mag
 
     ModelComponent::ModelComponent(const ref<Model>& model) : model(model) {}
 
+    TextComponent::TextComponent(const ref<Font>& font, const vec4& color, const str& text)
+        : font(font), color(color), text(text)
+    {
+    }
+
     BoxColliderComponent::BoxColliderComponent(const vec3& dimensions) : dimensions(dimensions) {}
 
     RigidBodyComponent::RigidBodyComponent(const f32 mass) : mass(mass) {}
@@ -52,6 +57,7 @@ namespace mag
     CLONE_DEFINITION(TransformComponent)
     CLONE_DEFINITION(SpriteComponent)
     CLONE_DEFINITION(ModelComponent)
+    CLONE_DEFINITION(TextComponent)
     CLONE_DEFINITION(BoxColliderComponent)
     CLONE_DEFINITION(RigidBodyComponent)
     CLONE_DEFINITION(LightComponent)

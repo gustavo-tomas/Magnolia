@@ -1,0 +1,31 @@
+{
+    "Shader": "Text",
+    "Files": [
+        "text.vert",
+        "text.frag"
+    ],
+    "Pipeline": {
+        "InputAssembly": {
+            "Topology": "Triangle"
+        },
+        "Rasterization": {
+            "PolygonMode": "Fill",
+            "CullMode": "None"
+        },
+        "ColorBlend": {
+            "Enabled": true,
+            "ColorBlendOp": "Add",
+            "AlphaBlendOp": "Add",
+            "SrcColorBlendFactor": "SrcAlpha",
+            "DstColorBlendFactor": "OneMinusSrcAlpha",
+            "SrcAlphaBlendFactor": "One",
+            "DstAlphaBlendFactor": "OneMinusSrcAlpha"
+        },
+        "ColorWrite": {
+            "Enabled": true
+        },
+        "DepthWrite": {
+            "Enabled": true
+        }
+    }
+}

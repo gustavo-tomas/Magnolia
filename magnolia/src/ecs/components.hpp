@@ -67,6 +67,18 @@ namespace mag
             ref<Model> model;
     };
 
+    struct Font;
+    struct TextComponent : public Component
+    {
+            TextComponent(const ref<Font>& font, const vec4& color, const str& text);
+
+            CLONE_DECLARATION(TextComponent);
+
+            ref<Font> font;
+            vec4 color;
+            str text;
+    };
+
     struct BoxColliderComponent : public Component
     {
             BoxColliderComponent(const vec3& dimensions = vec3(1));
