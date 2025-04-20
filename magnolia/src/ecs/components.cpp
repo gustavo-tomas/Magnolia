@@ -39,6 +39,12 @@ namespace mag
     {
     }
 
+    AudioComponent::AudioComponent(const ref<Audio>& audio, const f32 volume, const b8 play_on_load,
+                                   const vec3& position, const vec3& velocity)
+        : audio(audio), volume(volume), position(position), velocity(velocity), play_on_load(play_on_load)
+    {
+    }
+
     BoxColliderComponent::BoxColliderComponent(const vec3& dimensions) : dimensions(dimensions) {}
 
     RigidBodyComponent::RigidBodyComponent(const f32 mass) : mass(mass) {}
@@ -58,6 +64,7 @@ namespace mag
     CLONE_DEFINITION(SpriteComponent)
     CLONE_DEFINITION(ModelComponent)
     CLONE_DEFINITION(TextComponent)
+    CLONE_DEFINITION(AudioComponent)
     CLONE_DEFINITION(BoxColliderComponent)
     CLONE_DEFINITION(RigidBodyComponent)
     CLONE_DEFINITION(LightComponent)

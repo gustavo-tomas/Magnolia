@@ -5,6 +5,7 @@
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/audio.hpp"
 #include "resources/font.hpp"
 #include "resources/image.hpp"
 #include "scene/scene.hpp"
@@ -89,6 +90,15 @@ namespace mag
                     entity["TextComponent"]["FilePath"] = component->font->name;
                     entity["TextComponent"]["Text"] = component->text;
                     entity["TextComponent"]["Color"] << component->color;
+                }
+
+                if (auto component = ecs.get_component<AudioComponent>(entity_id))
+                {
+                    entity["AudioComponent"]["FilePath"] = component->audio->name;
+                    entity["AudioComponent"]["Volume"] = component->volume;
+                    entity["AudioComponent"]["PlayOnLoad"] = component->play_on_load;
+                    entity["AudioComponent"]["Position"] << component->position;
+                    entity["AudioComponent"]["Velocity"] << component->velocity;
                 }
 
                 if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
@@ -220,6 +230,24 @@ namespace mag
                     const auto& font = app.get_font_manager().get(file_path);
 
                     ecs.add_component(entity_id, new TextComponent(font, color, text));
+                }
+
+                if (entity.contains("AudioComponent"))
+                {
+                    const auto& component = entity["AudioComponent"];
+                    const str file_path = component["FilePath"];
+
+                    const f32 volume = component["Volume"].get<f32>();
+                    const b8 play_on_load = component["PlayOnLoad"].get<f32>();
+                    vec3 position = vec3(0.0f);
+                    vec3 velocity = vec3(0.0f);
+
+                    for (i32 i = 0; i < position.length(); i++) position[i] = component["Position"][i].get<f32>();
+                    for (i32 i = 0; i < velocity.length(); i++) velocity[i] = component["Velocity"][i].get<f32>();
+
+                    const auto& audio = app.get_audio_manager().get(file_path);
+
+                    ecs.add_component(entity_id, new AudioComponent(audio, volume, play_on_load, position, velocity));
                 }
 
                 if (entity.contains("BoxColliderComponent"))

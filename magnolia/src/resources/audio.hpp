@@ -11,6 +11,7 @@ namespace mag
     {
             u32 handle = 0;
             void* source = nullptr;
+            str name;
     };
 
     class AudioManager

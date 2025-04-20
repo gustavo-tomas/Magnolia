@@ -9,6 +9,7 @@
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/audio.hpp"
 #include "resources/image.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
@@ -36,6 +37,19 @@ namespace mag
         for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
             create_script(id);
+        }
+
+        mag::Application& app = mag::get_application();
+        mag::AudioManager& audio_manager = app.get_audio_manager();
+
+        // Play audios
+        for (const auto* audio_c : ecs->get_all_components_of_type<AudioComponent>())
+        {
+            if (audio_c->play_on_load)
+            {
+                auto audio = audio_manager.get(audio_c->audio->name);
+                audio_manager.play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
+            }
         }
 
         running = true;

@@ -79,6 +79,21 @@ namespace mag
             str text;
     };
 
+    struct Audio;
+    struct AudioComponent : public Component
+    {
+            AudioComponent(const ref<Audio>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
+                           const vec3& position = vec3(0), const vec3& velocity = vec3(0));
+
+            CLONE_DECLARATION(AudioComponent);
+
+            ref<Audio> audio;
+            f32 volume;
+            vec3 position;
+            vec3 velocity;
+            b8 play_on_load;
+    };
+
     struct BoxColliderComponent : public Component
     {
             BoxColliderComponent(const vec3& dimensions = vec3(1));

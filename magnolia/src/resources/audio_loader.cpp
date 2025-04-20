@@ -37,6 +37,7 @@ namespace mag
             }
 
             // Update audio data
+            audio->name = file_path;
             audio->source = audio_source;
 
             return true;

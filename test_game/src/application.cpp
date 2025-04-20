@@ -7,7 +7,6 @@
 #include <renderer/passes/scene_pass.hpp>
 #include <renderer/render_graph.hpp>
 #include <renderer/renderer.hpp>
-#include <resources/audio.hpp>
 #include <scene/scene.hpp>
 #include <scene/scene_serializer.hpp>
 
@@ -39,16 +38,10 @@ namespace game
 
         mag::Application &app = mag::get_application();
         mag::Window &window = app.get_window();
-        mag::AudioManager &audio_manager = app.get_audio_manager();
 
         build_render_graph(window.get_size());
 
         scene->on_start();
-
-        // @TODO: testing - Play some background music
-
-        auto audio = audio_manager.get("test_game/assets/audios/invisible.mp3");
-        audio_manager.play(audio, 0.15f);
     }
 
     TestGame::~TestGame() = default;
