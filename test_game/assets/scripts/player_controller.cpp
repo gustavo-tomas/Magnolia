@@ -1,4 +1,7 @@
+#include <ecs/components.hpp>
 #include <magnolia.hpp>
+#include <physics/physics.hpp>
+#include <resources/model.hpp>
 
 using namespace mag;
 
@@ -10,6 +13,29 @@ class PlayerController : public ScriptableEntity
         virtual void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
 
         virtual void on_update(const f32 dt) override
+        {
+            handle_movement(dt);
+            handle_shooting();
+        }
+
+        void handle_shooting()
+        {
+            auto [transform] = get_components<TransformComponent>();
+            if (!transform)
+            {
+                return;
+            }
+
+            Application& app = get_application();
+            Window& window = app.get_window();
+
+            if (window.is_button_pressed(Button::Left))
+            {
+                fire_bullet(*transform);
+            }
+        }
+
+        void handle_movement(const f32 dt)
         {
             Application& app = get_application();
             Window& window = app.get_window();
@@ -49,6 +75,34 @@ class PlayerController : public ScriptableEntity
 
             camera_c->camera.set_rotation(transform->rotation);
             camera_c->camera.set_position(transform->translation + cam_forward * vec3(50));
+        }
+
+        void fire_bullet(const TransformComponent& transform)
+        {
+            Application& app = get_application();
+            ModelManager& model_manager = app.get_model_manager();
+            PhysicsWorld& physics = get_physics_world();
+
+            // Create a bullet
+            const u32 bullet_id = create_entity();
+
+            TransformComponent* bullet_transform = new TransformComponent(transform);
+            bullet_transform->scale = vec3(100.0f);
+
+            const ref<Model> model =
+                model_manager.get("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
+
+            auto* model_c = new ModelComponent(model);
+            auto* rigid_body = new RigidBodyComponent(10.0f);
+            auto* collider = new BoxColliderComponent(vec3(10.0f));
+
+            add_component_to_entity(bullet_id, bullet_transform);
+            add_component_to_entity(bullet_id, model_c);
+            add_component_to_entity(bullet_id, rigid_body);
+            add_component_to_entity(bullet_id, collider);
+
+            const vec3& forward_dir = get_forward_dir(*bullet_transform);
+            physics.apply_impulse(rigid_body->collision_object, -forward_dir * 1000.0f);
         }
 
         virtual void on_event(const Event& e) override
@@ -93,6 +147,24 @@ class PlayerController : public ScriptableEntity
 
             // Rotate
             transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f;
+        }
+
+        vec3 get_side_dir(const TransformComponent& transform) const
+        {
+            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
+            return rotation_mat[0];
+        }
+
+        vec3 get_up_dir(const TransformComponent& transform) const
+        {
+            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
+            return rotation_mat[1];
+        }
+
+        vec3 get_forward_dir(const TransformComponent& transform) const
+        {
+            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
+            return rotation_mat[2];
         }
 };
 
