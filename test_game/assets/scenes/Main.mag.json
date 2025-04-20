@@ -248,14 +248,14 @@
                     0.0
                 ],
                 "Scale": [
-                    0.10000000149011612,
-                    0.10000000149011612,
-                    0.10000000149011612
+                    0.2,
+                    0.2,
+                    0.2
                 ]
             },
             "TextComponent": {
-                "FilePath": "test_game/assets/fonts/Yatra_One/YatraOne-Regular.ttf",
-                "Text": "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz",
+                "FilePath": "test_game/assets/fonts/Jacquard_12/Jacquard12-Regular.ttf",
+                "Text": "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz",
                 "Color": [
                     0.4000000059604645,
                     0.800000011920929,
@@ -286,8 +286,8 @@
                 ]
             },
             "TextComponent": {
-                "FilePath": "test_game/assets/fonts/Jacquard_12/Jacquard12-Regular.ttf",
-                "Text": "BigBossInvisible",
+                "FilePath": "test_game/assets/fonts/Yatra_One/YatraOne-Regular.ttf",
+                "Text": "--- BigBoss Song ---\n\n(Invisible)\n(Invisible)\n(Invisible)\n(Invisible)\n\n[Verse 1]\n(Shy one) Walking by the wall\n(Shy one) The shadows will not fall\n(Shy one) Is silently ignored\n(Quiet one) Discouraged by the noise\n(Quiet one) Living without choice\n(Quiet one) Is a life without a voice",
                 "Color": [
                     1.0,
                     0.5,

@@ -282,8 +282,24 @@ namespace mag
             {
                 Character& ch = text->font->characters[c];
 
-                const f32 xpos = x + ch.bearing.x * scale;
-                const f32 ypos = y - (ch.size.y - ch.bearing.y) * scale;
+                // Skip spaces
+                if (c == ' ')
+                {
+                    x += (ch.advance.x >> 6) * scale;
+                    continue;
+                }
+
+                // Format newlines
+                if (c == '\n')
+                {
+                    y -= ch.size.y * 1.5 * scale;  // @TODO: hardcoded line spacing
+                    x = transform->translation.x;
+                    continue;
+                }
+
+                // Don't offset the first letter of the text
+                const f32 xpos = x + (data_offset > 0 ? ch.bearing.x * scale : 0);
+                const f32 ypos = y - (data_offset > 0 ? (ch.size.y - ch.bearing.y) * scale : 0);
                 const f32 zpos = z;
 
                 TransformComponent char_transform;
@@ -303,6 +319,9 @@ namespace mag
 
                 renderer.draw(6, 1, 0, data_offset);
                 data_offset++;
+
+                performance_results.rendered_triangles += 2;
+                performance_results.draw_calls++;
 
                 // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to get
                 // value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
