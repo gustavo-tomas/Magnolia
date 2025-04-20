@@ -46,3 +46,6 @@
 [submodule "libs/portable-file-dialogs"]
 	path = libs/portable-file-dialogs
 	url = https://github.com/samhocevar/portable-file-dialogs.git
+[submodule "libs/freetype"]
+	path = libs/freetype
+	url = https://github.com/gustavo-tomas/freetype.git

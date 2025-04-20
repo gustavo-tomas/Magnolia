@@ -8,7 +8,7 @@
 #include "resources/font.hpp"
 
 //
-#include <freetype2/freetype/freetype.h>
+#include "freetype/freetype.h"
 #include FT_FREETYPE_H
 //
 
