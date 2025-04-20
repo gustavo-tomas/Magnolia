@@ -8,6 +8,7 @@
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "resources/audio.hpp"
 #include "resources/font.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
@@ -39,6 +40,7 @@ namespace mag
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
+            unique<AudioManager> audio_manager;
 
             b8 running;
             f32 target_frame_rate;
@@ -120,6 +122,10 @@ namespace mag
         // Create the shader manager
         impl->shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
+
+        // Create the shader manager
+        impl->audio_manager = create_unique<AudioManager>();
+        LOG_SUCCESS("AudioManager initialized");
 
         // Initialize file dialogs
         if (FileDialog::initialize())
@@ -205,4 +211,5 @@ namespace mag
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
+    AudioManager& Application::get_audio_manager() { return *impl->audio_manager; }
 };  // namespace mag

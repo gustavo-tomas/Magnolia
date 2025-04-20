@@ -12,6 +12,7 @@ namespace mag
     class ShaderManager;
     class TextureManager;
     class FontManager;
+    class AudioManager;
     class ModelManager;
     class MaterialManager;
 
@@ -44,6 +45,7 @@ namespace mag
             MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
             ShaderManager& get_shader_manager();
+            AudioManager& get_audio_manager();
 
         protected:
             // Process events from the user application

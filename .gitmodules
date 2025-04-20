@@ -49,3 +49,6 @@
 [submodule "libs/freetype"]
 	path = libs/freetype
 	url = https://github.com/gustavo-tomas/freetype.git
+[submodule "libs/soloud"]
+	path = libs/soloud
+	url = https://github.com/jarikomppa/soloud.git
