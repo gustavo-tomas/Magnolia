@@ -26,7 +26,8 @@ workspace "magnolia"
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
         target_libdir .. "/meshoptimizer",
-        target_libdir .. "/bullet"
+        target_libdir .. "/bullet",
+        target_libdir .. "/freetype"
     }
 
     editor_libdir =
@@ -147,7 +148,8 @@ project "magnolia"
         "bullet",
         "imgui",
         "implot",
-        "imguizmo"
+        "imguizmo",
+        "freetype"
     }
 
     filter "system:linux"
