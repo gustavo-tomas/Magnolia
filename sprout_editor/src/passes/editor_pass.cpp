@@ -21,6 +21,9 @@
 #include "renderer/test_model.hpp"
 #include "resources/image.hpp"
 
+// Shader data types
+#include "../assets/shaders/include/common.h"
+
 namespace sprout
 {
     EditorPass::EditorPass(const uvec2& size) : RenderGraphPass("EditorPass")
@@ -62,14 +65,6 @@ namespace sprout
     }
 
     // GizmoPass -------------------------------------------------------------------------------------------------------
-
-    // @TODO: temporary
-    struct alignas(16) SpriteData
-    {
-            mat4 model;
-            vec4 size_const_face;  // Size + Constant Size + Always Face Camera
-    };
-    // @TODO: temporary
 
     LineList get_camera_gizmo(const Camera& camera);
 
@@ -211,7 +206,7 @@ namespace sprout
         grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
         // Draw the grid
-        renderer.draw(6);
+        renderer.draw(4);
 
         // Very accurate :)
         performance_results.rendered_triangles += 2;
@@ -280,7 +275,7 @@ namespace sprout
         sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * instance);
         sprite_shader->set_texture("u_sprite_texture", sprite.get());
 
-        renderer.draw(6, 1, 0, instance);
+        renderer.draw(4, 1, 0, instance);
 
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;

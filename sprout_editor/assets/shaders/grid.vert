@@ -6,10 +6,9 @@ layout (location = 0) out vec3 out_near_point;
 layout (location = 1) out vec3 out_far_point;
 
 // Grid position are in xy clipped space
-vec3 grid_plane[6] = vec3[]
+vec3 grid_plane[4] = vec3[]
 (
-    vec3( 1,  1, 0), vec3(-1, -1, 0), vec3(-1,  1, 0),
-    vec3(-1, -1, 0), vec3( 1,  1, 0), vec3( 1, -1, 0)
+    vec3(1, -1, 0), vec3(1, 1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0)
 );
 
 vec3 unproject_point(float x, float y, float z, mat4 view, mat4 projection) 

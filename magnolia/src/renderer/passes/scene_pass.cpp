@@ -253,7 +253,7 @@ namespace mag
             sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
 
-            renderer.draw(6, 1, 0, i);
+            renderer.draw(4, 1, 0, i);
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;

@@ -6,7 +6,7 @@
     ],
     "Pipeline": {
         "InputAssembly": {
-            "Topology": "Triangle"
+            "Topology": "TriangleStrip"
         },
         "Rasterization": {
             "PolygonMode": "Fill",
