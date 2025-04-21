@@ -317,7 +317,7 @@ namespace mag
                 text_shader->set_uniform("u_instance", "texts", &text_data, sizeof(TextData) * data_offset);
                 text_shader->set_texture("u_char_texture", &ch.texture);
 
-                renderer.draw(6, 1, 0, data_offset);
+                renderer.draw(4, 1, 0, data_offset);
                 data_offset++;
 
                 performance_results.rendered_triangles += 2;

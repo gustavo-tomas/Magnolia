@@ -322,6 +322,7 @@ namespace mag
     vk::PrimitiveTopology str_to_vk_topology(const str& topology)
     {
         if (topology == "Triangle") return vk::PrimitiveTopology::eTriangleList;
+        if (topology == "TriangleStrip") return vk::PrimitiveTopology::eTriangleStrip;
         if (topology == "Line") return vk::PrimitiveTopology::eLineList;
 
         LOG_ERROR("Invalid topology '{0}'", topology);
