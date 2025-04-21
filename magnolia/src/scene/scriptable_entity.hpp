@@ -20,6 +20,8 @@ namespace mag
             virtual void on_destroy();
             virtual void on_update(const f32 dt);
             virtual void on_event(const Event& e);
+            virtual void on_signal_sent(const u32 target_id, const void* data);
+            virtual void on_signal_received(const u32 sender_id, const void* data);
 
             void add_entity_to_deletion_queue();
             void set_active_scene(const str& scene_file_path);

@@ -3,10 +3,15 @@
 #include <physics/physics.hpp>
 #include <resources/model.hpp>
 
+#include "common.hpp"
+
 using namespace mag;
 
 class PlayerController : public ScriptableEntity
 {
+    private:
+        f32 hp = 100.0f;
+
     public:
         virtual void on_create() override { LOG_SUCCESS("Created PlayerController"); }
 
@@ -16,6 +21,19 @@ class PlayerController : public ScriptableEntity
         {
             handle_movement(dt);
             handle_shooting();
+        }
+
+        virtual void on_signal_received(const u32 sender_id, const void* data) override
+        {
+            // Damaged by some enemy
+            const DamageData* damage_data = static_cast<const DamageData*>(data);
+            if (damage_data)
+            {
+                hp -= damage_data->damage;
+
+                printf("Damage: %.2f sent from: %u\n", damage_data->damage, sender_id);
+                printf("Player HP: %.2f\n", hp);
+            }
         }
 
         void handle_shooting()

@@ -1,4 +1,7 @@
+#include <cstdlib>
 #include <magnolia.hpp>
+
+#include "common.hpp"
 
 using namespace mag;
 
@@ -37,6 +40,13 @@ class EnemyController : public ScriptableEntity
             const f32 dist_to_player = math::distance(transform->translation, target_entity_transform->translation);
             if (dist_to_player <= 20.0f)
             {
+                DamageData damage_data;
+                damage_data.damage = std::rand() % 30;
+
+                // Damage the player
+                on_signal_sent(target_entity_id, &damage_data);
+
+                // Then die
                 add_entity_to_deletion_queue();
                 return;
             }
