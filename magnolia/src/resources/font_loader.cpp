@@ -63,9 +63,20 @@ namespace mag
                 character.size = math::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
                 character.bearing = math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
                 character.advance = math::ivec2(face->glyph->advance.x, face->glyph->advance.y);
-                character.data = std::vector<u8>(
-                    face->glyph->bitmap.buffer,
-                    face->glyph->bitmap.buffer + (face->glyph->bitmap.width * face->glyph->bitmap.rows));
+
+                // Some glyphs have no bitmpa data (i.e. space)
+                if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0 && face->glyph->bitmap.buffer)
+                {
+                    character.data = std::vector<u8>(
+                        face->glyph->bitmap.buffer,
+                        face->glyph->bitmap.buffer + (face->glyph->bitmap.width * face->glyph->bitmap.rows));
+                }
+
+                // Empty data for whitespace or non-visual characters
+                else
+                {
+                    character.data.clear();
+                }
             }
 
             // Update font data

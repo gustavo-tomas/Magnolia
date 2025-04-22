@@ -37,7 +37,7 @@ namespace mag
                 texture.height = info.size.y;
                 texture.pixels = info.data;
 
-                if (texture.width > 0 && texture.height > 0)
+                if (texture.width > 0 && texture.height > 0 && texture.pixels.size() == texture.width * texture.height)
                 {
                     renderer.upload_image(&texture, SamplerAddressMode::ClampToEdge);
                 }

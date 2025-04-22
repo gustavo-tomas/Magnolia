@@ -282,8 +282,8 @@ namespace mag
             {
                 Character& ch = text->font->characters[c];
 
-                // Skip spaces
-                if (c == ' ')
+                // Skip chars with no visual representation (i.e. spaces)
+                if (ch.data.empty())
                 {
                     x += (ch.advance.x >> 6) * scale;
                     continue;
