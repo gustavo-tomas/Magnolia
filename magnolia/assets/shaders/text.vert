@@ -5,12 +5,12 @@
 layout (location = 0) out vec2 out_tex_coords;
 layout (location = 1) out vec4 out_color;
 
-vec3 quad[4] = vec3[]
+const vec3 quad[] = vec3[]
 (
 	vec3(0, 1, 0), vec3(0, 0, 0), vec3(1, 1, 0), vec3(1, 0, 0)
 );
 
-vec2 tex_coords[4] = vec2[]
+const vec2 tex_coords[] = vec2[]
 (
 	vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 0.0), vec2(1.0, 1.0)
 );

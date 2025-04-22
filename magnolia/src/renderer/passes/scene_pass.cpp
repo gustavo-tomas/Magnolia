@@ -366,7 +366,7 @@ namespace mag
         post_shader->bind();
         post_shader->set_texture("u_screen_color_texture", &screen_color);
 
-        renderer.draw(6);
+        renderer.draw(4);
 
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;

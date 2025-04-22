@@ -6,7 +6,7 @@ layout (location = 0) out vec3 out_near_point;
 layout (location = 1) out vec3 out_far_point;
 
 // Grid position are in xy clipped space
-vec3 grid_plane[4] = vec3[]
+const vec3 grid_plane[] = vec3[]
 (
     vec3(1, -1, 0), vec3(1, 1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0)
 );
