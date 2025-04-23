@@ -102,10 +102,11 @@ namespace mag
         sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
         text_shader = shader_manager.get(MAG_ASSET_DIR "shaders/text_shader.mag.json");
 
-        add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
+        // @TODO: we are skipping the depth prepass for now, until we need to process many lights with forward+
+        // add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
 
         add_output_attachment("OutputColorScene", AttachmentType::Color, size);
-        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
+        add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
         pass.size = size;
         pass.color_clear_value = vec4(0.1, 0.1, 0.1, 1.0);

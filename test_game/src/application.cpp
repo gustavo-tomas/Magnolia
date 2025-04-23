@@ -93,13 +93,13 @@ namespace game
         // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
         // @TODO: whatever change is made here has to be copied to the editor (or vice-versa) and this is not good :(
 
-        mag::DepthPrePass *depth_prepass = new mag::DepthPrePass(size);
+        // mag::DepthPrePass *depth_prepass = new mag::DepthPrePass(size);
         mag::ScenePass *scene_pass = new mag::ScenePass(size);
         mag::PostProcessingPass *post_pass = new mag::PostProcessingPass(size);
 
         render_graph->set_output_attachment("OutputColor");
 
-        render_graph->add_pass(depth_prepass);
+        // render_graph->add_pass(depth_prepass);
         render_graph->add_pass(scene_pass);
         render_graph->add_pass(post_pass);
 
