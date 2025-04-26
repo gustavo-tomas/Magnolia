@@ -22,9 +22,6 @@ namespace mag
 
             ref<Audio> get(const str& name);
 
-            void play(ref<Audio>& audio, const f32 volume = 1.0f, const math::vec3& position = math::vec3(0.0f),
-                      const math::vec3& velocity = math::vec3(0.0f));
-
         private:
             std::map<str, ref<Audio>> audios;
     };

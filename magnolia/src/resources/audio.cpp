@@ -1,21 +1,13 @@
 #include "resources/audio.hpp"
 
 #include "resources/resource_loader.hpp"
-#include "soloud/include/soloud.h"
 #include "soloud/include/soloud_wav.h"
 
 // @TODO: async loading
 
 namespace mag
 {
-    // Private implementation
-    static SoLoud::Soloud soloud;
-
-    AudioManager::AudioManager()
-    {
-        // Initialize SoLoud (automatic back-end selection)
-        soloud.init();
-    }
+    AudioManager::AudioManager() {}
 
     AudioManager::~AudioManager()
     {
@@ -23,9 +15,6 @@ namespace mag
         {
             delete static_cast<SoLoud::Wav*>(audio->source);
         }
-
-        // Clean up SoLoud
-        soloud.deinit();
     }
 
     ref<Audio> AudioManager::get(const str& name)
@@ -43,12 +32,5 @@ namespace mag
         resource::load(name, audio);
 
         return audios[name];
-    }
-
-    void AudioManager::play(ref<Audio>& audio, const f32 volume, const math::vec3& position, const math::vec3& velocity)
-    {
-        // This returns a handle
-        audio->handle = soloud.play3d(*static_cast<SoLoud::Wav*>(audio->source), position.x, position.y, position.z,
-                                      velocity.x, velocity.y, velocity.z, volume);
     }
 };  // namespace mag

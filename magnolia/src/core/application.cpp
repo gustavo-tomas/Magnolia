@@ -1,5 +1,6 @@
 #include "core/application.hpp"
 
+#include "audio/audio_system.hpp"
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
@@ -123,14 +124,30 @@ namespace mag
         impl->shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
 
-        // Create the shader manager
+        // Create the audio manager
         impl->audio_manager = create_unique<AudioManager>();
         LOG_SUCCESS("AudioManager initialized");
+
+        // Initialize the audio system
+        if (audio::initialize())
+        {
+            LOG_SUCCESS("Audio system initialized");
+        }
+
+        else
+        {
+            LOG_ERROR("Failed to initialize Audio system");
+        }
 
         // Initialize file dialogs
         if (FileDialog::initialize())
         {
             LOG_SUCCESS("FileDialog initialized");
+        }
+
+        else
+        {
+            LOG_ERROR("Failed to initialize FileDialog");
         }
     }
 

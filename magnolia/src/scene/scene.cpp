@@ -1,5 +1,6 @@
 #include "scene/scene.hpp"
 
+#include "audio/audio_system.hpp"
 #include "camera/camera.hpp"
 #include "core/application.hpp"
 #include "core/assert.hpp"
@@ -48,7 +49,7 @@ namespace mag
             if (audio_c->play_on_load)
             {
                 auto audio = audio_manager.get(audio_c->audio->name);
-                audio_manager.play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
+                audio::play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
             }
         }
 
