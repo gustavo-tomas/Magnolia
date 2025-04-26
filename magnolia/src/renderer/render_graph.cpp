@@ -57,8 +57,8 @@ namespace mag
         {
             if (desc.name == attachment_description.name && desc.stage == attachment_description.stage)
             {
-                ASSERT(false,
-                       "Pass '" + name + "' already contains the attachment '" + attachment_description.name + "'");
+                MAG_ASSERT(false,
+                           "Pass '" + name + "' already contains the attachment '" + attachment_description.name + "'");
             }
         }
 
@@ -138,7 +138,7 @@ namespace mag
                     break;
 
                 default:
-                    ASSERT(false, "Attachment type not implemented");
+                    MAG_ASSERT(false, "Attachment type not implemented");
                     break;
             }
 
@@ -151,8 +151,8 @@ namespace mag
         }
 
         // Check if output is valid
-        ASSERT(attachments.contains(output_attachment_name),
-               "Output attachment '" + output_attachment_name + "' is not a valid attachment");
+        MAG_ASSERT(attachments.contains(output_attachment_name),
+                   "Output attachment '" + output_attachment_name + "' is not a valid attachment");
     }
 
     void RenderGraph::execute(Scene& scene)
@@ -261,7 +261,7 @@ namespace mag
                         break;
 
                     default:
-                        ASSERT(false, "Attachment type not implemented");
+                        MAG_ASSERT(false, "Attachment type not implemented");
                         break;
                 }
 

@@ -23,7 +23,7 @@ namespace mag
 
     Application& get_application()
     {
-        ASSERT(application != nullptr, "Application is null");
+        MAG_ASSERT(application != nullptr, "Application is null");
         return *application;
     }
 

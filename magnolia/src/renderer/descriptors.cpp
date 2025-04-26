@@ -353,7 +353,7 @@ namespace mag
                       {descriptor_buffer_info})
                 .build(descriptor_set, descriptor_set_layout);
 
-        ASSERT(result, "Failed to build descriptor of type '{0}'", vk::to_string(type));
+        MAG_ASSERT(result, "Failed to build descriptor of type '{0}'", vk::to_string(type));
     }
 
     void DescriptorBuilder::create_descriptor_for_textures(const u32 binding,
@@ -382,7 +382,7 @@ namespace mag
                       vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, descriptor_image_infos)
                 .build(descriptor_set, descriptor_set_layout);
 
-        ASSERT(result, "Failed to build descriptor for textures");
+        MAG_ASSERT(result, "Failed to build descriptor for textures");
     }
 
     void DescriptorBuilder::create_descriptor_for_textures(const u32 binding,
@@ -411,6 +411,6 @@ namespace mag
                       vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, descriptor_image_infos)
                 .build(descriptor_set, descriptor_set_layout);
 
-        ASSERT(result, "Failed to build descriptor for textures");
+        MAG_ASSERT(result, "Failed to build descriptor for textures");
     }
 };  // namespace mag

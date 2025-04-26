@@ -6,7 +6,7 @@ namespace mag
 {
 // Assert
 #if MAG_ASSERTIONS_ENABLED
-    #define ASSERT(assertion, ...)                                                              \
+    #define MAG_ASSERT(assertion, ...)                                                          \
         {                                                                                       \
             if (!(assertion))                                                                   \
             {                                                                                   \
@@ -15,7 +15,7 @@ namespace mag
             }                                                                                   \
         }
 #else
-    #define ASSERT(assertion, ...)        \
+    #define MAG_ASSERT(assertion, ...)    \
         {                                 \
             static_cast<void>(assertion); \
         }

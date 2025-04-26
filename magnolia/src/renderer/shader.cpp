@@ -233,7 +233,7 @@ namespace mag
                 // Descriptor type not handled
                 else
                 {
-                    ASSERT(false, "Descriptor type " + vk::to_string(type) + " not supported");
+                    MAG_ASSERT(false, "Descriptor type " + vk::to_string(type) + " not supported");
                 }
 
                 descriptor_set_layouts[descriptor_binding.set] = uniforms_map[scope].descriptor_set_layouts[0];

@@ -153,7 +153,7 @@ namespace mag
         if (it == impl->images.end())
         {
             LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
-            ASSERT(false, "@TODO: this shouldnt crash the application");
+            MAG_ASSERT(false, "@TODO: this shouldnt crash the application");
         }
 
         return it->second;

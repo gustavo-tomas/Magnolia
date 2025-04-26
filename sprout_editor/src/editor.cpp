@@ -124,8 +124,8 @@ namespace sprout
 
         set_default_editor_style(ImGui::GetStyle());
 
-        ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
-               "Failed to initialize editor window backend");
+        MAG_ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
+                   "Failed to initialize editor window backend");
 
         const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
 
@@ -144,9 +144,9 @@ namespace sprout
         init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats =
             reinterpret_cast<const VkFormat *>(&color_attachment_format);
 
-        ASSERT(ImGui_ImplVulkan_Init(&init_info), "Failed to initialize editor renderer backend");
+        MAG_ASSERT(ImGui_ImplVulkan_Init(&init_info), "Failed to initialize editor renderer backend");
 
-        ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
+        MAG_ASSERT(ImGui_ImplVulkan_CreateFontsTexture(), "Failed to create editor fonts texture");
 
         impl->menu_bar = create_unique<MenuBar>();
         impl->content_browser_panel = create_unique<ContentBrowserPanel>();

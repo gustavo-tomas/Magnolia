@@ -90,7 +90,7 @@ namespace mag
 
         catch (...)
         {
-            ASSERT(false, "Failed to acquire swapchain image");
+            MAG_ASSERT(false, "Failed to acquire swapchain image");
         }
 
         VK_CHECK(device.waitForFences(*curr_frame.render_fence, true, Timeout));
@@ -159,7 +159,7 @@ namespace mag
 
         catch (...)
         {
-            ASSERT(false, "Failed to present swapchain image");
+            MAG_ASSERT(false, "Failed to present swapchain image");
         }
 
         frame_number = (frame_number + 1) % frames.size();

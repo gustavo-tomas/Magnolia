@@ -55,7 +55,7 @@ namespace mag
 
     void VulkanBuffer::copy(const void* data, const u64 size_bytes, const u64 offset)
     {
-        ASSERT(offset + size_bytes <= size, "Size limit exceeded");
+        MAG_ASSERT(offset + size_bytes <= size, "Size limit exceeded");
         memcpy(static_cast<c8*>(mapped_region) + offset, data, size_bytes);
     }
 

@@ -307,7 +307,7 @@ namespace mag
             return camera_c->camera;
         }
 
-        ASSERT(false, "No runtime camera!");
+        MAG_ASSERT(false, "No runtime camera!");
         return std::get<0>(components[0])->camera;
     }
 

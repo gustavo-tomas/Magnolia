@@ -10,7 +10,7 @@
 namespace mag
 {
 // Graphics macros
-#define VK_CHECK(result) ASSERT(result == vk::Result::eSuccess, "Vk check failed")
+#define VK_CHECK(result) MAG_ASSERT(result == vk::Result::eSuccess, "Vk check failed")
 #define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
 
     class Window;

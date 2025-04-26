@@ -36,7 +36,7 @@ namespace mag
 
     Context& get_context()
     {
-        ASSERT(context != nullptr, "Context is null");
+        MAG_ASSERT(context != nullptr, "Context is null");
         return *context;
     }
 
@@ -179,7 +179,7 @@ namespace mag
                 }
             }
 
-            ASSERT(available, "Extension not available: " + str(extension_name));
+            MAG_ASSERT(available, "Extension not available: " + str(extension_name));
         }
 
         // Validation layers
@@ -198,7 +198,7 @@ namespace mag
                 }
             }
 
-            ASSERT(available, "Layer not available: " + str(layer_name));
+            MAG_ASSERT(available, "Layer not available: " + str(layer_name));
         }
 
         VK_CHECK(vk::createInstance(&instance_create_info, nullptr, &impl->instance));
@@ -264,7 +264,7 @@ namespace mag
             if (properties.deviceType == preferred_device_type) break;
         }
 
-        ASSERT(impl->physical_device, "Failed to find suitable physical device");
+        MAG_ASSERT(impl->physical_device, "Failed to find suitable physical device");
         LOG_INFO("Selected physical device: {0}", str(impl->physical_device.getProperties().deviceName));
 
         // Properties
@@ -295,7 +295,7 @@ namespace mag
         auto surface_formats = impl->physical_device.getSurfaceFormatsKHR(impl->surface);
 
         impl->present_image_count = max(surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
-        ASSERT(impl->present_image_count > 0, "Present image count must be greater than zero");
+        MAG_ASSERT(impl->present_image_count > 0, "Present image count must be greater than zero");
         LOG_INFO("Present image count: {0}", impl->present_image_count);
 
         LOG_INFO("Enumerating surface present modes");
@@ -341,7 +341,7 @@ namespace mag
             // Assert vital extensions are present
             if (device_extension.vital)
             {
-                ASSERT(device_extension.available, "Extension not available: " + str(extension_name));
+                MAG_ASSERT(device_extension.available, "Extension not available: " + str(extension_name));
             }
         }
 
@@ -379,7 +379,7 @@ namespace mag
             .setPNext(&shader_draw_parameters_features);
 
         impl->device = impl->physical_device.createDevice(device_create_info);
-        ASSERT(impl->device, "Failed to create device");
+        MAG_ASSERT(impl->device, "Failed to create device");
 
         VULKAN_HPP_DEFAULT_DISPATCHER.init(impl->device);
 
@@ -624,8 +624,8 @@ namespace mag
             }
         }
 
-        ASSERT(false, "Failed to get supported format for Tiling: " + vk::to_string(tiling) +
-                          ", Features: " + vk::to_string(features));
+        MAG_ASSERT(false, "Failed to get supported format for Tiling: " + vk::to_string(tiling) +
+                              ", Features: " + vk::to_string(features));
 
         return candidates[0];
     }

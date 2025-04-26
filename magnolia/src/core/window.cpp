@@ -41,7 +41,7 @@ namespace mag
 
     Window::Window(const WindowOptions& options) : impl(new IMPL(options))
     {
-        ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
+        MAG_ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
         i32 width = 800, height = 600;
 
@@ -74,15 +74,15 @@ namespace mag
             options.title.c_str(), (options.position.x == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.x,
             (options.position.y == Max_I32) ? SDL_WINDOWPOS_CENTERED : options.position.y, width, height, flags);
 
-        ASSERT(impl->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
+        MAG_ASSERT(impl->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
 
         u32 count = 0;
-        ASSERT(SDL_Vulkan_GetInstanceExtensions(impl->handle, &count, nullptr),
-               "Failed to enumerate window extensions: " + str(SDL_GetError()));
+        MAG_ASSERT(SDL_Vulkan_GetInstanceExtensions(impl->handle, &count, nullptr),
+                   "Failed to enumerate window extensions: " + str(SDL_GetError()));
 
         impl->extensions.resize(count);
-        ASSERT(SDL_Vulkan_GetInstanceExtensions(impl->handle, &count, impl->extensions.data()),
-               "Failed to get extensions: " + str(SDL_GetError()));
+        MAG_ASSERT(SDL_Vulkan_GetInstanceExtensions(impl->handle, &count, impl->extensions.data()),
+                   "Failed to get extensions: " + str(SDL_GetError()));
 
         if (!options.window_icon.empty())
         {
@@ -188,8 +188,8 @@ namespace mag
     void Window::create_surface(const void* instance, void* surface) const
     {
         vk::Instance vk_instance = *reinterpret_cast<const vk::Instance*>(instance);
-        ASSERT(SDL_Vulkan_CreateSurface(impl->handle, vk_instance, reinterpret_cast<VkSurfaceKHR*>(surface)),
-               "Failed to create surface: " + str(SDL_GetError()));
+        MAG_ASSERT(SDL_Vulkan_CreateSurface(impl->handle, vk_instance, reinterpret_cast<VkSurfaceKHR*>(surface)),
+                   "Failed to create surface: " + str(SDL_GetError()));
     }
 
     void Window::sleep(const f64 ms)

@@ -29,7 +29,7 @@ namespace mag
     // Return a new id (create a new entity)
     u32 ECS::create_entity(const str& name)
     {
-        ASSERT(!available_ids.empty(), "No available IDs left");
+        MAG_ASSERT(!available_ids.empty(), "No available IDs left");
 
         const u32 id = *available_ids.begin();
         available_ids.erase(id);
