@@ -6,7 +6,6 @@
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
-#include "core/window.hpp"
 #include "private/renderer_type_conversions.hpp"
 #include "renderer/buffers.hpp"
 #include "renderer/context.hpp"
@@ -36,11 +35,11 @@ namespace mag
 
         static State* state = nullptr;
 
-        b8 initialize(const Window& window)
+        b8 initialize()
         {
             state = new State();
 
-            const ContextCreateOptions context_options = {.window = window};
+            const ContextCreateOptions context_options = {};
             state->context = new Context(context_options);
 
             return state->context != nullptr;

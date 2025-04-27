@@ -36,10 +36,7 @@ namespace game
             return;
         }
 
-        mag::Application &app = mag::get_application();
-        mag::Window &window = app.get_window();
-
-        build_render_graph(window.get_size());
+        build_render_graph(mag::window::get_size());
 
         scene->on_start();
     }

@@ -1,7 +1,6 @@
 #include "camera_controller.hpp"
 
 #include "camera/camera.hpp"
-#include "core/application.hpp"
 #include "core/event.hpp"
 #include "core/window.hpp"
 
@@ -21,12 +20,10 @@ namespace sprout
 
     void EditorCameraController::on_mouse_move(const MouseMoveEvent& e)
     {
-        auto& window = get_application().get_window();
-
         const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
         // Translate
-        if (window.is_key_down(Key::Lshift) && window.is_button_down(Button::Middle))
+        if (window::is_key_down(Key::Lshift) && window::is_button_down(Button::Middle))
         {
             const vec3 side = this->camera.get_side();
             const vec3 up = this->camera.get_up();
@@ -39,7 +36,7 @@ namespace sprout
         }
 
         // Rotate
-        else if (window.is_button_down(Button::Middle))
+        else if (window::is_button_down(Button::Middle))
         {
             const vec3 new_rot = this->camera.get_rotation() + (vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f);
             this->camera.set_rotation(new_rot);
@@ -48,10 +45,11 @@ namespace sprout
 
     void EditorCameraController::on_mouse_scroll(const MouseScrollEvent& e)
     {
-        auto& window = get_application().get_window();
-
         // Prevent scrolling while moving
-        if (window.is_button_down(Button::Middle)) return;
+        if (window::is_button_down(Button::Middle))
+        {
+            return;
+        }
 
         const ivec2 mouse_scroll = {e.x_offset, e.y_offset};
 

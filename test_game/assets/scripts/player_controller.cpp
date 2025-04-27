@@ -44,10 +44,7 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            Application& app = get_application();
-            Window& window = app.get_window();
-
-            if (window.is_button_pressed(Button::Left))
+            if (window::is_button_pressed(Button::Left))
             {
                 fire_bullet(*transform);
             }
@@ -55,9 +52,6 @@ class PlayerController : public ScriptableEntity
 
         void handle_movement(const f32 dt)
         {
-            Application& app = get_application();
-            Window& window = app.get_window();
-
             auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
             if (!transform)
             {
@@ -73,12 +67,12 @@ class PlayerController : public ScriptableEntity
             vec3 direction(0.0f);
             const f32 speed = 50.0f;
 
-            if (window.is_key_down(Key::a)) direction -= side;
-            if (window.is_key_down(Key::d)) direction += side;
-            if (window.is_key_down(Key::w)) direction -= forward;
-            if (window.is_key_down(Key::s)) direction += forward;
-            if (window.is_key_down(Key::Space)) direction += up;
-            if (window.is_key_down(Key::Lctrl)) direction -= up;
+            if (window::is_key_down(Key::a)) direction -= side;
+            if (window::is_key_down(Key::d)) direction += side;
+            if (window::is_key_down(Key::w)) direction -= forward;
+            if (window::is_key_down(Key::s)) direction += forward;
+            if (window::is_key_down(Key::Space)) direction += up;
+            if (window::is_key_down(Key::Lctrl)) direction -= up;
 
             // Prevent nan values
             if (length(direction) > 0.0f)
@@ -142,10 +136,7 @@ class PlayerController : public ScriptableEntity
             // Capture/Release the cursor
             if (e.button == Button::Right)
             {
-                auto& app = get_application();
-                auto& window = app.get_window();
-
-                window.set_capture_mouse(!window.is_mouse_captured());
+                window::set_capture_mouse(!window::is_mouse_captured());
             }
         }
 

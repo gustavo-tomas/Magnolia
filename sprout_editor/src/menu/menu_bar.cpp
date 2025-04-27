@@ -1,6 +1,5 @@
 #include "menu/menu_bar.hpp"
 
-#include "core/application.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"
@@ -146,10 +145,8 @@ namespace sprout
 
     void MenuBar::on_key_press(const KeyPressEvent& e)
     {
-        auto& window = get_application().get_window();
-
-        const b8 ctrl = window.is_key_down(Keys::Lctrl) || window.is_key_down(Keys::Rctrl);
-        const b8 shift = window.is_key_down(Keys::Lshift) || window.is_key_down(Keys::Rshift);
+        const b8 ctrl = window::is_key_down(Keys::Lctrl) || window::is_key_down(Keys::Rctrl);
+        const b8 shift = window::is_key_down(Keys::Lshift) || window::is_key_down(Keys::Rshift);
 
         switch (e.key)
         {

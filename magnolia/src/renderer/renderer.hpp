@@ -5,7 +5,6 @@
 
 namespace mag
 {
-    class Window;
     class Scene;
     class RenderGraph;
     class Line;
@@ -17,7 +16,7 @@ namespace mag
 
     namespace gfx
     {
-        b8 initialize(const Window& window);
+        b8 initialize();
         void shutdown();
 
         void on_update(RenderGraph& render_graph, Scene& scene);

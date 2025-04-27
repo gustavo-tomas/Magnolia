@@ -124,7 +124,7 @@ namespace sprout
 
         set_default_editor_style(ImGui::GetStyle());
 
-        MAG_ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
+        MAG_ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(window::get_handle())),
                    "Failed to initialize editor window backend");
 
         const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
@@ -158,10 +158,8 @@ namespace sprout
         impl->settings_panel = create_unique<SettingsPanel>();
 
         // Initialize render graph
-        auto &app = get_application();
-        auto &window = app.get_window();
 
-        const uvec2 window_size = window.get_size();
+        const uvec2 window_size = window::get_size();
         impl->curr_viewport_size = window_size;
 
         build_render_graph(window_size, get_viewport_size());
@@ -230,9 +228,6 @@ namespace sprout
     {
         (void)dt;
 
-        Application &app = get_application();
-        Window &window = app.get_window();
-
         // Delete closed scenes from back to front
         for (i32 i = impl->open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
         {
@@ -290,9 +285,9 @@ namespace sprout
         }
 
         // Alternate between Fullscreen and Windowed
-        if (window.is_key_pressed(Key::Escape))
+        if (window::is_key_pressed(Key::Escape))
         {
-            window.set_fullscreen(!window.is_fullscreen());
+            window::set_fullscreen(!window::is_fullscreen());
         }
 
         gfx::on_update(get_render_graph(), static_cast<Scene &>(active_scene));
@@ -373,7 +368,7 @@ namespace sprout
 
         impl->curr_viewport_size = new_viewport_size;
 
-        const uvec2 window_size = get_application().get_window().get_size();
+        const uvec2 window_size = window::get_size();
 
         build_render_graph(window_size, new_viewport_size);
     }

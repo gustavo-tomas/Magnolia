@@ -4,8 +4,6 @@
 
 namespace mag
 {
-    class Window;
-
     struct Event;
     struct QuitEvent;
     struct WindowCloseEvent;
@@ -26,8 +24,6 @@ namespace mag
             // -1 is no limits
             void set_target_frame_rate(const f32 frame_rate);
 
-            Window& get_window();
-
         protected:
             // Process events from the user application
             void process_user_application_event(const Event& e);
@@ -37,8 +33,8 @@ namespace mag
             void on_window_close(const WindowCloseEvent& e);
             void on_quit(const QuitEvent& e);
 
-            struct IMPL;
-            unique<IMPL> impl;
+            b8 running;
+            f32 target_frame_rate;
     };
 
     // Access to the application
