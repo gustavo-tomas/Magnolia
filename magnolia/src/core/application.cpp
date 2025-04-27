@@ -36,7 +36,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<JobSystem> job_system;
             unique<TextureManager> texture_manager;
             unique<FontManager> font_manager;
             unique<MaterialManager> material_manager;
@@ -95,15 +94,15 @@ namespace mag
 
         // Initialize graphics subsystem
         gfx::initialize(*impl->window);
-        LOG_SUCCESS("Graphics initialized");
+        LOG_SUCCESS("GraphicsSystem initialized");
 
         // Initialize the filesystem subsystem
         fs::initialize();
         LOG_SUCCESS("FileSystem initialized");
 
-        // Create the job system
-        impl->job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
-        LOG_SUCCESS("JobSystem initialized");
+        // Initialize the threading subsystem
+        thread::initialize(std::thread::hardware_concurrency());
+        LOG_SUCCESS("ThreadSystem initialized");
 
         // Create the texture manager
         impl->texture_manager = create_unique<TextureManager>();
@@ -155,6 +154,7 @@ namespace mag
     Application::~Application()
     {
         FileDialog::shutdown();
+        thread::shutdown();
         fs::shutdown();
         impl->shader_manager.reset();  // @TODO: this is kinda annoying
         gfx::shutdown();
@@ -184,7 +184,7 @@ namespace mag
                 continue;
             }
 
-            impl->job_system->process_callbacks();
+            thread::process_callbacks();
 
             // Update the user application
             on_update(dt);
@@ -227,7 +227,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    JobSystem& Application::get_job_system() { return *impl->job_system; }
     TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
     FontManager& Application::get_font_manager() { return *impl->font_manager; }
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }

@@ -505,9 +505,6 @@ namespace sprout
 
     void Editor::recompile_scripts()
     {
-        Application &app = get_application();
-        JobSystem &job_system = app.get_job_system();
-
         std::vector<str> modified_scripts;
 
         // Check if a script was modified
@@ -555,7 +552,7 @@ namespace sprout
         };
 
         Job load_job = Job(execute, on_execute_finished);
-        job_system.add_job(load_job);
+        thread::add_job(load_job);
     }
 
     EditorScene &Editor::get_active_scene() { return *impl->open_scenes[impl->selected_scene_index]; }

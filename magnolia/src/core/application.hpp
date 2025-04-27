@@ -5,7 +5,6 @@
 namespace mag
 {
     class Window;
-    class JobSystem;
 
     class ShaderManager;
     class TextureManager;
@@ -35,7 +34,6 @@ namespace mag
             void set_target_frame_rate(const f32 frame_rate);
 
             Window& get_window();
-            JobSystem& get_job_system();
             TextureManager& get_texture_manager();
             FontManager& get_font_manager();
             MaterialManager& get_material_manager();

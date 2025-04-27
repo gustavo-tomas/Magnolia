@@ -1,6 +1,5 @@
 #include "resources/model.hpp"
 
-#include "core/application.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
 #include "resources/resource_loader.hpp"
@@ -28,9 +27,6 @@ namespace mag
         {
             return it->second;
         }
-
-        auto& app = get_application();
-        auto& job_system = app.get_job_system();
 
         // Create a new model
         Model* model = new Model(*models[DEFAULT_MODEL_NAME]);
@@ -64,7 +60,7 @@ namespace mag
         };
 
         Job load_job = Job(execute, load_finished_callback);
-        job_system.add_job(load_job);
+        thread::add_job(load_job);
 
         return models[name];
     }

@@ -11,127 +11,144 @@ namespace mag
     {
     }
 
-    struct JobQueue::IMPL
+    namespace thread
     {
-            IMPL() {}
-
-            std::queue<Job> jobs;
-            std::mutex jobs_mutex;
-    };
-
-    JobQueue::JobQueue() : impl(new IMPL()) {}
-
-    JobQueue::~JobQueue()
-    {
-        std::unique_lock<std::mutex> lock(impl->jobs_mutex);
-        while (!impl->jobs.empty())
+        class JobQueue
         {
-            impl->jobs.pop();
-        }
-    }
+            public:
+                JobQueue();
+                ~JobQueue();
 
-    void JobQueue::push(Job job)
-    {
-        std::unique_lock<std::mutex> lock(impl->jobs_mutex);
-        impl->jobs.push(job);
-    }
+                void push(Job job);
+                Job pop();
 
-    Job JobQueue::pop()
-    {
-        std::unique_lock<std::mutex> lock(impl->jobs_mutex);
-        if (impl->jobs.empty())
+            private:
+                std::queue<Job> jobs;
+                std::mutex jobs_mutex;
+        };
+
+        struct State
         {
-            return Job({}, {});
-        }
+                JobQueue job_queue;
+                std::vector<std::thread> workers;
 
-        Job job = impl->jobs.front();
-        impl->jobs.pop();
+                std::queue<JobCallbackFn> callback_queue;
+                std::queue<b8> execute_result_queue;
+                std::mutex callback_mutex;
+                std::mutex execute_mutex;
 
-        return job;
-    }
+                b8 running = false;
+        };
 
-    struct JobSystem::IMPL
-    {
-            IMPL() : running(true) {}
+        static State* state = nullptr;
 
-            JobQueue job_queue;
-            std::vector<std::thread> workers;
-
-            std::queue<JobCallbackFn> callback_queue;
-            std::queue<b8> execute_result_queue;
-            std::mutex callback_mutex;
-            std::mutex execute_mutex;
-
-            b8 running;
-    };
-
-    JobSystem::JobSystem(const u32 max_number_of_threads) : impl(new IMPL())
-    {
-        for (u32 i = 0; i < max_number_of_threads; i++)
+        b8 initialize(const u32 max_number_of_threads)
         {
-            auto worker_thread = [this]
+            state = new State();
+
+            state->running = true;
+
+            for (u32 i = 0; i < max_number_of_threads; i++)
             {
-                while (impl->running)
+                auto worker_thread = []
                 {
-                    Job job = impl->job_queue.pop();
-
-                    // Execute the job
-                    if (job.execute_fn)
+                    while (state->running)
                     {
-                        const b8 result = job.execute_fn();
-                        std::lock_guard<std::mutex> lock(impl->execute_mutex);
-                        impl->execute_result_queue.push(result);
-                    }
+                        Job job = state->job_queue.pop();
 
-                    // Push the callback to the callback queue
-                    if (job.callback_fn)
-                    {
-                        std::lock_guard<std::mutex> lock(impl->callback_mutex);
-                        impl->callback_queue.push(job.callback_fn);
-                    }
-                }
-            };
+                        // Execute the job
+                        if (job.execute_fn)
+                        {
+                            const b8 result = job.execute_fn();
+                            std::lock_guard<std::mutex> lock(state->execute_mutex);
+                            state->execute_result_queue.push(result);
+                        }
 
-            impl->workers.emplace_back(worker_thread);
+                        // Push the callback to the callback queue
+                        if (job.callback_fn)
+                        {
+                            std::lock_guard<std::mutex> lock(state->callback_mutex);
+                            state->callback_queue.push(job.callback_fn);
+                        }
+                    }
+                };
+
+                state->workers.emplace_back(worker_thread);
+            }
+
+            return state != nullptr;
         }
-    }
 
-    JobSystem::~JobSystem()
-    {
-        impl->running = false;
-
-        for (auto& worker : impl->workers)
+        void shutdown()
         {
-            if (worker.joinable())
+            state->running = false;
+
+            for (auto& worker : state->workers)
             {
-                worker.join();
+                if (worker.joinable())
+                {
+                    worker.join();
+                }
+            }
+
+            delete state;
+        }
+
+        void process_callbacks()
+        {
+            std::unique_lock<std::mutex> callback_lock(state->callback_mutex);
+            std::unique_lock<std::mutex> execute_lock(state->execute_mutex);
+
+            while (!state->callback_queue.empty())
+            {
+                auto callback = state->callback_queue.front();
+                const b8 result = state->execute_result_queue.front();
+
+                state->callback_queue.pop();
+                state->execute_result_queue.pop();
+
+                callback_lock.unlock();
+                execute_lock.unlock();
+
+                // Execute the callback on the main thread
+                callback(result);
+
+                callback_lock.lock();
+                execute_lock.lock();
             }
         }
-    }
 
-    void JobSystem::process_callbacks()
-    {
-        std::unique_lock<std::mutex> callback_lock(impl->callback_mutex);
-        std::unique_lock<std::mutex> execute_lock(impl->execute_mutex);
+        void add_job(Job job) { state->job_queue.push(job); }
 
-        while (!impl->callback_queue.empty())
+        JobQueue::JobQueue() = default;
+
+        JobQueue::~JobQueue()
         {
-            auto callback = impl->callback_queue.front();
-            const b8 result = impl->execute_result_queue.front();
-
-            impl->callback_queue.pop();
-            impl->execute_result_queue.pop();
-
-            callback_lock.unlock();
-            execute_lock.unlock();
-
-            // Execute the callback on the main thread
-            callback(result);
-
-            callback_lock.lock();
-            execute_lock.lock();
+            std::unique_lock<std::mutex> lock(jobs_mutex);
+            while (!jobs.empty())
+            {
+                jobs.pop();
+            }
         }
-    }
 
-    void JobSystem::add_job(Job job) { impl->job_queue.push(job); }
-};  // namespace mag
+        void JobQueue::push(Job job)
+        {
+            std::unique_lock<std::mutex> lock(jobs_mutex);
+            jobs.push(job);
+        }
+
+        Job JobQueue::pop()
+        {
+            std::unique_lock<std::mutex> lock(jobs_mutex);
+            if (jobs.empty())
+            {
+                return Job({}, {});
+            }
+
+            Job job = jobs.front();
+            jobs.pop();
+
+            return job;
+        }
+    };  // namespace thread
+};      // namespace mag

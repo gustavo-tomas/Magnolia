@@ -1,6 +1,5 @@
 #include "resources/material.hpp"
 
-#include "core/application.hpp"
 #include "resources/image.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
@@ -24,9 +23,6 @@ namespace mag
         {
             return it->second;
         }
-
-        auto& app = get_application();
-        auto& job_system = app.get_job_system();
 
         // Create a new material
         Material* material = new Material(*materials[DEFAULT_MATERIAL_NAME]);
@@ -58,7 +54,7 @@ namespace mag
         };
 
         Job load_job = Job(execute, load_finished_callback);
-        job_system.add_job(load_job);
+        thread::add_job(load_job);
 
         return materials[name];
     }
