@@ -39,7 +39,16 @@ namespace mag
     {
         application = this;
 
-        // Remember that smart pointers are destroyed in the reverse order of creation
+        b8 initialized = true;
+
+        // Initialize the filesystem subsystem
+        initialized = initialized && fs::initialize();
+
+        // Initialize the threading subsystem
+        initialized = initialized && thread::initialize(std::thread::hardware_concurrency());
+
+        // Initialize the audio subsystem
+        initialized = initialized && audio::initialize();
 
         // Read config file
 
@@ -78,43 +87,31 @@ namespace mag
                                               window_title, window_icon};
 
         impl->window = create_unique<Window>(window_options);
-        LOG_SUCCESS("Window initialized");
 
         // Initialize graphics subsystem
-        gfx::initialize(*impl->window);
-        LOG_SUCCESS("Graphics system initialized");
-
-        // Initialize the filesystem subsystem
-        fs::initialize();
-        LOG_SUCCESS("File system initialized");
-
-        // Initialize the threading subsystem
-        thread::initialize(std::thread::hardware_concurrency());
-        LOG_SUCCESS("Thread system initialized");
+        initialized = initialized && gfx::initialize(*impl->window);
 
         // Initialize the resource subsystem
-        resource::initialize();
-        LOG_SUCCESS("Resource system initialized");
+        initialized = initialized && resource::initialize();
 
-        // Initialize the audio subsystem
-        if (audio::initialize())
+        if (initialized)
         {
-            LOG_SUCCESS("Audio system initialized");
+            LOG_SUCCESS("Application initialized");
         }
 
         else
         {
-            LOG_ERROR("Failed to initialize Audio system");
+            MAG_ASSERT(false, "Failed to initialize Application");
         }
     }
 
     Application::~Application()
     {
+        resource::shutdown();
+        gfx::shutdown();
         audio::shutdown();
         thread::shutdown();
-        resource::shutdown();
         fs::shutdown();
-        gfx::shutdown();
     }
 
     void Application::run()
