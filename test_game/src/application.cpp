@@ -70,10 +70,7 @@ namespace game
 
         scene->on_update(dt);
 
-        mag::Application &app = mag::get_application();
-        mag::Renderer &renderer = app.get_renderer();
-
-        renderer.on_update(*render_graph, *scene);
+        mag::gfx::on_update(*render_graph, *scene);
     }
 
     void TestGame::on_event(const mag::Event &e)

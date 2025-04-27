@@ -1,6 +1,5 @@
 #include "resources/font.hpp"
 
-#include "core/application.hpp"
 #include "renderer/renderer.hpp"
 #include "resources/resource_loader.hpp"
 
@@ -17,9 +16,6 @@ namespace mag
         {
             return it->second;
         }
-
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
 
         // Create a new font
         Font* font = new Font();
@@ -39,7 +35,7 @@ namespace mag
 
                 if (texture.width > 0 && texture.height > 0 && texture.pixels.size() == texture.width * texture.height)
                 {
-                    renderer.upload_image(&texture, SamplerAddressMode::ClampToEdge);
+                    gfx::upload_image(&texture, SamplerAddressMode::ClampToEdge);
                 }
             }
         }

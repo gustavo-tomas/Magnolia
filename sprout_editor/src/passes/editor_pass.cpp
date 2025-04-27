@@ -5,7 +5,6 @@
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/frustum.hpp"
-#include "core/application.hpp"
 #include "core/types.hpp"
 #include "editor.hpp"
 #include "editor_scene.hpp"
@@ -109,8 +108,6 @@ namespace sprout
 
     void GizmoPass::render_lines()
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
         auto* physics_world = scene.get_physics_world();
@@ -182,8 +179,8 @@ namespace sprout
         line_shader->set_uniform("u_global", "view", value_ptr(camera.get_view()));
         line_shader->set_uniform("u_global", "projection", value_ptr(camera.get_projection()));
 
-        renderer.bind_buffers(lines.get());
-        renderer.draw(lines->get_vertices().size());
+        gfx::bind_buffers(lines.get());
+        gfx::draw(lines->get_vertices().size());
 
         performance_results.rendered_triangles += lines->get_vertices().size() / 3;
         performance_results.draw_calls++;
@@ -191,8 +188,6 @@ namespace sprout
 
     void GizmoPass::render_grid()
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
         const auto& camera = scene.get_camera();
@@ -206,7 +201,7 @@ namespace sprout
         grid_shader->set_uniform("u_global", "near_far", value_ptr(camera.get_near_far()));
 
         // Draw the grid
-        renderer.draw(4);
+        gfx::draw(4);
 
         // Very accurate :)
         performance_results.rendered_triangles += 2;
@@ -253,9 +248,6 @@ namespace sprout
 
     void GizmoPass::render_sprite(TransformComponent* transform, const ref<Image>& sprite, const u32 instance)
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
         // Remove rotation if sprite is aligned to the camera
         const vec3 model_rotation = transform->rotation;
 
@@ -275,7 +267,7 @@ namespace sprout
         sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * instance);
         sprite_shader->set_texture("u_sprite_texture", sprite.get());
 
-        renderer.draw(4, 1, 0, instance);
+        gfx::draw(4, 1, 0, instance);
 
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;

@@ -10,9 +10,6 @@ namespace mag
 {
     TextureManager::TextureManager()
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
         textures[DEFAULT_ALBEDO_TEXTURE_NAME] = create_ref<Image>();
         textures[DEFAULT_NORMAL_TEXTURE_NAME] = create_ref<Image>();
         textures[DEFAULT_ROUGHNESS_TEXTURE_NAME] = create_ref<Image>();
@@ -42,10 +39,10 @@ namespace mag
             pixels_metalness[i + 3] = 0;
         }
 
-        renderer.upload_image(textures[DEFAULT_ALBEDO_TEXTURE_NAME].get());
-        renderer.upload_image(textures[DEFAULT_NORMAL_TEXTURE_NAME].get());
-        renderer.upload_image(textures[DEFAULT_ROUGHNESS_TEXTURE_NAME].get());
-        renderer.upload_image(textures[DEFAULT_METALNESS_TEXTURE_NAME].get());
+        gfx::upload_image(textures[DEFAULT_ALBEDO_TEXTURE_NAME].get());
+        gfx::upload_image(textures[DEFAULT_NORMAL_TEXTURE_NAME].get());
+        gfx::upload_image(textures[DEFAULT_ROUGHNESS_TEXTURE_NAME].get());
+        gfx::upload_image(textures[DEFAULT_METALNESS_TEXTURE_NAME].get());
     }
 
     ref<Image> TextureManager::get(const str& name)
@@ -59,7 +56,6 @@ namespace mag
 
         auto& app = get_application();
         auto& job_system = app.get_job_system();
-        auto& renderer = app.get_renderer();
 
         // Create a new texture
         Image* image = new Image();
@@ -79,7 +75,7 @@ namespace mag
         }
 
         // Send image data to the GPU
-        renderer.upload_image(image);
+        gfx::upload_image(image);
 
         // Temporary image to load data into
         Image* transfer_image = new Image(*image);
@@ -92,13 +88,13 @@ namespace mag
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [image, transfer_image, &renderer](const b8 result)
+        auto load_finished_callback = [image, transfer_image](const b8 result)
         {
             // Update the image and the renderer image data
             if (result == true)
             {
                 *image = *transfer_image;
-                renderer.update_image(image);
+                gfx::update_image(image);
             }
 
             // We can dispose of the temporary image now

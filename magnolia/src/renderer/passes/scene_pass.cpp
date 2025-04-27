@@ -38,8 +38,6 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -64,7 +62,7 @@ namespace mag
             const auto& model_matrix = transform->get_transformation_matrix();
             depth_prepass_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
-            renderer.bind_buffers(model.get());
+            gfx::bind_buffers(model.get());
 
             for (auto& mesh : model->meshes)
             {
@@ -84,7 +82,7 @@ namespace mag
                 }
 
                 // Draw the mesh
-                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 performance_results.draw_calls++;
                 performance_results.rendered_triangles += mesh.index_count / 3;
@@ -120,7 +118,6 @@ namespace mag
         (void)render_graph;
 
         auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& material_manager = app.get_material_manager();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
@@ -175,7 +172,7 @@ namespace mag
             const auto& model_matrix = transform->get_transformation_matrix();
             mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
-            renderer.bind_buffers(model.get());
+            gfx::bind_buffers(model.get());
 
             i32 last_material_idx = -1;
             for (auto& mesh : model->meshes)
@@ -215,7 +212,7 @@ namespace mag
                 }
 
                 // Draw the mesh
-                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 performance_results.draw_calls++;
                 performance_results.rendered_triangles += mesh.index_count / 3;
@@ -254,7 +251,7 @@ namespace mag
             sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
 
-            renderer.draw(4, 1, 0, i);
+            gfx::draw(4, 1, 0, i);
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
@@ -318,7 +315,7 @@ namespace mag
                 text_shader->set_uniform("u_instance", "texts", &text_data, sizeof(TextData) * data_offset);
                 text_shader->set_texture("u_char_texture", &ch.texture);
 
-                renderer.draw(4, 1, 0, data_offset);
+                gfx::draw(4, 1, 0, data_offset);
                 data_offset++;
 
                 performance_results.rendered_triangles += 2;
@@ -353,9 +350,6 @@ namespace mag
     {
         (void)scene;
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
         performance_results = {};
 
         // Only apply post processing to the final combined result
@@ -367,7 +361,7 @@ namespace mag
         post_shader->bind();
         post_shader->set_texture("u_screen_color_texture", &screen_color);
 
-        renderer.draw(4);
+        gfx::draw(4);
 
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;

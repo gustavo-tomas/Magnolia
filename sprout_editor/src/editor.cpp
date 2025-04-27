@@ -232,7 +232,6 @@ namespace sprout
 
         Application &app = get_application();
         Window &window = app.get_window();
-        Renderer &renderer = app.get_renderer();
 
         // Delete closed scenes from back to front
         for (i32 i = impl->open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
@@ -296,7 +295,7 @@ namespace sprout
             window.set_fullscreen(!window.is_fullscreen());
         }
 
-        renderer.on_update(get_render_graph(), static_cast<Scene &>(active_scene));
+        gfx::on_update(get_render_graph(), static_cast<Scene &>(active_scene));
     }
 
     void Editor::render(ECS &ecs, Camera &camera, RendererImage &viewport_image)

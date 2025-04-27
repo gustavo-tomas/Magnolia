@@ -209,7 +209,6 @@ namespace mag
                 else if (type == vk::DescriptorType::eCombinedImageSampler)
                 {
                     auto& app = get_application();
-                    auto& renderer = app.get_renderer();
                     auto& texture_manager = app.get_texture_manager();
 
                     const auto& default_texture = texture_manager.get_default();
@@ -222,7 +221,7 @@ namespace mag
                         std::vector<ref<RendererImage>> textures;
                         for (u32 sampler_idx = 0; sampler_idx < descriptor_binding.count; sampler_idx++)
                         {
-                            textures.push_back(renderer.get_renderer_image(default_texture.get()));
+                            textures.push_back(gfx::get_renderer_image(default_texture.get()));
                         }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
@@ -371,8 +370,6 @@ namespace mag
             return;
         }
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& context = get_context();
 
         const u32 curr_frame_number = context.get_curr_frame_number();
@@ -385,7 +382,7 @@ namespace mag
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
 
-            auto renderer_texture = renderer.get_renderer_image(texture);
+            auto renderer_texture = gfx::get_renderer_image(texture);
 
             DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, {renderer_texture},
                                                               descriptor_set, descriptor_set_layout);
@@ -443,7 +440,6 @@ namespace mag
         }
 
         auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& texture_manager = app.get_texture_manager();
         auto& context = get_context();
 
@@ -464,7 +460,7 @@ namespace mag
             {
                 const auto& texture_name = texture_p.second;
                 const auto& texture = texture_manager.get(texture_name);
-                const auto& renderer_texture = renderer.get_renderer_image(texture.get());
+                const auto& renderer_texture = gfx::get_renderer_image(texture.get());
 
                 renderer_textures.push_back(renderer_texture);
             }

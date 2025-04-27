@@ -10,9 +10,6 @@ namespace mag
 {
     ModelManager::ModelManager()
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
         models[DEFAULT_MODEL_NAME] = create_ref<Model>();
         models[DEFAULT_MODEL_NAME]->name = "Default";
         models[DEFAULT_MODEL_NAME]->meshes = Cube().get_model().meshes;
@@ -21,7 +18,7 @@ namespace mag
         models[DEFAULT_MODEL_NAME]->materials = Cube().get_model().materials;
 
         // Send model data to the GPU
-        renderer.upload_model(models[DEFAULT_MODEL_NAME].get());
+        gfx::upload_model(models[DEFAULT_MODEL_NAME].get());
     }
 
     ref<Model> ModelManager::get(const str& name)
@@ -34,14 +31,13 @@ namespace mag
 
         auto& app = get_application();
         auto& job_system = app.get_job_system();
-        auto& renderer = app.get_renderer();
 
         // Create a new model
         Model* model = new Model(*models[DEFAULT_MODEL_NAME]);
         models[name] = ref<Model>(model);
 
         // Send model data to the GPU
-        renderer.upload_model(model);
+        gfx::upload_model(model);
 
         // Temporary model to load data into
         Model* transfer_model = new Model(*model);
@@ -54,13 +50,13 @@ namespace mag
         };
 
         // Callback when finished loading
-        auto load_finished_callback = [&renderer, model, transfer_model](const b8 result)
+        auto load_finished_callback = [model, transfer_model](const b8 result)
         {
             // Update the model and renderer model data
             if (result == true)
             {
                 *model = *transfer_model;
-                renderer.update_model(model);
+                gfx::update_model(model);
             }
 
             // We can dispose of the temporary model now

@@ -28,14 +28,13 @@ namespace sprout
     ContentBrowserPanel::ContentBrowserPanel() : impl(new IMPL())
     {
         auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& texture_manager = app.get_texture_manager();
 
         auto folder_tex = texture_manager.get(SPROUT_EDITOR_ASSET_DIR "icons/fa-folder-solid.png");
         auto file_tex = texture_manager.get(SPROUT_EDITOR_ASSET_DIR "icons/fa-file-solid.png");
 
-        impl->folder_image = renderer.get_renderer_image(folder_tex.get());
-        impl->file_image = renderer.get_renderer_image(file_tex.get());
+        impl->folder_image = gfx::get_renderer_image(folder_tex.get());
+        impl->file_image = gfx::get_renderer_image(file_tex.get());
 
         impl->folder_image_descriptor = ImGui_ImplVulkan_AddTexture(
             *static_cast<const vk::Sampler*>(impl->folder_image->get_sampler().get_handle()),

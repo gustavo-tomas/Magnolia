@@ -25,7 +25,7 @@ namespace mag
 
     struct ContextCreateOptions
     {
-            Window& window;
+            const Window& window;
             str application_name = "Magnolia";
             str engine_name = "Magnolia";
     };

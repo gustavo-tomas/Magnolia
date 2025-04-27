@@ -4,6 +4,7 @@
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
+#include "core/types.hpp"
 #include "core/window.hpp"
 #include "platform/file_dialog.hpp"
 #include "platform/file_system.hpp"
@@ -33,7 +34,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<Renderer> renderer;
             unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
             unique<TextureManager> texture_manager;
@@ -92,9 +92,9 @@ namespace mag
         impl->window = create_unique<Window>(window_options);
         LOG_SUCCESS("Window initialized");
 
-        // Create the renderer
-        impl->renderer = create_unique<Renderer>(*impl->window);
-        LOG_SUCCESS("Renderer initialized");
+        // Initialize graphics subsystem
+        gfx::initialize(*impl->window);
+        LOG_SUCCESS("Graphics initialized");
 
         // Create the file watcher
         impl->file_watcher = create_unique<FileWatcher>();
@@ -197,7 +197,7 @@ namespace mag
         dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
         dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
 
-        impl->renderer->on_event(e);
+        gfx::on_event(e);
 
         // Send event to be processed by the user application
         on_event(e);
@@ -220,7 +220,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    Renderer& Application::get_renderer() { return *impl->renderer; }
     FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
     JobSystem& Application::get_job_system() { return *impl->job_system; }
     TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
