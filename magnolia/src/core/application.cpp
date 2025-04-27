@@ -154,6 +154,7 @@ namespace mag
     Application::~Application()
     {
         FileDialog::shutdown();
+        audio::shutdown();
         thread::shutdown();
         fs::shutdown();
         impl->shader_manager.reset();  // @TODO: this is kinda annoying
