@@ -22,9 +22,6 @@ namespace mag
 
     namespace resource
     {
-        b8 initialize_texture_subsystem();
-        void shutdown_texture_subsystem();
-
         ref<Image> get_texture(const str& name);
         ref<Image> get_default_texture();
     };  // namespace resource

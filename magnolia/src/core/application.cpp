@@ -14,9 +14,9 @@
 #include "renderer/shader.hpp"
 #include "resources/audio.hpp"
 #include "resources/font.hpp"
-#include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
+#include "resources/resource.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
 
@@ -104,8 +104,8 @@ namespace mag
         LOG_SUCCESS("ThreadSystem initialized");
 
         // Initialize the resource subsystem
-        resource::initialize_texture_subsystem();
-        LOG_SUCCESS("(Resource) TextureManager initialized");
+        resource::initialize();
+        LOG_SUCCESS("ResourceSystem initialized");
 
         // Create the font manager
         impl->font_manager = create_unique<FontManager>();
@@ -155,7 +155,7 @@ namespace mag
         FileDialog::shutdown();
         audio::shutdown();
         thread::shutdown();
-        resource::shutdown_texture_subsystem();
+        resource::shutdown();
         fs::shutdown();
         impl->shader_manager.reset();  // @TODO: this is kinda annoying
         gfx::shutdown();

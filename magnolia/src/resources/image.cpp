@@ -59,7 +59,11 @@ namespace mag
             return state != nullptr;
         }
 
-        void shutdown_texture_subsystem() { delete state; }
+        void shutdown_texture_subsystem()
+        {
+            state->textures.clear();
+            delete state;
+        }
 
         ref<Image> get_texture(const str& name)
         {
