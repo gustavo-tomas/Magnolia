@@ -7,39 +7,60 @@
 
 namespace mag
 {
-    FontManager::FontManager() {}
-
-    ref<Font> FontManager::get(const str& name)
+    namespace resource
     {
-        auto it = fonts.find(name);
-        if (it != fonts.end())
+        struct State
         {
-            return it->second;
+                std::map<str, ref<Font>> fonts;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_font_subsystem()
+        {
+            state = new State();
+            return state != nullptr;
         }
 
-        // Create a new font
-        Font* font = new Font();
-        fonts[name] = ref<Font>(font);
-
-        // Upload character texture to the GPU
-        if (resource::load(name, font))
+        void shutdown_font_subsystem()
         {
-            for (auto& [c, info] : font->characters)
+            state->fonts.clear();
+            delete state;
+        }
+
+        ref<Font> get_font(const str& name)
+        {
+            auto it = state->fonts.find(name);
+            if (it != state->fonts.end())
             {
-                Image& texture = info.texture;
+                return it->second;
+            }
 
-                texture.channels = 1;
-                texture.width = info.size.x;
-                texture.height = info.size.y;
-                texture.pixels = info.data;
+            // Create a new font
+            Font* font = new Font();
+            state->fonts[name] = ref<Font>(font);
 
-                if (texture.width > 0 && texture.height > 0 && texture.pixels.size() == texture.width * texture.height)
+            // Upload character texture to the GPU
+            if (resource::load(name, font))
+            {
+                for (auto& [c, info] : font->characters)
                 {
-                    gfx::upload_image(&texture, SamplerAddressMode::ClampToEdge);
+                    Image& texture = info.texture;
+
+                    texture.channels = 1;
+                    texture.width = info.size.x;
+                    texture.height = info.size.y;
+                    texture.pixels = info.data;
+
+                    if (texture.width > 0 && texture.height > 0 &&
+                        texture.pixels.size() == texture.width * texture.height)
+                    {
+                        gfx::upload_image(&texture, SamplerAddressMode::ClampToEdge);
+                    }
                 }
             }
-        }
 
-        return fonts[name];
-    }
-};  // namespace mag
+            return state->fonts[name];
+        }
+    };  // namespace resource
+};      // namespace mag

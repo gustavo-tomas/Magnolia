@@ -28,13 +28,17 @@ namespace mag
         b8 initialize()
         {
             state = new State();
-            const b8 result = initialize_texture_subsystem();
+
+            b8 result = true;
+            result = result && initialize_texture_subsystem();
+            result = result && initialize_font_subsystem();
 
             return result;
         }
 
         void shutdown()
         {
+            shutdown_font_subsystem();
             shutdown_texture_subsystem();
             delete state;
         }

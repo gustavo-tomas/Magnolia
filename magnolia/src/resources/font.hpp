@@ -23,14 +23,8 @@ namespace mag
             std::map<c8, Character> characters;
     };
 
-    class FontManager
+    namespace resource
     {
-        public:
-            FontManager();
-
-            ref<Font> get(const str& name);
-
-        private:
-            std::map<str, ref<Font>> fonts;
+        ref<Font> get_font(const str& name);
     };
 };  // namespace mag

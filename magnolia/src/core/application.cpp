@@ -13,7 +13,6 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/audio.hpp"
-#include "resources/font.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 #include "resources/resource.hpp"
@@ -36,7 +35,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<FontManager> font_manager;
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
@@ -106,10 +104,6 @@ namespace mag
         // Initialize the resource subsystem
         resource::initialize();
         LOG_SUCCESS("ResourceSystem initialized");
-
-        // Create the font manager
-        impl->font_manager = create_unique<FontManager>();
-        LOG_SUCCESS("FontManager initialized");
 
         // Create the material manager
         impl->material_manager = create_unique<MaterialManager>();
@@ -228,7 +222,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    FontManager& Application::get_font_manager() { return *impl->font_manager; }
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }

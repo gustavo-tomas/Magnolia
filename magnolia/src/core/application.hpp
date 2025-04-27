@@ -7,7 +7,6 @@ namespace mag
     class Window;
 
     class ShaderManager;
-    class FontManager;
     class AudioManager;
     class ModelManager;
     class MaterialManager;
@@ -33,7 +32,6 @@ namespace mag
             void set_target_frame_rate(const f32 frame_rate);
 
             Window& get_window();
-            FontManager& get_font_manager();
             MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
             ShaderManager& get_shader_manager();

@@ -227,7 +227,7 @@ namespace mag
 
                     for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
 
-                    const auto& font = app.get_font_manager().get(file_path);
+                    const auto& font = resource::get_font(file_path);
 
                     ecs.add_component(entity_id, new TextComponent(font, color, text));
                 }
