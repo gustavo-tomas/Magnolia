@@ -9,7 +9,6 @@ namespace mag
     class ShaderManager;
     class AudioManager;
     class ModelManager;
-    class MaterialManager;
 
     struct Event;
     struct QuitEvent;
@@ -32,7 +31,6 @@ namespace mag
             void set_target_frame_rate(const f32 frame_rate);
 
             Window& get_window();
-            MaterialManager& get_material_manager();
             ModelManager& get_model_manager();
             ShaderManager& get_shader_manager();
             AudioManager& get_audio_manager();

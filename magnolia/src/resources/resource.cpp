@@ -32,12 +32,14 @@ namespace mag
             b8 result = true;
             result = result && initialize_texture_subsystem();
             result = result && initialize_font_subsystem();
+            result = result && initialize_material_subsystem();
 
             return result;
         }
 
         void shutdown()
         {
+            shutdown_material_subsystem();
             shutdown_font_subsystem();
             shutdown_texture_subsystem();
             delete state;

@@ -38,15 +38,9 @@ namespace mag
             MaterialLoadingState loading_state = MaterialLoadingState::NotLoaded;
     };
 
-    class MaterialManager
+    namespace resource
     {
-        public:
-            MaterialManager();
-
-            ref<Material> get(const str& name);
-            ref<Material> get_default();
-
-        private:
-            std::map<str, ref<Material>> materials;
-    };
-};  // namespace mag
+        ref<Material> get_material(const str& name);
+        ref<Material> get_default_material();
+    };  // namespace resource
+};      // namespace mag

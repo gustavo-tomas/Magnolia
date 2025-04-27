@@ -117,8 +117,6 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
-        auto& material_manager = app.get_material_manager();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -197,7 +195,7 @@ namespace mag
                 if (last_material_idx != static_cast<i32>(mesh.material_index))
                 {
                     last_material_idx = mesh.material_index;
-                    const auto& material = material_manager.get(model->materials[mesh.material_index]);
+                    const auto& material = resource::get_material(model->materials[mesh.material_index]);
 
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data;

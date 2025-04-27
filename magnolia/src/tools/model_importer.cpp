@@ -6,7 +6,6 @@
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "core/application.hpp"
 #include "core/buffer.hpp"
 #include "core/logger.hpp"
 #include "meshoptimizer.h"
@@ -311,9 +310,6 @@ namespace mag
     const str ModelImporter::IMPL::find_texture(const aiMaterial* ai_material, aiTextureType ai_type,
                                                 const str& directory) const
     {
-        auto& app = get_application();
-        auto& material_manager = app.get_material_manager();
-
         const str material_name = ai_material->GetName().C_Str();
 
         // For some reason, assimp may identify normal textures as height textures
@@ -328,20 +324,20 @@ namespace mag
         switch (ai_type)
         {
             case aiTextureType_DIFFUSE:
-                texture_name = material_manager.get_default()->textures[TextureSlot::Albedo];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Albedo];
                 break;
 
             case aiTextureType_NORMALS:
             case aiTextureType_HEIGHT:
-                texture_name = material_manager.get_default()->textures[TextureSlot::Normal];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Normal];
                 break;
 
             case aiTextureType_DIFFUSE_ROUGHNESS:
-                texture_name = material_manager.get_default()->textures[TextureSlot::Roughness];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Roughness];
                 break;
 
             case aiTextureType_METALNESS:
-                texture_name = material_manager.get_default()->textures[TextureSlot::Metalness];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Metalness];
                 break;
 
             default:
