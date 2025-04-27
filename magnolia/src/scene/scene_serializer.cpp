@@ -212,7 +212,7 @@ namespace mag
                     const b8 constant_size = component["ConstantSize"].get<b8>();
                     const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
-                    const auto& sprite = app.get_texture_manager().get(file_path);
+                    const auto& sprite = resource::get_texture(file_path);
 
                     ecs.add_component(entity_id,
                                       new SpriteComponent(sprite, file_path, constant_size, always_face_camera));

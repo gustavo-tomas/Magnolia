@@ -4,7 +4,6 @@
 #include <vulkan/vulkan.hpp>
 
 #include "backends/imgui_impl_vulkan.h"
-#include "core/application.hpp"
 #include "editor.hpp"
 #include "icon_font_cpp/IconsFontAwesome6.h"
 #include "imgui.h"
@@ -27,11 +26,8 @@ namespace sprout
 
     ContentBrowserPanel::ContentBrowserPanel() : impl(new IMPL())
     {
-        auto& app = get_application();
-        auto& texture_manager = app.get_texture_manager();
-
-        auto folder_tex = texture_manager.get(SPROUT_EDITOR_ASSET_DIR "icons/fa-folder-solid.png");
-        auto file_tex = texture_manager.get(SPROUT_EDITOR_ASSET_DIR "icons/fa-file-solid.png");
+        auto folder_tex = resource::get_texture(SPROUT_EDITOR_ASSET_DIR "icons/fa-folder-solid.png");
+        auto file_tex = resource::get_texture(SPROUT_EDITOR_ASSET_DIR "icons/fa-file-solid.png");
 
         impl->folder_image = gfx::get_renderer_image(folder_tex.get());
         impl->file_image = gfx::get_renderer_image(file_tex.get());

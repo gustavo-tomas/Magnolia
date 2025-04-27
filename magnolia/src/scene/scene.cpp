@@ -263,10 +263,7 @@ namespace mag
 
     void Scene::add_sprite(const str& path)
     {
-        auto& app = get_application();
-        auto& texture_manager = app.get_texture_manager();
-
-        const auto sprite = texture_manager.get(path);
+        const auto sprite = resource::get_texture(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new SpriteComponent(sprite, path));

@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "math/types.hpp"
@@ -208,10 +207,7 @@ namespace mag
                 // Create samplers for textures
                 else if (type == vk::DescriptorType::eCombinedImageSampler)
                 {
-                    auto& app = get_application();
-                    auto& texture_manager = app.get_texture_manager();
-
-                    const auto& default_texture = texture_manager.get_default();
+                    const auto& default_texture = resource::get_default_texture();
 
                     for (u32 f = 0; f < frame_count; f++)
                     {
@@ -439,8 +435,6 @@ namespace mag
             return;
         }
 
-        auto& app = get_application();
-        auto& texture_manager = app.get_texture_manager();
         auto& context = get_context();
 
         const u32 curr_frame_number = context.get_curr_frame_number();
@@ -459,7 +453,7 @@ namespace mag
             for (const auto& texture_p : material->textures)
             {
                 const auto& texture_name = texture_p.second;
-                const auto& texture = texture_manager.get(texture_name);
+                const auto& texture = resource::get_texture(texture_name);
                 const auto& renderer_texture = gfx::get_renderer_image(texture.get());
 
                 renderer_textures.push_back(renderer_texture);

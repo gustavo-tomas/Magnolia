@@ -36,7 +36,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<TextureManager> texture_manager;
             unique<FontManager> font_manager;
             unique<MaterialManager> material_manager;
             unique<ModelManager> model_manager;
@@ -104,9 +103,9 @@ namespace mag
         thread::initialize(std::thread::hardware_concurrency());
         LOG_SUCCESS("ThreadSystem initialized");
 
-        // Create the texture manager
-        impl->texture_manager = create_unique<TextureManager>();
-        LOG_SUCCESS("TextureManager initialized");
+        // Initialize the resource subsystem
+        resource::initialize_texture_subsystem();
+        LOG_SUCCESS("(Resource) TextureManager initialized");
 
         // Create the font manager
         impl->font_manager = create_unique<FontManager>();
@@ -156,6 +155,7 @@ namespace mag
         FileDialog::shutdown();
         audio::shutdown();
         thread::shutdown();
+        resource::shutdown_texture_subsystem();
         fs::shutdown();
         impl->shader_manager.reset();  // @TODO: this is kinda annoying
         gfx::shutdown();
@@ -228,7 +228,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
     FontManager& Application::get_font_manager() { return *impl->font_manager; }
     MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
     ModelManager& Application::get_model_manager() { return *impl->model_manager; }

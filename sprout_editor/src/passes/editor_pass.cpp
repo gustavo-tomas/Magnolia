@@ -78,8 +78,8 @@ namespace sprout
         sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         // Sprites
-        camera_sprite = app.get_texture_manager().get(SPROUT_EDITOR_ASSET_DIR "icons/video-solid.png");
-        light_sprite = app.get_texture_manager().get(SPROUT_EDITOR_ASSET_DIR "icons/lightbulb-regular.png");
+        camera_sprite = resource::get_texture(SPROUT_EDITOR_ASSET_DIR "icons/video-solid.png");
+        light_sprite = resource::get_texture(SPROUT_EDITOR_ASSET_DIR "icons/lightbulb-regular.png");
 
         add_output_attachment("OutputColor", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);

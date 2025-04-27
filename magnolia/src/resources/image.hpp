@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <vector>
 
 #include "core/types.hpp"
@@ -21,15 +20,12 @@ namespace mag
             std::vector<u8> pixels = std::vector<u8>(64 * 64 * 4, 153);
     };
 
-    class TextureManager
+    namespace resource
     {
-        public:
-            TextureManager();
+        b8 initialize_texture_subsystem();
+        void shutdown_texture_subsystem();
 
-            ref<Image> get(const str& name);
-            ref<Image> get_default();
-
-        private:
-            std::map<str, ref<Image>> textures;
-    };
-};  // namespace mag
+        ref<Image> get_texture(const str& name);
+        ref<Image> get_default_texture();
+    };  // namespace resource
+};      // namespace mag
