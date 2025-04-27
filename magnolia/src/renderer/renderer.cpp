@@ -48,6 +48,10 @@ namespace mag
 
         void shutdown()
         {
+            state->vertex_buffers.clear();
+            state->index_buffers.clear();
+            state->images.clear();
+
             delete state->context;
             delete state;
         }

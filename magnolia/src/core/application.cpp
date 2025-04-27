@@ -156,6 +156,8 @@ namespace mag
     {
         FileDialog::shutdown();
         fs::shutdown();
+        impl->shader_manager.reset();  // @TODO: this is kinda annoying
+        gfx::shutdown();
     }
 
     void Application::run()
