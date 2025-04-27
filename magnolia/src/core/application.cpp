@@ -98,6 +98,7 @@ namespace mag
     {
         resource::shutdown();
         gfx::shutdown();
+        window::shutdown();
         audio::shutdown();
         thread::shutdown();
         fs::shutdown();
