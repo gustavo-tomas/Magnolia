@@ -200,7 +200,7 @@ namespace mag
                     const auto& component = entity["ModelComponent"];
                     const str file_path = component["FilePath"];
 
-                    const auto& model = app.get_model_manager().get(file_path);
+                    const auto& model = resource::get_model(file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
                 }

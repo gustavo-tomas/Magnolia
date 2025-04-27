@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <vector>
 
 #include "core/types.hpp"
@@ -42,15 +41,9 @@ namespace mag
             std::vector<str> materials;
     };
 
-    class ModelManager
+    namespace resource
     {
-        public:
-            ModelManager();
-
-            ref<Model> get(const str& name);
-            ref<Model> get_default();
-
-        private:
-            std::map<str, ref<Model>> models;
-    };
-};  // namespace mag
+        ref<Model> get_model(const str& name);
+        ref<Model> get_default_model();
+    };  // namespace resource
+};      // namespace mag

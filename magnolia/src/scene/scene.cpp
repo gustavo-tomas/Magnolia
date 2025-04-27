@@ -251,10 +251,7 @@ namespace mag
 
     void Scene::add_model(const str& path)
     {
-        auto& app = get_application();
-        auto& model_manager = app.get_model_manager();
-
-        const auto model = model_manager.get(path);
+        const auto model = resource::get_model(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());

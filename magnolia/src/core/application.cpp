@@ -13,7 +13,6 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/audio.hpp"
-#include "resources/model.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
@@ -34,7 +33,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<ModelManager> model_manager;
             unique<ShaderManager> shader_manager;
             unique<AudioManager> audio_manager;
 
@@ -102,10 +100,6 @@ namespace mag
         // Initialize the resource subsystem
         resource::initialize();
         LOG_SUCCESS("ResourceSystem initialized");
-
-        // Create the model manager
-        impl->model_manager = create_unique<ModelManager>();
-        LOG_SUCCESS("ModelManager initialized");
 
         // Create the shader manager
         impl->shader_manager = create_unique<ShaderManager>();
@@ -216,7 +210,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    ModelManager& Application::get_model_manager() { return *impl->model_manager; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
     AudioManager& Application::get_audio_manager() { return *impl->audio_manager; }
 };  // namespace mag
