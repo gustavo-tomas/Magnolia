@@ -1,5 +1,7 @@
 #include "resources/audio.hpp"
 
+#include <map>
+
 #include "resources/resource_loader.hpp"
 #include "soloud/include/soloud_wav.h"
 
@@ -7,30 +9,49 @@
 
 namespace mag
 {
-    AudioManager::AudioManager() {}
-
-    AudioManager::~AudioManager()
+    namespace resource
     {
-        for (auto& [name, audio] : audios)
+        struct State
         {
-            delete static_cast<SoLoud::Wav*>(audio->source);
-        }
-    }
+                std::map<str, ref<Audio>> audios;
+        };
 
-    ref<Audio> AudioManager::get(const str& name)
-    {
-        auto it = audios.find(name);
-        if (it != audios.end())
+        static State* state = nullptr;
+
+        b8 initialize_audio_subsystem()
         {
-            return it->second;
+            state = new State();
+
+            return state != nullptr;
         }
 
-        // Create a new audio
-        Audio* audio = new Audio();
-        audios[name] = ref<Audio>(audio);
+        void shutdown_audio_subsystem()
+        {
+            for (auto& [name, audio] : state->audios)
+            {
+                delete static_cast<SoLoud::Wav*>(audio->source);
+            }
 
-        resource::load(name, audio);
+            state->audios.clear();
 
-        return audios[name];
-    }
-};  // namespace mag
+            delete state;
+        }
+
+        ref<Audio> get_audio(const str& name)
+        {
+            auto it = state->audios.find(name);
+            if (it != state->audios.end())
+            {
+                return it->second;
+            }
+
+            // Create a new audio
+            Audio* audio = new Audio();
+            state->audios[name] = ref<Audio>(audio);
+
+            resource::load(name, audio);
+
+            return state->audios[name];
+        }
+    };  // namespace resource
+};      // namespace mag

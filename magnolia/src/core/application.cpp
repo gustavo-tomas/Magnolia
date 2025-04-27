@@ -12,7 +12,6 @@
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
-#include "resources/audio.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
@@ -34,7 +33,6 @@ namespace mag
 
             unique<Window> window;
             unique<ShaderManager> shader_manager;
-            unique<AudioManager> audio_manager;
 
             b8 running;
             f32 target_frame_rate;
@@ -104,10 +102,6 @@ namespace mag
         // Create the shader manager
         impl->shader_manager = create_unique<ShaderManager>();
         LOG_SUCCESS("ShaderManager initialized");
-
-        // Create the audio manager
-        impl->audio_manager = create_unique<AudioManager>();
-        LOG_SUCCESS("AudioManager initialized");
 
         // Initialize the audio system
         if (audio::initialize())
@@ -211,5 +205,4 @@ namespace mag
 
     Window& Application::get_window() { return *impl->window; }
     ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
-    AudioManager& Application::get_audio_manager() { return *impl->audio_manager; }
 };  // namespace mag

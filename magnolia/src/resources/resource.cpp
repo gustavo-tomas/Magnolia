@@ -34,12 +34,14 @@ namespace mag
             result = result && initialize_font_subsystem();
             result = result && initialize_material_subsystem();
             result = result && initialize_model_subsystem();
+            result = result && initialize_audio_subsystem();
 
             return result;
         }
 
         void shutdown()
         {
+            shutdown_audio_subsystem();
             shutdown_model_subsystem();
             shutdown_material_subsystem();
             shutdown_font_subsystem();

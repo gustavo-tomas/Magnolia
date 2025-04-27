@@ -1,6 +1,5 @@
 #include "scene/scene_serializer.hpp"
 
-#include "core/application.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
@@ -144,8 +143,6 @@ namespace mag
 
         b8 load(const str& file_path, Scene& scene)
         {
-            auto& app = get_application();
-
             fs::json data;
 
             if (!fs::read_json_data(file_path, data))
@@ -245,7 +242,7 @@ namespace mag
                     for (i32 i = 0; i < position.length(); i++) position[i] = component["Position"][i].get<f32>();
                     for (i32 i = 0; i < velocity.length(); i++) velocity[i] = component["Velocity"][i].get<f32>();
 
-                    const auto& audio = app.get_audio_manager().get(file_path);
+                    const auto& audio = resource::get_audio(file_path);
 
                     ecs.add_component(entity_id, new AudioComponent(audio, volume, play_on_load, position, velocity));
                 }

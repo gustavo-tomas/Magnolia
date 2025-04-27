@@ -7,7 +7,6 @@ namespace mag
     class Window;
 
     class ShaderManager;
-    class AudioManager;
 
     struct Event;
     struct QuitEvent;
@@ -31,7 +30,6 @@ namespace mag
 
             Window& get_window();
             ShaderManager& get_shader_manager();
-            AudioManager& get_audio_manager();
 
         protected:
             // Process events from the user application

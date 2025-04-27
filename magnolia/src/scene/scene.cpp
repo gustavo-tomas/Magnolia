@@ -2,7 +2,6 @@
 
 #include "audio/audio_system.hpp"
 #include "camera/camera.hpp"
-#include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "ecs/components.hpp"
@@ -40,15 +39,12 @@ namespace mag
             create_script(id);
         }
 
-        mag::Application& app = mag::get_application();
-        mag::AudioManager& audio_manager = app.get_audio_manager();
-
         // Play audios
         for (const auto* audio_c : ecs->get_all_components_of_type<AudioComponent>())
         {
             if (audio_c->play_on_load)
             {
-                auto audio = audio_manager.get(audio_c->audio->name);
+                auto audio = resource::get_audio(audio_c->audio->name);
                 audio::play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
             }
         }
