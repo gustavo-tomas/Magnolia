@@ -93,8 +93,8 @@ namespace sprout
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
 
-        const str& file_path = FileDialog::save_file("Save Scene As...", scene.get_name() + ".mag.json",
-                                                     {"Scene Files (.mag.json)", "*.mag.json"});
+        const str& file_path = fs::save_file_dialog("Save Scene As...", scene.get_name() + ".mag.json",
+                                                    {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {
@@ -109,7 +109,7 @@ namespace sprout
     {
         auto& editor = get_editor();
 
-        const str file_path = FileDialog::open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
+        const str file_path = fs::open_file_dialog("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {

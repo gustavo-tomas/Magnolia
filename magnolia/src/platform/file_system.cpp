@@ -32,6 +32,9 @@ namespace mag
 
         static State* state = nullptr;
 
+        b8 initialize_file_dialog();
+        void shutdown_file_dialog();
+
         b8 initialize()
         {
             state = new State();
@@ -73,11 +76,13 @@ namespace mag
                     }
                 });
 
-            return state != nullptr;
+            return state != nullptr && initialize_file_dialog();
         }
 
         void shutdown()
         {
+            shutdown_file_dialog();
+
             state->fw.running = false;
 
             if (state->fw.watcher_thread.joinable())

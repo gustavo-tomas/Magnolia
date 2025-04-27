@@ -8,7 +8,6 @@
 #include "core/logger.hpp"
 #include "core/types.hpp"
 #include "core/window.hpp"
-#include "platform/file_dialog.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
@@ -113,22 +112,10 @@ namespace mag
         {
             LOG_ERROR("Failed to initialize Audio system");
         }
-
-        // Initialize file dialogs
-        if (FileDialog::initialize())
-        {
-            LOG_SUCCESS("FileDialog initialized");
-        }
-
-        else
-        {
-            LOG_ERROR("Failed to initialize FileDialog");
-        }
     }
 
     Application::~Application()
     {
-        FileDialog::shutdown();
         audio::shutdown();
         thread::shutdown();
         resource::shutdown();
