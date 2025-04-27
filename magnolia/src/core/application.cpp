@@ -1,5 +1,7 @@
 #include "core/application.hpp"
 
+#include <thread>
+
 #include "audio/audio_system.hpp"
 #include "core/assert.hpp"
 #include "core/event.hpp"
@@ -34,7 +36,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<FileWatcher> file_watcher;
             unique<JobSystem> job_system;
             unique<TextureManager> texture_manager;
             unique<FontManager> font_manager;
@@ -96,9 +97,9 @@ namespace mag
         gfx::initialize(*impl->window);
         LOG_SUCCESS("Graphics initialized");
 
-        // Create the file watcher
-        impl->file_watcher = create_unique<FileWatcher>();
-        LOG_SUCCESS("FileWatcher initialized");
+        // Initialize the filesystem subsystem
+        fs::initialize();
+        LOG_SUCCESS("FileSystem initialized");
 
         // Create the job system
         impl->job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
@@ -151,7 +152,11 @@ namespace mag
         }
     }
 
-    Application::~Application() { FileDialog::shutdown(); }
+    Application::~Application()
+    {
+        FileDialog::shutdown();
+        fs::shutdown();
+    }
 
     void Application::run()
     {
@@ -220,7 +225,6 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
     JobSystem& Application::get_job_system() { return *impl->job_system; }
     TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
     FontManager& Application::get_font_manager() { return *impl->font_manager; }

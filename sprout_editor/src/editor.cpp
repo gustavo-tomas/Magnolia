@@ -481,9 +481,6 @@ namespace sprout
     // @TODO: this can be done in a separate thread
     void Editor::watch_scripts()
     {
-        Application &app = get_application();
-        FileWatcher &file_watcher = app.get_file_watcher();
-
         // First remove file if it no longer exists
         for (const str &file_path : impl->scripts_on_watch)
         {
@@ -501,7 +498,7 @@ namespace sprout
             if (fs::get_file_extension(file_path) == ".cpp")
             {
                 impl->scripts_on_watch.insert(file_path);
-                file_watcher.watch_file(file_path);
+                fs::watch_file(file_path);
             }
         }
     }
@@ -509,7 +506,6 @@ namespace sprout
     void Editor::recompile_scripts()
     {
         Application &app = get_application();
-        FileWatcher &file_watcher = app.get_file_watcher();
         JobSystem &job_system = app.get_job_system();
 
         std::vector<str> modified_scripts;
@@ -517,10 +513,10 @@ namespace sprout
         // Check if a script was modified
         for (const str &script_file_path : impl->scripts_on_watch)
         {
-            if (file_watcher.was_file_modified(script_file_path))
+            if (fs::was_file_modified(script_file_path))
             {
                 modified_scripts.push_back(script_file_path);
-                file_watcher.reset_file_status(script_file_path);
+                fs::reset_file_status(script_file_path);
             }
         }
 
