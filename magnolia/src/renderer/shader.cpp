@@ -21,38 +21,60 @@ namespace mag
 {
     using namespace mag::math;
 
-    ref<Shader> ShaderManager::get(const str& file_path)
+    namespace resource
     {
-        auto it = shaders.find(file_path);
-        if (it != shaders.end()) return it->second;
-
-        ShaderConfiguration shader_configuration;
-
-        if (!resource::load(file_path, &shader_configuration))
+        struct State
         {
-            LOG_ERROR("Failed to load shader: '{0}'", file_path);
-            return nullptr;
+                std::map<str, ref<Shader>> shaders;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_shader_subsystem()
+        {
+            state = new State();
+            return state != nullptr;
         }
 
-        shaders[file_path] = create_ref<Shader>(shader_configuration);
-        return shaders[file_path];
-    }
-
-    void ShaderManager::recompile_all_shaders()
-    {
-        for (const auto& [file_path, shader] : shaders)
+        void shutdown_shader_subsystem()
         {
+            state->shaders.clear();
+            delete state;
+        }
+
+        ref<Shader> get_shader(const str& file_path)
+        {
+            auto it = state->shaders.find(file_path);
+            if (it != state->shaders.end()) return it->second;
+
             ShaderConfiguration shader_configuration;
 
-            if (!resource::load(file_path, &shader_configuration, true))
+            if (!resource::load(file_path, &shader_configuration))
             {
                 LOG_ERROR("Failed to load shader: '{0}'", file_path);
-                continue;
+                return nullptr;
             }
 
-            shaders[file_path]->rebuild(shader_configuration);
+            state->shaders[file_path] = create_ref<Shader>(shader_configuration);
+            return state->shaders[file_path];
         }
-    }
+
+        void recompile_all_shaders()
+        {
+            for (const auto& [file_path, shader] : state->shaders)
+            {
+                ShaderConfiguration shader_configuration;
+
+                if (!resource::load(file_path, &shader_configuration, true))
+                {
+                    LOG_ERROR("Failed to load shader: '{0}'", file_path);
+                    continue;
+                }
+
+                state->shaders[file_path]->rebuild(shader_configuration);
+            }
+        }
+    };  // namespace resource
 
     Shader::Shader(const ShaderConfiguration& shader_configuration) : configuration(shader_configuration)
     {

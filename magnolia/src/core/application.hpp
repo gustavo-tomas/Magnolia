@@ -6,8 +6,6 @@ namespace mag
 {
     class Window;
 
-    class ShaderManager;
-
     struct Event;
     struct QuitEvent;
     struct WindowCloseEvent;
@@ -29,7 +27,6 @@ namespace mag
             void set_target_frame_rate(const f32 frame_rate);
 
             Window& get_window();
-            ShaderManager& get_shader_manager();
 
         protected:
             // Process events from the user application

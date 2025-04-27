@@ -69,13 +69,10 @@ namespace sprout
 
     GizmoPass::GizmoPass(const uvec2& size) : RenderGraphPass("GizmoPass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        line_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/line_shader.mag.json");
-        grid_shader = shader_manager.get(SPROUT_EDITOR_ASSET_DIR "shaders/grid_shader.mag.json");
-        sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
+        line_shader = resource::get_shader(SPROUT_EDITOR_ASSET_DIR "shaders/line_shader.mag.json");
+        grid_shader = resource::get_shader(SPROUT_EDITOR_ASSET_DIR "shaders/grid_shader.mag.json");
+        sprite_shader = resource::get_shader(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
 
         // Sprites
         camera_sprite = resource::get_texture(SPROUT_EDITOR_ASSET_DIR "icons/video-solid.png");

@@ -107,13 +107,9 @@ namespace mag
             std::map<void*, vk::DescriptorSet> texture_descriptor_sets;
     };
 
-    class ShaderManager
+    namespace resource
     {
-        public:
-            ref<Shader> get(const str& file_path);
-            void recompile_all_shaders();
-
-        private:
-            std::map<str, ref<Shader>> shaders;
-    };
-};  // namespace mag
+        ref<Shader> get_shader(const str& file_path);
+        void recompile_all_shaders();
+    };  // namespace resource
+};      // namespace mag

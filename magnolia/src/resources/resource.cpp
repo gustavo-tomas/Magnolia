@@ -22,6 +22,9 @@ namespace mag
         b8 initialize_model_subsystem();
         void shutdown_model_subsystem();
 
+        b8 initialize_shader_subsystem();
+        void shutdown_shader_subsystem();
+
         b8 initialize_audio_subsystem();
         void shutdown_audio_subsystem();
 
@@ -34,6 +37,7 @@ namespace mag
             result = result && initialize_font_subsystem();
             result = result && initialize_material_subsystem();
             result = result && initialize_model_subsystem();
+            result = result && initialize_shader_subsystem();
             result = result && initialize_audio_subsystem();
 
             return result;
@@ -42,6 +46,7 @@ namespace mag
         void shutdown()
         {
             shutdown_audio_subsystem();
+            shutdown_shader_subsystem();
             shutdown_model_subsystem();
             shutdown_material_subsystem();
             shutdown_font_subsystem();

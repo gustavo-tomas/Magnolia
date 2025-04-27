@@ -10,7 +10,6 @@
 #include "core/window.hpp"
 #include "platform/file_system.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shader.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
 #include "tools/profiler.hpp"
@@ -31,7 +30,6 @@ namespace mag
             ~IMPL() = default;
 
             unique<Window> window;
-            unique<ShaderManager> shader_manager;
 
             b8 running;
             f32 target_frame_rate;
@@ -84,25 +82,21 @@ namespace mag
 
         // Initialize graphics subsystem
         gfx::initialize(*impl->window);
-        LOG_SUCCESS("GraphicsSystem initialized");
+        LOG_SUCCESS("Graphics system initialized");
 
         // Initialize the filesystem subsystem
         fs::initialize();
-        LOG_SUCCESS("FileSystem initialized");
+        LOG_SUCCESS("File system initialized");
 
         // Initialize the threading subsystem
         thread::initialize(std::thread::hardware_concurrency());
-        LOG_SUCCESS("ThreadSystem initialized");
+        LOG_SUCCESS("Thread system initialized");
 
         // Initialize the resource subsystem
         resource::initialize();
-        LOG_SUCCESS("ResourceSystem initialized");
+        LOG_SUCCESS("Resource system initialized");
 
-        // Create the shader manager
-        impl->shader_manager = create_unique<ShaderManager>();
-        LOG_SUCCESS("ShaderManager initialized");
-
-        // Initialize the audio system
+        // Initialize the audio subsystem
         if (audio::initialize())
         {
             LOG_SUCCESS("Audio system initialized");
@@ -120,7 +114,6 @@ namespace mag
         thread::shutdown();
         resource::shutdown();
         fs::shutdown();
-        impl->shader_manager.reset();  // @TODO: this is kinda annoying
         gfx::shutdown();
     }
 
@@ -191,5 +184,4 @@ namespace mag
     void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
 
     Window& Application::get_window() { return *impl->window; }
-    ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
 };  // namespace mag

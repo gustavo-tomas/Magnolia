@@ -1,7 +1,6 @@
 #include "scene_pass.hpp"
 
 #include "../assets/shaders/include/common.h"
-#include "core/application.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "math/types.hpp"
@@ -10,7 +9,6 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/font.hpp"
-#include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 #include "scene/scene.hpp"
@@ -19,11 +17,8 @@ namespace mag
 {
     DepthPrePass::DepthPrePass(const uvec2& size) : RenderGraphPass("DepthPrePass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        depth_prepass_shader = shader_manager.get(MAG_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
+        depth_prepass_shader = resource::get_shader(MAG_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
 
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
@@ -92,13 +87,10 @@ namespace mag
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        mesh_shader = shader_manager.get(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
-        sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
-        text_shader = shader_manager.get(MAG_ASSET_DIR "shaders/text_shader.mag.json");
+        mesh_shader = resource::get_shader(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
+        sprite_shader = resource::get_shader(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
+        text_shader = resource::get_shader(MAG_ASSET_DIR "shaders/text_shader.mag.json");
 
         // @TODO: we are skipping the depth prepass for now, until we need to process many lights with forward+
         // add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
@@ -328,11 +320,8 @@ namespace mag
 
     PostProcessingPass::PostProcessingPass(const uvec2& size) : RenderGraphPass("PostPass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        post_shader = shader_manager.get(MAG_ASSET_DIR "shaders/post_shader.mag.json");
+        post_shader = resource::get_shader(MAG_ASSET_DIR "shaders/post_shader.mag.json");
 
         add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputColor", AttachmentType::Color, size);

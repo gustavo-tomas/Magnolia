@@ -83,10 +83,7 @@ namespace sprout
 
                     LOG_INFO("Recompiling shaders...");
 
-                    Application &app = get_application();
-                    ShaderManager &shader_manager = app.get_shader_manager();
-
-                    shader_manager.recompile_all_shaders();
+                    resource::recompile_all_shaders();
                 };
 
                 Job load_job = Job(execute, on_execute_finished);
