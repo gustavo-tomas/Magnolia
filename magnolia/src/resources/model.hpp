@@ -4,6 +4,7 @@
 
 #include "core/types.hpp"
 #include "math/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -30,7 +31,7 @@ namespace mag
             vec3 aabb_max;
     };
 
-    struct Model
+    struct Model : public IResource
     {
             str name = "";
             str file_path = "";

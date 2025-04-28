@@ -2,6 +2,7 @@
 
 #include <map>
 
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "soloud/include/soloud_wav.h"
 
@@ -47,9 +48,18 @@ namespace mag
 
             // Create a new audio
             Audio* audio = new Audio();
+            audio->loading_status = LoadingStatus::InProgress;
             state->audios[name] = ref<Audio>(audio);
 
-            resource::load(name, audio);
+            if (resource::load(name, audio))
+            {
+                audio->loading_status = LoadingStatus::Finished;
+            }
+
+            else
+            {
+                audio->loading_status = LoadingStatus::Error;
+            }
 
             return state->audios[name];
         }

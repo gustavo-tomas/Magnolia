@@ -1,6 +1,7 @@
 #include "resources/material.hpp"
 
 #include "resources/image.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
@@ -45,6 +46,7 @@ namespace mag
 
             // Create a new material
             Material* material = new Material(*state->materials[DEFAULT_MATERIAL_NAME]);
+            material->loading_status = LoadingStatus::InProgress;
             state->materials[name] = ref<Material>(material);
 
             // Temporary material to load data into
@@ -54,8 +56,19 @@ namespace mag
             auto execute = [name, transfer_material]
             {
                 // If the load fails we still have valid data
-                transfer_material->loading_state = MaterialLoadingState::LoadingInProgress;
-                return resource::load(name, transfer_material);
+                const b8 result = resource::load(name, transfer_material);
+
+                if (result)
+                {
+                    transfer_material->loading_status = LoadingStatus::Finished;
+                }
+
+                else
+                {
+                    transfer_material->loading_status = LoadingStatus::Error;
+                }
+
+                return result;
             };
 
             // Callback when finished loading
@@ -64,7 +77,6 @@ namespace mag
                 // Update the material and the renderer material data
                 if (result == true)
                 {
-                    transfer_material->loading_state = MaterialLoadingState::LoadingFinished;
                     *material = *transfer_material;
                 }
 

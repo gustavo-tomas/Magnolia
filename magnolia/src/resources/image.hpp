@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "core/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -11,7 +12,7 @@ namespace mag
 #define DEFAULT_ROUGHNESS_TEXTURE_NAME "__mag_default_roughness_texture__"
 #define DEFAULT_METALNESS_TEXTURE_NAME "__mag_default_metalness_texture__"
 
-    struct Image
+    struct Image : public IResource
     {
             u8 channels = 4;
             u32 width = 64;

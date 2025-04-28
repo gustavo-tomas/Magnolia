@@ -4,6 +4,7 @@
 
 #include "core/logger.hpp"
 #include "renderer/renderer.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
@@ -76,7 +77,7 @@ namespace mag
 
             // Create a new texture
             Image* image = new Image();
-
+            image->loading_status = LoadingStatus::InProgress;
             state->textures[name] = ref<Image>(image);
 
             // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
@@ -101,7 +102,19 @@ namespace mag
             auto execute = [name, transfer_image]
             {
                 // If the load fails we still have valid data
-                return resource::load(name, transfer_image);
+                const b8 result = resource::load(name, transfer_image);
+
+                if (result)
+                {
+                    transfer_image->loading_status = LoadingStatus::Finished;
+                }
+
+                else
+                {
+                    transfer_image->loading_status = LoadingStatus::Error;
+                }
+
+                return result;
             };
 
             // Callback when finished loading
@@ -112,6 +125,7 @@ namespace mag
                 {
                     *image = *transfer_image;
                     gfx::update_image(image);
+                    image->loading_status = LoadingStatus::UploadedToGpu;
                 }
 
                 // We can dispose of the temporary image now

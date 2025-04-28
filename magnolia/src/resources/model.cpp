@@ -4,6 +4,7 @@
 
 #include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
@@ -31,6 +32,7 @@ namespace mag
 
             // Send model data to the GPU
             gfx::upload_model(state->models[DEFAULT_MODEL_NAME].get());
+            state->models[DEFAULT_MODEL_NAME]->loading_status = LoadingStatus::UploadedToGpu;
 
             return state != nullptr;
         }
@@ -51,6 +53,7 @@ namespace mag
 
             // Create a new model
             Model* model = new Model(*state->models[DEFAULT_MODEL_NAME]);
+            model->loading_status = LoadingStatus::InProgress;
             state->models[name] = ref<Model>(model);
 
             // Send model data to the GPU
@@ -63,7 +66,19 @@ namespace mag
             auto execute = [name, transfer_model]
             {
                 // If the load fails we still have valid data
-                return resource::load(name, transfer_model);
+                const b8 result = resource::load(name, transfer_model);
+
+                if (result)
+                {
+                    transfer_model->loading_status = LoadingStatus::Finished;
+                }
+
+                else
+                {
+                    transfer_model->loading_status = LoadingStatus::Error;
+                }
+
+                return result;
             };
 
             // Callback when finished loading
@@ -74,6 +89,7 @@ namespace mag
                 {
                     *model = *transfer_model;
                     gfx::update_model(model);
+                    model->loading_status = LoadingStatus::UploadedToGpu;
                 }
 
                 // We can dispose of the temporary model now

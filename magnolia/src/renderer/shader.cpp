@@ -14,6 +14,7 @@
 #include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "spirv_reflect.h"
 
@@ -465,8 +466,7 @@ namespace mag
 
         // @TODO: this blocks the main thread and should be paralelized when the renderer supports it.
         // Create/Update descriptor for this material
-        if (texture_descriptor_sets.count(material) == 0 ||
-            material->loading_state == MaterialLoadingState::LoadingFinished)
+        if (texture_descriptor_sets.count(material) == 0 || material->loading_status == LoadingStatus::Finished)
         {
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
@@ -486,7 +486,7 @@ namespace mag
 
             texture_descriptor_sets[material] = descriptor_set;
 
-            material->loading_state = MaterialLoadingState::UploadedToGPU;
+            material->loading_status = LoadingStatus::UploadedToGpu;
         }
 
         ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[material];

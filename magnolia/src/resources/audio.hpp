@@ -1,10 +1,11 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
-    struct Audio
+    struct Audio : public IResource
     {
             u32 handle = 0;
             void* source = nullptr;
