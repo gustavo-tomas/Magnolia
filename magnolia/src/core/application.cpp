@@ -7,6 +7,7 @@
 #include "core/types.hpp"
 #include "core/window.hpp"
 #include "platform/file_system.hpp"
+#include "platform/platform.hpp"
 #include "renderer/renderer.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
@@ -28,6 +29,9 @@ namespace mag
         application = this;
 
         b8 initialized = true;
+
+        // Initialize the platform subsystem
+        initialized = initialized && plat::initialize();
 
         // Initialize the filesystem subsystem
         initialized = initialized && fs::initialize();
@@ -101,6 +105,7 @@ namespace mag
         audio::shutdown();
         thread::shutdown();
         fs::shutdown();
+        plat::shutdown();
     }
 
     void Application::run()
@@ -112,7 +117,7 @@ namespace mag
         while (running)
         {
             // Calculate dt
-            curr_time = window::get_time();
+            curr_time = plat::get_time();
             dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
 
@@ -133,7 +138,7 @@ namespace mag
             on_update(dt);
 
             // Delay if needed
-            const f64 delay = (1000.0 / target_frame_rate) - (window::get_time() - last_time);
+            const f64 delay = (1000.0 / target_frame_rate) - (plat::get_time() - last_time);
             if (delay > 0.0 && target_frame_rate > 0.0)
             {
                 thread::sleep(delay);

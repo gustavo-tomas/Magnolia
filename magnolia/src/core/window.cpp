@@ -1,6 +1,5 @@
 #include "core/window.hpp"
 
-#include <chrono>
 #include <vulkan/vulkan.hpp>
 
 #include "SDL.h"
@@ -30,8 +29,6 @@ namespace mag
                 std::unordered_map<SDL_Keycode, u32> key_update;
                 std::unordered_map<i32, b8> button_state;
                 std::unordered_map<i32, u32> button_update;
-
-                const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
         };
 
         static State* state = nullptr;
@@ -305,15 +302,6 @@ namespace mag
             math::uvec2 size;
             SDL_Vulkan_GetDrawableSize(state->handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
             return size;
-        }
-
-        f64 get_time()
-        {
-            // Ms since start
-            auto current_time = std::chrono::system_clock::now();
-            std::chrono::duration<f64> elapsed_seconds = current_time - state->start_time;
-
-            return elapsed_seconds.count() * 1000.0;
         }
 
         void* get_handle() { return state->handle; }

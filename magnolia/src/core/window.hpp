@@ -48,7 +48,6 @@ namespace mag
 
         math::ivec2 get_mouse_position();
         math::uvec2 get_size();
-        f64 get_time();  // Ms since start
         void* get_handle();
         const std::vector<const c8*>& get_instance_extensions();
     };  // namespace window

@@ -1,6 +1,6 @@
 #include "tools/profiler.hpp"
 
-#include "core/window.hpp"
+#include "platform/platform.hpp"
 
 namespace mag
 {
@@ -9,7 +9,7 @@ namespace mag
         if (!results.contains(name))
         {
             results[name] = {};
-            results[name].frame_start = window::get_time();
+            results[name].frame_start = plat::get_time();
         }
 
         results[name].duration = duration;
@@ -17,13 +17,13 @@ namespace mag
         results[name].frame_count++;
 
         // Update average after N ms have passed
-        const f64 time_elapsed = window::get_time() - results[name].frame_start;
+        const f64 time_elapsed = plat::get_time() - results[name].frame_start;
         if (time_elapsed >= time_interval_ms)
         {
             results[name].average = results[name].accumulated / results[name].frame_count;
             results[name].accumulated = 0;
             results[name].frame_count = 0;
-            results[name].frame_start = window::get_time();
+            results[name].frame_start = plat::get_time();
         }
     }
 
@@ -40,12 +40,12 @@ namespace mag
     ScopedProfiler::ScopedProfiler(const str& name, const f64 time_interval_ms)
         : name(name), time_interval_ms(time_interval_ms)
     {
-        start = window::get_time();
+        start = plat::get_time();
     }
 
     ScopedProfiler::~ScopedProfiler()
     {
-        const f64 end = window::get_time();
+        const f64 end = plat::get_time();
 
         ProfilerManager::get().update_profile_result(name, end - start, time_interval_ms);
     }
