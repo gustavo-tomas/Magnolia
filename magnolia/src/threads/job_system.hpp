@@ -22,9 +22,6 @@ namespace mag
 
     namespace thread
     {
-        b8 initialize(const u32 max_number_of_threads);
-        void shutdown();
-
         void add_job(Job job);
         void process_callbacks();
     };  // namespace thread

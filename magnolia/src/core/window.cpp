@@ -1,8 +1,6 @@
 #include "core/window.hpp"
 
 #include <chrono>
-#include <ratio>
-#include <thread>
 #include <vulkan/vulkan.hpp>
 
 #include "SDL.h"
@@ -200,12 +198,6 @@ namespace mag
             vk::Instance vk_instance = *reinterpret_cast<const vk::Instance*>(instance);
             MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, vk_instance, reinterpret_cast<VkSurfaceKHR*>(surface)),
                        "Failed to create surface: " + str(SDL_GetError()));
-        }
-
-        void sleep(const f64 ms)
-        {
-            std::chrono::duration<f64, std::milli> duration(ms);
-            std::this_thread::sleep_for(duration);
         }
 
         b8 is_key_pressed(const Key key)

@@ -1,7 +1,5 @@
 #include "core/application.hpp"
 
-#include <thread>
-
 #include "audio/audio_system.hpp"
 #include "core/assert.hpp"
 #include "core/event.hpp"
@@ -12,6 +10,7 @@
 #include "renderer/renderer.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
+#include "threads/thread.hpp"
 #include "tools/profiler.hpp"
 
 namespace mag
@@ -34,7 +33,7 @@ namespace mag
         initialized = initialized && fs::initialize();
 
         // Initialize the threading subsystem
-        initialized = initialized && thread::initialize(std::thread::hardware_concurrency());
+        initialized = initialized && thread::initialize();
 
         // Initialize the audio subsystem
         initialized = initialized && audio::initialize();
@@ -124,7 +123,7 @@ namespace mag
             // Skip rendering if minimized or resizing
             if (window::is_minimized())
             {
-                window::sleep(50);
+                thread::sleep(50);
                 continue;
             }
 
@@ -137,7 +136,7 @@ namespace mag
             const f64 delay = (1000.0 / target_frame_rate) - (window::get_time() - last_time);
             if (delay > 0.0 && target_frame_rate > 0.0)
             {
-                window::sleep(delay);
+                thread::sleep(delay);
             }
         }
     }

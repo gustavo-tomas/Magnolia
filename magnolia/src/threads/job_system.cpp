@@ -42,7 +42,7 @@ namespace mag
 
         static State* state = nullptr;
 
-        b8 initialize(const u32 max_number_of_threads)
+        b8 initialize_job_system(const u32 max_number_of_threads)
         {
             state = new State();
 
@@ -79,7 +79,7 @@ namespace mag
             return state != nullptr;
         }
 
-        void shutdown()
+        void shutdown_job_system()
         {
             state->running = false;
 

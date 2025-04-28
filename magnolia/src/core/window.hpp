@@ -32,8 +32,6 @@ namespace mag
 
         void create_surface(const void* instance, void* surface);
 
-        void sleep(const f64 ms);
-
         b8 set_window_icon(const str& bmp_file);
         void set_capture_mouse(b8 capture);
         void set_title(const str& title);
