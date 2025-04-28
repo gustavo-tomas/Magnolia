@@ -379,7 +379,7 @@ namespace mag
         LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
     }
 
-    void Shader::set_texture(const str& name, Image* texture)
+    void Shader::set_texture(const str& name, const Image* texture)
     {
         auto it = uniforms_map.find(name);
         if (it == uniforms_map.end())

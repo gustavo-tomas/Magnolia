@@ -55,7 +55,7 @@ namespace mag
         public:
             Line(const std::vector<vec3>& starts, const std::vector<vec3>& ends, const std::vector<vec3>& colors);
 
-            VertexBuffer& get_vbo() { return *vbo; };
+            VertexBuffer& get_vbo() const { return *vbo; };
             const std::vector<LineVertex>& get_vertices() const { return vertices; };
 
         private:

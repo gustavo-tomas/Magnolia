@@ -63,9 +63,9 @@ namespace mag
             // @TODO: there is a huge issue with this system. Because we map descriptors to a resource pointer, a
             // resource might be recreated (i.e. deleted and then instanciated) but the mapped descriptor wont be
             // deleted and the new one wont be mapped correclty either.
-            void set_texture(const str& name, Image* texture);
-            void set_texture(const str& name, RendererImage* texture);
-            void set_material(const str& name, Material* material);
+            void set_texture(const str& name, const Image* texture);
+            void set_texture(const str& name, RendererImage* texture);  // @TODO: these pointers should be const
+            void set_material(const str& name, Material* material);     // @TODO: these pointers should be const
 
             const ShaderConfiguration& get_shader_configuration() const;
             const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const;
@@ -104,7 +104,7 @@ namespace mag
             std::map<str, UBO> uniforms_map;
 
             // Keep track of the descriptors for each texture/material
-            std::map<void*, vk::DescriptorSet> texture_descriptor_sets;
+            std::map<const void*, vk::DescriptorSet> texture_descriptor_sets;
     };
 
     namespace resource

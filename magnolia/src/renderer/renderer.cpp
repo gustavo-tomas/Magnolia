@@ -26,11 +26,11 @@ namespace mag
                 Context* context = nullptr;
 
                 // Model data
-                std::map<Model*, ref<VertexBuffer>> vertex_buffers;
-                std::map<Model*, ref<IndexBuffer>> index_buffers;
+                std::map<const Model*, ref<VertexBuffer>> vertex_buffers;
+                std::map<const Model*, ref<IndexBuffer>> index_buffers;
 
                 // Image data
-                std::map<Image*, ref<RendererImage>> images;
+                std::map<const Image*, ref<RendererImage>> images;
         };
 
         static State* state = nullptr;
@@ -93,14 +93,14 @@ namespace mag
             command_buffer.draw_indexed(index_count, instance_count, first_index, vertex_offset, first_instance);
         }
 
-        void bind_buffers(Model* model)
+        void bind_buffers(const Model* model)
         {
             auto vbo_it = state->vertex_buffers.find(model);
             auto ibo_it = state->index_buffers.find(model);
 
             if (vbo_it == state->vertex_buffers.end() || ibo_it == state->index_buffers.end())
             {
-                LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+                LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<const void*>(model));
                 return;
             }
 
@@ -111,33 +111,33 @@ namespace mag
             command_buffer.bind_index_buffer(ibo_it->second->get_buffer());
         }
 
-        void bind_buffers(Line* line)
+        void bind_buffers(const Line* line)
         {
             auto& command_buffer = state->context->get_curr_frame().command_buffer;
             command_buffer.bind_vertex_buffer(line->get_vbo().get_buffer());
         }
 
-        ref<RendererImage> get_renderer_image(Image* image)
+        ref<RendererImage> get_renderer_image(const Image* image)
         {
             auto it = state->images.find(image);
 
             if (it == state->images.end())
             {
-                LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+                LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<const void*>(image));
                 MAG_ASSERT(false, "@TODO: this shouldnt crash the application");
             }
 
             return it->second;
         }
 
-        void upload_model(Model* model)
+        void upload_model(const Model* model)
         {
             auto vbo_it = state->vertex_buffers.find(model);
             auto ibo_it = state->index_buffers.find(model);
 
             if (vbo_it != state->vertex_buffers.end() || ibo_it != state->index_buffers.end())
             {
-                LOG_WARNING("Model '{0}' was already uploaded to the GPU", static_cast<void*>(model));
+                LOG_WARNING("Model '{0}' was already uploaded to the GPU", static_cast<const void*>(model));
                 return;
             }
 
@@ -147,14 +147,14 @@ namespace mag
                 create_ref<IndexBuffer>(model->indices.data(), VEC_SIZE_BYTES(model->indices));
         }
 
-        void remove_model(Model* model)
+        void remove_model(const Model* model)
         {
             auto vbo_it = state->vertex_buffers.find(model);
             auto ibo_it = state->index_buffers.find(model);
 
             if (vbo_it == state->vertex_buffers.end() || ibo_it == state->index_buffers.end())
             {
-                LOG_ERROR("Tried to remove invalid model '{0}'", static_cast<void*>(model));
+                LOG_ERROR("Tried to remove invalid model '{0}'", static_cast<const void*>(model));
                 return;
             }
 
@@ -162,14 +162,14 @@ namespace mag
             state->index_buffers.erase(ibo_it);
         }
 
-        void update_model(Model* model)
+        void update_model(const Model* model)
         {
             auto vbo_it = state->vertex_buffers.find(model);
             auto ibo_it = state->index_buffers.find(model);
 
             if (vbo_it == state->vertex_buffers.end() || ibo_it == state->index_buffers.end())
             {
-                LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<void*>(model));
+                LOG_ERROR("Model '{0}' was not uploaded to the GPU", static_cast<const void*>(model));
                 return;
             }
 
@@ -177,14 +177,14 @@ namespace mag
             state->index_buffers[model]->resize(model->indices.data(), VEC_SIZE_BYTES(model->indices));
         }
 
-        ref<RendererImage> upload_image(Image* image, const SamplerAddressMode address_mode,
+        ref<RendererImage> upload_image(const Image* image, const SamplerAddressMode address_mode,
                                         const Filter min_mag_filter, const SamplerMipmapMode mip_map_mode)
         {
             auto it = state->images.find(image);
 
             if (it != state->images.end())
             {
-                LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<void*>(image));
+                LOG_WARNING("Image '{0}' was already uploaded to the GPU", static_cast<const void*>(image));
                 return it->second;
             }
 
@@ -218,26 +218,26 @@ namespace mag
             return state->images[image];
         }
 
-        void remove_image(Image* image)
+        void remove_image(const Image* image)
         {
             auto it = state->images.find(image);
 
             if (it == state->images.end())
             {
-                LOG_ERROR("Tried to remove invalid image '{0}'", static_cast<void*>(image));
+                LOG_ERROR("Tried to remove invalid image '{0}'", static_cast<const void*>(image));
                 return;
             }
 
             state->images.erase(it);
         }
 
-        void update_image(Image* image)
+        void update_image(const Image* image)
         {
             auto it = state->images.find(image);
 
             if (it == state->images.end())
             {
-                LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<void*>(image));
+                LOG_ERROR("Image '{0}' was not uploaded to the GPU", static_cast<const void*>(image));
                 return;
             }
 
