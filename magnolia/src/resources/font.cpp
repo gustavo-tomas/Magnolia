@@ -46,19 +46,11 @@ namespace mag
             if (resource::load(name, font))
             {
                 font->loading_status = LoadingStatus::Finished;
-                for (auto& [c, info] : font->characters)
+                for (auto& [c, character] : font->characters)
                 {
-                    Image& texture = info.texture;
-
-                    texture.channels = 1;
-                    texture.width = info.size.x;
-                    texture.height = info.size.y;
-                    texture.pixels = info.data;
-
-                    if (texture.width > 0 && texture.height > 0 &&
-                        texture.pixels.size() == texture.width * texture.height)
+                    if (!character.data.empty())
                     {
-                        gfx::upload_image(&texture, SamplerAddressMode::ClampToEdge);
+                        gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
                     }
                 }
                 font->loading_status = LoadingStatus::UploadedToGpu;

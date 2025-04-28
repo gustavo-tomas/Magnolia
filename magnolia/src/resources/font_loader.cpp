@@ -70,6 +70,11 @@ namespace mag
                     character.data = std::vector<u8>(
                         face->glyph->bitmap.buffer,
                         face->glyph->bitmap.buffer + (face->glyph->bitmap.width * face->glyph->bitmap.rows));
+
+                    character.texture.channels = 1;
+                    character.texture.width = character.size.x;
+                    character.texture.height = character.size.y;
+                    character.texture.pixels = character.data;
                 }
 
                 // Empty data for whitespace or non-visual characters
