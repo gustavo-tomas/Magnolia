@@ -141,7 +141,7 @@ namespace mag
         const u32 api_version = VK_API_VERSION_1_3;
         const u32 frame_count = 3;  // 3 for triple buffering
 
-        const std::vector<const c8*> window_extensions = options.window.get_instance_extensions();
+        const std::vector<const c8*> window_extensions = window::get_instance_extensions();
         instance_extensions.insert(instance_extensions.begin(), window_extensions.begin(), window_extensions.end());
 
         // Validation only on debug
@@ -209,7 +209,7 @@ namespace mag
         impl->frame_count = frame_count;
 
         // Surface
-        options.window.create_surface(&impl->instance, &impl->surface);
+        window::create_surface(&impl->instance, &impl->surface);
 
         // Physical device
         vk::PhysicalDeviceFeatures required_physical_device_features;
@@ -294,7 +294,7 @@ namespace mag
         auto surface_capabilities = impl->physical_device.getSurfaceCapabilitiesKHR(impl->surface);
         auto surface_formats = impl->physical_device.getSurfaceFormatsKHR(impl->surface);
 
-        impl->present_image_count = max(surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
+        impl->present_image_count = math::max(surface_capabilities.minImageCount, surface_capabilities.maxImageCount);
         MAG_ASSERT(impl->present_image_count > 0, "Present image count must be greater than zero");
         LOG_INFO("Present image count: {0}", impl->present_image_count);
 
@@ -399,7 +399,7 @@ namespace mag
 #endif
 
         // Swapchain
-        const uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
+        const math::uvec2 size(surface_capabilities.maxImageExtent.width, surface_capabilities.maxImageExtent.height);
         recreate_swapchain(size, impl->surface_present_mode);
 
         // Fence
@@ -473,9 +473,9 @@ namespace mag
         impl->instance.destroy();
     }
 
-    void Context::recreate_swapchain(const uvec2& size) { recreate_swapchain(size, impl->surface_present_mode); }
+    void Context::recreate_swapchain(const math::uvec2& size) { recreate_swapchain(size, impl->surface_present_mode); }
 
-    void Context::recreate_swapchain(const uvec2& size, const vk::PresentModeKHR present_mode)
+    void Context::recreate_swapchain(const math::uvec2& size, const vk::PresentModeKHR present_mode)
     {
         impl->device.waitIdle();
 

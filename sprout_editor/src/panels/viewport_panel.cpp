@@ -5,7 +5,6 @@
 #include "ImGuizmo.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "camera/camera.hpp"
-#include "core/application.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "ecs/ecs.hpp"
@@ -44,7 +43,6 @@ namespace sprout
     void ViewportPanel::render(const ImGuiWindowFlags window_flags, const Camera &camera, ECS &ecs,
                                const u32 selected_entity_id, const RendererImage &viewport_image)
     {
-        auto &app = get_application();
         auto &editor = get_editor();
         auto &scene = editor.get_active_scene();
         auto &open_scenes = editor.get_open_scenes();
@@ -72,8 +70,6 @@ namespace sprout
             // Recompile shaders
             if (ImGui::Button("Rebuild Shaders"))
             {
-                auto &job_system = app.get_job_system();
-
                 // @TODO: this kinda sucks. we have to keep the recompilation on the main thread in the beginning of the
                 // loop (i.e. the callback) otherwise vulkan starts acting up
 
@@ -87,14 +83,11 @@ namespace sprout
 
                     LOG_INFO("Recompiling shaders...");
 
-                    Application &app = get_application();
-                    ShaderManager &shader_manager = app.get_shader_manager();
-
-                    shader_manager.recompile_all_shaders();
+                    resource::recompile_all_shaders();
                 };
 
                 Job load_job = Job(execute, on_execute_finished);
-                job_system.add_job(load_job);
+                thread::add_job(load_job);
             }
 
             ImGui::End();
@@ -155,8 +148,6 @@ namespace sprout
                 {
                     if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(CONTENT_BROWSER_ITEM))
                     {
-                        auto &app = get_application();
-
                         const c8 *path = static_cast<const c8 *>(payload->Data);
                         const str extension = fs::get_file_extension(path);
 
@@ -210,8 +201,6 @@ namespace sprout
                         // Check if asset is a model that needs to be imported
                         else if (importer.is_extension_supported(extension))
                         {
-                            auto &job_system = app.get_job_system();
-
                             // This is a bit ugly but gets the job done (just don't forget to delete it)
                             str *imported_model_path = new str("");
 
@@ -231,7 +220,7 @@ namespace sprout
                                 delete imported_model_path;
                             };
 
-                            job_system.add_job({on_execute, on_finish});
+                            thread::add_job({on_execute, on_finish});
                         }
 
                         // Check if asset is an image

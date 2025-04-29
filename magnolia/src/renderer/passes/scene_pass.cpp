@@ -1,7 +1,6 @@
 #include "scene_pass.hpp"
 
 #include "../assets/shaders/include/common.h"
-#include "core/application.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "math/types.hpp"
@@ -10,7 +9,6 @@
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include "resources/font.hpp"
-#include "resources/image.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 #include "scene/scene.hpp"
@@ -19,11 +17,8 @@ namespace mag
 {
     DepthPrePass::DepthPrePass(const uvec2& size) : RenderGraphPass("DepthPrePass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        depth_prepass_shader = shader_manager.get(MAG_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
+        depth_prepass_shader = resource::get_shader(MAG_ASSET_DIR "shaders/depth_prepass_shader.mag.json");
 
         add_output_attachment("OutputDepth", AttachmentType::DepthStencil, size);
 
@@ -38,8 +33,6 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -64,7 +57,7 @@ namespace mag
             const auto& model_matrix = transform->get_transformation_matrix();
             depth_prepass_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
-            renderer.bind_buffers(model.get());
+            gfx::bind_buffers(model.get());
 
             for (auto& mesh : model->meshes)
             {
@@ -84,7 +77,7 @@ namespace mag
                 }
 
                 // Draw the mesh
-                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 performance_results.draw_calls++;
                 performance_results.rendered_triangles += mesh.index_count / 3;
@@ -94,13 +87,10 @@ namespace mag
 
     ScenePass::ScenePass(const uvec2& size) : RenderGraphPass("ScenePass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        mesh_shader = shader_manager.get(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
-        sprite_shader = shader_manager.get(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
-        text_shader = shader_manager.get(MAG_ASSET_DIR "shaders/text_shader.mag.json");
+        mesh_shader = resource::get_shader(MAG_ASSET_DIR "shaders/mesh_shader.mag.json");
+        sprite_shader = resource::get_shader(MAG_ASSET_DIR "shaders/sprite_shader.mag.json");
+        text_shader = resource::get_shader(MAG_ASSET_DIR "shaders/text_shader.mag.json");
 
         // @TODO: we are skipping the depth prepass for now, until we need to process many lights with forward+
         // add_input_attachment("OutputDepth", AttachmentType::DepthStencil, size, AttachmentState::Load);
@@ -119,9 +109,6 @@ namespace mag
     {
         (void)render_graph;
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-        auto& material_manager = app.get_material_manager();
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
 
@@ -175,7 +162,7 @@ namespace mag
             const auto& model_matrix = transform->get_transformation_matrix();
             mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
 
-            renderer.bind_buffers(model.get());
+            gfx::bind_buffers(model.get());
 
             i32 last_material_idx = -1;
             for (auto& mesh : model->meshes)
@@ -200,7 +187,7 @@ namespace mag
                 if (last_material_idx != static_cast<i32>(mesh.material_index))
                 {
                     last_material_idx = mesh.material_index;
-                    const auto& material = material_manager.get(model->materials[mesh.material_index]);
+                    const auto& material = resource::get_material(model->materials[mesh.material_index]);
 
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data;
@@ -215,7 +202,7 @@ namespace mag
                 }
 
                 // Draw the mesh
-                renderer.draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
 
                 performance_results.draw_calls++;
                 performance_results.rendered_triangles += mesh.index_count / 3;
@@ -254,7 +241,7 @@ namespace mag
             sprite_shader->set_uniform("u_instance", "sprites", &sprite_data, sizeof(SpriteData) * i);
             sprite_shader->set_texture("u_sprite_texture", sprite_tex.get());
 
-            renderer.draw(4, 1, 0, i);
+            gfx::draw(4, 1, 0, i);
 
             performance_results.rendered_triangles += 2;
             performance_results.draw_calls++;
@@ -273,6 +260,12 @@ namespace mag
         {
             const auto& transform = std::get<0>(text_entities[i]);
             const auto& text = std::get<1>(text_entities[i]);
+
+            // Skip fonts that are not loaded yet
+            if (text->font->loading_status != LoadingStatus::UploadedToGpu)
+            {
+                continue;
+            }
 
             const f32 scale = transform->scale.x;
             f32 x = transform->translation.x;
@@ -318,7 +311,7 @@ namespace mag
                 text_shader->set_uniform("u_instance", "texts", &text_data, sizeof(TextData) * data_offset);
                 text_shader->set_texture("u_char_texture", &ch.texture);
 
-                renderer.draw(4, 1, 0, data_offset);
+                gfx::draw(4, 1, 0, data_offset);
                 data_offset++;
 
                 performance_results.rendered_triangles += 2;
@@ -333,11 +326,8 @@ namespace mag
 
     PostProcessingPass::PostProcessingPass(const uvec2& size) : RenderGraphPass("PostPass")
     {
-        auto& app = get_application();
-        auto& shader_manager = app.get_shader_manager();
-
         // Shaders
-        post_shader = shader_manager.get(MAG_ASSET_DIR "shaders/post_shader.mag.json");
+        post_shader = resource::get_shader(MAG_ASSET_DIR "shaders/post_shader.mag.json");
 
         add_input_attachment("OutputColorScene", AttachmentType::Color, size, AttachmentState::Load);
         add_output_attachment("OutputColor", AttachmentType::Color, size);
@@ -353,9 +343,6 @@ namespace mag
     {
         (void)scene;
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
         performance_results = {};
 
         // Only apply post processing to the final combined result
@@ -367,7 +354,7 @@ namespace mag
         post_shader->bind();
         post_shader->set_texture("u_screen_color_texture", &screen_color);
 
-        renderer.draw(4);
+        gfx::draw(4);
 
         performance_results.rendered_triangles += 2;
         performance_results.draw_calls++;

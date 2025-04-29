@@ -1,77 +1,107 @@
 #include "resources/model.hpp"
 
-#include "core/application.hpp"
+#include <map>
+
 #include "renderer/renderer.hpp"
 #include "renderer/test_model.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
 {
-    ModelManager::ModelManager()
+    namespace resource
     {
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-
-        models[DEFAULT_MODEL_NAME] = create_ref<Model>();
-        models[DEFAULT_MODEL_NAME]->name = "Default";
-        models[DEFAULT_MODEL_NAME]->meshes = Cube().get_model().meshes;
-        models[DEFAULT_MODEL_NAME]->vertices = Cube().get_model().vertices;
-        models[DEFAULT_MODEL_NAME]->indices = Cube().get_model().indices;
-        models[DEFAULT_MODEL_NAME]->materials = Cube().get_model().materials;
-
-        // Send model data to the GPU
-        renderer.upload_model(models[DEFAULT_MODEL_NAME].get());
-    }
-
-    ref<Model> ModelManager::get(const str& name)
-    {
-        auto it = models.find(name);
-        if (it != models.end())
+        struct State
         {
-            return it->second;
+                std::map<str, ref<Model>> models;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_model_subsystem()
+        {
+            state = new State();
+
+            state->models[DEFAULT_MODEL_NAME] = create_ref<Model>();
+            state->models[DEFAULT_MODEL_NAME]->name = "Default";
+            state->models[DEFAULT_MODEL_NAME]->meshes = Cube().get_model().meshes;
+            state->models[DEFAULT_MODEL_NAME]->vertices = Cube().get_model().vertices;
+            state->models[DEFAULT_MODEL_NAME]->indices = Cube().get_model().indices;
+            state->models[DEFAULT_MODEL_NAME]->materials = Cube().get_model().materials;
+
+            // Send model data to the GPU
+            gfx::upload_model(state->models[DEFAULT_MODEL_NAME].get());
+            state->models[DEFAULT_MODEL_NAME]->loading_status = LoadingStatus::UploadedToGpu;
+
+            return state != nullptr;
         }
 
-        auto& app = get_application();
-        auto& job_system = app.get_job_system();
-        auto& renderer = app.get_renderer();
-
-        // Create a new model
-        Model* model = new Model(*models[DEFAULT_MODEL_NAME]);
-        models[name] = ref<Model>(model);
-
-        // Send model data to the GPU
-        renderer.upload_model(model);
-
-        // Temporary model to load data into
-        Model* transfer_model = new Model(*model);
-
-        // Load in another thread
-        auto execute = [name, transfer_model]
+        void shutdown_model_subsystem()
         {
-            // If the load fails we still have valid data
-            return resource::load(name, transfer_model);
-        };
+            state->models.clear();
+            delete state;
+        }
 
-        // Callback when finished loading
-        auto load_finished_callback = [&renderer, model, transfer_model](const b8 result)
+        ref<Model> get_model(const str& name)
         {
-            // Update the model and renderer model data
-            if (result == true)
+            auto it = state->models.find(name);
+            if (it != state->models.end())
             {
-                *model = *transfer_model;
-                renderer.update_model(model);
+                return it->second;
             }
 
-            // We can dispose of the temporary model now
-            delete transfer_model;
-        };
+            // Create a new model
+            Model* model = new Model(*state->models[DEFAULT_MODEL_NAME]);
+            model->loading_status = LoadingStatus::InProgress;
+            state->models[name] = ref<Model>(model);
 
-        Job load_job = Job(execute, load_finished_callback);
-        job_system.add_job(load_job);
+            // Send model data to the GPU
+            gfx::upload_model(model);
 
-        return models[name];
-    }
+            // Temporary model to load data into
+            Model* transfer_model = new Model(*model);
 
-    ref<Model> ModelManager::get_default() { return models[DEFAULT_MODEL_NAME]; }
-};  // namespace mag
+            // Load in another thread
+            auto execute = [name, transfer_model]
+            {
+                // If the load fails we still have valid data
+                const b8 result = resource::load(name, transfer_model);
+
+                if (result)
+                {
+                    transfer_model->loading_status = LoadingStatus::Finished;
+                }
+
+                else
+                {
+                    transfer_model->loading_status = LoadingStatus::Error;
+                }
+
+                return result;
+            };
+
+            // Callback when finished loading
+            auto load_finished_callback = [model, transfer_model](const b8 result)
+            {
+                // Update the model and renderer model data
+                if (result == true)
+                {
+                    *model = *transfer_model;
+                    gfx::update_model(model);
+                    model->loading_status = LoadingStatus::UploadedToGpu;
+                }
+
+                // We can dispose of the temporary model now
+                delete transfer_model;
+            };
+
+            Job load_job = Job(execute, load_finished_callback);
+            thread::add_job(load_job);
+
+            return state->models[name];
+        }
+
+        ref<Model> get_default_model() { return state->models[DEFAULT_MODEL_NAME]; }
+    };  // namespace resource
+};      // namespace mag

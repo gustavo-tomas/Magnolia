@@ -4,17 +4,14 @@
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
+#include "core/types.hpp"
 #include "core/window.hpp"
-#include "platform/file_dialog.hpp"
 #include "platform/file_system.hpp"
+#include "platform/platform.hpp"
 #include "renderer/renderer.hpp"
-#include "renderer/shader.hpp"
-#include "resources/audio.hpp"
-#include "resources/font.hpp"
-#include "resources/image.hpp"
-#include "resources/material.hpp"
-#include "resources/model.hpp"
+#include "resources/resource.hpp"
 #include "threads/job_system.hpp"
+#include "threads/thread.hpp"
 #include "tools/profiler.hpp"
 
 namespace mag
@@ -27,38 +24,30 @@ namespace mag
         return *application;
     }
 
-    struct Application::IMPL
-    {
-            IMPL() = default;
-            ~IMPL() = default;
-
-            unique<Window> window;
-            unique<Renderer> renderer;
-            unique<FileWatcher> file_watcher;
-            unique<JobSystem> job_system;
-            unique<TextureManager> texture_manager;
-            unique<FontManager> font_manager;
-            unique<MaterialManager> material_manager;
-            unique<ModelManager> model_manager;
-            unique<ShaderManager> shader_manager;
-            unique<AudioManager> audio_manager;
-
-            b8 running;
-            f32 target_frame_rate;
-    };
-
-    Application::Application(const str& config_file_path) : impl(new IMPL())
+    Application::Application(const str& config_file_path)
     {
         application = this;
 
-        // Remember that smart pointers are destroyed in the reverse order of creation
+        b8 initialized = true;
+
+        // Initialize the platform subsystem
+        initialized = initialized && plat::initialize();
+
+        // Initialize the filesystem subsystem
+        initialized = initialized && fs::initialize();
+
+        // Initialize the threading subsystem
+        initialized = initialized && thread::initialize();
+
+        // Initialize the audio subsystem
+        initialized = initialized && audio::initialize();
 
         // Read config file
 
         fs::json config;
 
-        uvec2 window_size = WindowOptions::MaxSize;
-        ivec2 window_position = WindowOptions::CenterPos;
+        math::uvec2 window_size = WindowOptions::MaxSize;
+        math::ivec2 window_position = WindowOptions::CenterPos;
         str window_title = "Magnolia";
         str window_icon = "";
 
@@ -85,108 +74,74 @@ namespace mag
         // Set target frame rate
         set_target_frame_rate(config["TargetFrameRate"].get<f32>());
 
-        // Create the window
         const WindowOptions window_options = {BIND_FN(Application::process_event), window_size, window_position,
                                               window_title, window_icon};
 
-        impl->window = create_unique<Window>(window_options);
-        LOG_SUCCESS("Window initialized");
+        // Initialize the window
+        initialized = initialized && window::initialize(window_options);
 
-        // Create the renderer
-        impl->renderer = create_unique<Renderer>(*impl->window);
-        LOG_SUCCESS("Renderer initialized");
+        // Initialize graphics subsystem
+        initialized = initialized && gfx::initialize();
 
-        // Create the file watcher
-        impl->file_watcher = create_unique<FileWatcher>();
-        LOG_SUCCESS("FileWatcher initialized");
+        // Initialize the resource subsystem
+        initialized = initialized && resource::initialize();
 
-        // Create the job system
-        impl->job_system = create_unique<JobSystem>(std::thread::hardware_concurrency());
-        LOG_SUCCESS("JobSystem initialized");
-
-        // Create the texture manager
-        impl->texture_manager = create_unique<TextureManager>();
-        LOG_SUCCESS("TextureManager initialized");
-
-        // Create the font manager
-        impl->font_manager = create_unique<FontManager>();
-        LOG_SUCCESS("FontManager initialized");
-
-        // Create the material manager
-        impl->material_manager = create_unique<MaterialManager>();
-        LOG_SUCCESS("MaterialManager initialized");
-
-        // Create the model manager
-        impl->model_manager = create_unique<ModelManager>();
-        LOG_SUCCESS("ModelManager initialized");
-
-        // Create the shader manager
-        impl->shader_manager = create_unique<ShaderManager>();
-        LOG_SUCCESS("ShaderManager initialized");
-
-        // Create the audio manager
-        impl->audio_manager = create_unique<AudioManager>();
-        LOG_SUCCESS("AudioManager initialized");
-
-        // Initialize the audio system
-        if (audio::initialize())
+        if (initialized)
         {
-            LOG_SUCCESS("Audio system initialized");
+            LOG_SUCCESS("Application initialized");
         }
 
         else
         {
-            LOG_ERROR("Failed to initialize Audio system");
-        }
-
-        // Initialize file dialogs
-        if (FileDialog::initialize())
-        {
-            LOG_SUCCESS("FileDialog initialized");
-        }
-
-        else
-        {
-            LOG_ERROR("Failed to initialize FileDialog");
+            MAG_ASSERT(false, "Failed to initialize Application");
         }
     }
 
-    Application::~Application() { FileDialog::shutdown(); }
+    Application::~Application()
+    {
+        resource::shutdown();
+        gfx::shutdown();
+        window::shutdown();
+        audio::shutdown();
+        thread::shutdown();
+        fs::shutdown();
+        plat::shutdown();
+    }
 
     void Application::run()
     {
         f64 curr_time = 0, last_time = 0, dt = 0;
 
-        impl->running = true;
+        running = true;
 
-        while (impl->running)
+        while (running)
         {
             // Calculate dt
-            curr_time = impl->window->get_time();
+            curr_time = plat::get_time();
             dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
 
             SCOPED_PROFILE("Application");
 
-            impl->window->on_update();
+            window::on_update();
 
             // Skip rendering if minimized or resizing
-            if (impl->window->is_minimized())
+            if (window::is_minimized())
             {
-                impl->window->sleep(50);
+                thread::sleep(50);
                 continue;
             }
 
-            impl->job_system->process_callbacks();
+            thread::process_callbacks();
 
             // Update the user application
             on_update(dt);
 
             // Delay if needed
-            const f64 delay = (1000.0 / impl->target_frame_rate) - (impl->window->get_time() - last_time);
-            if (delay > 0.0 && impl->target_frame_rate > 0.0)
+            const f64 delay = (1000.0 / target_frame_rate) - (plat::get_time() - last_time);
+            if (delay > 0.0 && target_frame_rate > 0.0)
             {
-                impl->window->sleep(delay);
+                thread::sleep(delay);
             }
         }
     }
@@ -197,7 +152,7 @@ namespace mag
         dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
         dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
 
-        impl->renderer->on_event(e);
+        gfx::on_event(e);
 
         // Send event to be processed by the user application
         on_event(e);
@@ -208,25 +163,14 @@ namespace mag
     void Application::on_quit(const QuitEvent& e)
     {
         (void)e;
-        impl->running = false;
+        running = false;
     }
 
     void Application::on_window_close(const WindowCloseEvent& e)
     {
         (void)e;
-        impl->running = false;
+        running = false;
     }
 
-    void Application::set_target_frame_rate(const f32 frame_rate) { impl->target_frame_rate = frame_rate; }
-
-    Window& Application::get_window() { return *impl->window; }
-    Renderer& Application::get_renderer() { return *impl->renderer; }
-    FileWatcher& Application::get_file_watcher() { return *impl->file_watcher; }
-    JobSystem& Application::get_job_system() { return *impl->job_system; }
-    TextureManager& Application::get_texture_manager() { return *impl->texture_manager; }
-    FontManager& Application::get_font_manager() { return *impl->font_manager; }
-    MaterialManager& Application::get_material_manager() { return *impl->material_manager; }
-    ModelManager& Application::get_model_manager() { return *impl->model_manager; }
-    ShaderManager& Application::get_shader_manager() { return *impl->shader_manager; }
-    AudioManager& Application::get_audio_manager() { return *impl->audio_manager; }
+    void Application::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }
 };  // namespace mag

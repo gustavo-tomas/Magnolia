@@ -1,6 +1,5 @@
 #include "menu/menu_bar.hpp"
 
-#include "core/application.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "editor.hpp"
@@ -93,8 +92,8 @@ namespace sprout
         auto& editor = get_editor();
         auto& scene = editor.get_active_scene();
 
-        const str& file_path = FileDialog::save_file("Save Scene As...", scene.get_name() + ".mag.json",
-                                                     {"Scene Files (.mag.json)", "*.mag.json"});
+        const str& file_path = fs::save_file_dialog("Save Scene As...", scene.get_name() + ".mag.json",
+                                                    {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {
@@ -109,7 +108,7 @@ namespace sprout
     {
         auto& editor = get_editor();
 
-        const str file_path = FileDialog::open_file("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
+        const str file_path = fs::open_file_dialog("Open Scene", {"Scene Files (.mag.json)", "*.mag.json"});
 
         if (!file_path.empty())
         {
@@ -146,10 +145,8 @@ namespace sprout
 
     void MenuBar::on_key_press(const KeyPressEvent& e)
     {
-        auto& window = get_application().get_window();
-
-        const b8 ctrl = window.is_key_down(Keys::Lctrl) || window.is_key_down(Keys::Rctrl);
-        const b8 shift = window.is_key_down(Keys::Lshift) || window.is_key_down(Keys::Rshift);
+        const b8 ctrl = window::is_key_down(Keys::Lctrl) || window::is_key_down(Keys::Rctrl);
+        const b8 shift = window::is_key_down(Keys::Lshift) || window::is_key_down(Keys::Rshift);
 
         switch (e.key)
         {

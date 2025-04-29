@@ -1,10 +1,10 @@
 #pragma once
 
-#include <map>
 #include <vector>
 
 #include "core/types.hpp"
 #include "math/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -31,7 +31,7 @@ namespace mag
             vec3 aabb_max;
     };
 
-    struct Model
+    struct Model : public IResource
     {
             str name = "";
             str file_path = "";
@@ -42,15 +42,9 @@ namespace mag
             std::vector<str> materials;
     };
 
-    class ModelManager
+    namespace resource
     {
-        public:
-            ModelManager();
-
-            ref<Model> get(const str& name);
-            ref<Model> get_default();
-
-        private:
-            std::map<str, ref<Model>> models;
-    };
-};  // namespace mag
+        ref<Model> get_model(const str& name);
+        ref<Model> get_default_model();
+    };  // namespace resource
+};      // namespace mag

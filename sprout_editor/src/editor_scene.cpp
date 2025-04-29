@@ -1,7 +1,6 @@
 #include "editor_scene.hpp"
 
 #include "camera_controller.hpp"
-#include "core/application.hpp"
 #include "core/window.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
@@ -14,10 +13,7 @@ namespace sprout
           camera(new Camera({0.0f, 50.0f, 150.0f}, vec3(0.0f), math::radians(60.0f), 800.0f / 600.0f, 1.0f, 10000.0f)),
           camera_controller(new EditorCameraController(*camera))
     {
-        auto& app = get_application();
-        auto& window = app.get_window();
-
-        const uvec2 window_size = window.get_size();
+        const uvec2 window_size = window::get_size();
         current_viewport_size = window_size;
 
         camera->set_aspect_ratio(current_viewport_size);

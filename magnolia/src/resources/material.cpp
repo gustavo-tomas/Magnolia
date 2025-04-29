@@ -1,67 +1,95 @@
 #include "resources/material.hpp"
 
-#include "core/application.hpp"
 #include "resources/image.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
 {
-    MaterialManager::MaterialManager()
+    namespace resource
     {
-        materials[DEFAULT_MATERIAL_NAME] = create_ref<Material>();
-        materials[DEFAULT_MATERIAL_NAME]->name = "Default";
-        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
-        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
-        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Roughness] = DEFAULT_ROUGHNESS_TEXTURE_NAME;
-        materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
-    }
-
-    ref<Material> MaterialManager::get(const str& name)
-    {
-        auto it = materials.find(name);
-        if (it != materials.end())
+        struct State
         {
-            return it->second;
+                std::map<str, ref<Material>> materials;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_material_subsystem()
+        {
+            state = new State();
+
+            state->materials[DEFAULT_MATERIAL_NAME] = create_ref<Material>();
+            state->materials[DEFAULT_MATERIAL_NAME]->name = "Default";
+            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
+            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
+            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Roughness] = DEFAULT_ROUGHNESS_TEXTURE_NAME;
+            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
+
+            return state != nullptr;
         }
 
-        auto& app = get_application();
-        auto& job_system = app.get_job_system();
-
-        // Create a new material
-        Material* material = new Material(*materials[DEFAULT_MATERIAL_NAME]);
-        materials[name] = ref<Material>(material);
-
-        // Temporary material to load data into
-        Material* transfer_material = new Material(*material);
-
-        // Load in another thread
-        auto execute = [name, transfer_material]
+        void shutdown_material_subsystem()
         {
-            // If the load fails we still have valid data
-            transfer_material->loading_state = MaterialLoadingState::LoadingInProgress;
-            return resource::load(name, transfer_material);
-        };
+            state->materials.clear();
+            delete state;
+        }
 
-        // Callback when finished loading
-        auto load_finished_callback = [material, transfer_material](const b8 result)
+        ref<Material> get_material(const str& name)
         {
-            // Update the material and the renderer material data
-            if (result == true)
+            auto it = state->materials.find(name);
+            if (it != state->materials.end())
             {
-                transfer_material->loading_state = MaterialLoadingState::LoadingFinished;
-                *material = *transfer_material;
+                return it->second;
             }
 
-            // We can dispose of the temporary material now
-            delete transfer_material;
-        };
+            // Create a new material
+            Material* material = new Material(*state->materials[DEFAULT_MATERIAL_NAME]);
+            material->loading_status = LoadingStatus::InProgress;
+            state->materials[name] = ref<Material>(material);
 
-        Job load_job = Job(execute, load_finished_callback);
-        job_system.add_job(load_job);
+            // Temporary material to load data into
+            Material* transfer_material = new Material(*material);
 
-        return materials[name];
-    }
+            // Load in another thread
+            auto execute = [name, transfer_material]
+            {
+                // If the load fails we still have valid data
+                const b8 result = resource::load(name, transfer_material);
 
-    ref<Material> MaterialManager::get_default() { return materials[DEFAULT_MATERIAL_NAME]; }
-};  // namespace mag
+                if (result)
+                {
+                    transfer_material->loading_status = LoadingStatus::Finished;
+                }
+
+                else
+                {
+                    transfer_material->loading_status = LoadingStatus::Error;
+                }
+
+                return result;
+            };
+
+            // Callback when finished loading
+            auto load_finished_callback = [material, transfer_material](const b8 result)
+            {
+                // Update the material and the renderer material data
+                if (result == true)
+                {
+                    *material = *transfer_material;
+                }
+
+                // We can dispose of the temporary material now
+                delete transfer_material;
+            };
+
+            Job load_job = Job(execute, load_finished_callback);
+            thread::add_job(load_job);
+
+            return state->materials[name];
+        }
+
+        ref<Material> get_default_material() { return state->materials[DEFAULT_MATERIAL_NAME]; }
+    };  // namespace resource
+};      // namespace mag

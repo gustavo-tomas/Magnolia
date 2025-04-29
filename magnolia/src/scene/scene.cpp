@@ -2,7 +2,6 @@
 
 #include "audio/audio_system.hpp"
 #include "camera/camera.hpp"
-#include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/event.hpp"
 #include "ecs/components.hpp"
@@ -40,15 +39,12 @@ namespace mag
             create_script(id);
         }
 
-        mag::Application& app = mag::get_application();
-        mag::AudioManager& audio_manager = app.get_audio_manager();
-
         // Play audios
         for (const auto* audio_c : ecs->get_all_components_of_type<AudioComponent>())
         {
             if (audio_c->play_on_load)
             {
-                auto audio = audio_manager.get(audio_c->audio->name);
+                auto audio = resource::get_audio(audio_c->audio->name);
                 audio::play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
             }
         }
@@ -251,10 +247,7 @@ namespace mag
 
     void Scene::add_model(const str& path)
     {
-        auto& app = get_application();
-        auto& model_manager = app.get_model_manager();
-
-        const auto model = model_manager.get(path);
+        const auto model = resource::get_model(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new TransformComponent());
@@ -263,10 +256,7 @@ namespace mag
 
     void Scene::add_sprite(const str& path)
     {
-        auto& app = get_application();
-        auto& texture_manager = app.get_texture_manager();
-
-        const auto sprite = texture_manager.get(path);
+        const auto sprite = resource::get_texture(path);
 
         const auto entity = ecs->create_entity();
         ecs->add_component(entity, new SpriteComponent(sprite, path));

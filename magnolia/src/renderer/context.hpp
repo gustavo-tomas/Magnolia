@@ -13,7 +13,6 @@ namespace mag
 #define VK_CHECK(result) MAG_ASSERT(result == vk::Result::eSuccess, "Vk check failed")
 #define VK_CAST(vk_result) static_cast<vk::Result>(vk_result) /* i.e. VK_SUCCESS -> vk::Result::eSuccess */
 
-    class Window;
     class CommandBuffer;
     class DescriptorAllocator;
     class DescriptorLayoutCache;
@@ -25,7 +24,6 @@ namespace mag
 
     struct ContextCreateOptions
     {
-            Window& window;
             str application_name = "Magnolia";
             str engine_name = "Magnolia";
     };

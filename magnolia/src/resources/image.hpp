@@ -1,9 +1,9 @@
 #pragma once
 
-#include <map>
 #include <vector>
 
 #include "core/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -12,7 +12,7 @@ namespace mag
 #define DEFAULT_ROUGHNESS_TEXTURE_NAME "__mag_default_roughness_texture__"
 #define DEFAULT_METALNESS_TEXTURE_NAME "__mag_default_metalness_texture__"
 
-    struct Image
+    struct Image : public IResource
     {
             u8 channels = 4;
             u32 width = 64;
@@ -21,15 +21,9 @@ namespace mag
             std::vector<u8> pixels = std::vector<u8>(64 * 64 * 4, 153);
     };
 
-    class TextureManager
+    namespace resource
     {
-        public:
-            TextureManager();
-
-            ref<Image> get(const str& name);
-            ref<Image> get_default();
-
-        private:
-            std::map<str, ref<Image>> textures;
-    };
-};  // namespace mag
+        ref<Image> get_texture(const str& name);
+        ref<Image> get_default_texture();
+    };  // namespace resource
+};      // namespace mag

@@ -1,6 +1,5 @@
 #include "scene/scene_serializer.hpp"
 
-#include "core/application.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
@@ -144,8 +143,6 @@ namespace mag
 
         b8 load(const str& file_path, Scene& scene)
         {
-            auto& app = get_application();
-
             fs::json data;
 
             if (!fs::read_json_data(file_path, data))
@@ -200,7 +197,7 @@ namespace mag
                     const auto& component = entity["ModelComponent"];
                     const str file_path = component["FilePath"];
 
-                    const auto& model = app.get_model_manager().get(file_path);
+                    const auto& model = resource::get_model(file_path);
 
                     ecs.add_component(entity_id, new ModelComponent(model));
                 }
@@ -212,7 +209,7 @@ namespace mag
                     const b8 constant_size = component["ConstantSize"].get<b8>();
                     const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
-                    const auto& sprite = app.get_texture_manager().get(file_path);
+                    const auto& sprite = resource::get_texture(file_path);
 
                     ecs.add_component(entity_id,
                                       new SpriteComponent(sprite, file_path, constant_size, always_face_camera));
@@ -227,7 +224,7 @@ namespace mag
 
                     for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
 
-                    const auto& font = app.get_font_manager().get(file_path);
+                    const auto& font = resource::get_font(file_path);
 
                     ecs.add_component(entity_id, new TextComponent(font, color, text));
                 }
@@ -245,7 +242,7 @@ namespace mag
                     for (i32 i = 0; i < position.length(); i++) position[i] = component["Position"][i].get<f32>();
                     for (i32 i = 0; i < velocity.length(); i++) velocity[i] = component["Velocity"][i].get<f32>();
 
-                    const auto& audio = app.get_audio_manager().get(file_path);
+                    const auto& audio = resource::get_audio(file_path);
 
                     ecs.add_component(entity_id, new AudioComponent(audio, volume, play_on_load, position, velocity));
                 }

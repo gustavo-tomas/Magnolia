@@ -11,9 +11,6 @@ class CameraController : public ScriptableEntity
 
         virtual void on_update(const f32 dt) override
         {
-            Application& app = get_application();
-            Window& window = app.get_window();
-
             auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
             if (!transform)
             {
@@ -29,12 +26,12 @@ class CameraController : public ScriptableEntity
             vec3 direction(0.0f);
             const f32 speed = 50.0f;
 
-            if (window.is_key_down(Key::a)) direction -= side;
-            if (window.is_key_down(Key::d)) direction += side;
-            if (window.is_key_down(Key::w)) direction -= forward;
-            if (window.is_key_down(Key::s)) direction += forward;
-            if (window.is_key_down(Key::Space)) direction += up;
-            if (window.is_key_down(Key::Lctrl)) direction -= up;
+            if (window::is_key_down(Key::a)) direction -= side;
+            if (window::is_key_down(Key::d)) direction += side;
+            if (window::is_key_down(Key::w)) direction -= forward;
+            if (window::is_key_down(Key::s)) direction += forward;
+            if (window::is_key_down(Key::Space)) direction += up;
+            if (window::is_key_down(Key::Lctrl)) direction -= up;
 
             // Prevent nan values
             if (length(direction) > 0.0f)
@@ -69,10 +66,7 @@ class CameraController : public ScriptableEntity
             // Capture/Release the cursor
             if (e.button == Button::Right)
             {
-                auto& app = get_application();
-                auto& window = app.get_window();
-
-                window.set_capture_mouse(!window.is_mouse_captured());
+                window::set_capture_mouse(!window::is_mouse_captured());
             }
         }
 

@@ -39,9 +39,6 @@ class EnemySpawner : public ScriptableEntity
 
             LOG_INFO("Enemies spawned: {0}", counter++);
 
-            Application& app = get_application();
-            ModelManager& model_manager = app.get_model_manager();
-
             const TransformComponent* spawner_transform = get_component<TransformComponent>();
 
             if (!spawner_transform)
@@ -54,7 +51,7 @@ class EnemySpawner : public ScriptableEntity
             const u32 enemy_id = create_entity("MenacingHammer" + std::to_string(counter));
 
             const ref<Model> model =
-                model_manager.get("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
+                resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             TransformComponent* enemy_transform = new TransformComponent(*spawner_transform);
             enemy_transform->scale = vec3(100.0f);

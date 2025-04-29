@@ -4,18 +4,6 @@
 
 namespace mag
 {
-    class Window;
-    class Renderer;
-    class FileWatcher;
-    class JobSystem;
-
-    class ShaderManager;
-    class TextureManager;
-    class FontManager;
-    class AudioManager;
-    class ModelManager;
-    class MaterialManager;
-
     struct Event;
     struct QuitEvent;
     struct WindowCloseEvent;
@@ -36,17 +24,6 @@ namespace mag
             // -1 is no limits
             void set_target_frame_rate(const f32 frame_rate);
 
-            Window& get_window();
-            Renderer& get_renderer();
-            FileWatcher& get_file_watcher();
-            JobSystem& get_job_system();
-            TextureManager& get_texture_manager();
-            FontManager& get_font_manager();
-            MaterialManager& get_material_manager();
-            ModelManager& get_model_manager();
-            ShaderManager& get_shader_manager();
-            AudioManager& get_audio_manager();
-
         protected:
             // Process events from the user application
             void process_user_application_event(const Event& e);
@@ -56,8 +33,8 @@ namespace mag
             void on_window_close(const WindowCloseEvent& e);
             void on_quit(const QuitEvent& e);
 
-            struct IMPL;
-            unique<IMPL> impl;
+            b8 running;
+            f32 target_frame_rate;
     };
 
     // Access to the application

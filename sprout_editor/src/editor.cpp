@@ -124,7 +124,7 @@ namespace sprout
 
         set_default_editor_style(ImGui::GetStyle());
 
-        MAG_ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(get_application().get_window().get_handle())),
+        MAG_ASSERT(ImGui_ImplSDL2_InitForVulkan(static_cast<SDL_Window *>(window::get_handle())),
                    "Failed to initialize editor window backend");
 
         const vk::Format color_attachment_format = context.get_supported_color_format(ImageFormat::RGBA16_Sfloat);
@@ -158,10 +158,8 @@ namespace sprout
         impl->settings_panel = create_unique<SettingsPanel>();
 
         // Initialize render graph
-        auto &app = get_application();
-        auto &window = app.get_window();
 
-        const uvec2 window_size = window.get_size();
+        const uvec2 window_size = window::get_size();
         impl->curr_viewport_size = window_size;
 
         build_render_graph(window_size, get_viewport_size());
@@ -230,10 +228,6 @@ namespace sprout
     {
         (void)dt;
 
-        Application &app = get_application();
-        Window &window = app.get_window();
-        Renderer &renderer = app.get_renderer();
-
         // Delete closed scenes from back to front
         for (i32 i = impl->open_scenes_marked_for_deletion.size() - 1; i >= 0; i--)
         {
@@ -291,12 +285,12 @@ namespace sprout
         }
 
         // Alternate between Fullscreen and Windowed
-        if (window.is_key_pressed(Key::Escape))
+        if (window::is_key_pressed(Key::Escape))
         {
-            window.set_fullscreen(!window.is_fullscreen());
+            window::set_fullscreen(!window::is_fullscreen());
         }
 
-        renderer.on_update(get_render_graph(), static_cast<Scene &>(active_scene));
+        gfx::on_update(get_render_graph(), static_cast<Scene &>(active_scene));
     }
 
     void Editor::render(ECS &ecs, Camera &camera, RendererImage &viewport_image)
@@ -374,7 +368,7 @@ namespace sprout
 
         impl->curr_viewport_size = new_viewport_size;
 
-        const uvec2 window_size = get_application().get_window().get_size();
+        const uvec2 window_size = window::get_size();
 
         build_render_graph(window_size, new_viewport_size);
     }
@@ -482,9 +476,6 @@ namespace sprout
     // @TODO: this can be done in a separate thread
     void Editor::watch_scripts()
     {
-        Application &app = get_application();
-        FileWatcher &file_watcher = app.get_file_watcher();
-
         // First remove file if it no longer exists
         for (const str &file_path : impl->scripts_on_watch)
         {
@@ -502,26 +493,22 @@ namespace sprout
             if (fs::get_file_extension(file_path) == ".cpp")
             {
                 impl->scripts_on_watch.insert(file_path);
-                file_watcher.watch_file(file_path);
+                fs::watch_file(file_path);
             }
         }
     }
 
     void Editor::recompile_scripts()
     {
-        Application &app = get_application();
-        FileWatcher &file_watcher = app.get_file_watcher();
-        JobSystem &job_system = app.get_job_system();
-
         std::vector<str> modified_scripts;
 
         // Check if a script was modified
         for (const str &script_file_path : impl->scripts_on_watch)
         {
-            if (file_watcher.was_file_modified(script_file_path))
+            if (fs::was_file_modified(script_file_path))
             {
                 modified_scripts.push_back(script_file_path);
-                file_watcher.reset_file_status(script_file_path);
+                fs::reset_file_status(script_file_path);
             }
         }
 
@@ -560,7 +547,7 @@ namespace sprout
         };
 
         Job load_job = Job(execute, on_execute_finished);
-        job_system.add_job(load_job);
+        thread::add_job(load_job);
     }
 
     EditorScene &Editor::get_active_scene() { return *impl->open_scenes[impl->selected_scene_index]; }

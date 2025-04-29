@@ -36,10 +36,7 @@ namespace game
             return;
         }
 
-        mag::Application &app = mag::get_application();
-        mag::Window &window = app.get_window();
-
-        build_render_graph(window.get_size());
+        build_render_graph(mag::window::get_size());
 
         scene->on_start();
     }
@@ -70,10 +67,7 @@ namespace game
 
         scene->on_update(dt);
 
-        mag::Application &app = mag::get_application();
-        mag::Renderer &renderer = app.get_renderer();
-
-        renderer.on_update(*render_graph, *scene);
+        mag::gfx::on_update(*render_graph, *scene);
     }
 
     void TestGame::on_event(const mag::Event &e)

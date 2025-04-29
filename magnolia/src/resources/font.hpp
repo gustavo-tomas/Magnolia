@@ -5,6 +5,7 @@
 #include "core/types.hpp"
 #include "math/types.hpp"
 #include "resources/image.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -17,20 +18,14 @@ namespace mag
             std::vector<u8> data;  // Char data
     };
 
-    struct Font
+    struct Font : public IResource
     {
             str name;
             std::map<c8, Character> characters;
     };
 
-    class FontManager
+    namespace resource
     {
-        public:
-            FontManager();
-
-            ref<Font> get(const str& name);
-
-        private:
-            std::map<str, ref<Font>> fonts;
+        ref<Font> get_font(const str& name);
     };
 };  // namespace mag

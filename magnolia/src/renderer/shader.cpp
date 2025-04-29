@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.hpp>
 
-#include "core/application.hpp"
 #include "core/assert.hpp"
 #include "core/logger.hpp"
 #include "math/types.hpp"
@@ -15,6 +14,7 @@
 #include "renderer/renderer_image.hpp"
 #include "resources/image.hpp"
 #include "resources/material.hpp"
+#include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "spirv_reflect.h"
 
@@ -22,38 +22,60 @@ namespace mag
 {
     using namespace mag::math;
 
-    ref<Shader> ShaderManager::get(const str& file_path)
+    namespace resource
     {
-        auto it = shaders.find(file_path);
-        if (it != shaders.end()) return it->second;
-
-        ShaderConfiguration shader_configuration;
-
-        if (!resource::load(file_path, &shader_configuration))
+        struct State
         {
-            LOG_ERROR("Failed to load shader: '{0}'", file_path);
-            return nullptr;
+                std::map<str, ref<Shader>> shaders;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_shader_subsystem()
+        {
+            state = new State();
+            return state != nullptr;
         }
 
-        shaders[file_path] = create_ref<Shader>(shader_configuration);
-        return shaders[file_path];
-    }
-
-    void ShaderManager::recompile_all_shaders()
-    {
-        for (const auto& [file_path, shader] : shaders)
+        void shutdown_shader_subsystem()
         {
+            state->shaders.clear();
+            delete state;
+        }
+
+        ref<Shader> get_shader(const str& file_path)
+        {
+            auto it = state->shaders.find(file_path);
+            if (it != state->shaders.end()) return it->second;
+
             ShaderConfiguration shader_configuration;
 
-            if (!resource::load(file_path, &shader_configuration, true))
+            if (!resource::load(file_path, &shader_configuration))
             {
                 LOG_ERROR("Failed to load shader: '{0}'", file_path);
-                continue;
+                return nullptr;
             }
 
-            shaders[file_path]->rebuild(shader_configuration);
+            state->shaders[file_path] = create_ref<Shader>(shader_configuration);
+            return state->shaders[file_path];
         }
-    }
+
+        void recompile_all_shaders()
+        {
+            for (const auto& [file_path, shader] : state->shaders)
+            {
+                ShaderConfiguration shader_configuration;
+
+                if (!resource::load(file_path, &shader_configuration, true))
+                {
+                    LOG_ERROR("Failed to load shader: '{0}'", file_path);
+                    continue;
+                }
+
+                state->shaders[file_path]->rebuild(shader_configuration);
+            }
+        }
+    };  // namespace resource
 
     Shader::Shader(const ShaderConfiguration& shader_configuration) : configuration(shader_configuration)
     {
@@ -208,11 +230,7 @@ namespace mag
                 // Create samplers for textures
                 else if (type == vk::DescriptorType::eCombinedImageSampler)
                 {
-                    auto& app = get_application();
-                    auto& renderer = app.get_renderer();
-                    auto& texture_manager = app.get_texture_manager();
-
-                    const auto& default_texture = texture_manager.get_default();
+                    const auto& default_texture = resource::get_default_texture();
 
                     for (u32 f = 0; f < frame_count; f++)
                     {
@@ -222,7 +240,7 @@ namespace mag
                         std::vector<ref<RendererImage>> textures;
                         for (u32 sampler_idx = 0; sampler_idx < descriptor_binding.count; sampler_idx++)
                         {
-                            textures.push_back(renderer.get_renderer_image(default_texture.get()));
+                            textures.push_back(gfx::get_renderer_image(default_texture.get()));
                         }
 
                         DescriptorBuilder::create_descriptor_for_textures(descriptor_binding.binding, textures,
@@ -361,7 +379,7 @@ namespace mag
         LOG_ERROR("Uniform '{0}' not found in scope '{1}'", name, scope);
     }
 
-    void Shader::set_texture(const str& name, Image* texture)
+    void Shader::set_texture(const str& name, const Image* texture)
     {
         auto it = uniforms_map.find(name);
         if (it == uniforms_map.end())
@@ -371,8 +389,6 @@ namespace mag
             return;
         }
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
         auto& context = get_context();
 
         const u32 curr_frame_number = context.get_curr_frame_number();
@@ -385,7 +401,7 @@ namespace mag
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
 
-            auto renderer_texture = renderer.get_renderer_image(texture);
+            auto renderer_texture = gfx::get_renderer_image(texture);
 
             DescriptorBuilder::create_descriptor_for_textures(ubo.descriptor_binding->binding, {renderer_texture},
                                                               descriptor_set, descriptor_set_layout);
@@ -442,9 +458,6 @@ namespace mag
             return;
         }
 
-        auto& app = get_application();
-        auto& renderer = app.get_renderer();
-        auto& texture_manager = app.get_texture_manager();
         auto& context = get_context();
 
         const u32 curr_frame_number = context.get_curr_frame_number();
@@ -453,8 +466,7 @@ namespace mag
 
         // @TODO: this blocks the main thread and should be paralelized when the renderer supports it.
         // Create/Update descriptor for this material
-        if (texture_descriptor_sets.count(material) == 0 ||
-            material->loading_state == MaterialLoadingState::LoadingFinished)
+        if (texture_descriptor_sets.count(material) == 0 || material->loading_status == LoadingStatus::Finished)
         {
             vk::DescriptorSet descriptor_set;
             vk::DescriptorSetLayout descriptor_set_layout;
@@ -463,8 +475,8 @@ namespace mag
             for (const auto& texture_p : material->textures)
             {
                 const auto& texture_name = texture_p.second;
-                const auto& texture = texture_manager.get(texture_name);
-                const auto& renderer_texture = renderer.get_renderer_image(texture.get());
+                const auto& texture = resource::get_texture(texture_name);
+                const auto& renderer_texture = gfx::get_renderer_image(texture.get());
 
                 renderer_textures.push_back(renderer_texture);
             }
@@ -474,7 +486,7 @@ namespace mag
 
             texture_descriptor_sets[material] = descriptor_set;
 
-            material->loading_state = MaterialLoadingState::UploadedToGPU;
+            material->loading_status = LoadingStatus::UploadedToGpu;
         }
 
         ubo.descriptor_sets[curr_frame_number] = texture_descriptor_sets[material];

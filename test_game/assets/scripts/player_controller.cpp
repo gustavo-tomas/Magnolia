@@ -44,10 +44,7 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            Application& app = get_application();
-            Window& window = app.get_window();
-
-            if (window.is_button_pressed(Button::Left))
+            if (window::is_button_pressed(Button::Left))
             {
                 fire_bullet(*transform);
             }
@@ -55,9 +52,6 @@ class PlayerController : public ScriptableEntity
 
         void handle_movement(const f32 dt)
         {
-            Application& app = get_application();
-            Window& window = app.get_window();
-
             auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
             if (!transform)
             {
@@ -73,12 +67,12 @@ class PlayerController : public ScriptableEntity
             vec3 direction(0.0f);
             const f32 speed = 50.0f;
 
-            if (window.is_key_down(Key::a)) direction -= side;
-            if (window.is_key_down(Key::d)) direction += side;
-            if (window.is_key_down(Key::w)) direction -= forward;
-            if (window.is_key_down(Key::s)) direction += forward;
-            if (window.is_key_down(Key::Space)) direction += up;
-            if (window.is_key_down(Key::Lctrl)) direction -= up;
+            if (window::is_key_down(Key::a)) direction -= side;
+            if (window::is_key_down(Key::d)) direction += side;
+            if (window::is_key_down(Key::w)) direction -= forward;
+            if (window::is_key_down(Key::s)) direction += forward;
+            if (window::is_key_down(Key::Space)) direction += up;
+            if (window::is_key_down(Key::Lctrl)) direction -= up;
 
             // Prevent nan values
             if (length(direction) > 0.0f)
@@ -97,8 +91,6 @@ class PlayerController : public ScriptableEntity
 
         void fire_bullet(const TransformComponent& transform)
         {
-            Application& app = get_application();
-            ModelManager& model_manager = app.get_model_manager();
             PhysicsWorld& physics = get_physics_world();
 
             // Create a bullet
@@ -108,7 +100,7 @@ class PlayerController : public ScriptableEntity
             bullet_transform->scale = vec3(100.0f);
 
             const ref<Model> model =
-                model_manager.get("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
+                resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             auto* model_c = new ModelComponent(model);
             auto* rigid_body = new RigidBodyComponent(10.0f);
@@ -144,10 +136,7 @@ class PlayerController : public ScriptableEntity
             // Capture/Release the cursor
             if (e.button == Button::Right)
             {
-                auto& app = get_application();
-                auto& window = app.get_window();
-
-                window.set_capture_mouse(!window.is_mouse_captured());
+                window::set_capture_mouse(!window::is_mouse_captured());
             }
         }
 

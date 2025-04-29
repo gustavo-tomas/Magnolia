@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <mutex>
+#include <thread>
 
 #include "core/buffer.hpp"
 #include "core/logger.hpp"
@@ -10,6 +11,88 @@ namespace mag
 {
     namespace fs
     {
+        struct FileStatus
+        {
+                b8 modified = false;
+                std::filesystem::file_time_type last_write_time;
+        };
+
+        struct FileWatcher
+        {
+                std::thread watcher_thread;
+                std::map<str, FileStatus> files_on_watch;
+                std::mutex files_mutex;
+                b8 running = false;
+        };
+
+        struct State
+        {
+                FileWatcher fw;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize_file_dialog();
+        void shutdown_file_dialog();
+
+        b8 initialize()
+        {
+            state = new State();
+
+            // Initialize file watcher
+            state->fw.running = true;
+
+            state->fw.watcher_thread = std::thread(
+                []
+                {
+                    while (state->fw.running)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+                        std::vector<str> marked_for_removal;
+
+                        std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+                        for (auto& [file_path, file_status] : state->fw.files_on_watch)
+                        {
+                            // Remove files that have been deleted
+                            if (!fs::exists(file_path))
+                            {
+                                marked_for_removal.push_back(file_path);
+                                continue;
+                            }
+
+                            auto current_write_time = std::filesystem::last_write_time(file_path);
+                            if (current_write_time != file_status.last_write_time)
+                            {
+                                file_status.last_write_time = current_write_time;
+                                file_status.modified = true;
+                            }
+                        }
+
+                        for (const auto& file_path : marked_for_removal)
+                        {
+                            state->fw.files_on_watch.erase(file_path);
+                        }
+                    }
+                });
+
+            return state != nullptr && initialize_file_dialog();
+        }
+
+        void shutdown()
+        {
+            shutdown_file_dialog();
+
+            state->fw.running = false;
+
+            if (state->fw.watcher_thread.joinable())
+            {
+                state->fw.watcher_thread.join();
+            }
+
+            delete state;
+        }
+
         b8 read_binary_data(const fs::path& raw_file_path, Buffer& buffer)
         {
             const auto file_path = get_fixed_path(raw_file_path);
@@ -148,93 +231,44 @@ namespace mag
             const auto path = get_fixed_path(raw_file_path);
             return std::filesystem::is_directory(path);
         }
-    };  // namespace fs
 
-    FileWatcher::FileWatcher()
-    {
-        running = true;
-
-        watcher_thread = std::thread(
-            [this]
+        void watch_file(const fs::path& file_path)
+        {
+            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            if (!fs::exists(file_path) || state->fw.files_on_watch.contains(file_path))
             {
-                while (running)
-                {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                return;
+            }
 
-                    std::vector<str> marked_for_removal;
-
-                    std::lock_guard<std::mutex> lock(files_mutex);
-                    for (auto& [file_path, file_status] : files_on_watch)
-                    {
-                        // Remove files that have been deleted
-                        if (!fs::exists(file_path))
-                        {
-                            marked_for_removal.push_back(file_path);
-                            continue;
-                        }
-
-                        auto current_write_time = std::filesystem::last_write_time(file_path);
-                        if (current_write_time != file_status.last_write_time)
-                        {
-                            file_status.last_write_time = current_write_time;
-                            file_status.modified = true;
-                        }
-                    }
-
-                    for (const auto& file_path : marked_for_removal)
-                    {
-                        files_on_watch.erase(file_path);
-                    }
-                }
-            });
-    }
-
-    FileWatcher::~FileWatcher()
-    {
-        running = false;
-
-        if (watcher_thread.joinable())
-        {
-            watcher_thread.join();
-        }
-    }
-
-    void FileWatcher::watch_file(const fs::path& file_path)
-    {
-        std::lock_guard<std::mutex> lock(files_mutex);
-        if (!fs::exists(file_path) || files_on_watch.contains(file_path))
-        {
-            return;
+            state->fw.files_on_watch[file_path].last_write_time = std::filesystem::last_write_time(file_path);
+            state->fw.files_on_watch[file_path].modified = false;
         }
 
-        files_on_watch[file_path].last_write_time = std::filesystem::last_write_time(file_path);
-        files_on_watch[file_path].modified = false;
-    }
-
-    void FileWatcher::stop_watching_file(const fs::path& file_path)
-    {
-        std::lock_guard<std::mutex> lock(files_mutex);
-        if (files_on_watch.contains(file_path))
+        void stop_watching_file(const fs::path& file_path)
         {
-            files_on_watch.erase(file_path);
+            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            if (state->fw.files_on_watch.contains(file_path))
+            {
+                state->fw.files_on_watch.erase(file_path);
+            }
         }
-    }
 
-    void FileWatcher::reset_file_status(const fs::path& file_path)
-    {
-        std::unique_lock<std::mutex> lock(files_mutex);
-        if (files_on_watch.contains(file_path))
+        void reset_file_status(const fs::path& file_path)
         {
-            lock.unlock();
+            std::unique_lock<std::mutex> lock(state->fw.files_mutex);
+            if (state->fw.files_on_watch.contains(file_path))
+            {
+                lock.unlock();
 
-            stop_watching_file(file_path);
-            watch_file(file_path);
+                stop_watching_file(file_path);
+                watch_file(file_path);
+            }
         }
-    }
 
-    b8 FileWatcher::was_file_modified(const fs::path& file_path)
-    {
-        std::lock_guard<std::mutex> lock(files_mutex);
-        return files_on_watch.contains(file_path) && files_on_watch[file_path].modified;
-    }
-};  // namespace mag
+        b8 was_file_modified(const fs::path& file_path)
+        {
+            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            return state->fw.files_on_watch.contains(file_path) && state->fw.files_on_watch[file_path].modified;
+        }
+    };  // namespace fs
+};      // namespace mag
