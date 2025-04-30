@@ -189,6 +189,12 @@ namespace mag
                     last_material_idx = mesh.material_index;
                     const auto& material = resource::get_material(model->materials[mesh.material_index]);
 
+                    // Skip materials that are not loaded yet
+                    if (material->loading_status != LoadingStatus::Finished)
+                    {
+                        continue;
+                    }
+
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data;
                     material_data.albedo = vec4(1, 1, 1, 1);

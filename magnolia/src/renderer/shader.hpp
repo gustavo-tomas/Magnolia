@@ -65,7 +65,7 @@ namespace mag
             // deleted and the new one wont be mapped correclty either.
             void set_texture(const str& name, const Image* texture);
             void set_texture(const str& name, RendererImage* texture);  // @TODO: these pointers should be const
-            void set_material(const str& name, Material* material);     // @TODO: these pointers should be const
+            void set_material(const str& name, const Material* material);
 
             const ShaderConfiguration& get_shader_configuration() const;
             const std::vector<vk::VertexInputBindingDescription>& get_vertex_bindings() const;
