@@ -32,7 +32,6 @@ namespace mag
 
             // Send model data to the GPU
             gfx::upload_model(state->models[DEFAULT_MODEL_NAME].get());
-            state->models[DEFAULT_MODEL_NAME]->loading_status = LoadingStatus::UploadedToGpu;
 
             return state != nullptr;
         }
@@ -89,7 +88,6 @@ namespace mag
                 {
                     *model = *transfer_model;
                     gfx::update_model(model);
-                    model->loading_status = LoadingStatus::UploadedToGpu;
                 }
 
                 // We can dispose of the temporary model now

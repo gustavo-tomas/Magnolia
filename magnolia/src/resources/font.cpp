@@ -77,7 +77,6 @@ namespace mag
                             gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
                         }
                     }
-                    font->loading_status = LoadingStatus::UploadedToGpu;
                 }
 
                 // We can dispose of the temporary font now

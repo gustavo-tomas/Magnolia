@@ -125,7 +125,6 @@ namespace mag
                 {
                     *image = *transfer_image;
                     gfx::update_image(image);
-                    image->loading_status = LoadingStatus::UploadedToGpu;
                 }
 
                 // We can dispose of the temporary image now

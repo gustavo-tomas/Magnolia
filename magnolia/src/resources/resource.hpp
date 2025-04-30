@@ -10,11 +10,7 @@ namespace mag
         Pending,
         InProgress,
         Finished,
-        Error,
-
-        // @TODO: this is kind of a hack that we need to keep track of
-        // because some of our resource subsystems are coupled to the renderer
-        UploadedToGpu
+        Error
     };
 
     // Interface for a resource

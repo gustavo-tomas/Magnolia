@@ -268,7 +268,7 @@ namespace mag
             const auto& text = std::get<1>(text_entities[i]);
 
             // Skip fonts that are not loaded yet
-            if (text->font->loading_status != LoadingStatus::UploadedToGpu)
+            if (text->font->loading_status != LoadingStatus::Finished)
             {
                 continue;
             }
