@@ -23,16 +23,16 @@ namespace mag
 
     namespace resource
     {
-        struct State
+        struct ShaderSystemState
         {
                 std::map<str, ref<Shader>> shaders;
         };
 
-        static State* state = nullptr;
+        static ShaderSystemState* state = nullptr;
 
         b8 initialize_shader_subsystem()
         {
-            state = new State();
+            state = new ShaderSystemState();
             return state != nullptr;
         }
 

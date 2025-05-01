@@ -12,6 +12,7 @@ namespace mag
         struct State
         {
                 std::map<str, ref<Material>> materials;
+                ResourceLoadedCallbackFn on_material_loaded;
         };
 
         static State* state = nullptr;
@@ -78,6 +79,7 @@ namespace mag
                 if (result == true)
                 {
                     *material = *transfer_material;
+                    state->on_material_loaded(material);
                 }
 
                 // We can dispose of the temporary material now
@@ -91,5 +93,10 @@ namespace mag
         }
 
         ref<Material> get_default_material() { return state->materials[DEFAULT_MATERIAL_NAME]; }
+
+        void set_on_material_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            state->on_material_loaded = callback;
+        }
     };  // namespace resource
 };      // namespace mag

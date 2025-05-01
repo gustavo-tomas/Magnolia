@@ -14,6 +14,7 @@ namespace mag
 
         b8 initialize_texture_subsystem();
         void shutdown_texture_subsystem();
+        void set_on_texture_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize_font_subsystem();
         void shutdown_font_subsystem();
@@ -21,6 +22,7 @@ namespace mag
 
         b8 initialize_material_subsystem();
         void shutdown_material_subsystem();
+        void set_on_material_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize_model_subsystem();
         void shutdown_model_subsystem();
@@ -31,6 +33,7 @@ namespace mag
 
         b8 initialize_audio_subsystem();
         void shutdown_audio_subsystem();
+        void set_on_audio_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize()
         {
@@ -60,8 +63,11 @@ namespace mag
 
         void set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback)
         {
-            resource::set_on_font_loaded_callback(callback);
+            resource::set_on_texture_loaded_callback(callback);
+            resource::set_on_material_loaded_callback(callback);
             resource::set_on_model_loaded_callback(callback);
+            resource::set_on_font_loaded_callback(callback);
+            resource::set_on_audio_loaded_callback(callback);
         }
     };  // namespace resource
 };      // namespace mag

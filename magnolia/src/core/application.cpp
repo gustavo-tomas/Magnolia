@@ -9,7 +9,9 @@
 #include "platform/file_system.hpp"
 #include "platform/platform.hpp"
 #include "renderer/renderer.hpp"
+#include "resources/audio.hpp"
 #include "resources/font.hpp"
+#include "resources/material.hpp"
 #include "resources/model.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
@@ -102,8 +104,14 @@ namespace mag
         resource::set_on_resource_loaded_callback(
             [](const IResource* resource)
             {
+                // Upload texture data to the GPU
+                if (const Image* image = dynamic_cast<const Image*>(resource))
+                {
+                    gfx::update_image(image);
+                }
+
                 // Upload model data to the GPU
-                if (const Model* model = dynamic_cast<const Model*>(resource))
+                else if (const Model* model = dynamic_cast<const Model*>(resource))
                 {
                     gfx::upload_model(model);
                 }
@@ -118,6 +126,14 @@ namespace mag
                             gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
                         }
                     }
+                }
+
+                else if (const Material* material = dynamic_cast<const Material*>(resource))
+                {
+                }
+
+                else if (const Audio* audio = dynamic_cast<const Audio*>(resource))
+                {
                 }
             });
     }

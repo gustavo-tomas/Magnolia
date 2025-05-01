@@ -15,6 +15,7 @@ namespace mag
         struct State
         {
                 std::map<str, ref<Image>> textures;
+                ResourceLoadedCallbackFn on_texture_loaded;
         };
 
         static State* state = nullptr;
@@ -101,7 +102,6 @@ namespace mag
             // Load in another thread
             auto execute = [name, transfer_image]
             {
-                // If the load fails we still have valid data
                 const b8 result = resource::load(name, transfer_image);
 
                 if (result)
@@ -120,11 +120,11 @@ namespace mag
             // Callback when finished loading
             auto load_finished_callback = [image, transfer_image](const b8 result)
             {
-                // Update the image and the renderer image data
+                // Update the image data
                 if (result == true)
                 {
                     *image = *transfer_image;
-                    gfx::update_image(image);
+                    state->on_texture_loaded(image);
                 }
 
                 // We can dispose of the temporary image now
@@ -138,5 +138,10 @@ namespace mag
         }
 
         ref<Image> get_default_texture() { return state->textures[DEFAULT_ALBEDO_TEXTURE_NAME]; }
+
+        void set_on_texture_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            state->on_texture_loaded = callback;
+        }
     };  // namespace resource
 };      // namespace mag

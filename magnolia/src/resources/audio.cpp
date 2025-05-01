@@ -15,6 +15,7 @@ namespace mag
         struct State
         {
                 std::map<str, ref<Audio>> audios;
+                ResourceLoadedCallbackFn on_audio_loaded;
         };
 
         static State* state = nullptr;
@@ -54,6 +55,7 @@ namespace mag
             if (resource::load(name, audio))
             {
                 audio->loading_status = LoadingStatus::Finished;
+                state->on_audio_loaded(audio);
             }
 
             else
@@ -62,6 +64,11 @@ namespace mag
             }
 
             return state->audios[name];
+        }
+
+        void set_on_audio_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            state->on_audio_loaded = callback;
         }
     };  // namespace resource
 };      // namespace mag
