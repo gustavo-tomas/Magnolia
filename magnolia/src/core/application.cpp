@@ -9,6 +9,8 @@
 #include "platform/file_system.hpp"
 #include "platform/platform.hpp"
 #include "renderer/renderer.hpp"
+#include "resources/font.hpp"
+#include "resources/model.hpp"
 #include "resources/resource.hpp"
 #include "threads/job_system.hpp"
 #include "threads/thread.hpp"
@@ -95,6 +97,29 @@ namespace mag
         {
             MAG_ASSERT(false, "Failed to initialize Application");
         }
+
+        // Set resource load callback
+        resource::set_on_resource_loaded_callback(
+            [](const IResource* resource)
+            {
+                // Upload model data to the GPU
+                if (const Model* model = dynamic_cast<const Model*>(resource))
+                {
+                    gfx::upload_model(model);
+                }
+
+                // Upload font data to the GPU
+                else if (const Font* font = dynamic_cast<const Font*>(resource))
+                {
+                    for (const auto& [c, character] : font->characters)
+                    {
+                        if (!character.data.empty())
+                        {
+                            gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
+                        }
+                    }
+                }
+            });
     }
 
     Application::~Application()

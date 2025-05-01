@@ -4,23 +4,27 @@ namespace mag
 {
     namespace resource
     {
-        struct State
+        struct ResourceSystemState
         {
         };
 
-        static State* state = nullptr;
+        static ResourceSystemState* state = nullptr;
+
+        // Forward declaration of private functions
 
         b8 initialize_texture_subsystem();
         void shutdown_texture_subsystem();
 
         b8 initialize_font_subsystem();
         void shutdown_font_subsystem();
+        void set_on_font_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize_material_subsystem();
         void shutdown_material_subsystem();
 
         b8 initialize_model_subsystem();
         void shutdown_model_subsystem();
+        void set_on_model_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize_shader_subsystem();
         void shutdown_shader_subsystem();
@@ -30,7 +34,7 @@ namespace mag
 
         b8 initialize()
         {
-            state = new State();
+            state = new ResourceSystemState();
 
             b8 result = true;
             result = result && initialize_texture_subsystem();
@@ -52,6 +56,12 @@ namespace mag
             shutdown_font_subsystem();
             shutdown_texture_subsystem();
             delete state;
+        }
+
+        void set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            resource::set_on_font_loaded_callback(callback);
+            resource::set_on_model_loaded_callback(callback);
         }
     };  // namespace resource
 };      // namespace mag

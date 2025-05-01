@@ -2,8 +2,6 @@
 
 #include <map>
 
-#include "renderer/renderer.hpp"
-#include "renderer/test_model.hpp"
 #include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
@@ -15,6 +13,7 @@ namespace mag
         struct State
         {
                 std::map<str, ref<Model>> models;
+                ResourceLoadedCallbackFn on_model_loaded;
         };
 
         static State* state = nullptr;
@@ -22,17 +21,6 @@ namespace mag
         b8 initialize_model_subsystem()
         {
             state = new State();
-
-            state->models[DEFAULT_MODEL_NAME] = create_ref<Model>();
-            state->models[DEFAULT_MODEL_NAME]->name = "Default";
-            state->models[DEFAULT_MODEL_NAME]->meshes = Cube().get_model().meshes;
-            state->models[DEFAULT_MODEL_NAME]->vertices = Cube().get_model().vertices;
-            state->models[DEFAULT_MODEL_NAME]->indices = Cube().get_model().indices;
-            state->models[DEFAULT_MODEL_NAME]->materials = Cube().get_model().materials;
-
-            // Send model data to the GPU
-            gfx::upload_model(state->models[DEFAULT_MODEL_NAME].get());
-
             return state != nullptr;
         }
 
@@ -51,12 +39,9 @@ namespace mag
             }
 
             // Create a new model
-            Model* model = new Model(*state->models[DEFAULT_MODEL_NAME]);
+            Model* model = new Model();
             model->loading_status = LoadingStatus::InProgress;
             state->models[name] = ref<Model>(model);
-
-            // Send model data to the GPU
-            gfx::upload_model(model);
 
             // Temporary model to load data into
             Model* transfer_model = new Model(*model);
@@ -64,7 +49,6 @@ namespace mag
             // Load in another thread
             auto execute = [name, transfer_model]
             {
-                // If the load fails we still have valid data
                 const b8 result = resource::load(name, transfer_model);
 
                 if (result)
@@ -83,11 +67,11 @@ namespace mag
             // Callback when finished loading
             auto load_finished_callback = [model, transfer_model](const b8 result)
             {
-                // Update the model and renderer model data
+                // Update the model data
                 if (result == true)
                 {
                     *model = *transfer_model;
-                    gfx::update_model(model);
+                    state->on_model_loaded(model);
                 }
 
                 // We can dispose of the temporary model now
@@ -100,6 +84,9 @@ namespace mag
             return state->models[name];
         }
 
-        ref<Model> get_default_model() { return state->models[DEFAULT_MODEL_NAME]; }
+        void set_on_model_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            state->on_model_loaded = callback;
+        }
     };  // namespace resource
 };      // namespace mag

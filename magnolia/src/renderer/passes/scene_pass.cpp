@@ -158,6 +158,12 @@ namespace mag
             const auto& transform = std::get<0>(model_entities[i]);
             const auto& model = std::get<1>(model_entities[i])->model;
 
+            // Skip models that are not loaded yet
+            if (model->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
+
             // @TODO: hardcoded data offset (should the shader deal with this automagically?)
             const auto& model_matrix = transform->get_transformation_matrix();
             mesh_shader->set_uniform("u_instance", "models", value_ptr(model_matrix), sizeof(mat4) * i);
@@ -227,6 +233,12 @@ namespace mag
         {
             const auto& transform = std::get<0>(sprite_entities[i]);
             const auto& sprite = std::get<1>(sprite_entities[i]);
+
+            // Skip sprites that are not loaded yet
+            if (sprite->texture->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
 
             // Remove rotation if sprite is aligned to the camera
             const vec3 model_rotation = transform->rotation;

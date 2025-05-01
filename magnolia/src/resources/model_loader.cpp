@@ -13,9 +13,6 @@ namespace mag
     {
         b8 load(const str& file_path, Model* model)
         {
-            // Reset model data
-            *model = {};
-
             fs::json data;
 
             if (!fs::read_json_data(file_path, data))

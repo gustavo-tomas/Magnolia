@@ -8,8 +8,6 @@
 
 namespace mag
 {
-#define DEFAULT_MODEL_NAME "__mag_default_model__"
-
     using namespace mag::math;
 
     struct Vertex
@@ -45,6 +43,5 @@ namespace mag
     namespace resource
     {
         ref<Model> get_model(const str& name);
-        ref<Model> get_default_model();
     };  // namespace resource
 };      // namespace mag

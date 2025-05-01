@@ -1,6 +1,5 @@
 #include "resources/font.hpp"
 
-#include "renderer/renderer.hpp"
 #include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
 #include "threads/job_system.hpp"
@@ -12,6 +11,7 @@ namespace mag
         struct State
         {
                 std::map<str, ref<Font>> fonts;
+                ResourceLoadedCallbackFn on_resource_loaded;
         };
 
         static State* state = nullptr;
@@ -47,7 +47,6 @@ namespace mag
             // Load in another thread
             auto execute = [name, transfer_font]
             {
-                // If the load fails we still have valid data
                 const b8 result = resource::load(name, transfer_font);
 
                 if (result)
@@ -66,17 +65,11 @@ namespace mag
             // Callback when finished loading
             auto load_finished_callback = [font, transfer_font](const b8 result)
             {
-                // Update the font and the renderer font data
+                // Update the font data
                 if (result == true)
                 {
                     *font = *transfer_font;
-                    for (auto& [c, character] : font->characters)
-                    {
-                        if (!character.data.empty())
-                        {
-                            gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
-                        }
-                    }
+                    state->on_resource_loaded(font);
                 }
 
                 // We can dispose of the temporary font now
@@ -87,6 +80,11 @@ namespace mag
             thread::add_job(load_job);
 
             return state->fonts[name];
+        }
+
+        void set_on_font_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        {
+            state->on_resource_loaded = callback;
         }
     };  // namespace resource
 };      // namespace mag
