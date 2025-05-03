@@ -37,6 +37,7 @@ namespace mag
                                                   .use_default_debug_messenger()
                                                   .request_validation_layers()
     #endif
+                                                  .require_api_version(1, 3, 0)
                                                   .build();
 
                     MAG_ASSERT(instance_ret, instance_ret.error().message());
@@ -46,14 +47,21 @@ namespace mag
 
                     window::create_surface(&instance.instance, &surface);
 
+                    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature = {};
+                    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+                    dynamic_rendering_feature.dynamicRendering = true;
+
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
-                    const auto phys_device_ret = phys_device_selector.set_surface(surface).select();
+                    const auto phys_device_ret = phys_device_selector.set_minimum_version(1, 3)
+                                                     .set_surface(surface)
+                                                     .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
+                                                     .select();
 
                     MAG_ASSERT(phys_device_ret, phys_device_ret.error().message());
 
                     vkb::PhysicalDevice physical_device = phys_device_ret.value();
                     vkb::DeviceBuilder device_builder{physical_device};
-                    const auto device_ret = device_builder.build();
+                    const auto device_ret = device_builder.add_pNext(&dynamic_rendering_feature).build();
 
                     MAG_ASSERT(device_ret, device_ret.error().message());
 
@@ -69,7 +77,10 @@ namespace mag
                     MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
 
                     vkb::destroy_swapchain(swapchain);
+
                     swapchain = swap_ret.value();
+                    swapchain_images = swapchain.get_images().value();
+                    swapchain_image_views = swapchain.get_image_views().value();
 
                     // Queues
                     // -------------------------------------------------------------------------------------------------
@@ -238,6 +249,11 @@ namespace mag
                     dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
                     dynamic_info.pDynamicStates = dynamic_states.data();
 
+                    VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
+                    pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+                    pipeline_rendering_create_info.colorAttachmentCount = 1;
+                    pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain.image_format;
+
                     VkGraphicsPipelineCreateInfo pipeline_info = {};
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
                     pipeline_info.stageCount = 2;
@@ -250,9 +266,10 @@ namespace mag
                     pipeline_info.pColorBlendState = &color_blending;
                     pipeline_info.pDynamicState = &dynamic_info;
                     pipeline_info.layout = pipeline_layout;
-                    pipeline_info.renderPass = render_pass;
+                    pipeline_info.renderPass = nullptr;
                     pipeline_info.subpass = 0;
                     pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+                    pipeline_info.pNext = &pipeline_rendering_create_info;
 
                     if (disp.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphics_pipeline) !=
                         VK_SUCCESS)
@@ -262,32 +279,6 @@ namespace mag
 
                     disp.destroyShaderModule(frag_module, nullptr);
                     disp.destroyShaderModule(vert_module, nullptr);
-
-                    // Framebuffers
-                    // -------------------------------------------------------------------------------------------------
-                    swapchain_images = swapchain.get_images().value();
-                    swapchain_image_views = swapchain.get_image_views().value();
-
-                    framebuffers.resize(swapchain_image_views.size());
-
-                    for (u64 i = 0; i < swapchain_image_views.size(); i++)
-                    {
-                        VkImageView attachments[] = {swapchain_image_views[i]};
-
-                        VkFramebufferCreateInfo framebuffer_info = {};
-                        framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-                        framebuffer_info.renderPass = render_pass;
-                        framebuffer_info.attachmentCount = 1;
-                        framebuffer_info.pAttachments = attachments;
-                        framebuffer_info.width = swapchain.extent.width;
-                        framebuffer_info.height = swapchain.extent.height;
-                        framebuffer_info.layers = 1;
-
-                        if (disp.createFramebuffer(&framebuffer_info, nullptr, &framebuffers[i]) != VK_SUCCESS)
-                        {
-                            MAG_ASSERT(false, "Failed to create framebuffer");
-                        }
-                    }
 
                     // Command Pool
                     // -------------------------------------------------------------------------------------------------
@@ -302,13 +293,13 @@ namespace mag
 
                     // Command Buffers
                     // -------------------------------------------------------------------------------------------------
-                    command_buffers.resize(framebuffers.size());
+                    command_buffers.resize(swapchain_image_views.size());
 
                     VkCommandBufferAllocateInfo allocInfo = {};
                     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
                     allocInfo.commandPool = command_pool;
                     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-                    allocInfo.commandBufferCount = (u32)command_buffers.size();
+                    allocInfo.commandBufferCount = static_cast<u32>(command_buffers.size());
 
                     if (disp.allocateCommandBuffers(&allocInfo, command_buffers.data()) != VK_SUCCESS)
                     {
@@ -325,16 +316,7 @@ namespace mag
                             MAG_ASSERT(false, "Failed to begin command buffer recording");
                         }
 
-                        VkRenderPassBeginInfo render_pass_info = {};
-                        render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-                        render_pass_info.renderPass = render_pass;
-                        render_pass_info.framebuffer = framebuffers[i];
-                        render_pass_info.renderArea.offset = {0, 0};
-                        render_pass_info.renderArea.extent = swapchain.extent;
-
                         VkClearValue clearColor{{{0.4f, 0.6f, 0.8f, 1.0f}}};
-                        render_pass_info.clearValueCount = 1;
-                        render_pass_info.pClearValues = &clearColor;
 
                         VkViewport viewport = {};
                         viewport.x = 0.0f;
@@ -348,16 +330,81 @@ namespace mag
                         scissor.offset = {0, 0};
                         scissor.extent = swapchain.extent;
 
+                        VkRenderingAttachmentInfoKHR color_attachment_info = {};
+                        color_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+                        color_attachment_info.imageView = swapchain_image_views[i];
+                        color_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
+                        color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                        color_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                        color_attachment_info.clearValue = clearColor;
+
+                        VkRenderingInfoKHR render_info = {};
+                        render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+                        render_info.renderArea = scissor;
+                        render_info.layerCount = 1;
+                        render_info.colorAttachmentCount = 1;
+                        render_info.pColorAttachments = &color_attachment_info;
+
+                        {
+                            VkImageMemoryBarrier image_memory_barrier = {};
+
+                            image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                            image_memory_barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                            image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                            image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            image_memory_barrier.image = swapchain_images[i];
+                            image_memory_barrier.subresourceRange = {
+                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                .baseMipLevel = 0,
+                                .levelCount = 1,
+                                .baseArrayLayer = 0,
+                                .layerCount = 1,
+                            };
+
+                            disp.cmdPipelineBarrier(command_buffers[i],
+                                                    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,              // srcStageMask
+                                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // dstStageMask
+                                                    0, 0, nullptr, 0, nullptr,
+                                                    1,                     // imageMemoryBarrierCount
+                                                    &image_memory_barrier  // pImageMemoryBarriers
+                            );
+                        }
+
                         disp.cmdSetViewport(command_buffers[i], 0, 1, &viewport);
                         disp.cmdSetScissor(command_buffers[i], 0, 1, &scissor);
 
-                        disp.cmdBeginRenderPass(command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+                        disp.cmdBeginRendering(command_buffers[i], &render_info);
 
                         disp.cmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
 
                         disp.cmdDraw(command_buffers[i], 3, 1, 0, 0);
 
-                        disp.cmdEndRenderPass(command_buffers[i]);
+                        disp.cmdEndRenderingKHR(command_buffers[i]);
+
+                        {
+                            VkImageMemoryBarrier image_memory_barrier = {};
+
+                            image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                            image_memory_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                            image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                            image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                            image_memory_barrier.image = swapchain_images[i];
+                            image_memory_barrier.subresourceRange = {
+                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                .baseMipLevel = 0,
+                                .levelCount = 1,
+                                .baseArrayLayer = 0,
+                                .layerCount = 1,
+                            };
+
+                            disp.cmdPipelineBarrier(command_buffers[i],
+                                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // srcStageMask
+                                                    VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,           // dstStageMask
+                                                    0, 0, nullptr, 0, nullptr,
+                                                    1,                     // imageMemoryBarrierCount
+                                                    &image_memory_barrier  // pImageMemoryBarriers
+                            );
+                        }
 
                         if (disp.endCommandBuffer(command_buffers[i]) != VK_SUCCESS)
                         {
@@ -402,11 +449,6 @@ namespace mag
                     }
 
                     disp.destroyCommandPool(command_pool, nullptr);
-
-                    for (auto framebuffer : framebuffers)
-                    {
-                        disp.destroyFramebuffer(framebuffer, nullptr);
-                    }
 
                     disp.destroyPipeline(graphics_pipeline, nullptr);
                     disp.destroyPipelineLayout(pipeline_layout, nullptr);
@@ -499,7 +541,7 @@ namespace mag
                     create_info.codeSize = code.size();
                     create_info.pCode = reinterpret_cast<const u32*>(code.data());
 
-                    VkShaderModule shaderModule;
+                    VkShaderModule shaderModule = {};
                     if (disp.createShaderModule(&create_info, nullptr, &shaderModule) != VK_SUCCESS)
                     {
                         return VK_NULL_HANDLE;  // failed to create shader module
@@ -522,7 +564,6 @@ namespace mag
                 VkPipeline graphics_pipeline;
                 std::vector<VkImage> swapchain_images;
                 std::vector<VkImageView> swapchain_image_views;
-                std::vector<VkFramebuffer> framebuffers;
                 VkCommandPool command_pool;
                 std::vector<VkCommandBuffer> command_buffers;
                 std::vector<VkSemaphore> available_semaphores;
