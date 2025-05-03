@@ -44,6 +44,7 @@ workspace "magnolia"
         "libs/sdl/include",
         "libs/fmt/include",
         "libs/vulkan/include",
+        "libs/vkbootstrap/src",
         "libs/vma/include",
         "libs/assimp/include",
         "libs/glm",
@@ -116,7 +117,10 @@ project "magnolia"
         "%{prj.name}/src/**.cpp",
         "libs/spirv_reflect/spirv_reflect.h",
         "libs/spirv_reflect/spirv_reflect.cpp",
-        "libs/json/single_include/nlohmann/json.hpp"
+        "libs/json/single_include/nlohmann/json.hpp",
+        "libs/vkbootstrap/src/VkBootstrap.h",
+        "libs/vkbootstrap/src/VkBootstrapDispatch.h",
+        "libs/vkbootstrap/src/VkBootstrap.cpp"
     }
 
     includedirs
@@ -128,7 +132,7 @@ project "magnolia"
 
     defines
     {
-        "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC"
+        "VULKAN_HPP_NO_EXCEPTIONS"
     }
 
     links

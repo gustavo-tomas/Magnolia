@@ -3,10 +3,10 @@
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
-#include "renderer/test_model.hpp"
 #include "resources/audio.hpp"
 #include "resources/font.hpp"
 #include "resources/image.hpp"
+#include "resources/model.hpp"
 #include "scene/scene.hpp"
 
 namespace mag

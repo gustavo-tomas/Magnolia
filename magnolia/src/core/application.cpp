@@ -6,9 +6,9 @@
 #include "core/logger.hpp"
 #include "core/types.hpp"
 #include "core/window.hpp"
+#include "gfx/gfx.hpp"
 #include "platform/file_system.hpp"
 #include "platform/platform.hpp"
-#include "renderer/renderer.hpp"
 #include "resources/audio.hpp"
 #include "resources/font.hpp"
 #include "resources/material.hpp"
@@ -107,25 +107,16 @@ namespace mag
                 // Upload texture data to the GPU
                 if (const Image* image = dynamic_cast<const Image*>(resource))
                 {
-                    gfx::update_image(image);
                 }
 
                 // Upload model data to the GPU
                 else if (const Model* model = dynamic_cast<const Model*>(resource))
                 {
-                    gfx::upload_model(model);
                 }
 
                 // Upload font data to the GPU
                 else if (const Font* font = dynamic_cast<const Font*>(resource))
                 {
-                    for (const auto& [c, character] : font->characters)
-                    {
-                        if (!character.data.empty())
-                        {
-                            gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
-                        }
-                    }
                 }
 
                 else if (const Material* material = dynamic_cast<const Material*>(resource))
@@ -192,8 +183,6 @@ namespace mag
         // Process the event internally
         dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
         dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
-
-        gfx::on_event(e);
 
         // Send event to be processed by the user application
         on_event(e);

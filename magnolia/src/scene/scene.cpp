@@ -8,9 +8,9 @@
 #include "math/types.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
-#include "renderer/test_model.hpp"
 #include "resources/audio.hpp"
 #include "resources/image.hpp"
+#include "resources/model.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 

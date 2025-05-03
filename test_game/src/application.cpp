@@ -4,9 +4,6 @@
 #include <core/entry_point.hpp>
 #include <core/event.hpp>
 #include <project/project.hpp>
-#include <renderer/passes/scene_pass.hpp>
-#include <renderer/render_graph.hpp>
-#include <renderer/renderer.hpp>
 #include <scene/scene.hpp>
 #include <scene/scene_serializer.hpp>
 
@@ -36,8 +33,6 @@ namespace game
             return;
         }
 
-        build_render_graph(mag::window::get_size());
-
         scene->on_start();
     }
 
@@ -66,37 +61,7 @@ namespace game
         }
 
         scene->on_update(dt);
-
-        mag::gfx::on_update(*render_graph, *scene);
     }
 
-    void TestGame::on_event(const mag::Event &e)
-    {
-        scene->on_event(e);
-
-        mag::dispatch_event<mag::WindowResizeEvent>(e,
-                                                    [this](const mag::WindowResizeEvent &e) {
-                                                        this->build_render_graph({e.width, e.height});
-                                                    });
-    }
-
-    void TestGame::build_render_graph(const uvec2 &size)
-    {
-        render_graph.reset(new mag::RenderGraph());
-
-        // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
-        // @TODO: whatever change is made here has to be copied to the editor (or vice-versa) and this is not good :(
-
-        // mag::DepthPrePass *depth_prepass = new mag::DepthPrePass(size);
-        mag::ScenePass *scene_pass = new mag::ScenePass(size);
-        mag::PostProcessingPass *post_pass = new mag::PostProcessingPass(size);
-
-        render_graph->set_output_attachment("OutputColor");
-
-        // render_graph->add_pass(depth_prepass);
-        render_graph->add_pass(scene_pass);
-        render_graph->add_pass(post_pass);
-
-        render_graph->build();
-    }
+    void TestGame::on_event(const mag::Event &e) { scene->on_event(e); }
 };  // namespace game
