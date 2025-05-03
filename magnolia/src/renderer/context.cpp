@@ -361,6 +361,12 @@ namespace mag
 
         vk::PhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing_features({});
         descriptor_indexing_features.setDescriptorBindingVariableDescriptorCount(true);
+        descriptor_indexing_features.setShaderSampledImageArrayNonUniformIndexing(true);
+        descriptor_indexing_features.setDescriptorBindingSampledImageUpdateAfterBind(true);
+        descriptor_indexing_features.setShaderUniformBufferArrayNonUniformIndexing(true);
+        descriptor_indexing_features.setDescriptorBindingUniformBufferUpdateAfterBind(true);
+        descriptor_indexing_features.setShaderStorageBufferArrayNonUniformIndexing(true);
+        descriptor_indexing_features.setDescriptorBindingStorageBufferUpdateAfterBind(true);
         descriptor_indexing_features.setPNext(&synchronization_2_features);
 
         vk::PhysicalDeviceBufferDeviceAddressFeatures buffer_device_address_features(true, {}, {},
