@@ -11,7 +11,7 @@
 #include "math/types.hpp"
 
 // Third party headers
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include "SDL.h"
 #include "SDL_vulkan.h"

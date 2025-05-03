@@ -169,6 +169,8 @@ namespace mag
             // Update the user application
             on_update(dt);
 
+            gfx::on_update(dt);
+
             // Delay if needed
             const f64 delay = (1000.0 / target_frame_rate) - (plat::get_time() - last_time);
             if (delay > 0.0 && target_frame_rate > 0.0)

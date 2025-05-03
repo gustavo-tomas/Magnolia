@@ -1,6 +1,6 @@
 #include "core/window.hpp"
 
-#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan.h>
 
 #include "SDL.h"
 #include "SDL_vulkan.h"
@@ -192,8 +192,8 @@ namespace mag
 
         void create_surface(const void* instance, void* surface)
         {
-            vk::Instance vk_instance = *reinterpret_cast<const vk::Instance*>(instance);
-            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, vk_instance, reinterpret_cast<VkSurfaceKHR*>(surface)),
+            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *reinterpret_cast<const VkInstance*>(instance),
+                                                reinterpret_cast<VkSurfaceKHR*>(surface)),
                        "Failed to create surface: " + str(SDL_GetError()));
         }
 
