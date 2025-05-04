@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "VkBootstrap.h"
 #include "core/assert.hpp"
 #include "core/types.hpp"
 #include "gfx/gfx.hpp"
@@ -72,6 +73,50 @@ namespace mag
                 default:
                     MAG_ASSERT(false, "Unhandled present mode");
                     return PresentMode::Mailbox;
+                    break;
+            }
+        }
+
+        inline vkb::QueueType mag_to_vk(const QueueType queue_type)
+        {
+            switch (queue_type)
+            {
+                case QueueType::Present:
+                    return vkb::QueueType::present;
+                    break;
+
+                case QueueType::Graphics:
+                    return vkb::QueueType::graphics;
+                    break;
+
+                case QueueType::Compute:
+                    return vkb::QueueType::compute;
+                    break;
+
+                case QueueType::Transfer:
+                    return vkb::QueueType::transfer;
+                    break;
+            }
+        }
+
+        inline QueueType vk_to_mag(const vkb::QueueType queue_type)
+        {
+            switch (queue_type)
+            {
+                case vkb::QueueType::present:
+                    return QueueType::Present;
+                    break;
+
+                case vkb::QueueType::graphics:
+                    return QueueType::Graphics;
+                    break;
+
+                case vkb::QueueType::compute:
+                    return QueueType::Compute;
+                    break;
+
+                case vkb::QueueType::transfer:
+                    return QueueType::Transfer;
                     break;
             }
         }

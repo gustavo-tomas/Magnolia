@@ -157,6 +157,64 @@ namespace mag
                 std::vector<VkImageView> swapchain_image_views;
         };
 
+        class VulkanQueue : public IQueue
+        {
+            public:
+                VulkanQueue(const vkb::DispatchTable& disp, const vkb::Device& device, const IQueueDesc& desc)
+                    : disp(disp)
+                {
+                    const auto queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
+
+                    MAG_ASSERT(queue_ret, queue_ret.error().message());
+
+                    queue = queue_ret.value();
+                }
+
+                ~VulkanQueue() {}
+
+                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
+                                    void* command_buffer) override
+                {
+                    VkSubmitInfo submit_info = {};
+                    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+                    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+                    submit_info.waitSemaphoreCount = 1;
+                    submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    submit_info.pWaitDstStageMask = wait_stages;
+
+                    submit_info.commandBufferCount = 1;
+                    submit_info.pCommandBuffers = static_cast<VkCommandBuffer*>(command_buffer);
+
+                    submit_info.signalSemaphoreCount = 1;
+                    submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
+
+                    fence->reset();
+
+                    VK_CHECK(disp.queueSubmit(queue, 1, &submit_info, ((VulkanFence*)fence)->get_fence()),
+                             "Failed to submit draw command buffer");
+                }
+
+                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
+                {
+                    const u32 image_index = ((VulkanSwapchain*)swapchain)->get_current_image_index();
+
+                    VkPresentInfoKHR present_info = {};
+                    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+                    present_info.waitSemaphoreCount = 1;
+                    present_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    present_info.swapchainCount = 1;
+                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain)->get_swapchain();
+                    present_info.pImageIndices = &image_index;
+
+                    return disp.queuePresentKHR(queue, &present_info);
+                }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkQueue queue;
+        };
+
         class VulkanDevice : public IDevice
         {
             public:
@@ -206,21 +264,13 @@ namespace mag
                     // Swapchain
                     // -------------------------------------------------------------------------------------------------
                     ISwapchainDesc swapchain_desc = {};
+                    swapchain_desc.desired_present_mode = PresentMode::Mailbox;
                     swapchain = this->create_swapchain(swapchain_desc);
 
                     // Queues
                     // -------------------------------------------------------------------------------------------------
-                    const auto graphics_queue_ret = device.get_queue(vkb::QueueType::graphics);
-
-                    MAG_ASSERT(graphics_queue_ret, graphics_queue_ret.error().message());
-
-                    graphics_queue = graphics_queue_ret.value();
-
-                    const auto present_queue_ret = device.get_queue(vkb::QueueType::present);
-
-                    MAG_ASSERT(present_queue_ret.has_value(), present_queue_ret.error().message());
-
-                    present_queue = present_queue_ret.value();
+                    graphics_queue = this->create_queue({.queue_type = QueueType::Graphics});
+                    present_queue = this->create_queue({.queue_type = QueueType::Present});
 
                     // Graphics Pipeline
                     // -------------------------------------------------------------------------------------------------
@@ -547,43 +597,13 @@ namespace mag
                     }
                     image_in_flight[image_index] = in_flight_fences[current_frame].get();
 
-                    VkSubmitInfo submitInfo = {};
-                    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                    graphics_queue->submit(available_semaphores[current_frame].get(),
+                                           finished_semaphore[current_frame].get(),
+                                           in_flight_fences[current_frame].get(), (void*)&command_buffers[image_index]);
 
-                    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-                    submitInfo.waitSemaphoreCount = 1;
-                    submitInfo.pWaitSemaphores =
-                        &((VulkanSemaphore*)available_semaphores[current_frame].get())->get_semaphore();
-                    submitInfo.pWaitDstStageMask = wait_stages;
+                    const VkResult result = static_cast<VkResult>(
+                        present_queue->present(swapchain.get(), finished_semaphore[current_frame].get()));
 
-                    submitInfo.commandBufferCount = 1;
-                    submitInfo.pCommandBuffers = &command_buffers[image_index];
-
-                    submitInfo.signalSemaphoreCount = 1;
-                    submitInfo.pSignalSemaphores =
-                        &((VulkanSemaphore*)finished_semaphore[current_frame].get())->get_semaphore();
-
-                    in_flight_fences[current_frame]->reset();
-
-                    if (disp.queueSubmit(graphics_queue, 1, &submitInfo,
-                                         ((VulkanFence*)in_flight_fences[current_frame].get())->get_fence()) !=
-                        VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to submit draw command buffer");
-                    }
-
-                    VkPresentInfoKHR present_info = {};
-                    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-                    present_info.waitSemaphoreCount = 1;
-                    present_info.pWaitSemaphores =
-                        &((VulkanSemaphore*)finished_semaphore[current_frame].get())->get_semaphore();
-
-                    present_info.swapchainCount = 1;
-                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain.get())->get_swapchain();
-                    present_info.pImageIndices = &image_index;
-
-                    VkResult result = disp.queuePresentKHR(present_queue, &present_info);
                     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                     {
                         MAG_ASSERT(false, "@TODO: resize swapchain");
@@ -624,6 +644,11 @@ namespace mag
                     return create_unique<VulkanSwapchain>(disp, device, desc);
                 }
 
+                virtual unique<IQueue> create_queue(const IQueueDesc& desc) override
+                {
+                    return create_unique<VulkanQueue>(disp, device, desc);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
@@ -631,8 +656,8 @@ namespace mag
                 vkb::InstanceDispatchTable inst_disp;
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
-                VkQueue graphics_queue;
-                VkQueue present_queue;
+                unique<IQueue> graphics_queue;
+                unique<IQueue> present_queue;
                 VkPipelineLayout pipeline_layout;
                 VkPipeline graphics_pipeline;
                 VkCommandPool command_pool;

@@ -16,6 +16,14 @@ namespace mag
             Fifo
         };
 
+        enum class QueueType
+        {
+            Present,
+            Graphics,
+            Compute,
+            Transfer
+        };
+
         enum class Format
         {
             R8G8B8A8_UNORM,
@@ -55,6 +63,11 @@ namespace mag
                 PresentMode desired_present_mode = PresentMode::Mailbox;
         };
 
+        struct IQueueDesc
+        {
+                QueueType queue_type;
+        };
+
         class ISemaphore
         {
             public:
@@ -89,6 +102,18 @@ namespace mag
                 virtual b8 resize(const math::vec2& extent) = 0;
         };
 
+        class IQueue
+        {
+            public:
+                virtual ~IQueue() = default;
+
+                // @TODO: create command buffer interface instead of using void*
+                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
+                                    void* command_buffer) = 0;
+
+                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
+        };
+
         class IDevice
         {
             public:
@@ -97,6 +122,7 @@ namespace mag
                 virtual unique<ISemaphore> create_semaphore() = 0;
                 virtual unique<IFence> create_fence(const IFenceDesc& desc) = 0;
                 virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) = 0;
+                virtual unique<IQueue> create_queue(const IQueueDesc& desc) = 0;
 
                 // @TODO: temporary stub to draw stuff
                 virtual void draw_frame() = 0;
