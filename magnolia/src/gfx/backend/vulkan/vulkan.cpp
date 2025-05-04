@@ -13,6 +13,7 @@
     #include "core/assert.hpp"
     #include "core/buffer.hpp"
     #include "core/window.hpp"
+    #include "gfx/backend/vulkan/conversions.hpp"
     #include "platform/file_system.hpp"
 
 namespace mag
@@ -41,7 +42,7 @@ namespace mag
 
                 ~VulkanSemaphore() { disp.destroySemaphore(semaphore, nullptr); }
 
-                virtual void* get_handle() override { return &semaphore; }
+                const VkSemaphore& get_semaphore() const { return semaphore; }
 
             private:
                 const vkb::DispatchTable& disp;
@@ -70,12 +71,89 @@ namespace mag
 
                 virtual void reset() override { disp.resetFences(1, &fence); }
 
-                // @TODO: temp until the rest of the backend is completed
-                virtual void* get_handle() override { return &fence; }
+                const VkFence& get_fence() const { return fence; }
 
             private:
-                vkb::DispatchTable disp;
+                const vkb::DispatchTable& disp;
                 VkFence fence;
+        };
+
+        class VulkanSwapchain : public ISwapchain
+        {
+            public:
+                VulkanSwapchain(const vkb::DispatchTable& disp, const vkb::Device& device, const ISwapchainDesc& desc)
+                    : disp(disp)
+                {
+                    vkb::SwapchainBuilder swapchain_builder{device};
+                    const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
+                                              .set_desired_present_mode(mag_to_vk(desc.desired_present_mode))
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+                                              .build();
+
+                    MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
+
+                    vkb::destroy_swapchain(swapchain);
+
+                    swapchain = swap_ret.value();
+                    swapchain_images = swapchain.get_images().value();
+                    swapchain_image_views = swapchain.get_image_views().value();
+                }
+
+                ~VulkanSwapchain()
+                {
+                    swapchain.destroy_image_views(swapchain_image_views);
+
+                    vkb::destroy_swapchain(swapchain);
+                }
+
+                virtual u32 get_current_image_index() const override { return current_image_index; }
+
+                virtual u32 get_image_count() const override { return swapchain.image_count; }
+
+                virtual math::vec2 get_extent() const override { return vk_to_mag(swapchain.extent); }
+
+                virtual Format get_format() const override { return vk_to_mag(swapchain.image_format); }
+
+                virtual b8 acquire_next_image(ISemaphore* signal_semaphore, IFence* fence = nullptr) override
+                {
+                    const VkSemaphore vk_sem = static_cast<VulkanSemaphore*>(signal_semaphore)->get_semaphore();
+                    VkFence vk_fen = nullptr;
+
+                    if (fence != nullptr)
+                    {
+                        vk_fen = static_cast<VulkanFence*>(fence)->get_fence();
+                    }
+
+                    const VkResult result =
+                        disp.acquireNextImageKHR(swapchain, Timeout, vk_sem, vk_fen, &current_image_index);
+
+                    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+                    {
+                        resize({});
+                    }
+
+                    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+                    {
+                        MAG_ASSERT(false, "Failed to acquire swapchain image");
+                    }
+
+                    return true;
+                }
+
+                virtual b8 resize(const math::vec2& extent) override { MAG_ASSERT(false, "@TODO"); }
+
+                const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
+                const VkImage& get_image(const u32 index) const { return swapchain_images[index]; }
+                const VkImageView& get_image_view(const u32 index) const { return swapchain_image_views[index]; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                vkb::Swapchain swapchain;
+                u32 current_image_index = 0;
+                std::vector<VkImage> swapchain_images;
+                std::vector<VkImageView> swapchain_image_views;
         };
 
         class VulkanDevice : public IDevice
@@ -126,20 +204,8 @@ namespace mag
 
                     // Swapchain
                     // -------------------------------------------------------------------------------------------------
-                    vkb::SwapchainBuilder swapchain_builder{device};
-                    const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
-                                              .set_desired_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
-                                              .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
-                                              .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-                                              .build();
-
-                    MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
-
-                    vkb::destroy_swapchain(swapchain);
-
-                    swapchain = swap_ret.value();
-                    swapchain_images = swapchain.get_images().value();
-                    swapchain_image_views = swapchain.get_image_views().value();
+                    ISwapchainDesc swapchain_desc = {};
+                    swapchain = this->create_swapchain(swapchain_desc);
 
                     // Queues
                     // -------------------------------------------------------------------------------------------------
@@ -200,14 +266,14 @@ namespace mag
                     VkViewport viewport = {};
                     viewport.x = 0.0f;
                     viewport.y = 0.0f;
-                    viewport.width = (float)swapchain.extent.width;
-                    viewport.height = (float)swapchain.extent.height;
+                    viewport.width = viewport.width = static_cast<f32>(swapchain->get_extent().x);
+                    viewport.height = viewport.height = static_cast<f32>(swapchain->get_extent().y);
                     viewport.minDepth = 0.0f;
                     viewport.maxDepth = 1.0f;
 
                     VkRect2D scissor = {};
                     scissor.offset = {0, 0};
-                    scissor.extent = swapchain.extent;
+                    scissor.extent = mag_to_vk(swapchain->get_extent());
 
                     VkPipelineViewportStateCreateInfo viewport_state = {};
                     viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -264,10 +330,12 @@ namespace mag
                     dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
                     dynamic_info.pDynamicStates = dynamic_states.data();
 
+                    VkFormat swapchain_format = mag_to_vk(swapchain->get_format());
+
                     VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
                     pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
                     pipeline_rendering_create_info.colorAttachmentCount = 1;
-                    pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain.image_format;
+                    pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain_format;
 
                     VkGraphicsPipelineCreateInfo pipeline_info = {};
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -308,7 +376,7 @@ namespace mag
 
                     // Command Buffers
                     // -------------------------------------------------------------------------------------------------
-                    command_buffers.resize(swapchain_image_views.size());
+                    command_buffers.resize(swapchain->get_image_count());
 
                     VkCommandBufferAllocateInfo allocInfo = {};
                     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -336,18 +404,18 @@ namespace mag
                         VkViewport viewport = {};
                         viewport.x = 0.0f;
                         viewport.y = 0.0f;
-                        viewport.width = (float)swapchain.extent.width;
-                        viewport.height = (float)swapchain.extent.height;
+                        viewport.width = static_cast<f32>(swapchain->get_extent().x);
+                        viewport.height = static_cast<f32>(swapchain->get_extent().y);
                         viewport.minDepth = 0.0f;
                         viewport.maxDepth = 1.0f;
 
                         VkRect2D scissor = {};
                         scissor.offset = {0, 0};
-                        scissor.extent = swapchain.extent;
+                        scissor.extent = mag_to_vk(swapchain->get_extent());
 
                         VkRenderingAttachmentInfoKHR color_attachment_info = {};
                         color_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-                        color_attachment_info.imageView = swapchain_image_views[i];
+                        color_attachment_info.imageView = ((VulkanSwapchain*)swapchain.get())->get_image_view(i);
                         color_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
                         color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                         color_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -367,7 +435,7 @@ namespace mag
                             image_memory_barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                             image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                             image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                            image_memory_barrier.image = swapchain_images[i];
+                            image_memory_barrier.image = ((VulkanSwapchain*)swapchain.get())->get_image(i);
                             image_memory_barrier.subresourceRange = {
                                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                                 .baseMipLevel = 0,
@@ -403,7 +471,7 @@ namespace mag
                             image_memory_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                             image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                             image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                            image_memory_barrier.image = swapchain_images[i];
+                            image_memory_barrier.image = ((VulkanSwapchain*)swapchain.get())->get_image(i);
                             image_memory_barrier.subresourceRange = {
                                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                                 .baseMipLevel = 0,
@@ -432,7 +500,7 @@ namespace mag
                     available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
                     finished_semaphore.resize(MAX_FRAMES_IN_FLIGHT);
                     in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
-                    image_in_flight.resize(swapchain.image_count);
+                    image_in_flight.resize(swapchain->get_image_count());
 
                     IFenceDesc fence_desc = {};
                     fence_desc.signaled = true;
@@ -459,9 +527,8 @@ namespace mag
                     disp.destroyPipelineLayout(pipeline_layout, nullptr);
                     disp.destroyRenderPass(render_pass, nullptr);
 
-                    swapchain.destroy_image_views(swapchain_image_views);
+                    swapchain.reset();
 
-                    vkb::destroy_swapchain(swapchain);
                     vkb::destroy_device(device);
                     vkb::destroy_surface(instance, surface);
                     vkb::destroy_instance(instance);
@@ -471,20 +538,8 @@ namespace mag
                 {
                     in_flight_fences[current_frame]->wait();
 
-                    u32 image_index = 0;
-                    VkResult result = disp.acquireNextImageKHR(
-                        swapchain, UINT64_MAX, *(VkSemaphore*)(available_semaphores[current_frame]->get_handle()),
-                        VK_NULL_HANDLE, &image_index);
-
-                    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-                    {
-                        // return recreate_swapchain(init, data);
-                        MAG_ASSERT(false, "@TODO: resize swapchain");
-                    }
-                    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-                    {
-                        MAG_ASSERT(false, "Failed to acquire swapchain image");
-                    }
+                    swapchain->acquire_next_image(available_semaphores[current_frame].get());
+                    const u32 image_index = swapchain->get_current_image_index();
 
                     if (image_in_flight[image_index] != nullptr)
                     {
@@ -498,7 +553,7 @@ namespace mag
                     VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
                     submitInfo.waitSemaphoreCount = 1;
                     submitInfo.pWaitSemaphores =
-                        reinterpret_cast<VkSemaphore*>(available_semaphores[current_frame]->get_handle());
+                        &((VulkanSemaphore*)available_semaphores[current_frame].get())->get_semaphore();
                     submitInfo.pWaitDstStageMask = wait_stages;
 
                     submitInfo.commandBufferCount = 1;
@@ -506,12 +561,13 @@ namespace mag
 
                     submitInfo.signalSemaphoreCount = 1;
                     submitInfo.pSignalSemaphores =
-                        reinterpret_cast<VkSemaphore*>(finished_semaphore[current_frame]->get_handle());
+                        &((VulkanSemaphore*)finished_semaphore[current_frame].get())->get_semaphore();
 
                     in_flight_fences[current_frame]->reset();
 
                     if (disp.queueSubmit(graphics_queue, 1, &submitInfo,
-                                         *(VkFence*)in_flight_fences[current_frame]->get_handle()) != VK_SUCCESS)
+                                         ((VulkanFence*)in_flight_fences[current_frame].get())->get_fence()) !=
+                        VK_SUCCESS)
                     {
                         MAG_ASSERT(false, "Failed to submit draw command buffer");
                     }
@@ -521,15 +577,13 @@ namespace mag
 
                     present_info.waitSemaphoreCount = 1;
                     present_info.pWaitSemaphores =
-                        reinterpret_cast<VkSemaphore*>(finished_semaphore[current_frame]->get_handle());
+                        &((VulkanSemaphore*)finished_semaphore[current_frame].get())->get_semaphore();
 
-                    VkSwapchainKHR swapChains[] = {swapchain};
                     present_info.swapchainCount = 1;
-                    present_info.pSwapchains = swapChains;
-
+                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain.get())->get_swapchain();
                     present_info.pImageIndices = &image_index;
 
-                    result = disp.queuePresentKHR(present_queue, &present_info);
+                    VkResult result = disp.queuePresentKHR(present_queue, &present_info);
                     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                     {
                         MAG_ASSERT(false, "@TODO: resize swapchain");
@@ -565,10 +619,15 @@ namespace mag
                     return create_unique<VulkanFence>(disp, desc);
                 }
 
+                virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) override
+                {
+                    return create_unique<VulkanSwapchain>(disp, device, desc);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
-                vkb::Swapchain swapchain;
+                unique<ISwapchain> swapchain;
                 vkb::InstanceDispatchTable inst_disp;
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
@@ -577,8 +636,6 @@ namespace mag
                 VkRenderPass render_pass;
                 VkPipelineLayout pipeline_layout;
                 VkPipeline graphics_pipeline;
-                std::vector<VkImage> swapchain_images;
-                std::vector<VkImageView> swapchain_image_views;
                 VkCommandPool command_pool;
                 std::vector<VkCommandBuffer> command_buffers;
                 std::vector<unique<ISemaphore>> available_semaphores;

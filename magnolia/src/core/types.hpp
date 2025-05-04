@@ -79,6 +79,75 @@ const i32 Max_I32 = 0xFFFFFFFF / 2;
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)                         /* Shortcut to bind methods */
 #define BIND_FN2(x) std::bind(&x, this, std::placeholders::_1, std::placeholders::_2) /* Shortcut to bind methods */
 
+// Bitwise operations
+
+// Define a template for enabling bit operations on enum classes
+template <typename Enum>
+struct EnableBitMaskOperators
+{
+        static constexpr b8 enable = false;
+};
+
+// Bitwise operators that work with any enum class marked with EnableBitMaskOperators
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator|(Enum lhs, Enum rhs)
+{
+    using underlying = std::underlying_type_t<Enum>;
+    return static_cast<Enum>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator&(Enum lhs, Enum rhs)
+{
+    using underlying = std::underlying_type_t<Enum>;
+    return static_cast<Enum>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator^(Enum lhs, Enum rhs)
+{
+    using underlying = std::underlying_type_t<Enum>;
+    return static_cast<Enum>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator~(Enum e)
+{
+    using underlying = std::underlying_type_t<Enum>;
+    return static_cast<Enum>(~static_cast<underlying>(e));
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator|=(Enum& lhs, Enum rhs)
+{
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator&=(Enum& lhs, Enum rhs)
+{
+    lhs = lhs & rhs;
+    return lhs;
+}
+
+template <typename Enum>
+typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator^=(Enum& lhs, Enum rhs)
+{
+    lhs = lhs ^ rhs;
+    return lhs;
+}
+
+// Define a macro to make enum bitmask-ready
+#define ENABLE_BITMASK_OPERATORS(x)            \
+    template <>                                \
+    struct EnableBitMaskOperators<x>           \
+    {                                          \
+            static constexpr b8 enable = true; \
+    };
+
+#define IS_BIT_SET(x, enum) ((x & enum) == enum)
+
 // Platform
 
 // Windows
