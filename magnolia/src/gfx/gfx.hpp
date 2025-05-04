@@ -9,6 +9,8 @@ namespace mag
     {
         // This is backend stuff
 
+        class IRenderingAttachment;
+
         enum class PresentMode
         {
             Immediate,
@@ -64,6 +66,12 @@ namespace mag
             Secondary
         };
 
+        enum class RenderingAttachmentType
+        {
+            Color,
+            Depth
+        };
+
         struct IFenceDesc
         {
                 b8 signaled = false;
@@ -89,6 +97,44 @@ namespace mag
         struct ICommandBufferDesc
         {
                 CommandBufferLevel command_buffer_level = CommandBufferLevel::Primary;
+        };
+
+        struct IRenderingAttachmentDesc
+        {
+                math::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f};
+                f32 clear_depth;
+                u32 clear_stencil;
+                RenderingAttachmentType type;
+                void* texture = nullptr;  // @TODO: swap with texture once the interface is done
+        };
+
+        struct IRenderPassDesc
+        {
+                math::uvec2 extent;
+                math::ivec2 offset = {0.0f, 0.0f};
+                std::vector<IRenderingAttachment*> color_attachments;
+        };
+
+        class IRenderingAttachment
+        {
+            public:
+                virtual ~IRenderingAttachment() = default;
+
+                virtual math::vec4 get_clear_color() const = 0;
+
+                virtual f32 get_clear_depth() const = 0;
+
+                virtual u32 get_clear_stencil() const = 0;
+        };
+
+        class IRenderPass
+        {
+            public:
+                virtual ~IRenderPass() = default;
+
+                virtual math::ivec2 get_offset() const = 0;
+
+                virtual math::uvec2 get_extent() const = 0;
         };
 
         class ISemaphore
@@ -125,18 +171,6 @@ namespace mag
                 virtual b8 resize(const math::uvec2& extent) = 0;
         };
 
-        class IQueue
-        {
-            public:
-                virtual ~IQueue() = default;
-
-                // @TODO: create command buffer interface instead of using void*
-                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
-                                    void* command_buffer) = 0;
-
-                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
-        };
-
         class IGraphicsPipeline
         {
             public:
@@ -157,8 +191,7 @@ namespace mag
 
                 virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) = 0;
 
-                // @TODO: change when the interface is implemented
-                virtual void begin_rendering(const void* render_info) = 0;
+                virtual void begin_rendering(const IRenderPass* render_pass) = 0;
 
                 virtual void end_rendering() = 0;
 
@@ -173,6 +206,17 @@ namespace mag
                                               const u32 src_stage_mask, const u32 dst_stage_mask) = 0;
         };
 
+        class IQueue
+        {
+            public:
+                virtual ~IQueue() = default;
+
+                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
+                                    const ICommandBuffer* command_buffer) = 0;
+
+                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
+        };
+
         class IDevice
         {
             public:
@@ -184,6 +228,8 @@ namespace mag
                 virtual unique<IQueue> create_queue(const IQueueDesc& desc) = 0;
                 virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) = 0;
                 virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) = 0;
+                virtual unique<IRenderingAttachment> create_render_attachment(const IRenderingAttachmentDesc& desc) = 0;
+                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) = 0;
 
                 // @TODO: temporary stub to draw stuff
                 virtual void draw_frame() = 0;

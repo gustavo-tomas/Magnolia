@@ -157,64 +157,6 @@ namespace mag
                 std::vector<VkImageView> swapchain_image_views;
         };
 
-        class VulkanQueue : public IQueue
-        {
-            public:
-                VulkanQueue(const vkb::DispatchTable& disp, const vkb::Device& device, const IQueueDesc& desc)
-                    : disp(disp)
-                {
-                    const auto queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
-
-                    MAG_ASSERT(queue_ret, queue_ret.error().message());
-
-                    queue = queue_ret.value();
-                }
-
-                ~VulkanQueue() {}
-
-                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
-                                    void* command_buffer) override
-                {
-                    VkSubmitInfo submit_info = {};
-                    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-                    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-                    submit_info.waitSemaphoreCount = 1;
-                    submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
-                    submit_info.pWaitDstStageMask = wait_stages;
-
-                    submit_info.commandBufferCount = 1;
-                    submit_info.pCommandBuffers = static_cast<VkCommandBuffer*>(command_buffer);
-
-                    submit_info.signalSemaphoreCount = 1;
-                    submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
-
-                    fence->reset();
-
-                    VK_CHECK(disp.queueSubmit(queue, 1, &submit_info, ((VulkanFence*)fence)->get_fence()),
-                             "Failed to submit draw command buffer");
-                }
-
-                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
-                {
-                    const u32 image_index = ((VulkanSwapchain*)swapchain)->get_current_image_index();
-
-                    VkPresentInfoKHR present_info = {};
-                    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-                    present_info.waitSemaphoreCount = 1;
-                    present_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
-                    present_info.swapchainCount = 1;
-                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain)->get_swapchain();
-                    present_info.pImageIndices = &image_index;
-
-                    return disp.queuePresentKHR(queue, &present_info);
-                }
-
-            private:
-                const vkb::DispatchTable& disp;
-                VkQueue queue;
-        };
-
         class VulkanGraphicsPipeline : public IGraphicsPipeline
         {
             public:
@@ -392,6 +334,91 @@ namespace mag
                 VkPipeline pipeline;
         };
 
+        class VulkanRenderingAttachment : public IRenderingAttachment
+        {
+            public:
+                VulkanRenderingAttachment(const IRenderingAttachmentDesc& desc)
+                {
+                    VkClearValue clear_value = {};
+
+                    // Choose clear value based on the attachment type
+                    if (desc.type == RenderingAttachmentType::Color)
+                    {
+                        clear_value.color = mag_to_vk(desc.clear_color);
+                    }
+
+                    else
+                    {
+                        clear_value.depthStencil.depth = desc.clear_depth;
+                        clear_value.depthStencil.stencil = desc.clear_stencil;
+                    }
+
+                    rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+                    rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
+                    rendering_attachment_info.imageView = (VkImageView)desc.texture;
+                    rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+                    rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                    rendering_attachment_info.clearValue = clear_value;
+                }
+
+                ~VulkanRenderingAttachment() {}
+
+                virtual math::vec4 get_clear_color() const override
+                {
+                    return vk_to_mag(rendering_attachment_info.clearValue.color);
+                }
+
+                virtual f32 get_clear_depth() const override
+                {
+                    return rendering_attachment_info.clearValue.depthStencil.depth;
+                }
+
+                virtual u32 get_clear_stencil() const override
+                {
+                    return rendering_attachment_info.clearValue.depthStencil.stencil;
+                }
+
+                const VkRenderingAttachmentInfoKHR& get_attachment_info() const { return rendering_attachment_info; }
+
+            private:
+                VkRenderingAttachmentInfoKHR rendering_attachment_info = {};
+        };
+
+        class VulkanRenderPass : public IRenderPass
+        {
+            public:
+                VulkanRenderPass(const IRenderPassDesc& desc)
+                {
+                    VkRect2D render_area = {};
+                    render_area.extent = mag_to_vk(desc.extent);
+                    render_area.offset = mag_to_vk(desc.offset);
+
+                    for (const IRenderingAttachment* color_attachment : desc.color_attachments)
+                    {
+                        color_attachments.push_back(
+                            ((VulkanRenderingAttachment*)color_attachment)->get_attachment_info());
+                    }
+
+                    render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+                    render_info.renderArea = render_area;
+                    render_info.layerCount = 1;
+                    render_info.colorAttachmentCount = color_attachments.size();
+                    render_info.pColorAttachments = color_attachments.data();
+                }
+
+                ~VulkanRenderPass() {}
+
+                virtual math::ivec2 get_offset() const { return vk_to_mag(render_info.renderArea.offset); }
+
+                virtual math::uvec2 get_extent() const { return vk_to_mag(render_info.renderArea.extent); }
+
+                const VkRenderingInfoKHR& get_rendering_info() const { return render_info; }
+
+            private:
+                VkRenderingInfoKHR render_info = {};
+                std::vector<VkRenderingAttachmentInfo> color_attachments;
+        };
+
         class VulkanCommandBuffer : public ICommandBuffer
         {
             public:
@@ -448,9 +475,9 @@ namespace mag
                     disp.cmdSetScissor(command_buffer, 0, 1, &scissor);
                 }
 
-                virtual void begin_rendering(const void* render_info) override
+                virtual void begin_rendering(const IRenderPass* render_pass) override
                 {
-                    disp.cmdBeginRendering(command_buffer, (VkRenderingInfo*)render_info);
+                    disp.cmdBeginRendering(command_buffer, &((VulkanRenderPass*)render_pass)->get_rendering_info());
                 }
 
                 virtual void end_rendering() override { disp.cmdEndRenderingKHR(command_buffer); }
@@ -501,6 +528,64 @@ namespace mag
                 const vkb::DispatchTable& disp;
                 const VkCommandPool& pool;
                 VkCommandBuffer command_buffer;
+        };
+
+        class VulkanQueue : public IQueue
+        {
+            public:
+                VulkanQueue(const vkb::DispatchTable& disp, const vkb::Device& device, const IQueueDesc& desc)
+                    : disp(disp)
+                {
+                    const auto queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
+
+                    MAG_ASSERT(queue_ret, queue_ret.error().message());
+
+                    queue = queue_ret.value();
+                }
+
+                ~VulkanQueue() {}
+
+                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
+                                    const ICommandBuffer* command_buffer) override
+                {
+                    VkSubmitInfo submit_info = {};
+                    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+                    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+                    submit_info.waitSemaphoreCount = 1;
+                    submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    submit_info.pWaitDstStageMask = wait_stages;
+
+                    submit_info.commandBufferCount = 1;
+                    submit_info.pCommandBuffers = &((VulkanCommandBuffer*)command_buffer)->get_command_buffer();
+
+                    submit_info.signalSemaphoreCount = 1;
+                    submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
+
+                    fence->reset();
+
+                    VK_CHECK(disp.queueSubmit(queue, 1, &submit_info, ((VulkanFence*)fence)->get_fence()),
+                             "Failed to submit draw command buffer");
+                }
+
+                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
+                {
+                    const u32 image_index = ((VulkanSwapchain*)swapchain)->get_current_image_index();
+
+                    VkPresentInfoKHR present_info = {};
+                    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+                    present_info.waitSemaphoreCount = 1;
+                    present_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    present_info.swapchainCount = 1;
+                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain)->get_swapchain();
+                    present_info.pImageIndices = &image_index;
+
+                    return disp.queuePresentKHR(queue, &present_info);
+                }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkQueue queue;
         };
 
         class VulkanDevice : public IDevice
@@ -588,30 +673,25 @@ namespace mag
                         command_buffers.push_back(this->create_command_buffer(desc));
                     }
 
+                    // Render Passes
+                    // -------------------------------------------------------------------------------------------------
+                    color_attachments.resize(command_buffers.size());
+                    render_passes.resize(command_buffers.size());
+
                     for (u64 i = 0; i < command_buffers.size(); i++)
                     {
                         command_buffers[i]->begin_recording();
 
-                        VkClearValue clearColor{{{0.4f, 0.6f, 0.8f, 1.0f}}};
+                        IRenderingAttachmentDesc color_attachment_desc = {};
+                        color_attachment_desc.type = RenderingAttachmentType::Color;
+                        color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
+                        color_attachment_desc.texture = ((VulkanSwapchain*)swapchain.get())->get_image_view(i);
+                        color_attachments[i] = this->create_render_attachment(color_attachment_desc);
 
-                        VkRect2D render_area = {};
-                        render_area.offset = {0, 0};
-                        render_area.extent = mag_to_vk(swapchain->get_extent());
-
-                        VkRenderingAttachmentInfoKHR color_attachment_info = {};
-                        color_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-                        color_attachment_info.imageView = ((VulkanSwapchain*)swapchain.get())->get_image_view(i);
-                        color_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
-                        color_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-                        color_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                        color_attachment_info.clearValue = clearColor;
-
-                        VkRenderingInfoKHR render_info = {};
-                        render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
-                        render_info.renderArea = render_area;
-                        render_info.layerCount = 1;
-                        render_info.colorAttachmentCount = 1;
-                        render_info.pColorAttachments = &color_attachment_info;
+                        IRenderPassDesc render_pass_desc = {};
+                        render_pass_desc.extent = swapchain->get_extent();
+                        render_pass_desc.color_attachments.push_back(color_attachments[i].get());
+                        render_passes[i] = this->create_render_pass(render_pass_desc);
 
                         command_buffers[i]->pipeline_barrier(
                             ((VulkanSwapchain*)swapchain.get())->get_image(i), VK_IMAGE_LAYOUT_UNDEFINED,
@@ -622,7 +702,7 @@ namespace mag
                         command_buffers[i]->set_viewport(swapchain->get_extent());
                         command_buffers[i]->set_scissor(swapchain->get_extent());
 
-                        command_buffers[i]->begin_rendering(&render_info);
+                        command_buffers[i]->begin_rendering(render_passes[i].get());
 
                         command_buffers[i]->bind_pipeline(graphics_pipeline.get());
 
@@ -689,11 +769,9 @@ namespace mag
                     }
                     image_in_flight[image_index] = in_flight_fences[current_frame].get();
 
-                    auto vk_cmd_buffer = ((VulkanCommandBuffer*)command_buffers[image_index].get());
-
-                    graphics_queue->submit(
-                        available_semaphores[current_frame].get(), finished_semaphore[current_frame].get(),
-                        in_flight_fences[current_frame].get(), (void*)&vk_cmd_buffer->get_command_buffer());
+                    graphics_queue->submit(available_semaphores[current_frame].get(),
+                                           finished_semaphore[current_frame].get(),
+                                           in_flight_fences[current_frame].get(), command_buffers[image_index].get());
 
                     const VkResult result = static_cast<VkResult>(
                         present_queue->present(swapchain.get(), finished_semaphore[current_frame].get()));
@@ -737,18 +815,31 @@ namespace mag
                     return create_unique<VulkanCommandBuffer>(disp, desc, command_pool);
                 }
 
+                virtual unique<IRenderingAttachment> create_render_attachment(
+                    const IRenderingAttachmentDesc& desc) override
+                {
+                    return create_unique<VulkanRenderingAttachment>(desc);
+                }
+
+                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) override
+                {
+                    return create_unique<VulkanRenderPass>(desc);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
-                unique<ISwapchain> swapchain;
                 vkb::InstanceDispatchTable inst_disp;
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
+                VkCommandPool command_pool;
+                unique<ISwapchain> swapchain;
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
                 unique<IGraphicsPipeline> graphics_pipeline;
-                VkCommandPool command_pool;
                 std::vector<unique<ICommandBuffer>> command_buffers;
+                std::vector<unique<IRenderPass>> render_passes;
+                std::vector<unique<IRenderingAttachment>> color_attachments;
                 std::vector<unique<ISemaphore>> available_semaphores;
                 std::vector<unique<ISemaphore>> finished_semaphore;
                 std::vector<unique<IFence>> in_flight_fences;

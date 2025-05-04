@@ -48,6 +48,19 @@ namespace mag
             return mag_extent;
         }
 
+        inline math::vec4 vk_to_mag(const VkClearColorValue& clear_color)
+        {
+            const math::vec4 mag_clear_color = {clear_color.float32[0], clear_color.float32[1], clear_color.float32[2],
+                                                clear_color.float32[3]};
+            return mag_clear_color;
+        }
+
+        inline VkClearColorValue mag_to_vk(const math::vec4& clear_color)
+        {
+            const VkClearColorValue vk_clear_color = {{clear_color[0], clear_color[1], clear_color[2], clear_color[3]}};
+            return vk_clear_color;
+        }
+
         inline VkPresentModeKHR mag_to_vk(const PresentMode present_mode)
         {
             switch (present_mode)
