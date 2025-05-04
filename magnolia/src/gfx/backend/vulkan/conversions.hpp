@@ -12,6 +12,18 @@ namespace mag
 {
     namespace gfx
     {
+        inline VkOffset2D mag_to_vk(const math::ivec2& offset)
+        {
+            const VkOffset2D vk_offset = {offset[0], offset[1]};
+            return vk_offset;
+        }
+
+        inline math::ivec2 vk_to_mag(const VkOffset2D& offset)
+        {
+            const math::ivec2 mag_offset = {offset.x, offset.y};
+            return mag_offset;
+        }
+
         inline VkExtent3D mag_to_vk(const math::uvec3& extent)
         {
             const VkExtent3D vk_extent = {extent[0], extent[1], extent[2]};
@@ -117,6 +129,38 @@ namespace mag
 
                 case vkb::QueueType::transfer:
                     return QueueType::Transfer;
+                    break;
+            }
+        }
+
+        inline VkCommandBufferLevel mag_to_vk(const CommandBufferLevel level)
+        {
+            switch (level)
+            {
+                case CommandBufferLevel::Primary:
+                    return VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                    break;
+
+                case CommandBufferLevel::Secondary:
+                    return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                    break;
+            }
+        }
+
+        inline CommandBufferLevel vk_to_mag(const VkCommandBufferLevel queue_type)
+        {
+            switch (queue_type)
+            {
+                case VK_COMMAND_BUFFER_LEVEL_PRIMARY:
+                    return CommandBufferLevel::Primary;
+                    break;
+
+                case VK_COMMAND_BUFFER_LEVEL_SECONDARY:
+                    return CommandBufferLevel::Secondary;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled command buffer level");
                     break;
             }
         }

@@ -294,17 +294,17 @@ namespace mag
                     multisampling.sampleShadingEnable = VK_FALSE;
                     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-                    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-                    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-                    colorBlendAttachment.blendEnable = VK_FALSE;
+                    VkPipelineColorBlendAttachmentState color_blend_attachment = {};
+                    color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                                            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                    color_blend_attachment.blendEnable = VK_FALSE;
 
                     VkPipelineColorBlendStateCreateInfo color_blending = {};
                     color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
                     color_blending.logicOpEnable = VK_FALSE;
                     color_blending.logicOp = VK_LOGIC_OP_COPY;
                     color_blending.attachmentCount = 1;
-                    color_blending.pAttachments = &colorBlendAttachment;
+                    color_blending.pAttachments = &color_blend_attachment;
                     color_blending.blendConstants[0] = 0.0f;
                     color_blending.blendConstants[1] = 0.0f;
                     color_blending.blendConstants[2] = 0.0f;
@@ -392,6 +392,117 @@ namespace mag
                 VkPipeline pipeline;
         };
 
+        class VulkanCommandBuffer : public ICommandBuffer
+        {
+            public:
+                VulkanCommandBuffer(const vkb::DispatchTable& disp, const ICommandBufferDesc& desc,
+                                    const VkCommandPool& pool)
+                    : disp(disp), pool(pool)
+                {
+                    VkCommandBufferAllocateInfo alloc_info = {};
+                    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    alloc_info.commandPool = pool;
+                    alloc_info.level = mag_to_vk(desc.command_buffer_level);
+                    alloc_info.commandBufferCount = 1;
+
+                    VK_CHECK(disp.allocateCommandBuffers(&alloc_info, &command_buffer),
+                             "Failed to allocate command buffer");
+                }
+
+                ~VulkanCommandBuffer() { disp.freeCommandBuffers(pool, 1, &command_buffer); }
+
+                virtual void begin_recording() override
+                {
+                    VkCommandBufferBeginInfo begin_info = {};
+                    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+                    VK_CHECK(disp.beginCommandBuffer(command_buffer, &begin_info),
+                             "Failed to begin command buffer recording");
+                }
+
+                virtual void end_recording() override
+                {
+                    VK_CHECK(disp.endCommandBuffer(command_buffer), "Failed to record command buffer");
+                }
+
+                virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, const f32 min_depth,
+                                          const f32 max_depth) override
+                {
+                    VkViewport viewport = {};
+                    viewport.width = extent.x;
+                    viewport.height = extent.y;
+                    viewport.x = offset.x;
+                    viewport.y = offset.y;
+                    viewport.minDepth = min_depth;
+                    viewport.maxDepth = max_depth;
+
+                    disp.cmdSetViewport(command_buffer, 0, 1, &viewport);
+                }
+
+                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) override
+                {
+                    VkRect2D scissor = {};
+                    scissor.extent = mag_to_vk(extent);
+                    scissor.offset = mag_to_vk(offset);
+
+                    disp.cmdSetScissor(command_buffer, 0, 1, &scissor);
+                }
+
+                virtual void begin_rendering(const void* render_info) override
+                {
+                    disp.cmdBeginRendering(command_buffer, (VkRenderingInfo*)render_info);
+                }
+
+                virtual void end_rendering() override { disp.cmdEndRenderingKHR(command_buffer); }
+
+                virtual void bind_pipeline(const IGraphicsPipeline* pipeline) override
+                {
+                    disp.cmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                         ((VulkanGraphicsPipeline*)pipeline)->get_pipeline());
+                }
+
+                virtual void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
+                                  const u32 first_instance) override
+                {
+                    disp.cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
+                }
+
+                virtual void pipeline_barrier(const void* texture, const u32 old_layout, const u32 new_layout,
+                                              const u32 src_access_mask, const u32 dst_access_mask,
+                                              const u32 src_stage_mask, const u32 dst_stage_mask) override
+                {
+                    VkImageMemoryBarrier image_memory_barrier = {};
+                    image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    image_memory_barrier.srcAccessMask = src_access_mask;
+                    image_memory_barrier.dstAccessMask = dst_access_mask;
+                    image_memory_barrier.oldLayout = (VkImageLayout)old_layout;
+                    image_memory_barrier.newLayout = (VkImageLayout)new_layout;
+                    image_memory_barrier.image = (VkImage)texture;
+                    image_memory_barrier.subresourceRange = {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .baseMipLevel = 0,
+                        .levelCount = 1,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                    };
+
+                    disp.cmdPipelineBarrier(command_buffer,
+                                            src_stage_mask,  // srcStageMask
+                                            dst_stage_mask,  // dstStageMask
+                                            0, 0, nullptr, 0, nullptr,
+                                            1,                     // imageMemoryBarrierCount
+                                            &image_memory_barrier  // pImageMemoryBarriers
+                    );
+                }
+
+                const VkCommandBuffer& get_command_buffer() const { return command_buffer; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                const VkCommandPool& pool;
+                VkCommandBuffer command_buffer;
+        };
+
         class VulkanDevice : public IDevice
         {
             public:
@@ -470,42 +581,22 @@ namespace mag
 
                     // Command Buffers
                     // -------------------------------------------------------------------------------------------------
-                    command_buffers.resize(swapchain->get_image_count());
-
-                    VkCommandBufferAllocateInfo allocInfo = {};
-                    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                    allocInfo.commandPool = command_pool;
-                    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-                    allocInfo.commandBufferCount = static_cast<u32>(command_buffers.size());
-
-                    if (disp.allocateCommandBuffers(&allocInfo, command_buffers.data()) != VK_SUCCESS)
+                    for (u32 i = 0; i < swapchain->get_image_count(); i++)
                     {
-                        MAG_ASSERT(false, "Failed to allocate command buffers");
+                        ICommandBufferDesc desc = {};
+                        desc.command_buffer_level = CommandBufferLevel::Primary;
+                        command_buffers.push_back(this->create_command_buffer(desc));
                     }
 
                     for (u64 i = 0; i < command_buffers.size(); i++)
                     {
-                        VkCommandBufferBeginInfo begin_info = {};
-                        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-                        if (disp.beginCommandBuffer(command_buffers[i], &begin_info) != VK_SUCCESS)
-                        {
-                            MAG_ASSERT(false, "Failed to begin command buffer recording");
-                        }
+                        command_buffers[i]->begin_recording();
 
                         VkClearValue clearColor{{{0.4f, 0.6f, 0.8f, 1.0f}}};
 
-                        VkViewport viewport = {};
-                        viewport.x = 0.0f;
-                        viewport.y = 0.0f;
-                        viewport.width = static_cast<f32>(swapchain->get_extent().x);
-                        viewport.height = static_cast<f32>(swapchain->get_extent().y);
-                        viewport.minDepth = 0.0f;
-                        viewport.maxDepth = 1.0f;
-
-                        VkRect2D scissor = {};
-                        scissor.offset = {0, 0};
-                        scissor.extent = mag_to_vk(swapchain->get_extent());
+                        VkRect2D render_area = {};
+                        render_area.offset = {0, 0};
+                        render_area.extent = mag_to_vk(swapchain->get_extent());
 
                         VkRenderingAttachmentInfoKHR color_attachment_info = {};
                         color_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
@@ -517,77 +608,34 @@ namespace mag
 
                         VkRenderingInfoKHR render_info = {};
                         render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
-                        render_info.renderArea = scissor;
+                        render_info.renderArea = render_area;
                         render_info.layerCount = 1;
                         render_info.colorAttachmentCount = 1;
                         render_info.pColorAttachments = &color_attachment_info;
 
-                        {
-                            VkImageMemoryBarrier image_memory_barrier = {};
+                        command_buffers[i]->pipeline_barrier(
+                            ((VulkanSwapchain*)swapchain.get())->get_image(i), VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_NONE,
+                            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-                            image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                            image_memory_barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                            image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                            image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                            image_memory_barrier.image = ((VulkanSwapchain*)swapchain.get())->get_image(i);
-                            image_memory_barrier.subresourceRange = {
-                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                .baseMipLevel = 0,
-                                .levelCount = 1,
-                                .baseArrayLayer = 0,
-                                .layerCount = 1,
-                            };
+                        command_buffers[i]->set_viewport(swapchain->get_extent());
+                        command_buffers[i]->set_scissor(swapchain->get_extent());
 
-                            disp.cmdPipelineBarrier(command_buffers[i],
-                                                    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,              // srcStageMask
-                                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // dstStageMask
-                                                    0, 0, nullptr, 0, nullptr,
-                                                    1,                     // imageMemoryBarrierCount
-                                                    &image_memory_barrier  // pImageMemoryBarriers
-                            );
-                        }
+                        command_buffers[i]->begin_rendering(&render_info);
 
-                        disp.cmdSetViewport(command_buffers[i], 0, 1, &viewport);
-                        disp.cmdSetScissor(command_buffers[i], 0, 1, &scissor);
+                        command_buffers[i]->bind_pipeline(graphics_pipeline.get());
 
-                        disp.cmdBeginRendering(command_buffers[i], &render_info);
+                        command_buffers[i]->draw(3);
 
-                        disp.cmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                             ((VulkanGraphicsPipeline*)graphics_pipeline.get())->get_pipeline());
+                        command_buffers[i]->end_rendering();
 
-                        disp.cmdDraw(command_buffers[i], 3, 1, 0, 0);
+                        command_buffers[i]->pipeline_barrier(
+                            ((VulkanSwapchain*)swapchain.get())->get_image(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_NONE,
+                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
 
-                        disp.cmdEndRenderingKHR(command_buffers[i]);
-
-                        {
-                            VkImageMemoryBarrier image_memory_barrier = {};
-
-                            image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                            image_memory_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                            image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                            image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                            image_memory_barrier.image = ((VulkanSwapchain*)swapchain.get())->get_image(i);
-                            image_memory_barrier.subresourceRange = {
-                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                .baseMipLevel = 0,
-                                .levelCount = 1,
-                                .baseArrayLayer = 0,
-                                .layerCount = 1,
-                            };
-
-                            disp.cmdPipelineBarrier(command_buffers[i],
-                                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // srcStageMask
-                                                    VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,           // dstStageMask
-                                                    0, 0, nullptr, 0, nullptr,
-                                                    1,                     // imageMemoryBarrierCount
-                                                    &image_memory_barrier  // pImageMemoryBarriers
-                            );
-                        }
-
-                        if (disp.endCommandBuffer(command_buffers[i]) != VK_SUCCESS)
-                        {
-                            MAG_ASSERT(false, "Failed to record command buffer");
-                        }
+                        command_buffers[i]->end_recording();
                     }
 
                     // Sync Objects
@@ -616,6 +664,8 @@ namespace mag
                     available_semaphores.clear();
                     finished_semaphore.clear();
 
+                    command_buffers.clear();
+
                     disp.destroyCommandPool(command_pool, nullptr);
 
                     graphics_pipeline.reset();
@@ -639,9 +689,11 @@ namespace mag
                     }
                     image_in_flight[image_index] = in_flight_fences[current_frame].get();
 
-                    graphics_queue->submit(available_semaphores[current_frame].get(),
-                                           finished_semaphore[current_frame].get(),
-                                           in_flight_fences[current_frame].get(), (void*)&command_buffers[image_index]);
+                    auto vk_cmd_buffer = ((VulkanCommandBuffer*)command_buffers[image_index].get());
+
+                    graphics_queue->submit(
+                        available_semaphores[current_frame].get(), finished_semaphore[current_frame].get(),
+                        in_flight_fences[current_frame].get(), (void*)&vk_cmd_buffer->get_command_buffer());
 
                     const VkResult result = static_cast<VkResult>(
                         present_queue->present(swapchain.get(), finished_semaphore[current_frame].get()));
@@ -680,6 +732,11 @@ namespace mag
                     return create_unique<VulkanGraphicsPipeline>(disp, desc);
                 }
 
+                virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) override
+                {
+                    return create_unique<VulkanCommandBuffer>(disp, desc, command_pool);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
@@ -691,7 +748,7 @@ namespace mag
                 unique<IQueue> present_queue;
                 unique<IGraphicsPipeline> graphics_pipeline;
                 VkCommandPool command_pool;
-                std::vector<VkCommandBuffer> command_buffers;
+                std::vector<unique<ICommandBuffer>> command_buffers;
                 std::vector<unique<ISemaphore>> available_semaphores;
                 std::vector<unique<ISemaphore>> finished_semaphore;
                 std::vector<unique<IFence>> in_flight_fences;
