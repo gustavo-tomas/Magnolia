@@ -21,12 +21,67 @@ namespace mag
     #define EXAMPLE_BUILD_DIRECTORY "magnolia/assets/shaders"
     #define MAX_FRAMES_IN_FLIGHT 3
 
+    #define VK_CHECK(result, message)                                             \
+        {                                                                         \
+            MAG_ASSERT(result == VK_SUCCESS, "Vk check failed: " + str(message)); \
+        }
+
     namespace gfx
     {
-        class VkDevice : public IDevice
+        class VulkanSemaphore : public ISemaphore
         {
             public:
-                VkDevice()
+                VulkanSemaphore(const vkb::DispatchTable& disp) : disp(disp)
+                {
+                    VkSemaphoreCreateInfo semaphore_info = {};
+                    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+                    VK_CHECK(disp.createSemaphore(&semaphore_info, nullptr, &semaphore), "Failed to create semaphore");
+                }
+
+                ~VulkanSemaphore() { disp.destroySemaphore(semaphore, nullptr); }
+
+                virtual void* get_handle() override { return &semaphore; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkSemaphore semaphore;
+        };
+
+        class VulkanFence : public IFence
+        {
+            public:
+                VulkanFence(const vkb::DispatchTable& disp, const IFenceDesc& desc) : disp(disp)
+                {
+                    VkFenceCreateInfo fence_info = {};
+                    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+                    if (desc.signaled)
+                    {
+                        fence_info.flags |= VK_FENCE_CREATE_SIGNALED_BIT;
+                    }
+
+                    VK_CHECK(disp.createFence(&fence_info, nullptr, &fence), "Failed to create fence");
+                }
+
+                ~VulkanFence() { disp.destroyFence(fence, nullptr); }
+
+                virtual void wait(const u64 timeout) override { disp.waitForFences(1, &fence, VK_TRUE, timeout); }
+
+                virtual void reset() override { disp.resetFences(1, &fence); }
+
+                // @TODO: temp until the rest of the backend is completed
+                virtual void* get_handle() override { return &fence; }
+
+            private:
+                vkb::DispatchTable disp;
+                VkFence fence;
+        };
+
+        class VulkanDevice : public IDevice
+        {
+            public:
+                VulkanDevice()
                 {
                     // Device
                     // -------------------------------------------------------------------------------------------------
@@ -377,36 +432,26 @@ namespace mag
                     available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
                     finished_semaphore.resize(MAX_FRAMES_IN_FLIGHT);
                     in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
-                    image_in_flight.resize(swapchain.image_count, VK_NULL_HANDLE);
+                    image_in_flight.resize(swapchain.image_count);
 
-                    VkSemaphoreCreateInfo semaphore_info = {};
-                    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-                    VkFenceCreateInfo fence_info = {};
-                    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-                    fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+                    IFenceDesc fence_desc = {};
+                    fence_desc.signaled = true;
 
                     for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
                     {
-                        if (disp.createSemaphore(&semaphore_info, nullptr, &available_semaphores[i]) != VK_SUCCESS ||
-                            disp.createSemaphore(&semaphore_info, nullptr, &finished_semaphore[i]) != VK_SUCCESS ||
-                            disp.createFence(&fence_info, nullptr, &in_flight_fences[i]) != VK_SUCCESS)
-                        {
-                            MAG_ASSERT(false, "Failed to sync objects");
-                        }
+                        available_semaphores[i] = this->create_semaphore();
+                        finished_semaphore[i] = this->create_semaphore();
+                        in_flight_fences[i] = this->create_fence(fence_desc);
                     }
                 }
 
-                ~VkDevice()
+                ~VulkanDevice()
                 {
                     disp.deviceWaitIdle();
 
-                    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-                    {
-                        disp.destroySemaphore(finished_semaphore[i], nullptr);
-                        disp.destroySemaphore(available_semaphores[i], nullptr);
-                        disp.destroyFence(in_flight_fences[i], nullptr);
-                    }
+                    in_flight_fences.clear();
+                    available_semaphores.clear();
+                    finished_semaphore.clear();
 
                     disp.destroyCommandPool(command_pool, nullptr);
 
@@ -424,11 +469,12 @@ namespace mag
 
                 virtual void draw_frame() override
                 {
-                    disp.waitForFences(1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+                    in_flight_fences[current_frame]->wait();
 
                     u32 image_index = 0;
                     VkResult result = disp.acquireNextImageKHR(
-                        swapchain, UINT64_MAX, available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
+                        swapchain, UINT64_MAX, *(VkSemaphore*)(available_semaphores[current_frame]->get_handle()),
+                        VK_NULL_HANDLE, &image_index);
 
                     if (result == VK_ERROR_OUT_OF_DATE_KHR)
                     {
@@ -440,31 +486,32 @@ namespace mag
                         MAG_ASSERT(false, "Failed to acquire swapchain image");
                     }
 
-                    if (image_in_flight[image_index] != VK_NULL_HANDLE)
+                    if (image_in_flight[image_index] != nullptr)
                     {
-                        disp.waitForFences(1, &image_in_flight[image_index], VK_TRUE, UINT64_MAX);
+                        image_in_flight[image_index]->wait();
                     }
-                    image_in_flight[image_index] = in_flight_fences[current_frame];
+                    image_in_flight[image_index] = in_flight_fences[current_frame].get();
 
                     VkSubmitInfo submitInfo = {};
                     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-                    VkSemaphore wait_semaphores[] = {available_semaphores[current_frame]};
                     VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
                     submitInfo.waitSemaphoreCount = 1;
-                    submitInfo.pWaitSemaphores = wait_semaphores;
+                    submitInfo.pWaitSemaphores =
+                        reinterpret_cast<VkSemaphore*>(available_semaphores[current_frame]->get_handle());
                     submitInfo.pWaitDstStageMask = wait_stages;
 
                     submitInfo.commandBufferCount = 1;
                     submitInfo.pCommandBuffers = &command_buffers[image_index];
 
-                    VkSemaphore signal_semaphores[] = {finished_semaphore[current_frame]};
                     submitInfo.signalSemaphoreCount = 1;
-                    submitInfo.pSignalSemaphores = signal_semaphores;
+                    submitInfo.pSignalSemaphores =
+                        reinterpret_cast<VkSemaphore*>(finished_semaphore[current_frame]->get_handle());
 
-                    disp.resetFences(1, &in_flight_fences[current_frame]);
+                    in_flight_fences[current_frame]->reset();
 
-                    if (disp.queueSubmit(graphics_queue, 1, &submitInfo, in_flight_fences[current_frame]) != VK_SUCCESS)
+                    if (disp.queueSubmit(graphics_queue, 1, &submitInfo,
+                                         *(VkFence*)in_flight_fences[current_frame]->get_handle()) != VK_SUCCESS)
                     {
                         MAG_ASSERT(false, "Failed to submit draw command buffer");
                     }
@@ -473,7 +520,8 @@ namespace mag
                     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
                     present_info.waitSemaphoreCount = 1;
-                    present_info.pWaitSemaphores = signal_semaphores;
+                    present_info.pWaitSemaphores =
+                        reinterpret_cast<VkSemaphore*>(finished_semaphore[current_frame]->get_handle());
 
                     VkSwapchainKHR swapChains[] = {swapchain};
                     present_info.swapchainCount = 1;
@@ -510,6 +558,13 @@ namespace mag
                     return shaderModule;
                 }
 
+                virtual unique<ISemaphore> create_semaphore() override { return create_unique<VulkanSemaphore>(disp); }
+
+                virtual unique<IFence> create_fence(const IFenceDesc& desc) override
+                {
+                    return create_unique<VulkanFence>(disp, desc);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
@@ -526,14 +581,14 @@ namespace mag
                 std::vector<VkImageView> swapchain_image_views;
                 VkCommandPool command_pool;
                 std::vector<VkCommandBuffer> command_buffers;
-                std::vector<VkSemaphore> available_semaphores;
-                std::vector<VkSemaphore> finished_semaphore;
-                std::vector<VkFence> in_flight_fences;
-                std::vector<VkFence> image_in_flight;
+                std::vector<unique<ISemaphore>> available_semaphores;
+                std::vector<unique<ISemaphore>> finished_semaphore;
+                std::vector<unique<IFence>> in_flight_fences;
+                std::vector<IFence*> image_in_flight;
                 u32 current_frame = 0;
         };
 
-        unique<IDevice> create_device() { return create_unique<VkDevice>(); }
+        unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
     };  // namespace gfx
 };      // namespace mag
 
