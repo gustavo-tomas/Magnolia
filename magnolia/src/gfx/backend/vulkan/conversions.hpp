@@ -121,6 +121,31 @@ namespace mag
             }
         }
 
+        inline VkPrimitiveTopology mag_to_vk(const PrimitiveTopology primitive_topology)
+        {
+            switch (primitive_topology)
+            {
+                case PrimitiveTopology::TriangleList:
+                    return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+                    break;
+            }
+        }
+
+        inline PrimitiveTopology vk_to_mag(const VkPrimitiveTopology primitive_topology)
+        {
+            switch (primitive_topology)
+            {
+                case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+                    return PrimitiveTopology::TriangleList;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled primitive topology list");
+                    return PrimitiveTopology::TriangleList;
+                    break;
+            }
+        }
+
         inline VkFormat mag_to_vk(const Format format)
         {
             switch (format)

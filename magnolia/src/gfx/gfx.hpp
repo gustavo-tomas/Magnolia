@@ -53,6 +53,11 @@ namespace mag
             DepthStencilAttachment = 0 << 6
         };
 
+        enum class PrimitiveTopology
+        {
+            TriangleList
+        };
+
         struct IFenceDesc
         {
                 b8 signaled = false;
@@ -66,6 +71,13 @@ namespace mag
         struct IQueueDesc
         {
                 QueueType queue_type;
+        };
+
+        struct IGraphicsPipelineDesc
+        {
+                PrimitiveTopology primitive_topology;
+                Format format;
+                math::uvec2 extent;
         };
 
         class ISemaphore
@@ -93,13 +105,13 @@ namespace mag
 
                 virtual u32 get_image_count() const = 0;
 
-                virtual math::vec2 get_extent() const = 0;
+                virtual math::uvec2 get_extent() const = 0;
 
                 virtual Format get_format() const = 0;
 
                 virtual b8 acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence = nullptr) = 0;
 
-                virtual b8 resize(const math::vec2& extent) = 0;
+                virtual b8 resize(const math::uvec2& extent) = 0;
         };
 
         class IQueue
@@ -114,6 +126,12 @@ namespace mag
                 virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
         };
 
+        class IGraphicsPipeline
+        {
+            public:
+                virtual ~IGraphicsPipeline() = default;
+        };
+
         class IDevice
         {
             public:
@@ -123,6 +141,7 @@ namespace mag
                 virtual unique<IFence> create_fence(const IFenceDesc& desc) = 0;
                 virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) = 0;
                 virtual unique<IQueue> create_queue(const IQueueDesc& desc) = 0;
+                virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) = 0;
 
                 // @TODO: temporary stub to draw stuff
                 virtual void draw_frame() = 0;

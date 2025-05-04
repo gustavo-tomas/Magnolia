@@ -112,7 +112,7 @@ namespace mag
 
                 virtual u32 get_image_count() const override { return swapchain.image_count; }
 
-                virtual math::vec2 get_extent() const override { return vk_to_mag(swapchain.extent); }
+                virtual math::uvec2 get_extent() const override { return vk_to_mag(swapchain.extent); }
 
                 virtual Format get_format() const override { return vk_to_mag(swapchain.image_format); }
 
@@ -143,7 +143,7 @@ namespace mag
                     return true;
                 }
 
-                virtual b8 resize(const math::vec2& extent) override { MAG_ASSERT(false, "@TODO"); }
+                virtual b8 resize(const math::uvec2& extent) override { MAG_ASSERT(false, "@TODO"); }
 
                 const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
                 const VkImage& get_image(const u32 index) const { return swapchain_images[index]; }
@@ -215,6 +215,183 @@ namespace mag
                 VkQueue queue;
         };
 
+        class VulkanGraphicsPipeline : public IGraphicsPipeline
+        {
+            public:
+                VulkanGraphicsPipeline(const vkb::DispatchTable& disp, const IGraphicsPipelineDesc& desc) : disp(disp)
+                {
+                    Buffer vert_buffer;
+                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.vert.spv", vert_buffer);
+                    const auto vert_code = vert_buffer.data;
+
+                    Buffer frag_buffer;
+                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.frag.spv", frag_buffer);
+                    const auto frag_code = frag_buffer.data;
+
+                    VkShaderModule vert_module = createShaderModule(vert_code);
+                    VkShaderModule frag_module = createShaderModule(frag_code);
+
+                    if (vert_module == VK_NULL_HANDLE || frag_module == VK_NULL_HANDLE)
+                    {
+                        MAG_ASSERT(false, "Failed to create shader module");
+                    }
+
+                    VkPipelineShaderStageCreateInfo vert_stage_info = {};
+                    vert_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    vert_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                    vert_stage_info.module = vert_module;
+                    vert_stage_info.pName = "main";
+
+                    VkPipelineShaderStageCreateInfo frag_stage_info = {};
+                    frag_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    frag_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    frag_stage_info.module = frag_module;
+                    frag_stage_info.pName = "main";
+
+                    VkPipelineShaderStageCreateInfo shader_stages[] = {vert_stage_info, frag_stage_info};
+
+                    VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
+                    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+                    vertex_input_info.vertexBindingDescriptionCount = 0;
+                    vertex_input_info.vertexAttributeDescriptionCount = 0;
+
+                    VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
+                    input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+                    input_assembly.topology = mag_to_vk(desc.primitive_topology);
+                    input_assembly.primitiveRestartEnable = VK_FALSE;
+
+                    VkViewport viewport = {};
+                    viewport.x = 0.0f;
+                    viewport.y = 0.0f;
+                    viewport.width = static_cast<f32>(desc.extent.x);
+                    viewport.height = static_cast<f32>(desc.extent.y);
+                    viewport.minDepth = 0.0f;
+                    viewport.maxDepth = 1.0f;
+
+                    VkRect2D scissor = {};
+                    scissor.offset = {0, 0};
+                    scissor.extent = mag_to_vk(desc.extent);
+
+                    VkPipelineViewportStateCreateInfo viewport_state = {};
+                    viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+                    viewport_state.viewportCount = 1;
+                    viewport_state.pViewports = &viewport;
+                    viewport_state.scissorCount = 1;
+                    viewport_state.pScissors = &scissor;
+
+                    VkPipelineRasterizationStateCreateInfo rasterizer = {};
+                    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+                    rasterizer.depthClampEnable = VK_FALSE;
+                    rasterizer.rasterizerDiscardEnable = VK_FALSE;
+                    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+                    rasterizer.lineWidth = 1.0f;
+                    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+                    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+                    rasterizer.depthBiasEnable = VK_FALSE;
+
+                    VkPipelineMultisampleStateCreateInfo multisampling = {};
+                    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+                    multisampling.sampleShadingEnable = VK_FALSE;
+                    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+                    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+                    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                    colorBlendAttachment.blendEnable = VK_FALSE;
+
+                    VkPipelineColorBlendStateCreateInfo color_blending = {};
+                    color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+                    color_blending.logicOpEnable = VK_FALSE;
+                    color_blending.logicOp = VK_LOGIC_OP_COPY;
+                    color_blending.attachmentCount = 1;
+                    color_blending.pAttachments = &colorBlendAttachment;
+                    color_blending.blendConstants[0] = 0.0f;
+                    color_blending.blendConstants[1] = 0.0f;
+                    color_blending.blendConstants[2] = 0.0f;
+                    color_blending.blendConstants[3] = 0.0f;
+
+                    VkPipelineLayoutCreateInfo pipeline_layout_info = {};
+                    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                    pipeline_layout_info.setLayoutCount = 0;
+                    pipeline_layout_info.pushConstantRangeCount = 0;
+
+                    if (disp.createPipelineLayout(&pipeline_layout_info, nullptr, &pipeline_layout) != VK_SUCCESS)
+                    {
+                        MAG_ASSERT(false, "Failed to create pipeline layout");
+                    }
+
+                    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+
+                    VkPipelineDynamicStateCreateInfo dynamic_info = {};
+                    dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+                    dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
+                    dynamic_info.pDynamicStates = dynamic_states.data();
+
+                    VkFormat swapchain_format = mag_to_vk(desc.format);
+
+                    VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
+                    pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+                    pipeline_rendering_create_info.colorAttachmentCount = 1;
+                    pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain_format;
+
+                    VkGraphicsPipelineCreateInfo pipeline_info = {};
+                    pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+                    pipeline_info.stageCount = 2;
+                    pipeline_info.pStages = shader_stages;
+                    pipeline_info.pVertexInputState = &vertex_input_info;
+                    pipeline_info.pInputAssemblyState = &input_assembly;
+                    pipeline_info.pViewportState = &viewport_state;
+                    pipeline_info.pRasterizationState = &rasterizer;
+                    pipeline_info.pMultisampleState = &multisampling;
+                    pipeline_info.pColorBlendState = &color_blending;
+                    pipeline_info.pDynamicState = &dynamic_info;
+                    pipeline_info.layout = pipeline_layout;
+                    pipeline_info.renderPass = nullptr;
+                    pipeline_info.subpass = 0;
+                    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+                    pipeline_info.pNext = &pipeline_rendering_create_info;
+
+                    if (disp.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline) !=
+                        VK_SUCCESS)
+                    {
+                        MAG_ASSERT(false, "Failed to create pipeline");
+                    }
+
+                    disp.destroyShaderModule(frag_module, nullptr);
+                    disp.destroyShaderModule(vert_module, nullptr);
+                }
+
+                ~VulkanGraphicsPipeline()
+                {
+                    disp.destroyPipeline(pipeline, nullptr);
+                    disp.destroyPipelineLayout(pipeline_layout, nullptr);
+                }
+
+                // @TODO: temporary, this is here mostly for convenience
+                VkShaderModule createShaderModule(const std::vector<u8>& code)
+                {
+                    VkShaderModuleCreateInfo create_info = {};
+                    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                    create_info.codeSize = code.size();
+                    create_info.pCode = reinterpret_cast<const u32*>(code.data());
+
+                    VkShaderModule shaderModule = {};
+                    if (disp.createShaderModule(&create_info, nullptr, &shaderModule) != VK_SUCCESS)
+                    {
+                        return VK_NULL_HANDLE;  // failed to create shader module
+                    }
+
+                    return shaderModule;
+                }
+
+                const VkPipeline& get_pipeline() const { return pipeline; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkPipelineLayout pipeline_layout;
+                VkPipeline pipeline;
+        };
+
         class VulkanDevice : public IDevice
         {
             public:
@@ -274,145 +451,11 @@ namespace mag
 
                     // Graphics Pipeline
                     // -------------------------------------------------------------------------------------------------
-                    Buffer vert_buffer;
-                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.vert.spv", vert_buffer);
-                    const auto vert_code = vert_buffer.data;
-
-                    Buffer frag_buffer;
-                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.frag.spv", frag_buffer);
-                    const auto frag_code = frag_buffer.data;
-
-                    VkShaderModule vert_module = createShaderModule(vert_code);
-                    VkShaderModule frag_module = createShaderModule(frag_code);
-
-                    if (vert_module == VK_NULL_HANDLE || frag_module == VK_NULL_HANDLE)
-                    {
-                        MAG_ASSERT(false, "Failed to create shader module");
-                    }
-
-                    VkPipelineShaderStageCreateInfo vert_stage_info = {};
-                    vert_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                    vert_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-                    vert_stage_info.module = vert_module;
-                    vert_stage_info.pName = "main";
-
-                    VkPipelineShaderStageCreateInfo frag_stage_info = {};
-                    frag_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                    frag_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-                    frag_stage_info.module = frag_module;
-                    frag_stage_info.pName = "main";
-
-                    VkPipelineShaderStageCreateInfo shader_stages[] = {vert_stage_info, frag_stage_info};
-
-                    VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
-                    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-                    vertex_input_info.vertexBindingDescriptionCount = 0;
-                    vertex_input_info.vertexAttributeDescriptionCount = 0;
-
-                    VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
-                    input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-                    input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-                    input_assembly.primitiveRestartEnable = VK_FALSE;
-
-                    VkViewport viewport = {};
-                    viewport.x = 0.0f;
-                    viewport.y = 0.0f;
-                    viewport.width = viewport.width = static_cast<f32>(swapchain->get_extent().x);
-                    viewport.height = viewport.height = static_cast<f32>(swapchain->get_extent().y);
-                    viewport.minDepth = 0.0f;
-                    viewport.maxDepth = 1.0f;
-
-                    VkRect2D scissor = {};
-                    scissor.offset = {0, 0};
-                    scissor.extent = mag_to_vk(swapchain->get_extent());
-
-                    VkPipelineViewportStateCreateInfo viewport_state = {};
-                    viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-                    viewport_state.viewportCount = 1;
-                    viewport_state.pViewports = &viewport;
-                    viewport_state.scissorCount = 1;
-                    viewport_state.pScissors = &scissor;
-
-                    VkPipelineRasterizationStateCreateInfo rasterizer = {};
-                    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-                    rasterizer.depthClampEnable = VK_FALSE;
-                    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-                    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-                    rasterizer.lineWidth = 1.0f;
-                    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-                    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-                    rasterizer.depthBiasEnable = VK_FALSE;
-
-                    VkPipelineMultisampleStateCreateInfo multisampling = {};
-                    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-                    multisampling.sampleShadingEnable = VK_FALSE;
-                    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-                    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-                    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                          VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-                    colorBlendAttachment.blendEnable = VK_FALSE;
-
-                    VkPipelineColorBlendStateCreateInfo color_blending = {};
-                    color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-                    color_blending.logicOpEnable = VK_FALSE;
-                    color_blending.logicOp = VK_LOGIC_OP_COPY;
-                    color_blending.attachmentCount = 1;
-                    color_blending.pAttachments = &colorBlendAttachment;
-                    color_blending.blendConstants[0] = 0.0f;
-                    color_blending.blendConstants[1] = 0.0f;
-                    color_blending.blendConstants[2] = 0.0f;
-                    color_blending.blendConstants[3] = 0.0f;
-
-                    VkPipelineLayoutCreateInfo pipeline_layout_info = {};
-                    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-                    pipeline_layout_info.setLayoutCount = 0;
-                    pipeline_layout_info.pushConstantRangeCount = 0;
-
-                    if (disp.createPipelineLayout(&pipeline_layout_info, nullptr, &pipeline_layout) != VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to create pipeline layout");
-                    }
-
-                    std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-
-                    VkPipelineDynamicStateCreateInfo dynamic_info = {};
-                    dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-                    dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
-                    dynamic_info.pDynamicStates = dynamic_states.data();
-
-                    VkFormat swapchain_format = mag_to_vk(swapchain->get_format());
-
-                    VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
-                    pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
-                    pipeline_rendering_create_info.colorAttachmentCount = 1;
-                    pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain_format;
-
-                    VkGraphicsPipelineCreateInfo pipeline_info = {};
-                    pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-                    pipeline_info.stageCount = 2;
-                    pipeline_info.pStages = shader_stages;
-                    pipeline_info.pVertexInputState = &vertex_input_info;
-                    pipeline_info.pInputAssemblyState = &input_assembly;
-                    pipeline_info.pViewportState = &viewport_state;
-                    pipeline_info.pRasterizationState = &rasterizer;
-                    pipeline_info.pMultisampleState = &multisampling;
-                    pipeline_info.pColorBlendState = &color_blending;
-                    pipeline_info.pDynamicState = &dynamic_info;
-                    pipeline_info.layout = pipeline_layout;
-                    pipeline_info.renderPass = nullptr;
-                    pipeline_info.subpass = 0;
-                    pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
-                    pipeline_info.pNext = &pipeline_rendering_create_info;
-
-                    if (disp.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphics_pipeline) !=
-                        VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to create pipeline");
-                    }
-
-                    disp.destroyShaderModule(frag_module, nullptr);
-                    disp.destroyShaderModule(vert_module, nullptr);
+                    IGraphicsPipelineDesc graphics_pipeline_desc = {};
+                    graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
+                    graphics_pipeline_desc.format = swapchain->get_format();
+                    graphics_pipeline_desc.extent = swapchain->get_extent();
+                    graphics_pipeline = this->create_graphics_pipeline(graphics_pipeline_desc);
 
                     // Command Pool
                     // -------------------------------------------------------------------------------------------------
@@ -509,7 +552,8 @@ namespace mag
 
                         disp.cmdBeginRendering(command_buffers[i], &render_info);
 
-                        disp.cmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+                        disp.cmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                             ((VulkanGraphicsPipeline*)graphics_pipeline.get())->get_pipeline());
 
                         disp.cmdDraw(command_buffers[i], 3, 1, 0, 0);
 
@@ -574,9 +618,7 @@ namespace mag
 
                     disp.destroyCommandPool(command_pool, nullptr);
 
-                    disp.destroyPipeline(graphics_pipeline, nullptr);
-                    disp.destroyPipelineLayout(pipeline_layout, nullptr);
-
+                    graphics_pipeline.reset();
                     swapchain.reset();
 
                     vkb::destroy_device(device);
@@ -616,22 +658,6 @@ namespace mag
                     current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
                 }
 
-                VkShaderModule createShaderModule(const std::vector<u8>& code)
-                {
-                    VkShaderModuleCreateInfo create_info = {};
-                    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                    create_info.codeSize = code.size();
-                    create_info.pCode = reinterpret_cast<const u32*>(code.data());
-
-                    VkShaderModule shaderModule = {};
-                    if (disp.createShaderModule(&create_info, nullptr, &shaderModule) != VK_SUCCESS)
-                    {
-                        return VK_NULL_HANDLE;  // failed to create shader module
-                    }
-
-                    return shaderModule;
-                }
-
                 virtual unique<ISemaphore> create_semaphore() override { return create_unique<VulkanSemaphore>(disp); }
 
                 virtual unique<IFence> create_fence(const IFenceDesc& desc) override
@@ -649,6 +675,11 @@ namespace mag
                     return create_unique<VulkanQueue>(disp, device, desc);
                 }
 
+                virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) override
+                {
+                    return create_unique<VulkanGraphicsPipeline>(disp, desc);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
@@ -658,8 +689,7 @@ namespace mag
                 VkSurfaceKHR surface;
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
-                VkPipelineLayout pipeline_layout;
-                VkPipeline graphics_pipeline;
+                unique<IGraphicsPipeline> graphics_pipeline;
                 VkCommandPool command_pool;
                 std::vector<VkCommandBuffer> command_buffers;
                 std::vector<unique<ISemaphore>> available_semaphores;
