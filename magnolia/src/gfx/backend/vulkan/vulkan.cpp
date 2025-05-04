@@ -116,14 +116,15 @@ namespace mag
 
                 virtual Format get_format() const override { return vk_to_mag(swapchain.image_format); }
 
-                virtual b8 acquire_next_image(ISemaphore* signal_semaphore, IFence* fence = nullptr) override
+                virtual b8 acquire_next_image(const ISemaphore* signal_semaphore,
+                                              const IFence* fence = nullptr) override
                 {
-                    const VkSemaphore vk_sem = static_cast<VulkanSemaphore*>(signal_semaphore)->get_semaphore();
+                    const VkSemaphore vk_sem = static_cast<const VulkanSemaphore*>(signal_semaphore)->get_semaphore();
                     VkFence vk_fen = nullptr;
 
                     if (fence != nullptr)
                     {
-                        vk_fen = static_cast<VulkanFence*>(fence)->get_fence();
+                        vk_fen = static_cast<const VulkanFence*>(fence)->get_fence();
                     }
 
                     const VkResult result =
@@ -525,7 +526,6 @@ namespace mag
 
                     disp.destroyPipeline(graphics_pipeline, nullptr);
                     disp.destroyPipelineLayout(pipeline_layout, nullptr);
-                    disp.destroyRenderPass(render_pass, nullptr);
 
                     swapchain.reset();
 
@@ -633,7 +633,6 @@ namespace mag
                 VkSurfaceKHR surface;
                 VkQueue graphics_queue;
                 VkQueue present_queue;
-                VkRenderPass render_pass;
                 VkPipelineLayout pipeline_layout;
                 VkPipeline graphics_pipeline;
                 VkCommandPool command_pool;

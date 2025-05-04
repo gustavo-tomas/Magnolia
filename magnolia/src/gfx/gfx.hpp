@@ -84,7 +84,7 @@ namespace mag
 
                 virtual Format get_format() const = 0;
 
-                virtual b8 acquire_next_image(ISemaphore* signal_semaphore, IFence* fence = nullptr) = 0;
+                virtual b8 acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence = nullptr) = 0;
 
                 virtual b8 resize(const math::vec2& extent) = 0;
         };
