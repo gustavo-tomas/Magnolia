@@ -5,7 +5,7 @@
 #include "VkBootstrap.h"
 #include "core/assert.hpp"
 #include "core/types.hpp"
-#include "gfx/gfx.hpp"
+#include "gfx/backend/backend.hpp"
 #include "math/types.hpp"
 
 namespace mag
