@@ -10,6 +10,7 @@ namespace mag
         // This is backend stuff
 
         class IRenderingAttachment;
+        class ITexture;
 
         enum class PresentMode
         {
@@ -105,7 +106,7 @@ namespace mag
                 f32 clear_depth;
                 u32 clear_stencil;
                 RenderingAttachmentType type;
-                void* texture = nullptr;  // @TODO: swap with texture once the interface is done
+                const ITexture* texture = nullptr;
         };
 
         struct IRenderPassDesc
@@ -113,6 +114,16 @@ namespace mag
                 math::uvec2 extent;
                 math::ivec2 offset = {0.0f, 0.0f};
                 std::vector<IRenderingAttachment*> color_attachments;
+        };
+
+        struct ITextureDesc
+        {
+                math::uvec3 extent;
+                Format format = Format::B8G8R8A8_SRGB;
+                TextureType type = TextureType::Texture2D;
+                TextureUsage usage;
+                u32 mip_levels = 1;
+                u32 array_layers = 1;
         };
 
         class IRenderingAttachment
@@ -153,6 +164,12 @@ namespace mag
                 virtual void reset() = 0;
         };
 
+        class ITexture
+        {
+            public:
+                virtual ~ITexture() = default;
+        };
+
         class ISwapchain
         {
             public:
@@ -165,6 +182,8 @@ namespace mag
                 virtual math::uvec2 get_extent() const = 0;
 
                 virtual Format get_format() const = 0;
+
+                virtual const ITexture* get_texture(const u32 index) const = 0;
 
                 virtual b8 acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence = nullptr) = 0;
 
@@ -200,8 +219,7 @@ namespace mag
                 virtual void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
                                   const u32 first_instance = 0) = 0;
 
-                // @TODO: change parameters when the texture interface is implemented
-                virtual void pipeline_barrier(const void* texture, const u32 old_layout, const u32 new_layout,
+                virtual void pipeline_barrier(const ITexture* texture, const u32 old_layout, const u32 new_layout,
                                               const u32 src_access_mask, const u32 dst_access_mask,
                                               const u32 src_stage_mask, const u32 dst_stage_mask) = 0;
         };
@@ -230,6 +248,7 @@ namespace mag
                 virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) = 0;
                 virtual unique<IRenderingAttachment> create_render_attachment(const IRenderingAttachmentDesc& desc) = 0;
                 virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) = 0;
+                virtual unique<ITexture> create_texture(const ITextureDesc& desc) = 0;
 
                 // @TODO: temporary stub to draw stuff
                 virtual void draw_frame() = 0;

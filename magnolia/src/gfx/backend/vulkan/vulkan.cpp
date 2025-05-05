@@ -78,6 +78,32 @@ namespace mag
                 VkFence fence;
         };
 
+        class VulkanTexture : public ITexture
+        {
+            public:
+                VulkanTexture(const vkb::DispatchTable& disp, const ITextureDesc& desc) : disp(disp)
+                {
+                    MAG_ASSERT(false, "@TODO");
+                }
+
+                // Special case for swapchain images (simply copy image and view)
+                VulkanTexture(const vkb::DispatchTable& disp, const VkImage image, const VkImageView image_view)
+                    : disp(disp), image(image), image_view(image_view)
+                {
+                }
+
+                ~VulkanTexture() { disp.destroyImageView(image_view, nullptr); }
+
+                const VkImage& get_image() const { return image; }
+
+                const VkImageView& get_image_view() const { return image_view; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkImage image = {};
+                VkImageView image_view = {};
+        };
+
         class VulkanSwapchain : public ISwapchain
         {
             public:
@@ -97,15 +123,20 @@ namespace mag
                     vkb::destroy_swapchain(swapchain);
 
                     swapchain = swap_ret.value();
-                    swapchain_images = swapchain.get_images().value();
-                    swapchain_image_views = swapchain.get_image_views().value();
+
+                    const std::vector<VkImage>& swapchain_images = swapchain.get_images().value();
+                    const std::vector<VkImageView>& swapchain_image_views = swapchain.get_image_views().value();
+                    for (u32 i = 0; i < swapchain.image_count; i++)
+                    {
+                        VulkanTexture* texture = new VulkanTexture(disp, swapchain_images[i], swapchain_image_views[i]);
+                        swapchain_textures.emplace_back(texture);
+                    }
                 }
 
                 ~VulkanSwapchain()
                 {
-                    swapchain.destroy_image_views(swapchain_image_views);
-
                     vkb::destroy_swapchain(swapchain);
+                    swapchain_textures.clear();
                 }
 
                 virtual u32 get_current_image_index() const override { return current_image_index; }
@@ -115,6 +146,11 @@ namespace mag
                 virtual math::uvec2 get_extent() const override { return vk_to_mag(swapchain.extent); }
 
                 virtual Format get_format() const override { return vk_to_mag(swapchain.image_format); }
+
+                virtual const ITexture* get_texture(const u32 index) const override
+                {
+                    return swapchain_textures[index].get();
+                }
 
                 virtual b8 acquire_next_image(const ISemaphore* signal_semaphore,
                                               const IFence* fence = nullptr) override
@@ -146,15 +182,12 @@ namespace mag
                 virtual b8 resize(const math::uvec2& extent) override { MAG_ASSERT(false, "@TODO"); }
 
                 const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
-                const VkImage& get_image(const u32 index) const { return swapchain_images[index]; }
-                const VkImageView& get_image_view(const u32 index) const { return swapchain_image_views[index]; }
 
             private:
                 const vkb::DispatchTable& disp;
                 vkb::Swapchain swapchain;
                 u32 current_image_index = 0;
-                std::vector<VkImage> swapchain_images;
-                std::vector<VkImageView> swapchain_image_views;
+                std::vector<unique<VulkanTexture>> swapchain_textures;
         };
 
         class VulkanGraphicsPipeline : public IGraphicsPipeline
@@ -355,7 +388,7 @@ namespace mag
 
                     rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
                     rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
-                    rendering_attachment_info.imageView = (VkImageView)desc.texture;
+                    rendering_attachment_info.imageView = ((VulkanTexture*)desc.texture)->get_image_view();
                     rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                     rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     rendering_attachment_info.clearValue = clear_value;
@@ -494,7 +527,7 @@ namespace mag
                     disp.cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
                 }
 
-                virtual void pipeline_barrier(const void* texture, const u32 old_layout, const u32 new_layout,
+                virtual void pipeline_barrier(const ITexture* texture, const u32 old_layout, const u32 new_layout,
                                               const u32 src_access_mask, const u32 dst_access_mask,
                                               const u32 src_stage_mask, const u32 dst_stage_mask) override
                 {
@@ -504,7 +537,7 @@ namespace mag
                     image_memory_barrier.dstAccessMask = dst_access_mask;
                     image_memory_barrier.oldLayout = (VkImageLayout)old_layout;
                     image_memory_barrier.newLayout = (VkImageLayout)new_layout;
-                    image_memory_barrier.image = (VkImage)texture;
+                    image_memory_barrier.image = ((VulkanTexture*)texture)->get_image();
                     image_memory_barrier.subresourceRange = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                         .baseMipLevel = 0,
@@ -685,7 +718,7 @@ namespace mag
                         IRenderingAttachmentDesc color_attachment_desc = {};
                         color_attachment_desc.type = RenderingAttachmentType::Color;
                         color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
-                        color_attachment_desc.texture = ((VulkanSwapchain*)swapchain.get())->get_image_view(i);
+                        color_attachment_desc.texture = swapchain->get_texture(i);
                         color_attachments[i] = this->create_render_attachment(color_attachment_desc);
 
                         IRenderPassDesc render_pass_desc = {};
@@ -693,11 +726,11 @@ namespace mag
                         render_pass_desc.color_attachments.push_back(color_attachments[i].get());
                         render_passes[i] = this->create_render_pass(render_pass_desc);
 
-                        command_buffers[i]->pipeline_barrier(
-                            ((VulkanSwapchain*)swapchain.get())->get_image(i), VK_IMAGE_LAYOUT_UNDEFINED,
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_NONE,
-                            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                        command_buffers[i]->pipeline_barrier(swapchain->get_texture(i), VK_IMAGE_LAYOUT_UNDEFINED,
+                                                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_NONE,
+                                                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                                             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
                         command_buffers[i]->set_viewport(swapchain->get_extent());
                         command_buffers[i]->set_scissor(swapchain->get_extent());
@@ -711,7 +744,7 @@ namespace mag
                         command_buffers[i]->end_rendering();
 
                         command_buffers[i]->pipeline_barrier(
-                            ((VulkanSwapchain*)swapchain.get())->get_image(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            swapchain->get_texture(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_NONE,
                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
 
@@ -824,6 +857,11 @@ namespace mag
                 virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) override
                 {
                     return create_unique<VulkanRenderPass>(desc);
+                }
+
+                virtual unique<ITexture> create_texture(const ITextureDesc& desc) override
+                {
+                    return create_unique<VulkanTexture>(disp, desc);
                 }
 
             private:
