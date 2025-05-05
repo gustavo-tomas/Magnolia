@@ -94,14 +94,19 @@ namespace mag
 
                 ~VulkanTexture() { disp.destroyImageView(image_view, nullptr); }
 
+                virtual TextureLayout get_layout() const override { return vk_to_mag(image_layout); }
+
                 const VkImage& get_image() const { return image; }
 
                 const VkImageView& get_image_view() const { return image_view; }
+
+                void set_new_layout(const VkImageLayout new_image_layout) { image_layout = new_image_layout; }
 
             private:
                 const vkb::DispatchTable& disp;
                 VkImage image = {};
                 VkImageView image_view = {};
+                VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
         };
 
         class VulkanSwapchain : public ISwapchain
@@ -527,16 +532,17 @@ namespace mag
                     disp.cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
                 }
 
-                virtual void pipeline_barrier(const ITexture* texture, const u32 old_layout, const u32 new_layout,
-                                              const u32 src_access_mask, const u32 dst_access_mask,
-                                              const u32 src_stage_mask, const u32 dst_stage_mask) override
+                virtual void pipeline_barrier(const ITexture* texture, const TextureLayout new_layout,
+                                              const AccessMask src_access_mask, const AccessMask dst_access_mask,
+                                              const PipelineStage src_stage_mask,
+                                              const PipelineStage dst_stage_mask) override
                 {
                     VkImageMemoryBarrier image_memory_barrier = {};
                     image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    image_memory_barrier.srcAccessMask = src_access_mask;
-                    image_memory_barrier.dstAccessMask = dst_access_mask;
-                    image_memory_barrier.oldLayout = (VkImageLayout)old_layout;
-                    image_memory_barrier.newLayout = (VkImageLayout)new_layout;
+                    image_memory_barrier.srcAccessMask = mag_to_vk(src_access_mask);
+                    image_memory_barrier.dstAccessMask = mag_to_vk(dst_access_mask);
+                    image_memory_barrier.oldLayout = mag_to_vk(texture->get_layout());
+                    image_memory_barrier.newLayout = mag_to_vk(new_layout);
                     image_memory_barrier.image = ((VulkanTexture*)texture)->get_image();
                     image_memory_barrier.subresourceRange = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -546,13 +552,10 @@ namespace mag
                         .layerCount = 1,
                     };
 
-                    disp.cmdPipelineBarrier(command_buffer,
-                                            src_stage_mask,  // srcStageMask
-                                            dst_stage_mask,  // dstStageMask
-                                            0, 0, nullptr, 0, nullptr,
-                                            1,                     // imageMemoryBarrierCount
-                                            &image_memory_barrier  // pImageMemoryBarriers
-                    );
+                    disp.cmdPipelineBarrier(command_buffer, mag_to_vk(src_stage_mask), mag_to_vk(dst_stage_mask), 0, 0,
+                                            nullptr, 0, nullptr, 1, &image_memory_barrier);
+
+                    ((VulkanTexture*)texture)->set_new_layout(mag_to_vk(new_layout));
                 }
 
                 const VkCommandBuffer& get_command_buffer() const { return command_buffer; }
@@ -726,11 +729,10 @@ namespace mag
                         render_pass_desc.color_attachments.push_back(color_attachments[i].get());
                         render_passes[i] = this->create_render_pass(render_pass_desc);
 
-                        command_buffers[i]->pipeline_barrier(swapchain->get_texture(i), VK_IMAGE_LAYOUT_UNDEFINED,
-                                                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ACCESS_NONE,
-                                                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                                                             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                        command_buffers[i]->pipeline_barrier(swapchain->get_texture(i), TextureLayout::ColorAttachment,
+                                                             AccessMask::None, AccessMask::ColorAttachmentWrite,
+                                                             PipelineStage::TopOfPipe,
+                                                             PipelineStage::ColorAttachmentOutput);
 
                         command_buffers[i]->set_viewport(swapchain->get_extent());
                         command_buffers[i]->set_scissor(swapchain->get_extent());
@@ -744,9 +746,8 @@ namespace mag
                         command_buffers[i]->end_rendering();
 
                         command_buffers[i]->pipeline_barrier(
-                            swapchain->get_texture(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_NONE,
-                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+                            swapchain->get_texture(i), TextureLayout::Present, AccessMask::ColorAttachmentWrite,
+                            AccessMask::None, PipelineStage::ColorAttachmentOutput, PipelineStage::BottomOfPipe);
 
                         command_buffers[i]->end_recording();
                     }

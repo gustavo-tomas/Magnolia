@@ -48,12 +48,32 @@ namespace mag
 
         enum class TextureUsage : u32
         {
-            TransferSrc = 0 << 1,
-            TransferDst = 0 << 2,
-            Sampled = 0 << 3,
-            Storage = 0 << 4,
-            ColorAttachment = 0 << 5,
-            DepthStencilAttachment = 0 << 6
+            TransferSrc = 1 << 0,
+            TransferDst = 1 << 1,
+            Sampled = 1 << 2,
+            Storage = 1 << 3,
+            ColorAttachment = 1 << 4,
+            DepthStencilAttachment = 1 << 5
+        };
+
+        enum class TextureLayout
+        {
+            Undefined,
+            ColorAttachment,
+            Present
+        };
+
+        enum class AccessMask
+        {
+            None = 0,
+            ColorAttachmentWrite = 1 << 0
+        };
+
+        enum class PipelineStage
+        {
+            TopOfPipe = 1 << 0,
+            ColorAttachmentOutput = 1 << 1,
+            BottomOfPipe = 1 << 2
         };
 
         enum class PrimitiveTopology
@@ -168,6 +188,8 @@ namespace mag
         {
             public:
                 virtual ~ITexture() = default;
+
+                virtual TextureLayout get_layout() const = 0;
         };
 
         class ISwapchain
@@ -219,9 +241,10 @@ namespace mag
                 virtual void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
                                   const u32 first_instance = 0) = 0;
 
-                virtual void pipeline_barrier(const ITexture* texture, const u32 old_layout, const u32 new_layout,
-                                              const u32 src_access_mask, const u32 dst_access_mask,
-                                              const u32 src_stage_mask, const u32 dst_stage_mask) = 0;
+                virtual void pipeline_barrier(const ITexture* texture, const TextureLayout new_layout,
+                                              const AccessMask src_access_mask, const AccessMask dst_access_mask,
+                                              const PipelineStage src_stage_mask,
+                                              const PipelineStage dst_stage_mask) = 0;
         };
 
         class IQueue
@@ -265,3 +288,5 @@ namespace mag
 };      // namespace mag
 
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureUsage);
+ENABLE_BITMASK_OPERATORS(mag::gfx::AccessMask);
+ENABLE_BITMASK_OPERATORS(mag::gfx::PipelineStage);

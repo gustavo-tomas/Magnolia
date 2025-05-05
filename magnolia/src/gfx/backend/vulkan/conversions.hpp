@@ -275,6 +275,78 @@ namespace mag
             }
         }
 
+        inline VkImageLayout mag_to_vk(const TextureLayout image_layout)
+        {
+            switch (image_layout)
+            {
+                case TextureLayout::Undefined:
+                    return VK_IMAGE_LAYOUT_UNDEFINED;
+                    break;
+
+                case TextureLayout::ColorAttachment:
+                    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    break;
+
+                case TextureLayout::Present:
+                    return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                    break;
+            }
+        }
+
+        inline TextureLayout vk_to_mag(const VkImageLayout image_layout)
+        {
+            switch (image_layout)
+            {
+                case VK_IMAGE_LAYOUT_UNDEFINED:
+                    return TextureLayout::Undefined;
+                    break;
+
+                case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                    return TextureLayout::ColorAttachment;
+                    break;
+
+                case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                    return TextureLayout::Present;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled texture layout");
+                    break;
+            }
+        }
+
+        inline VkAccessFlags mag_to_vk(const AccessMask mask)
+        {
+            VkAccessFlags vk_access = {};
+
+            if (IS_BIT_SET(mask, AccessMask::None))
+            {
+                vk_access |= VK_ACCESS_NONE;
+            }
+            if (IS_BIT_SET(mask, AccessMask::ColorAttachmentWrite))
+            {
+                vk_access |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            }
+
+            return vk_access;
+        }
+
+        inline AccessMask vk_to_mag_acess(const VkAccessFlags mask)
+        {
+            AccessMask mag_access = {};
+
+            if (IS_BIT_SET(mask, VK_ACCESS_NONE))
+            {
+                mag_access |= AccessMask::None;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT))
+            {
+                mag_access |= AccessMask::ColorAttachmentWrite;
+            }
+
+            return mag_access;
+        }
+
         inline VkImageUsageFlags mag_to_vk(const TextureUsage usage)
         {
             VkImageUsageFlags vk_usage = {};
@@ -311,32 +383,72 @@ namespace mag
         {
             TextureUsage mag_usage = {};
 
-            if (usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
             {
                 mag_usage |= TextureUsage::TransferSrc;
             }
-            if (usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_TRANSFER_DST_BIT))
             {
                 mag_usage |= TextureUsage::TransferDst;
             }
-            if (usage & VK_IMAGE_USAGE_SAMPLED_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_SAMPLED_BIT))
             {
                 mag_usage |= TextureUsage::Sampled;
             }
-            if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_STORAGE_BIT))
             {
                 mag_usage |= TextureUsage::Storage;
             }
-            if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))
             {
                 mag_usage |= TextureUsage::ColorAttachment;
             }
-            if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            if (IS_BIT_SET(usage, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))
             {
                 mag_usage |= TextureUsage::DepthStencilAttachment;
             }
 
             return mag_usage;
+        }
+
+        inline VkPipelineStageFlags mag_to_vk(const PipelineStage stage)
+        {
+            VkPipelineStageFlags vk_stage = {};
+
+            if (IS_BIT_SET(stage, PipelineStage::TopOfPipe))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            }
+            if (IS_BIT_SET(stage, PipelineStage::ColorAttachmentOutput))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            }
+            if (IS_BIT_SET(stage, PipelineStage::BottomOfPipe))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            }
+
+            return vk_stage;
+        }
+
+        inline PipelineStage vk_to_mag_stage(const VkPipelineStageFlags stage)
+        {
+            PipelineStage mag_stage = {};
+
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT))
+            {
+                mag_stage |= PipelineStage::TopOfPipe;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+            {
+                mag_stage |= PipelineStage::ColorAttachmentOutput;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT))
+            {
+                mag_stage |= PipelineStage::BottomOfPipe;
+            }
+
+            return mag_stage;
         }
     };  // namespace gfx
 };      // namespace mag
