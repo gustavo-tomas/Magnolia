@@ -1,4 +1,4 @@
-#include "gfx/gfx.hpp"
+#include "gfx/backend/backend.hpp"
 
 #define MAG_CONFIG_GFX_VULKAN 1
 
@@ -20,7 +20,6 @@ namespace mag
 {
     // @TODO: temporary
     #define EXAMPLE_BUILD_DIRECTORY "magnolia/assets/shaders"
-    #define MAX_FRAMES_IN_FLIGHT 3
 
     #define VK_CHECK(result, message)                                             \
         {                                                                         \
@@ -616,7 +615,18 @@ namespace mag
                     present_info.pSwapchains = &((VulkanSwapchain*)swapchain)->get_swapchain();
                     present_info.pImageIndices = &image_index;
 
-                    return disp.queuePresentKHR(queue, &present_info);
+                    const VkResult result = disp.queuePresentKHR(queue, &present_info);
+
+                    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+                    {
+                        MAG_ASSERT(false, "@TODO: resize swapchain");
+                    }
+                    else if (result != VK_SUCCESS)
+                    {
+                        MAG_ASSERT(false, "Failed to present swapchain image");
+                    }
+
+                    return result;
                 }
 
             private:
@@ -670,24 +680,7 @@ namespace mag
 
                     disp = device.make_table();
 
-                    // Swapchain
-                    // -------------------------------------------------------------------------------------------------
-                    ISwapchainDesc swapchain_desc = {};
-                    swapchain_desc.desired_present_mode = PresentMode::Mailbox;
-                    swapchain = this->create_swapchain(swapchain_desc);
-
-                    // Queues
-                    // -------------------------------------------------------------------------------------------------
-                    graphics_queue = this->create_queue({.queue_type = QueueType::Graphics});
-                    present_queue = this->create_queue({.queue_type = QueueType::Present});
-
-                    // Graphics Pipeline
-                    // -------------------------------------------------------------------------------------------------
-                    IGraphicsPipelineDesc graphics_pipeline_desc = {};
-                    graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
-                    graphics_pipeline_desc.format = swapchain->get_format();
-                    graphics_pipeline_desc.extent = swapchain->get_extent();
-                    graphics_pipeline = this->create_graphics_pipeline(graphics_pipeline_desc);
+                    // We are keeping the command pool here instead of the frontend for simplicity
 
                     // Command Pool
                     // -------------------------------------------------------------------------------------------------
@@ -699,128 +692,20 @@ namespace mag
                     {
                         MAG_ASSERT(false, "Failed to create command pool");
                     }
-
-                    // Command Buffers
-                    // -------------------------------------------------------------------------------------------------
-                    for (u32 i = 0; i < swapchain->get_image_count(); i++)
-                    {
-                        ICommandBufferDesc desc = {};
-                        desc.command_buffer_level = CommandBufferLevel::Primary;
-                        command_buffers.push_back(this->create_command_buffer(desc));
-                    }
-
-                    // Render Passes
-                    // -------------------------------------------------------------------------------------------------
-                    color_attachments.resize(command_buffers.size());
-                    render_passes.resize(command_buffers.size());
-
-                    for (u64 i = 0; i < command_buffers.size(); i++)
-                    {
-                        command_buffers[i]->begin_recording();
-
-                        IRenderingAttachmentDesc color_attachment_desc = {};
-                        color_attachment_desc.type = RenderingAttachmentType::Color;
-                        color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
-                        color_attachment_desc.texture = swapchain->get_texture(i);
-                        color_attachments[i] = this->create_render_attachment(color_attachment_desc);
-
-                        IRenderPassDesc render_pass_desc = {};
-                        render_pass_desc.extent = swapchain->get_extent();
-                        render_pass_desc.color_attachments.push_back(color_attachments[i].get());
-                        render_passes[i] = this->create_render_pass(render_pass_desc);
-
-                        command_buffers[i]->pipeline_barrier(swapchain->get_texture(i), TextureLayout::ColorAttachment,
-                                                             AccessMask::None, AccessMask::ColorAttachmentWrite,
-                                                             PipelineStage::TopOfPipe,
-                                                             PipelineStage::ColorAttachmentOutput);
-
-                        command_buffers[i]->set_viewport(swapchain->get_extent());
-                        command_buffers[i]->set_scissor(swapchain->get_extent());
-
-                        command_buffers[i]->begin_rendering(render_passes[i].get());
-
-                        command_buffers[i]->bind_pipeline(graphics_pipeline.get());
-
-                        command_buffers[i]->draw(3);
-
-                        command_buffers[i]->end_rendering();
-
-                        command_buffers[i]->pipeline_barrier(
-                            swapchain->get_texture(i), TextureLayout::Present, AccessMask::ColorAttachmentWrite,
-                            AccessMask::None, PipelineStage::ColorAttachmentOutput, PipelineStage::BottomOfPipe);
-
-                        command_buffers[i]->end_recording();
-                    }
-
-                    // Sync Objects
-                    // -------------------------------------------------------------------------------------------------
-                    available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-                    finished_semaphore.resize(MAX_FRAMES_IN_FLIGHT);
-                    in_flight_fences.resize(MAX_FRAMES_IN_FLIGHT);
-                    image_in_flight.resize(swapchain->get_image_count());
-
-                    IFenceDesc fence_desc = {};
-                    fence_desc.signaled = true;
-
-                    for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-                    {
-                        available_semaphores[i] = this->create_semaphore();
-                        finished_semaphore[i] = this->create_semaphore();
-                        in_flight_fences[i] = this->create_fence(fence_desc);
-                    }
                 }
 
                 ~VulkanDevice()
                 {
                     disp.deviceWaitIdle();
 
-                    in_flight_fences.clear();
-                    available_semaphores.clear();
-                    finished_semaphore.clear();
-
-                    command_buffers.clear();
-
                     disp.destroyCommandPool(command_pool, nullptr);
-
-                    graphics_pipeline.reset();
-                    swapchain.reset();
 
                     vkb::destroy_device(device);
                     vkb::destroy_surface(instance, surface);
                     vkb::destroy_instance(instance);
                 }
 
-                virtual void draw_frame() override
-                {
-                    in_flight_fences[current_frame]->wait();
-
-                    swapchain->acquire_next_image(available_semaphores[current_frame].get());
-                    const u32 image_index = swapchain->get_current_image_index();
-
-                    if (image_in_flight[image_index] != nullptr)
-                    {
-                        image_in_flight[image_index]->wait();
-                    }
-                    image_in_flight[image_index] = in_flight_fences[current_frame].get();
-
-                    graphics_queue->submit(available_semaphores[current_frame].get(),
-                                           finished_semaphore[current_frame].get(),
-                                           in_flight_fences[current_frame].get(), command_buffers[image_index].get());
-
-                    const VkResult result = static_cast<VkResult>(
-                        present_queue->present(swapchain.get(), finished_semaphore[current_frame].get()));
-
-                    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-                    {
-                        MAG_ASSERT(false, "@TODO: resize swapchain");
-                    }
-                    else if (result != VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to present swapchain image");
-                    }
-
-                    current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
-                }
+                virtual void wait_idle() override { disp.deviceWaitIdle(); }
 
                 virtual unique<ISemaphore> create_semaphore() override { return create_unique<VulkanSemaphore>(disp); }
 
@@ -872,18 +757,6 @@ namespace mag
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
                 VkCommandPool command_pool;
-                unique<ISwapchain> swapchain;
-                unique<IQueue> graphics_queue;
-                unique<IQueue> present_queue;
-                unique<IGraphicsPipeline> graphics_pipeline;
-                std::vector<unique<ICommandBuffer>> command_buffers;
-                std::vector<unique<IRenderPass>> render_passes;
-                std::vector<unique<IRenderingAttachment>> color_attachments;
-                std::vector<unique<ISemaphore>> available_semaphores;
-                std::vector<unique<ISemaphore>> finished_semaphore;
-                std::vector<unique<IFence>> in_flight_fences;
-                std::vector<IFence*> image_in_flight;
-                u32 current_frame = 0;
         };
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
