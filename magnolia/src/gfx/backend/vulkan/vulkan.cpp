@@ -31,8 +31,10 @@ namespace mag
         class VulkanSemaphore : public ISemaphore
         {
             public:
-                VulkanSemaphore(const vkb::DispatchTable& disp) : disp(disp)
+                VulkanSemaphore(const vkb::DispatchTable& disp, const ISemaphoreDesc& desc) : disp(disp)
                 {
+                    (void)desc;
+
                     VkSemaphoreCreateInfo semaphore_info = {};
                     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -707,7 +709,10 @@ namespace mag
 
                 virtual void wait_idle() override { disp.deviceWaitIdle(); }
 
-                virtual unique<ISemaphore> create_semaphore() override { return create_unique<VulkanSemaphore>(disp); }
+                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) override
+                {
+                    return create_unique<VulkanSemaphore>(disp, desc);
+                }
 
                 virtual unique<IFence> create_fence(const IFenceDesc& desc) override
                 {

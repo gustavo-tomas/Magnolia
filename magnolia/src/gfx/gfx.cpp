@@ -113,10 +113,12 @@ namespace mag
             IFenceDesc fence_desc = {};
             fence_desc.signaled = true;
 
+            ISemaphoreDesc sem_desc = {};
+
             for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                state->available_semaphores[i] = state->device->create_semaphore();
-                state->finished_semaphore[i] = state->device->create_semaphore();
+                state->available_semaphores[i] = state->device->create_semaphore(sem_desc);
+                state->finished_semaphore[i] = state->device->create_semaphore(sem_desc);
                 state->in_flight_fences[i] = state->device->create_fence(fence_desc);
             }
 

@@ -96,6 +96,10 @@ namespace mag
                 b8 signaled = false;
         };
 
+        struct ISemaphoreDesc
+        {
+        };
+
         struct ISwapchainDesc
         {
                 PresentMode desired_present_mode = PresentMode::Mailbox;
@@ -263,7 +267,7 @@ namespace mag
 
                 virtual void wait_idle() = 0;
 
-                virtual unique<ISemaphore> create_semaphore() = 0;
+                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) = 0;
 
                 virtual unique<IFence> create_fence(const IFenceDesc& desc) = 0;
 
