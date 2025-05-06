@@ -41,8 +41,18 @@ namespace mag
         {
             Texture1D,
             Texture2D,
+            Texture3D
+        };
+
+        enum class TextureViewType
+        {
+            Texture1D,
+            Texture2D,
             Texture3D,
-            TextureCube
+            TextureCube,
+            Texture1DArray,
+            Texture2DArray,
+            TextureCubeArray
         };
 
         enum class TextureUsage : u32
@@ -60,6 +70,23 @@ namespace mag
             Undefined,
             ColorAttachment,
             Present
+        };
+
+        enum class TextureAspect
+        {
+            None = 0,
+            Color = 1 << 0,
+            Depth = 1 << 1,
+            Stencil = 1 << 2
+        };
+
+        enum class SampleCount
+        {
+            e1 = 1 << 0,
+            e2 = 1 << 1,
+            e4 = 1 << 2,
+            e8 = 1 << 3,
+            e16 = 1 << 4
         };
 
         enum class AccessMask
@@ -147,12 +174,15 @@ namespace mag
 
         struct ITextureDesc
         {
-                math::uvec3 extent;
+                math::uvec3 extent = {1.0f, 1.0f, 1.0f};
                 Format format = Format::B8G8R8A8_SRGB;
                 TextureType type = TextureType::Texture2D;
-                TextureUsage usage;
+                TextureViewType view_type = TextureViewType::Texture2D;
+                TextureAspect aspect = TextureAspect::Color;
+                TextureUsage usage = TextureUsage::ColorAttachment;
                 u32 mip_levels = 1;
                 u32 array_layers = 1;
+                SampleCount sample_count = SampleCount::e1;
         };
 
         class IRenderingAttachment
@@ -308,5 +338,6 @@ namespace mag
 };      // namespace mag
 
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureUsage);
+ENABLE_BITMASK_OPERATORS(mag::gfx::TextureAspect);
 ENABLE_BITMASK_OPERATORS(mag::gfx::AccessMask);
 ENABLE_BITMASK_OPERATORS(mag::gfx::PipelineStage);

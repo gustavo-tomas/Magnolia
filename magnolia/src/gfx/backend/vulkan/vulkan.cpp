@@ -16,6 +16,24 @@
     #include "gfx/backend/vulkan/conversions.hpp"
     #include "platform/file_system.hpp"
 
+    // Use to trace VMA allocations
+    #if MAG_CONFIG_DEBUG_TRACE
+        #define VMA_DEBUG_LOG_FORMAT(format, ...) \
+            do                                    \
+            {                                     \
+                printf((format), __VA_ARGS__);    \
+                printf("\n");                     \
+            } while (false)
+
+        #define VMA_DEBUG_LOG(str) VMA_DEBUG_LOG_FORMAT("%s", (str))
+    #endif
+
+    #define VMA_IMPLEMENTATION
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Weverything"
+    #include "vk_mem_alloc.h"
+    #pragma clang diagnostic pop
+
 namespace mag
 {
     // @TODO: temporary
@@ -82,18 +100,58 @@ namespace mag
         class VulkanTexture : public ITexture
         {
             public:
-                VulkanTexture(const vkb::DispatchTable& disp, const ITextureDesc& desc) : disp(disp)
+                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const ITextureDesc& desc)
+                    : disp(disp), allocator(allocator)
                 {
-                    MAG_ASSERT(false, "@TODO");
+                    // Create image and image view
+                    VkImageCreateInfo image_create_info = {};
+                    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                    image_create_info.imageType = mag_to_vk(desc.type);
+                    image_create_info.format = mag_to_vk(desc.format);
+                    image_create_info.extent = mag_to_vk(desc.extent);
+                    image_create_info.mipLevels = desc.mip_levels;
+                    image_create_info.arrayLayers = desc.array_layers;
+                    image_create_info.samples = mag_to_vk(desc.sample_count);
+                    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+                    image_create_info.usage = mag_to_vk(desc.usage);
+
+                    VmaAllocationCreateInfo vma_alloc_info = {};
+                    vma_alloc_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+                    vma_alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+                    VK_CHECK(vmaCreateImage(allocator, &image_create_info, &vma_alloc_info, &image, &allocation, 0),
+                             "Failed to create image");
+
+                    VkImageViewCreateInfo view_create_info = {};
+                    view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                    view_create_info.image = image;
+                    view_create_info.format = mag_to_vk(desc.format);
+                    view_create_info.viewType = mag_to_vk(desc.view_type);
+                    view_create_info.subresourceRange.aspectMask = mag_to_vk(desc.aspect);
+                    view_create_info.subresourceRange.baseArrayLayer = 0;
+                    view_create_info.subresourceRange.baseMipLevel = 0;
+                    view_create_info.subresourceRange.layerCount = 1;
+                    view_create_info.subresourceRange.levelCount = 1;
+
+                    VK_CHECK(disp.createImageView(&view_create_info, nullptr, &image_view),
+                             "Failed to create image view");
                 }
 
                 // Special case for swapchain images (simply copy image and view)
-                VulkanTexture(const vkb::DispatchTable& disp, const VkImage image, const VkImageView image_view)
-                    : disp(disp), image(image), image_view(image_view)
+                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const VkImage image,
+                              const VkImageView image_view)
+                    : disp(disp), allocator(allocator), image(image), image_view(image_view)
                 {
                 }
 
-                ~VulkanTexture() { disp.destroyImageView(image_view, nullptr); }
+                ~VulkanTexture()
+                {
+                    disp.destroyImageView(image_view, nullptr);
+                    if (allocation != nullptr)
+                    {
+                        vmaDestroyImage(allocator, image, allocation);
+                    }
+                }
 
                 virtual TextureLayout get_layout() const override { return vk_to_mag(image_layout); }
 
@@ -105,9 +163,11 @@ namespace mag
 
             private:
                 const vkb::DispatchTable& disp;
+                const VmaAllocator& allocator;
                 VkImage image = {};
                 VkImageView image_view = {};
                 VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+                VmaAllocation allocation = nullptr;
         };
 
         class VulkanSwapchain : public ISwapchain
@@ -134,7 +194,8 @@ namespace mag
                     const std::vector<VkImageView>& swapchain_image_views = swapchain.get_image_views().value();
                     for (u32 i = 0; i < swapchain.image_count; i++)
                     {
-                        VulkanTexture* texture = new VulkanTexture(disp, swapchain_images[i], swapchain_image_views[i]);
+                        VulkanTexture* texture =
+                            new VulkanTexture(disp, nullptr, swapchain_images[i], swapchain_image_views[i]);
                         swapchain_textures.emplace_back(texture);
                     }
                 }
@@ -707,11 +768,23 @@ namespace mag
                     device = device_ret.value();
 
                     disp = device.make_table();
+
+                    VmaAllocatorCreateInfo allocator_create_info = {};
+                    allocator_create_info.physicalDevice = physical_device.physical_device;
+                    allocator_create_info.device = device.device;
+                    allocator_create_info.instance = instance.instance;
+                    allocator_create_info.vulkanApiVersion = instance.api_version;
+                    // allocator_create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+
+                    VK_CHECK(vmaCreateAllocator(&allocator_create_info, &allocator),
+                             "Failed to create memory allocator");
                 }
 
                 ~VulkanDevice()
                 {
                     disp.deviceWaitIdle();
+
+                    vmaDestroyAllocator(allocator);
 
                     vkb::destroy_device(device);
                     vkb::destroy_surface(instance, surface);
@@ -768,7 +841,7 @@ namespace mag
 
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) override
                 {
-                    return create_unique<VulkanTexture>(disp, desc);
+                    return create_unique<VulkanTexture>(disp, allocator, desc);
                 }
 
             private:
@@ -777,6 +850,7 @@ namespace mag
                 vkb::InstanceDispatchTable inst_disp;
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
+                VmaAllocator allocator;
         };
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }

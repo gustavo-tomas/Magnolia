@@ -315,6 +315,225 @@ namespace mag
             }
         }
 
+        inline TextureType vk_to_mag(const VkImageType image_type)
+        {
+            switch (image_type)
+            {
+                case VK_IMAGE_TYPE_1D:
+                    return TextureType::Texture1D;
+                    break;
+
+                case VK_IMAGE_TYPE_2D:
+                    return TextureType::Texture2D;
+                    break;
+
+                case VK_IMAGE_TYPE_3D:
+                    return TextureType::Texture3D;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled texture type");
+                    return TextureType::Texture2D;
+                    break;
+            }
+        }
+
+        inline VkImageType mag_to_vk(const TextureType image_type)
+        {
+            switch (image_type)
+            {
+                case TextureType::Texture1D:
+                    return VK_IMAGE_TYPE_1D;
+                    break;
+
+                case TextureType::Texture2D:
+                    return VK_IMAGE_TYPE_2D;
+                    break;
+
+                case TextureType::Texture3D:
+                    return VK_IMAGE_TYPE_3D;
+                    break;
+            }
+        }
+
+        inline TextureViewType vk_to_mag(const VkImageViewType image_view_type)
+        {
+            switch (image_view_type)
+            {
+                case VK_IMAGE_VIEW_TYPE_1D:
+                    return TextureViewType::Texture1D;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_2D:
+                    return TextureViewType::Texture2D;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_3D:
+                    return TextureViewType::Texture3D;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_CUBE:
+                    return TextureViewType::TextureCube;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
+                    return TextureViewType::Texture1DArray;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
+                    return TextureViewType::Texture2DArray;
+                    break;
+
+                case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
+                    return TextureViewType::TextureCubeArray;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled texture view type");
+                    return TextureViewType::Texture2D;
+                    break;
+            }
+        }
+
+        inline VkImageViewType mag_to_vk(const TextureViewType image_view_type)
+        {
+            switch (image_view_type)
+            {
+                case TextureViewType::Texture1D:
+                    return VK_IMAGE_VIEW_TYPE_1D;
+                    break;
+
+                case TextureViewType::Texture2D:
+                    return VK_IMAGE_VIEW_TYPE_2D;
+                    break;
+
+                case TextureViewType::Texture3D:
+                    return VK_IMAGE_VIEW_TYPE_3D;
+                    break;
+
+                case TextureViewType::TextureCube:
+                    return VK_IMAGE_VIEW_TYPE_CUBE;
+                    break;
+
+                case TextureViewType::Texture1DArray:
+                    return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+                    break;
+
+                case TextureViewType::Texture2DArray:
+                    return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                    break;
+
+                case TextureViewType::TextureCubeArray:
+                    return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+                    break;
+            }
+        }
+
+        inline SampleCount vk_to_mag(const VkSampleCountFlagBits sample_count)
+        {
+            switch (sample_count)
+            {
+                case VK_SAMPLE_COUNT_1_BIT:
+                    return SampleCount::e1;
+                    break;
+
+                case VK_SAMPLE_COUNT_2_BIT:
+                    return SampleCount::e2;
+                    break;
+
+                case VK_SAMPLE_COUNT_4_BIT:
+                    return SampleCount::e4;
+                    break;
+
+                case VK_SAMPLE_COUNT_8_BIT:
+                    return SampleCount::e8;
+                    break;
+
+                case VK_SAMPLE_COUNT_16_BIT:
+                    return SampleCount::e16;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled sample count");
+                    return SampleCount::e1;
+                    break;
+            }
+        }
+
+        inline VkSampleCountFlagBits mag_to_vk(const SampleCount sample_count)
+        {
+            switch (sample_count)
+            {
+                case SampleCount::e1:
+                    return VK_SAMPLE_COUNT_1_BIT;
+                    break;
+
+                case SampleCount::e2:
+                    return VK_SAMPLE_COUNT_2_BIT;
+                    break;
+
+                case SampleCount::e4:
+                    return VK_SAMPLE_COUNT_4_BIT;
+                    break;
+
+                case SampleCount::e8:
+                    return VK_SAMPLE_COUNT_8_BIT;
+                    break;
+
+                case SampleCount::e16:
+                    return VK_SAMPLE_COUNT_16_BIT;
+                    break;
+            }
+        }
+
+        inline VkImageAspectFlags mag_to_vk(const TextureAspect texture_aspect)
+        {
+            VkImageAspectFlags vk_aspect = {};
+
+            if (IS_BIT_SET(texture_aspect, TextureAspect::None))
+            {
+                vk_aspect |= VK_IMAGE_ASPECT_NONE;
+            }
+            if (IS_BIT_SET(texture_aspect, TextureAspect::Color))
+            {
+                vk_aspect |= VK_IMAGE_ASPECT_COLOR_BIT;
+            }
+            if (IS_BIT_SET(texture_aspect, TextureAspect::Depth))
+            {
+                vk_aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
+            }
+            if (IS_BIT_SET(texture_aspect, TextureAspect::Stencil))
+            {
+                vk_aspect |= VK_IMAGE_ASPECT_STENCIL_BIT;
+            }
+
+            return vk_aspect;
+        }
+
+        inline TextureAspect vk_to_mag_aspect(const VkImageAspectFlags texture_aspect)
+        {
+            TextureAspect mag_aspect = {};
+
+            if (IS_BIT_SET(texture_aspect, VK_IMAGE_ASPECT_NONE))
+            {
+                mag_aspect |= TextureAspect::None;
+            }
+            if (IS_BIT_SET(texture_aspect, VK_IMAGE_ASPECT_COLOR_BIT))
+            {
+                mag_aspect |= TextureAspect::Color;
+            }
+            if (IS_BIT_SET(texture_aspect, VK_IMAGE_ASPECT_DEPTH_BIT))
+            {
+                mag_aspect |= TextureAspect::Depth;
+            }
+            if (IS_BIT_SET(texture_aspect, VK_IMAGE_ASPECT_STENCIL_BIT))
+            {
+                mag_aspect |= TextureAspect::Stencil;
+            }
+
+            return mag_aspect;
+        }
+
         inline VkAccessFlags mag_to_vk(const AccessMask mask)
         {
             VkAccessFlags vk_access = {};
