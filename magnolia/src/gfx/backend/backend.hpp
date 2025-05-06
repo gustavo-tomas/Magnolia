@@ -9,6 +9,7 @@ namespace mag
     {
         class IRenderingAttachment;
         class ITexture;
+        class ICommandPool;
 
         enum class PresentMode
         {
@@ -117,9 +118,15 @@ namespace mag
                 math::uvec2 extent;
         };
 
+        struct ICommandPoolDesc
+        {
+                QueueType queue_type;
+        };
+
         struct ICommandBufferDesc
         {
                 CommandBufferLevel command_buffer_level = CommandBufferLevel::Primary;
+                const ICommandPool* command_pool = nullptr;
         };
 
         struct IRenderingAttachmentDesc
@@ -220,6 +227,12 @@ namespace mag
                 virtual ~IGraphicsPipeline() = default;
         };
 
+        class ICommandPool
+        {
+            public:
+                virtual ~ICommandPool() = default;
+        };
+
         class ICommandBuffer
         {
             public:
@@ -228,6 +241,8 @@ namespace mag
                 virtual void begin_recording() = 0;
 
                 virtual void end_recording() = 0;
+
+                virtual void reset() = 0;
 
                 virtual void set_viewport(const math::vec2& extent, const math::vec2& offset = {0.0f, 0.0f},
                                           const f32 min_depth = 0.0f, const f32 max_depth = 1.0f) = 0;
@@ -276,6 +291,8 @@ namespace mag
                 virtual unique<IQueue> create_queue(const IQueueDesc& desc) = 0;
 
                 virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) = 0;
+
+                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) = 0;
 
                 virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) = 0;
 

@@ -16,6 +16,7 @@ namespace mag
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
                 unique<IGraphicsPipeline> graphics_pipeline;
+                unique<ICommandPool> command_pool;
                 std::vector<unique<ICommandBuffer>> command_buffers;
                 std::vector<unique<IRenderPass>> render_passes;
                 std::vector<unique<IRenderingAttachment>> color_attachments;
@@ -52,12 +53,22 @@ namespace mag
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
             state->graphics_pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
 
+            // Command Pool
+            // -------------------------------------------------------------------------------------------------
+            for (u32 i = 0; i < state->swapchain->get_image_count(); i++)
+            {
+                ICommandPoolDesc desc = {};
+                desc.queue_type = QueueType::Graphics;
+                state->command_pool = state->device->create_command_pool(desc);
+            }
+
             // Command Buffers
             // -------------------------------------------------------------------------------------------------
             for (u32 i = 0; i < state->swapchain->get_image_count(); i++)
             {
                 ICommandBufferDesc desc = {};
                 desc.command_buffer_level = CommandBufferLevel::Primary;
+                desc.command_pool = state->command_pool.get();
                 state->command_buffers.push_back(state->device->create_command_buffer(desc));
             }
 

@@ -458,16 +458,40 @@ namespace mag
                 std::vector<VkRenderingAttachmentInfo> color_attachments;
         };
 
+        class VulkanCommandPool : public ICommandPool
+        {
+            public:
+                VulkanCommandPool(const vkb::DispatchTable& disp, const vkb::Device& device,
+                                  const ICommandPoolDesc& desc)
+                    : disp(disp)
+                {
+                    VkCommandPoolCreateInfo pool_info = {};
+                    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+                    pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+                    pool_info.queueFamilyIndex = device.get_queue_index(mag_to_vk(desc.queue_type)).value();
+
+                    VK_CHECK(disp.createCommandPool(&pool_info, nullptr, &pool), "Failed to create command pool");
+                }
+
+                ~VulkanCommandPool() { disp.destroyCommandPool(pool, nullptr); }
+
+                const VkCommandPool& get_pool() const { return pool; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkCommandPool pool;
+        };
+
         class VulkanCommandBuffer : public ICommandBuffer
         {
             public:
-                VulkanCommandBuffer(const vkb::DispatchTable& disp, const ICommandBufferDesc& desc,
-                                    const VkCommandPool& pool)
-                    : disp(disp), pool(pool)
+                VulkanCommandBuffer(const vkb::DispatchTable& disp, const ICommandBufferDesc& desc) : disp(disp)
                 {
+                    command_pool = (VulkanCommandPool*)desc.command_pool;
+
                     VkCommandBufferAllocateInfo alloc_info = {};
                     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                    alloc_info.commandPool = pool;
+                    alloc_info.commandPool = command_pool->get_pool();
                     alloc_info.level = mag_to_vk(desc.command_buffer_level);
                     alloc_info.commandBufferCount = 1;
 
@@ -475,7 +499,7 @@ namespace mag
                              "Failed to allocate command buffer");
                 }
 
-                ~VulkanCommandBuffer() { disp.freeCommandBuffers(pool, 1, &command_buffer); }
+                ~VulkanCommandBuffer() { disp.freeCommandBuffers(command_pool->get_pool(), 1, &command_buffer); }
 
                 virtual void begin_recording() override
                 {
@@ -490,6 +514,8 @@ namespace mag
                 {
                     VK_CHECK(disp.endCommandBuffer(command_buffer), "Failed to record command buffer");
                 }
+
+                virtual void reset() override { disp.resetCommandBuffer(command_buffer, 0); }
 
                 virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, const f32 min_depth,
                                           const f32 max_depth) override
@@ -563,7 +589,7 @@ namespace mag
 
             private:
                 const vkb::DispatchTable& disp;
-                const VkCommandPool& pool;
+                const VulkanCommandPool* command_pool;
                 VkCommandBuffer command_buffer;
         };
 
@@ -681,26 +707,11 @@ namespace mag
                     device = device_ret.value();
 
                     disp = device.make_table();
-
-                    // We are keeping the command pool here instead of the frontend for simplicity
-
-                    // Command Pool
-                    // -------------------------------------------------------------------------------------------------
-                    VkCommandPoolCreateInfo pool_info = {};
-                    pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-                    pool_info.queueFamilyIndex = device.get_queue_index(vkb::QueueType::graphics).value();
-
-                    if (disp.createCommandPool(&pool_info, nullptr, &command_pool) != VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to create command pool");
-                    }
                 }
 
                 ~VulkanDevice()
                 {
                     disp.deviceWaitIdle();
-
-                    disp.destroyCommandPool(command_pool, nullptr);
 
                     vkb::destroy_device(device);
                     vkb::destroy_surface(instance, surface);
@@ -734,9 +745,14 @@ namespace mag
                     return create_unique<VulkanGraphicsPipeline>(disp, desc);
                 }
 
+                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) override
+                {
+                    return create_unique<VulkanCommandPool>(disp, device, desc);
+                }
+
                 virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) override
                 {
-                    return create_unique<VulkanCommandBuffer>(disp, desc, command_pool);
+                    return create_unique<VulkanCommandBuffer>(disp, desc);
                 }
 
                 virtual unique<IRenderingAttachment> create_render_attachment(
@@ -761,7 +777,6 @@ namespace mag
                 vkb::InstanceDispatchTable inst_disp;
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
-                VkCommandPool command_pool;
         };
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
