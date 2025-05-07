@@ -11,10 +11,8 @@
     #include "VkBootstrap.h"
     #include "VkBootstrapDispatch.h"
     #include "core/assert.hpp"
-    #include "core/buffer.hpp"
     #include "core/window.hpp"
     #include "gfx/backend/vulkan/conversions.hpp"
-    #include "platform/file_system.hpp"
 
     // Use to trace VMA allocations
     #if MAG_CONFIG_DEBUG_TRACE
@@ -36,9 +34,6 @@
 
 namespace mag
 {
-    // @TODO: temporary
-    #define EXAMPLE_BUILD_DIRECTORY "magnolia/assets/shaders"
-
     #define VK_CHECK(result, message)                                             \
         {                                                                         \
             MAG_ASSERT(result == VK_SUCCESS, "Vk check failed: " + str(message)); \
@@ -306,35 +301,31 @@ namespace mag
             public:
                 VulkanGraphicsPipeline(const vkb::DispatchTable& disp, const IGraphicsPipelineDesc& desc) : disp(disp)
                 {
-                    Buffer vert_buffer;
-                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.vert.spv", vert_buffer);
-                    const auto vert_code = vert_buffer.data;
+                    const u32 shader_module_count = desc.shader_modules.size();
 
-                    Buffer frag_buffer;
-                    mag::fs::read_binary_data(std::string(EXAMPLE_BUILD_DIRECTORY) + "/triangle.frag.spv", frag_buffer);
-                    const auto frag_code = frag_buffer.data;
+                    VkPipelineShaderStageCreateInfo shader_stages[shader_module_count];
+                    VkShaderModule shader_modules[shader_module_count];
 
-                    VkShaderModule vert_module = createShaderModule(vert_code);
-                    VkShaderModule frag_module = createShaderModule(frag_code);
-
-                    if (vert_module == VK_NULL_HANDLE || frag_module == VK_NULL_HANDLE)
+                    for (u32 i = 0; i < shader_module_count; i++)
                     {
-                        MAG_ASSERT(false, "Failed to create shader module");
+                        const IShaderModuleDesc& shader_module_desc = desc.shader_modules[i];
+
+                        VkShaderModuleCreateInfo shader_module_info = {};
+                        shader_module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                        shader_module_info.codeSize = shader_module_desc.code.size();
+                        shader_module_info.pCode = reinterpret_cast<const u32*>(shader_module_desc.code.data());
+
+                        shader_modules[i] = {};
+
+                        VK_CHECK(disp.createShaderModule(&shader_module_info, nullptr, &shader_modules[i]),
+                                 "Failed to create shader module");
+
+                        shader_stages[i] = {};
+                        shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                        shader_stages[i].stage = mag_to_vk(shader_module_desc.stage);
+                        shader_stages[i].module = shader_modules[i];
+                        shader_stages[i].pName = "main";
                     }
-
-                    VkPipelineShaderStageCreateInfo vert_stage_info = {};
-                    vert_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                    vert_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-                    vert_stage_info.module = vert_module;
-                    vert_stage_info.pName = "main";
-
-                    VkPipelineShaderStageCreateInfo frag_stage_info = {};
-                    frag_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                    frag_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-                    frag_stage_info.module = frag_module;
-                    frag_stage_info.pName = "main";
-
-                    VkPipelineShaderStageCreateInfo shader_stages[] = {vert_stage_info, frag_stage_info};
 
                     VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
                     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -422,7 +413,7 @@ namespace mag
 
                     VkGraphicsPipelineCreateInfo pipeline_info = {};
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-                    pipeline_info.stageCount = 2;
+                    pipeline_info.stageCount = shader_module_count;
                     pipeline_info.pStages = shader_stages;
                     pipeline_info.pVertexInputState = &vertex_input_info;
                     pipeline_info.pInputAssemblyState = &input_assembly;
@@ -443,31 +434,16 @@ namespace mag
                         MAG_ASSERT(false, "Failed to create pipeline");
                     }
 
-                    disp.destroyShaderModule(frag_module, nullptr);
-                    disp.destroyShaderModule(vert_module, nullptr);
+                    for (u32 i = 0; i < shader_module_count; i++)
+                    {
+                        disp.destroyShaderModule(shader_modules[i], nullptr);
+                    }
                 }
 
                 ~VulkanGraphicsPipeline()
                 {
                     disp.destroyPipeline(pipeline, nullptr);
                     disp.destroyPipelineLayout(pipeline_layout, nullptr);
-                }
-
-                // @TODO: temporary, this is here mostly for convenience
-                VkShaderModule createShaderModule(const std::vector<u8>& code)
-                {
-                    VkShaderModuleCreateInfo create_info = {};
-                    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-                    create_info.codeSize = code.size();
-                    create_info.pCode = reinterpret_cast<const u32*>(code.data());
-
-                    VkShaderModule shaderModule = {};
-                    if (disp.createShaderModule(&create_info, nullptr, &shaderModule) != VK_SUCCESS)
-                    {
-                        return VK_NULL_HANDLE;  // failed to create shader module
-                    }
-
-                    return shaderModule;
                 }
 
                 const VkPipeline& get_pipeline() const { return pipeline; }

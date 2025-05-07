@@ -61,6 +61,39 @@ namespace mag
             return vk_clear_color;
         }
 
+        inline VkShaderStageFlagBits mag_to_vk(const ShaderStage shader_stage)
+        {
+            switch (shader_stage)
+            {
+                case ShaderStage::Vertex:
+                    return VK_SHADER_STAGE_VERTEX_BIT;
+                    break;
+
+                case ShaderStage::Fragment:
+                    return VK_SHADER_STAGE_FRAGMENT_BIT;
+                    break;
+            }
+        }
+
+        inline ShaderStage vk_to_mag_shader_stage(const VkShaderStageFlags shader_stage)
+        {
+            switch (shader_stage)
+            {
+                case VK_SHADER_STAGE_VERTEX_BIT:
+                    return ShaderStage::Vertex;
+                    break;
+
+                case VK_SHADER_STAGE_FRAGMENT_BIT:
+                    return ShaderStage::Fragment;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled shader stage");
+                    return ShaderStage::Vertex;
+                    break;
+            }
+        }
+
         inline VkPresentModeKHR mag_to_vk(const PresentMode present_mode)
         {
             switch (present_mode)

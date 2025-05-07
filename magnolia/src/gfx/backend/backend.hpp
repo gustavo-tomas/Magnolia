@@ -127,6 +127,18 @@ namespace mag
             Depth
         };
 
+        enum class ShaderStage
+        {
+            Vertex,
+            Fragment
+        };
+
+        struct IShaderModuleDesc
+        {
+                ShaderStage stage;
+                std::vector<u8> code;
+        };
+
         struct IFenceDesc
         {
                 b8 signaled = false;
@@ -149,6 +161,7 @@ namespace mag
         struct IGraphicsPipelineDesc
         {
                 PrimitiveTopology primitive_topology;
+                std::vector<IShaderModuleDesc> shader_modules;
                 Format format;
                 math::uvec2 extent;
         };

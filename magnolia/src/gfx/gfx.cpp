@@ -1,6 +1,8 @@
 #include "gfx/gfx.hpp"
 
+#include "core/buffer.hpp"
 #include "gfx/backend/backend.hpp"
+#include "platform/file_system.hpp"
 
 namespace mag
 {
@@ -8,6 +10,7 @@ namespace mag
     {
         // @TODO: temporary
 #define MAX_FRAMES_IN_FLIGHT 3
+#define EXAMPLE_BUILD_DIRECTORY "magnolia/assets/shaders"
 
         struct FrameData
         {
@@ -50,7 +53,23 @@ namespace mag
 
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
+            Buffer vert_buffer;
+            mag::fs::read_binary_data(str(EXAMPLE_BUILD_DIRECTORY) + "/triangle.vert.spv", vert_buffer);
+
+            Buffer frag_buffer;
+            mag::fs::read_binary_data(str(EXAMPLE_BUILD_DIRECTORY) + "/triangle.frag.spv", frag_buffer);
+
+            IShaderModuleDesc vert_desc = {};
+            vert_desc.code = vert_buffer.data;
+            vert_desc.stage = ShaderStage::Vertex;
+
+            IShaderModuleDesc frag_desc = {};
+            frag_desc.code = frag_buffer.data;
+            frag_desc.stage = ShaderStage::Fragment;
+
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
+            graphics_pipeline_desc.shader_modules.push_back(vert_desc);
+            graphics_pipeline_desc.shader_modules.push_back(frag_desc);
             graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
             graphics_pipeline_desc.format = state->swapchain->get_format();
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
