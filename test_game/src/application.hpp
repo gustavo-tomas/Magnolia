@@ -17,5 +17,6 @@ namespace game
 
         private:
             unique<mag::Scene> scene = nullptr;
+            mag::gfx::ShaderHandle shader_handle;
     };
 };  // namespace game

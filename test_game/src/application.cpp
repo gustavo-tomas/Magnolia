@@ -4,6 +4,8 @@
 #include <core/entry_point.hpp>
 #include <core/event.hpp>
 #include <project/project.hpp>
+#include <resources/resource_loader.hpp>
+#include <resources/shader.hpp>
 #include <scene/scene.hpp>
 #include <scene/scene_serializer.hpp>
 
@@ -13,6 +15,8 @@ namespace game
 {
     TestGame::TestGame(const str &config_file_path) : Application(config_file_path)
     {
+        // Load the project
+
         mag::Project project;
 
         const str project_file_path = "test_game/TestGame.proj.json";
@@ -21,6 +25,13 @@ namespace game
             LOG_ERROR("Failed to load project: '{0}'", project_file_path);
             return;
         }
+
+        // @TODO: temp - load shaders
+
+        mag::ShaderResource shader_resource = {};
+        mag::resource::load("magnolia/assets/shaders/triangle_shader.mag.json", &shader_resource);
+
+        shader_handle = mag::gfx::create_shader(shader_resource);
 
         // Then load starting scene
 
@@ -61,6 +72,16 @@ namespace game
         }
 
         scene->on_update(dt);
+
+        // Render the triangle
+
+        mag::gfx::begin_frame();
+
+        mag::gfx::use_shader(shader_handle);
+
+        mag::gfx::draw(3);
+
+        mag::gfx::end_frame();
     }
 
     void TestGame::on_event(const mag::Event &e) { scene->on_event(e); }

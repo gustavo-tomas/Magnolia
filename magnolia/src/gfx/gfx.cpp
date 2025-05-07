@@ -1,8 +1,10 @@
 #include "gfx/gfx.hpp"
 
-#include "core/buffer.hpp"
+#include "core/assert.hpp"
+#include "core/types.hpp"
 #include "gfx/backend/backend.hpp"
-#include "platform/file_system.hpp"
+#include "resources/resource_loader.hpp"
+#include "resources/shader.hpp"
 
 namespace mag
 {
@@ -27,12 +29,20 @@ namespace mag
                 unique<ISwapchain> swapchain;
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
-                unique<IGraphicsPipeline> graphics_pipeline;
                 std::vector<FrameData> frames;
+                std::map<ShaderHandle, unique<IGraphicsPipeline>> shaders;
                 u32 current_frame = 0;
         };
 
         static GfxState* state = nullptr;
+
+        static ShaderHandle create_handle()
+        {
+            // @TODO: this is a pretty simple way to create handles, but it works
+            static ShaderHandle handle_counter = 0;
+
+            return handle_counter++;
+        }
 
         b8 initialize()
         {
@@ -49,30 +59,6 @@ namespace mag
             // -------------------------------------------------------------------------------------------------
             state->graphics_queue = state->device->create_queue({.queue_type = QueueType::Graphics});
             state->present_queue = state->device->create_queue({.queue_type = QueueType::Present});
-
-            // Graphics Pipeline
-            // -------------------------------------------------------------------------------------------------
-            Buffer vert_buffer;
-            mag::fs::read_binary_data(MAG_BUILD_SHADER_NAME("triangle.vert"), vert_buffer);
-
-            Buffer frag_buffer;
-            mag::fs::read_binary_data(MAG_BUILD_SHADER_NAME("triangle.frag"), frag_buffer);
-
-            IShaderModuleDesc vert_desc = {};
-            vert_desc.code = vert_buffer.data;
-            vert_desc.stage = ShaderStage::Vertex;
-
-            IShaderModuleDesc frag_desc = {};
-            frag_desc.code = frag_buffer.data;
-            frag_desc.stage = ShaderStage::Fragment;
-
-            IGraphicsPipelineDesc graphics_pipeline_desc = {};
-            graphics_pipeline_desc.shader_modules.push_back(vert_desc);
-            graphics_pipeline_desc.shader_modules.push_back(frag_desc);
-            graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
-            graphics_pipeline_desc.format = state->swapchain->get_format();
-            graphics_pipeline_desc.extent = state->swapchain->get_extent();
-            state->graphics_pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
 
             // Command Pool, Command Buffers and Sync Objects
             // -------------------------------------------------------------------------------------------------
@@ -114,17 +100,13 @@ namespace mag
             delete state;
         }
 
-        void on_update(const f32 dt)
+        void begin_frame()
         {
-            (void)dt;
+            FrameData& current_frame = state->frames[state->current_frame];
+            const unique<ITexture>& render_target = current_frame.render_target;
 
-            u32& current_frame = state->current_frame;
-            state->frames[current_frame].in_flight_fence->wait();
-
-            state->swapchain->acquire_next_image(state->frames[current_frame].available_semaphore.get());
-            const u32 image_index = state->swapchain->get_current_image_index();
-
-            const unique<ITexture>& render_target = state->frames[current_frame].render_target;
+            current_frame.in_flight_fence->wait();
+            state->swapchain->acquire_next_image(current_frame.available_semaphore.get());
 
             // Render Passes
             // -------------------------------------------------------------------------------------------------
@@ -142,54 +124,110 @@ namespace mag
             render_pass_desc.color_attachments.push_back(color_attachment.get());
             render_pass = state->device->create_render_pass(render_pass_desc);
 
-            state->frames[current_frame].command_buffer->begin_recording();
+            current_frame.command_buffer->begin_recording();
 
             // Prepare render target for rendering
-            state->frames[current_frame].command_buffer->pipeline_barrier(
+            current_frame.command_buffer->pipeline_barrier(
                 render_target.get(), TextureLayout::ColorAttachment, AccessMask::None, AccessMask::ColorAttachmentWrite,
                 PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
-            state->frames[current_frame].command_buffer->set_viewport(state->swapchain->get_extent());
-            state->frames[current_frame].command_buffer->set_scissor(state->swapchain->get_extent());
+            current_frame.command_buffer->set_viewport(state->swapchain->get_extent());
+            current_frame.command_buffer->set_scissor(state->swapchain->get_extent());
 
-            state->frames[current_frame].command_buffer->begin_rendering(render_pass.get());
+            current_frame.command_buffer->begin_rendering(render_pass.get());
+        }
 
-            state->frames[current_frame].command_buffer->bind_pipeline(state->graphics_pipeline.get());
+        void end_frame()
+        {
+            u32& current_frame_idx = state->current_frame;
+            FrameData& current_frame = state->frames[current_frame_idx];
+            const unique<ITexture>& render_target = current_frame.render_target;
 
-            state->frames[current_frame].command_buffer->draw(3);
+            const u32 image_index = state->swapchain->get_current_image_index();
 
-            state->frames[current_frame].command_buffer->end_rendering();
+            current_frame.command_buffer->end_rendering();
 
             // Transition render target to transfer
-            state->frames[current_frame].command_buffer->pipeline_barrier(
+            current_frame.command_buffer->pipeline_barrier(
                 render_target.get(), TextureLayout::TransferSrc, AccessMask::ColorAttachmentWrite,
                 AccessMask::TransferRead, PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
             // Transition swapchain image to transfer
-            state->frames[current_frame].command_buffer->pipeline_barrier(
+            current_frame.command_buffer->pipeline_barrier(
                 state->swapchain->get_texture(image_index), TextureLayout::TransferDst, AccessMask::None,
                 AccessMask::TransferWrite, PipelineStage::TopOfPipe, PipelineStage::Transfer);
 
             // Copy from the render target to the swapchain image
-            state->frames[current_frame].command_buffer->copy_texture(render_target.get(),
-                                                                      state->swapchain->get_texture(image_index));
+            current_frame.command_buffer->copy_texture(render_target.get(), state->swapchain->get_texture(image_index));
 
             // Transition swapchain image to present
-            state->frames[current_frame].command_buffer->pipeline_barrier(
+            current_frame.command_buffer->pipeline_barrier(
                 state->swapchain->get_texture(image_index), TextureLayout::Present, AccessMask::TransferWrite,
                 AccessMask::MemoryRead, PipelineStage::Transfer, PipelineStage::BottomOfPipe);
 
-            state->frames[current_frame].command_buffer->end_recording();
+            current_frame.command_buffer->end_recording();
 
-            state->graphics_queue->submit(state->frames[current_frame].available_semaphore.get(),
-                                          state->frames[current_frame].finished_semaphore.get(),
-                                          state->frames[current_frame].in_flight_fence.get(),
-                                          state->frames[current_frame].command_buffer.get());
+            state->graphics_queue->submit(current_frame.available_semaphore.get(),
+                                          current_frame.finished_semaphore.get(), current_frame.in_flight_fence.get(),
+                                          current_frame.command_buffer.get());
 
-            state->present_queue->present(state->swapchain.get(),
-                                          state->frames[current_frame].finished_semaphore.get());
+            state->present_queue->present(state->swapchain.get(), current_frame.finished_semaphore.get());
 
-            current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
+            current_frame_idx = (current_frame_idx + 1) % MAX_FRAMES_IN_FLIGHT;
+        }
+
+        ShaderHandle create_shader(const ShaderResource& shader)
+        {
+            // Graphics Pipeline
+            // -------------------------------------------------------------------------------------------------
+            IGraphicsPipelineDesc graphics_pipeline_desc = {};
+            graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
+            graphics_pipeline_desc.format = state->swapchain->get_format();
+            graphics_pipeline_desc.extent = state->swapchain->get_extent();
+
+            for (const auto& [shader_stage, code] : shader.stages)
+            {
+                IShaderModuleDesc shader_module_desc = {};
+                shader_module_desc.code = code;
+
+                if (shader_stage == ShaderResourceStage::Vertex)
+                {
+                    shader_module_desc.stage = ShaderStage::Vertex;
+                }
+
+                else if (shader_stage == ShaderResourceStage::Fragment)
+                {
+                    shader_module_desc.stage = ShaderStage::Fragment;
+                }
+
+                else
+                {
+                    MAG_ASSERT(false, "Unhandled shader stage");
+                }
+
+                graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
+            }
+
+            const ShaderHandle handle = create_handle();
+            state->shaders[handle] = state->device->create_graphics_pipeline(graphics_pipeline_desc);
+
+            return handle;
+        }
+
+        void use_shader(const ShaderHandle& handle)
+        {
+            u32& current_frame_idx = state->current_frame;
+            FrameData& current_frame = state->frames[current_frame_idx];
+
+            current_frame.command_buffer->bind_pipeline(state->shaders[handle].get());
+        }
+
+        void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
+        {
+            u32& current_frame_idx = state->current_frame;
+            FrameData& current_frame = state->frames[current_frame_idx];
+
+            current_frame.command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
         }
     };  // namespace gfx
 };      // namespace mag

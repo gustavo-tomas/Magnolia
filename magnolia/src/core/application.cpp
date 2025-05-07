@@ -124,7 +124,7 @@ namespace mag
                 {
                 }
 
-                else if (const Shader* shader = dynamic_cast<const Shader*>(resource))
+                else if (const ShaderResource* shader = dynamic_cast<const ShaderResource*>(resource))
                 {
                 }
 
@@ -173,8 +173,6 @@ namespace mag
 
             // Update the user application
             on_update(dt);
-
-            gfx::on_update(dt);
 
             // Delay if needed
             const f64 delay = (1000.0 / target_frame_rate) - (plat::get_time() - last_time);

@@ -12,7 +12,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Shader>> shaders;
+                std::map<str, ref<ShaderResource>> shaders;
                 ResourceLoadedCallbackFn on_shader_loaded;
         };
 
@@ -30,7 +30,7 @@ namespace mag
             delete state;
         }
 
-        ref<Shader> get_shader(const str& name)
+        ref<ShaderResource> get_shader(const str& name)
         {
             auto it = state->shaders.find(name);
             if (it != state->shaders.end())
@@ -39,12 +39,12 @@ namespace mag
             }
 
             // Create a new shader
-            Shader* shader = new Shader();
+            ShaderResource* shader = new ShaderResource();
             shader->loading_status = LoadingStatus::InProgress;
-            state->shaders[name] = ref<Shader>(shader);
+            state->shaders[name] = ref<ShaderResource>(shader);
 
             // Temporary shader to load data into
-            Shader* transfer_shader = new Shader(*shader);
+            ShaderResource* transfer_shader = new ShaderResource(*shader);
 
             // Load in another thread
             auto execute = [name, transfer_shader]

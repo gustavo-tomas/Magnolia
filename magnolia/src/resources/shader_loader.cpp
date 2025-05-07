@@ -14,14 +14,14 @@ namespace mag
         struct ShaderStageData
         {
                 str extension;
-                ShaderStage stage;
+                ShaderResourceStage stage;
         };
 
         static const std::map<str, ShaderStageData> shader_stage_map = {
-            {"Vertex", {.extension = ".vert", .stage = ShaderStage::Vertex}},
-            {"Fragment", {.extension = ".frag", .stage = ShaderStage::Fragment}}};
+            {"Vertex", {.extension = ".vert", .stage = ShaderResourceStage::Vertex}},
+            {"Fragment", {.extension = ".frag", .stage = ShaderResourceStage::Fragment}}};
 
-        b8 load(const str& file_path, Shader* shader)
+        b8 load(const str& file_path, ShaderResource* shader)
         {
             fs::json data;
 
