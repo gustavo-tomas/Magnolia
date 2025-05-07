@@ -1,0 +1,8 @@
+{
+    "Name": "Triangle",
+    "Stages": [
+        "Vertex",
+        "Fragment"
+    ],
+    "File": "triangle.glsl"
+}

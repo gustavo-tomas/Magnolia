@@ -14,6 +14,7 @@
 #include "resources/material.hpp"
 #include "resources/model.hpp"
 #include "resources/resource.hpp"
+#include "resources/shader.hpp"
 #include "threads/job_system.hpp"
 #include "threads/thread.hpp"
 #include "tools/profiler.hpp"
@@ -120,6 +121,10 @@ namespace mag
                 }
 
                 else if (const Material* material = dynamic_cast<const Material*>(resource))
+                {
+                }
+
+                else if (const Shader* shader = dynamic_cast<const Shader*>(resource))
                 {
                 }
 
