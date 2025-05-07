@@ -10,7 +10,6 @@ namespace mag
     {
         // @TODO: temporary
 #define MAX_FRAMES_IN_FLIGHT 3
-#define EXAMPLE_BUILD_DIRECTORY "magnolia/assets/shaders"
 
         struct FrameData
         {
@@ -54,10 +53,10 @@ namespace mag
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
             Buffer vert_buffer;
-            mag::fs::read_binary_data(str(EXAMPLE_BUILD_DIRECTORY) + "/triangle.vert.spv", vert_buffer);
+            mag::fs::read_binary_data(MAG_BUILD_SHADER_NAME("triangle.vert"), vert_buffer);
 
             Buffer frag_buffer;
-            mag::fs::read_binary_data(str(EXAMPLE_BUILD_DIRECTORY) + "/triangle.frag.spv", frag_buffer);
+            mag::fs::read_binary_data(MAG_BUILD_SHADER_NAME("triangle.frag"), frag_buffer);
 
             IShaderModuleDesc vert_desc = {};
             vert_desc.code = vert_buffer.data;
