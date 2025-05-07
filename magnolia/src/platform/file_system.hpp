@@ -26,6 +26,7 @@ namespace mag
         b8 create_directories(const fs::path& path);
 
         str get_file_extension(const fs::path& file_path);
+        str get_file_name(const fs::path& file_path);
         fs::path get_fixed_path(const fs::path& file_path);
 
         b8 exists(const fs::path& path);
