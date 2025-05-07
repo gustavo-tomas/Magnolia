@@ -290,6 +290,14 @@ namespace mag
                 case TextureLayout::Present:
                     return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                     break;
+
+                case TextureLayout::TransferSrc:
+                    return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                    break;
+
+                case TextureLayout::TransferDst:
+                    return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                    break;
             }
         }
 
@@ -307,6 +315,14 @@ namespace mag
 
                 case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
                     return TextureLayout::Present;
+                    break;
+
+                case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                    return TextureLayout::TransferSrc;
+                    break;
+
+                case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                    return TextureLayout::TransferDst;
                     break;
 
                 default:
@@ -546,6 +562,22 @@ namespace mag
             {
                 vk_access |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             }
+            if (IS_BIT_SET(mask, AccessMask::TransferRead))
+            {
+                vk_access |= VK_ACCESS_TRANSFER_READ_BIT;
+            }
+            if (IS_BIT_SET(mask, AccessMask::TransferWrite))
+            {
+                vk_access |= VK_ACCESS_TRANSFER_WRITE_BIT;
+            }
+            if (IS_BIT_SET(mask, AccessMask::MemoryRead))
+            {
+                vk_access |= VK_ACCESS_MEMORY_READ_BIT;
+            }
+            if (IS_BIT_SET(mask, AccessMask::MemoryWrite))
+            {
+                vk_access |= VK_ACCESS_MEMORY_WRITE_BIT;
+            }
 
             return vk_access;
         }
@@ -561,6 +593,22 @@ namespace mag
             if (IS_BIT_SET(mask, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT))
             {
                 mag_access |= AccessMask::ColorAttachmentWrite;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_TRANSFER_READ_BIT))
+            {
+                mag_access |= AccessMask::TransferRead;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_TRANSFER_WRITE_BIT))
+            {
+                mag_access |= AccessMask::TransferWrite;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_MEMORY_READ_BIT))
+            {
+                mag_access |= AccessMask::MemoryRead;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_MEMORY_WRITE_BIT))
+            {
+                mag_access |= AccessMask::MemoryWrite;
             }
 
             return mag_access;
@@ -646,6 +694,14 @@ namespace mag
             {
                 vk_stage |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             }
+            if (IS_BIT_SET(stage, PipelineStage::Transfer))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+            }
+            if (IS_BIT_SET(stage, PipelineStage::AllCommands))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            }
 
             return vk_stage;
         }
@@ -665,6 +721,14 @@ namespace mag
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT))
             {
                 mag_stage |= PipelineStage::BottomOfPipe;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_TRANSFER_BIT))
+            {
+                mag_stage |= PipelineStage::Transfer;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT))
+            {
+                mag_stage |= PipelineStage::AllCommands;
             }
 
             return mag_stage;

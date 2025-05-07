@@ -101,7 +101,18 @@ namespace mag
         {
             public:
                 VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const ITextureDesc& desc)
-                    : disp(disp), allocator(allocator)
+                    : disp(disp),
+                      allocator(allocator),
+                      extent(desc.extent),
+                      format(desc.format),
+                      type(desc.type),
+                      view_type(desc.view_type),
+                      aspect(desc.aspect),
+                      usage(desc.usage),
+                      layout(desc.layout),
+                      mip_levels(desc.mip_levels),
+                      array_layers(desc.array_layers),
+                      sample_count(desc.sample_count)
                 {
                     // Create image and image view
                     VkImageCreateInfo image_create_info = {};
@@ -137,10 +148,14 @@ namespace mag
                              "Failed to create image view");
                 }
 
-                // Special case for swapchain images (simply copy image and view)
+                // Special case for swapchain images
                 VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const VkImage image,
                               const VkImageView image_view)
-                    : disp(disp), allocator(allocator), image(image), image_view(image_view)
+                    : disp(disp),
+                      allocator(allocator),
+                      image(image),
+                      image_view(image_view),
+                      usage(TextureUsage::TransferDst)
                 {
                 }
 
@@ -153,21 +168,48 @@ namespace mag
                     }
                 }
 
-                virtual TextureLayout get_layout() const override { return vk_to_mag(image_layout); }
+                virtual const math::uvec3& get_extent() const override { return extent; }
+
+                virtual Format get_format() const override { return format; }
+
+                virtual TextureLayout get_layout() const override { return layout; }
+
+                virtual TextureType get_type() const override { return type; }
+
+                virtual TextureViewType get_view_type() const override { return view_type; }
+
+                virtual TextureAspect get_aspect() const override { return aspect; }
+
+                virtual TextureUsage get_usage() const override { return usage; }
+
+                virtual SampleCount get_sample_count() const override { return sample_count; }
+
+                virtual u32 get_mip_levels() const override { return mip_levels; }
+
+                virtual u32 get_array_layers() const override { return array_layers; }
 
                 const VkImage& get_image() const { return image; }
 
                 const VkImageView& get_image_view() const { return image_view; }
 
-                void set_new_layout(const VkImageLayout new_image_layout) { image_layout = new_image_layout; }
+                void set_new_layout(const VkImageLayout new_image_layout) { layout = vk_to_mag(new_image_layout); }
 
             private:
                 const vkb::DispatchTable& disp;
                 const VmaAllocator& allocator;
                 VkImage image = {};
                 VkImageView image_view = {};
-                VkImageLayout image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
                 VmaAllocation allocation = nullptr;
+                math::uvec3 extent = {1.0f, 1.0f, 1.0f};
+                Format format = Format::B8G8R8A8_SRGB;
+                TextureType type = TextureType::Texture2D;
+                TextureViewType view_type = TextureViewType::Texture2D;
+                TextureAspect aspect = TextureAspect::Color;
+                TextureUsage usage = TextureUsage::ColorAttachment;
+                TextureLayout layout = TextureLayout::Undefined;
+                u32 mip_levels = 1;
+                u32 array_layers = 1;
+                SampleCount sample_count = SampleCount::e1;
         };
 
         class VulkanSwapchain : public ISwapchain
@@ -182,6 +224,8 @@ namespace mag
                                               .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
                                               .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
                                               .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+                                              .add_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                                                     VK_IMAGE_USAGE_TRANSFER_DST_BIT)
                                               .build();
 
                     MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
@@ -644,6 +688,35 @@ namespace mag
                                             nullptr, 0, nullptr, 1, &image_memory_barrier);
 
                     ((VulkanTexture*)texture)->set_new_layout(mag_to_vk(new_layout));
+                }
+
+                virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) override
+                {
+                    const VulkanTexture* vk_src = static_cast<const VulkanTexture*>(src_texture);
+                    const VulkanTexture* vk_dst = static_cast<const VulkanTexture*>(dst_texture);
+
+                    VkImageSubresourceLayers src_subresource = {};
+                    src_subresource.layerCount = src_texture->get_array_layers();
+                    src_subresource.aspectMask = mag_to_vk(vk_src->get_aspect());
+
+                    VkImageSubresourceLayers dst_subresource = {};
+                    dst_subresource.layerCount = dst_texture->get_array_layers();
+                    dst_subresource.aspectMask = mag_to_vk(vk_dst->get_aspect());
+
+                    auto src_extent = vk_src->get_extent();
+
+                    VkOffset3D src_offset = {};
+                    VkOffset3D dst_offset = {};
+
+                    VkImageCopy image_copy = {};
+                    image_copy.extent = mag_to_vk(src_extent);
+                    image_copy.srcOffset = src_offset;
+                    image_copy.srcSubresource = src_subresource;
+                    image_copy.dstOffset = dst_offset;
+                    image_copy.dstSubresource = dst_subresource;
+
+                    disp.cmdCopyImage(command_buffer, vk_src->get_image(), mag_to_vk(vk_src->get_layout()),
+                                      vk_dst->get_image(), mag_to_vk(vk_dst->get_layout()), 1, &image_copy);
                 }
 
                 const VkCommandBuffer& get_command_buffer() const { return command_buffer; }

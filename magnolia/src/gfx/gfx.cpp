@@ -16,6 +16,7 @@ namespace mag
                 unique<ISemaphore> available_semaphore;
                 unique<ISemaphore> finished_semaphore;
                 unique<IFence> in_flight_fence;
+                unique<ITexture> render_target;
         };
 
         struct GfxState
@@ -78,6 +79,11 @@ namespace mag
                 state->frames[i].available_semaphore = state->device->create_semaphore(sem_desc);
                 state->frames[i].finished_semaphore = state->device->create_semaphore(sem_desc);
                 state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
+
+                ITextureDesc texture_desc = {};
+                texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+                texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
+                state->frames[i].render_target = state->device->create_texture(texture_desc);
             }
 
             return state->device != nullptr;
@@ -100,6 +106,8 @@ namespace mag
             state->swapchain->acquire_next_image(state->frames[current_frame].available_semaphore.get());
             const u32 image_index = state->swapchain->get_current_image_index();
 
+            const unique<ITexture>& render_target = state->frames[current_frame].render_target;
+
             // Render Passes
             // -------------------------------------------------------------------------------------------------
             unique<IRenderPass> render_pass;
@@ -108,7 +116,7 @@ namespace mag
             IRenderingAttachmentDesc color_attachment_desc = {};
             color_attachment_desc.type = RenderingAttachmentType::Color;
             color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
-            color_attachment_desc.texture = state->swapchain->get_texture(image_index);
+            color_attachment_desc.texture = render_target.get();
             color_attachment = state->device->create_render_attachment(color_attachment_desc);
 
             IRenderPassDesc render_pass_desc = {};
@@ -118,9 +126,10 @@ namespace mag
 
             state->frames[current_frame].command_buffer->begin_recording();
 
+            // Prepare render target for rendering
             state->frames[current_frame].command_buffer->pipeline_barrier(
-                state->swapchain->get_texture(image_index), TextureLayout::ColorAttachment, AccessMask::None,
-                AccessMask::ColorAttachmentWrite, PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
+                render_target.get(), TextureLayout::ColorAttachment, AccessMask::None, AccessMask::ColorAttachmentWrite,
+                PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
             state->frames[current_frame].command_buffer->set_viewport(state->swapchain->get_extent());
             state->frames[current_frame].command_buffer->set_scissor(state->swapchain->get_extent());
@@ -133,9 +142,24 @@ namespace mag
 
             state->frames[current_frame].command_buffer->end_rendering();
 
+            // Transition render target to transfer
             state->frames[current_frame].command_buffer->pipeline_barrier(
-                state->swapchain->get_texture(image_index), TextureLayout::Present, AccessMask::ColorAttachmentWrite,
-                AccessMask::None, PipelineStage::ColorAttachmentOutput, PipelineStage::BottomOfPipe);
+                render_target.get(), TextureLayout::TransferSrc, AccessMask::ColorAttachmentWrite,
+                AccessMask::TransferRead, PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
+
+            // Transition swapchain image to transfer
+            state->frames[current_frame].command_buffer->pipeline_barrier(
+                state->swapchain->get_texture(image_index), TextureLayout::TransferDst, AccessMask::None,
+                AccessMask::TransferWrite, PipelineStage::TopOfPipe, PipelineStage::Transfer);
+
+            // Copy from the render target to the swapchain image
+            state->frames[current_frame].command_buffer->copy_texture(render_target.get(),
+                                                                      state->swapchain->get_texture(image_index));
+
+            // Transition swapchain image to present
+            state->frames[current_frame].command_buffer->pipeline_barrier(
+                state->swapchain->get_texture(image_index), TextureLayout::Present, AccessMask::TransferWrite,
+                AccessMask::MemoryRead, PipelineStage::Transfer, PipelineStage::BottomOfPipe);
 
             state->frames[current_frame].command_buffer->end_recording();
 

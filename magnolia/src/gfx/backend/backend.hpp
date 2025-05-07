@@ -69,7 +69,9 @@ namespace mag
         {
             Undefined,
             ColorAttachment,
-            Present
+            Present,
+            TransferSrc,
+            TransferDst
         };
 
         enum class TextureAspect
@@ -92,14 +94,20 @@ namespace mag
         enum class AccessMask
         {
             None = 0,
-            ColorAttachmentWrite = 1 << 0
+            ColorAttachmentWrite = 1 << 0,
+            TransferRead = 1 << 1,
+            TransferWrite = 1 << 2,
+            MemoryRead = 1 << 3,
+            MemoryWrite = 1 << 4
         };
 
         enum class PipelineStage
         {
             TopOfPipe = 1 << 0,
             ColorAttachmentOutput = 1 << 1,
-            BottomOfPipe = 1 << 2
+            BottomOfPipe = 1 << 2,
+            Transfer = 1 << 3,
+            AllCommands = 1 << 4
         };
 
         enum class PrimitiveTopology
@@ -180,6 +188,7 @@ namespace mag
                 TextureViewType view_type = TextureViewType::Texture2D;
                 TextureAspect aspect = TextureAspect::Color;
                 TextureUsage usage = TextureUsage::ColorAttachment;
+                TextureLayout layout = TextureLayout::Undefined;
                 u32 mip_levels = 1;
                 u32 array_layers = 1;
                 SampleCount sample_count = SampleCount::e1;
@@ -228,7 +237,25 @@ namespace mag
             public:
                 virtual ~ITexture() = default;
 
+                virtual const math::uvec3& get_extent() const = 0;
+
+                virtual Format get_format() const = 0;
+
                 virtual TextureLayout get_layout() const = 0;
+
+                virtual TextureType get_type() const = 0;
+
+                virtual TextureViewType get_view_type() const = 0;
+
+                virtual TextureAspect get_aspect() const = 0;
+
+                virtual TextureUsage get_usage() const = 0;
+
+                virtual SampleCount get_sample_count() const = 0;
+
+                virtual u32 get_mip_levels() const = 0;
+
+                virtual u32 get_array_layers() const = 0;
         };
 
         class ISwapchain
@@ -292,6 +319,8 @@ namespace mag
                                               const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                               const PipelineStage src_stage_mask,
                                               const PipelineStage dst_stage_mask) = 0;
+
+                virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) = 0;
         };
 
         class IQueue
