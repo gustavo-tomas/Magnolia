@@ -7,6 +7,7 @@
 #include "core/types.hpp"
 #include "gfx/backend/backend.hpp"
 #include "math/types.hpp"
+#include "vk_mem_alloc.h"
 
 namespace mag
 {
@@ -765,6 +766,110 @@ namespace mag
             }
 
             return mag_stage;
+        }
+
+        inline VkBufferUsageFlags mag_to_vk(const BufferUsage usage)
+        {
+            VkBufferUsageFlags vk_usage = {};
+
+            if (IS_BIT_SET(usage, BufferUsage::Vertex))
+            {
+                vk_usage |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            }
+            if (IS_BIT_SET(usage, BufferUsage::Index))
+            {
+                vk_usage |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+            }
+            if (IS_BIT_SET(usage, BufferUsage::Uniform))
+            {
+                vk_usage |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            }
+            if (IS_BIT_SET(usage, BufferUsage::Storage))
+            {
+                vk_usage |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+            }
+            if (IS_BIT_SET(usage, BufferUsage::TransferSrc))
+            {
+                vk_usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            }
+            if (IS_BIT_SET(usage, BufferUsage::TransferDst))
+            {
+                vk_usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+            }
+
+            return vk_usage;
+        }
+
+        inline BufferUsage vk_to_mag_buffer_usage(const VkBufferUsageFlags usage)
+        {
+            BufferUsage mag_usage = {};
+
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT))
+            {
+                mag_usage |= BufferUsage::Vertex;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
+            {
+                mag_usage |= BufferUsage::Index;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT))
+            {
+                mag_usage |= BufferUsage::Uniform;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT))
+            {
+                mag_usage |= BufferUsage::Storage;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
+            {
+                mag_usage |= BufferUsage::TransferSrc;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_TRANSFER_DST_BIT))
+            {
+                mag_usage |= BufferUsage::TransferDst;
+            }
+
+            return mag_usage;
+        }
+
+        inline VmaMemoryUsage mag_to_vk(const MemoryUsage usage)
+        {
+            switch (usage)
+            {
+                case MemoryUsage::Auto:
+                    return VMA_MEMORY_USAGE_AUTO;
+                    break;
+
+                case MemoryUsage::PreferHost:
+                    return VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
+                    break;
+
+                case MemoryUsage::PreferDevice:
+                    return VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+                    break;
+            }
+        }
+
+        inline MemoryUsage mag_to_vk(const VmaMemoryUsage usage)
+        {
+            switch (usage)
+            {
+                case VMA_MEMORY_USAGE_AUTO:
+                    return MemoryUsage::Auto;
+                    break;
+
+                case VMA_MEMORY_USAGE_AUTO_PREFER_HOST:
+                    return MemoryUsage::PreferHost;
+                    break;
+
+                case VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE:
+                    return MemoryUsage::PreferDevice;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled memory usage");
+                    break;
+            }
         }
     };  // namespace gfx
 };      // namespace mag

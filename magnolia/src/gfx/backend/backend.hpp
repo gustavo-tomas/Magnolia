@@ -133,6 +133,23 @@ namespace mag
             Fragment
         };
 
+        enum class BufferUsage
+        {
+            Vertex = 1 << 0,
+            Index = 1 << 1,
+            Uniform = 1 << 2,
+            Storage = 1 << 3,
+            TransferSrc = 1 << 4,
+            TransferDst = 1 << 5
+        };
+
+        enum class MemoryUsage
+        {
+            Auto,
+            PreferHost,
+            PreferDevice
+        };
+
         struct IShaderModuleDesc
         {
                 ShaderStage stage;
@@ -205,6 +222,29 @@ namespace mag
                 u32 mip_levels = 1;
                 u32 array_layers = 1;
                 SampleCount sample_count = SampleCount::e1;
+        };
+
+        struct IBufferDesc
+        {
+                u64 size_bytes;
+                BufferUsage buffer_usage;
+                MemoryUsage memory_usage;
+        };
+
+        class IBuffer
+        {
+            public:
+                virtual ~IBuffer() = default;
+
+                virtual void* map() = 0;
+
+                virtual void unmap() = 0;
+
+                virtual void set_data(const void* data, const u64 size, const u64 offset = 0) = 0;
+
+                virtual u64 get_size() const = 0;
+
+                virtual BufferUsage get_usage() const = 0;
         };
 
         class IRenderingAttachment
@@ -373,12 +413,15 @@ namespace mag
                 virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) = 0;
 
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) = 0;
+
+                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) = 0;
         };
 
         unique<IDevice> create_device();
     };  // namespace gfx
 };      // namespace mag
 
+ENABLE_BITMASK_OPERATORS(mag::gfx::BufferUsage);
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureUsage);
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureAspect);
 ENABLE_BITMASK_OPERATORS(mag::gfx::AccessMask);

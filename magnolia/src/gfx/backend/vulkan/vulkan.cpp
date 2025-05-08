@@ -92,6 +92,63 @@ namespace mag
                 VkFence fence;
         };
 
+        class VulkanBuffer : public IBuffer
+        {
+            public:
+                VulkanBuffer(const IBufferDesc& desc, const VmaAllocator& allocator)
+                    : allocator(allocator), size(desc.size_bytes), usage(desc.buffer_usage)
+                {
+                    VkBufferCreateInfo buffer_create_info = {};
+                    buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                    buffer_create_info.size = desc.size_bytes;
+                    buffer_create_info.usage = mag_to_vk(desc.buffer_usage);
+
+                    VmaAllocationCreateInfo allocation_create_info = {};
+                    allocation_create_info.usage = mag_to_vk(desc.memory_usage);
+                    allocation_create_info.flags =
+                        VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+                    VK_CHECK(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &buffer,
+                                             &allocation, nullptr),
+                             "Failed to create buffer");
+
+                    // Use persistent mapping
+                    this->map();
+                }
+
+                ~VulkanBuffer()
+                {
+                    this->unmap();
+                    vmaDestroyBuffer(allocator, buffer, allocation);
+                }
+
+                virtual void* map() override
+                {
+                    VK_CHECK(vmaMapMemory(allocator, allocation, &mapped_region), "Failed to map buffer memory");
+                    return mapped_region;
+                }
+
+                virtual void unmap() override { vmaUnmapMemory(allocator, allocation); }
+
+                virtual void set_data(const void* data, const u64 size, const u64 offset = 0) override
+                {
+                    MAG_ASSERT(offset + size <= size, "Size limit exceeded");
+                    memcpy(static_cast<c8*>(mapped_region) + offset, data, size);
+                }
+
+                virtual u64 get_size() const override { return size; }
+
+                virtual BufferUsage get_usage() const override { return usage; }
+
+            private:
+                const VmaAllocator& allocator;
+                u64 size = 0;
+                BufferUsage usage;
+                VkBuffer buffer;
+                VmaAllocation allocation = nullptr;
+                void* mapped_region = nullptr;
+        };
+
         class VulkanTexture : public ITexture
         {
             public:
@@ -891,6 +948,11 @@ namespace mag
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) override
                 {
                     return create_unique<VulkanTexture>(disp, allocator, desc);
+                }
+
+                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) override
+                {
+                    return create_unique<VulkanBuffer>(desc, allocator);
                 }
 
             private:
