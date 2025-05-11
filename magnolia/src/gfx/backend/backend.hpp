@@ -10,6 +10,9 @@ namespace mag
         class IRenderingAttachment;
         class ITexture;
         class ICommandPool;
+        class IDescriptorPool;
+        class IDescriptorSetLayout;
+        class IDescriptorSet;
 
         enum class PresentMode
         {
@@ -129,8 +132,8 @@ namespace mag
 
         enum class ShaderStage
         {
-            Vertex,
-            Fragment
+            Vertex = 1 << 0,
+            Fragment = 1 << 1
         };
 
         enum class BufferUsage
@@ -148,6 +151,13 @@ namespace mag
             Auto,
             PreferHost,
             PreferDevice
+        };
+
+        enum class DescriptorType
+        {
+            Uniform,
+            Storage,
+            CombinedImageSampler
         };
 
         struct IShaderModuleDesc
@@ -179,6 +189,7 @@ namespace mag
         {
                 PrimitiveTopology primitive_topology;
                 std::vector<IShaderModuleDesc> shader_modules;
+                std::vector<const IDescriptorSetLayout*> descriptor_layouts;
                 Format format;
                 math::uvec2 extent;
         };
@@ -229,6 +240,38 @@ namespace mag
                 u64 size_bytes;
                 BufferUsage buffer_usage;
                 MemoryUsage memory_usage;
+        };
+
+        struct IDescriptorPoolSizeDesc
+        {
+                u32 size;
+                DescriptorType type;
+        };
+
+        struct IDescriptorPoolDesc
+        {
+                std::vector<IDescriptorPoolSizeDesc> size_descs;
+                u32 max_sets;
+        };
+
+        struct IDescriptorSetLayoutBindingDesc
+        {
+                u32 binding;
+                u32 descriptor_count;
+                DescriptorType descriptor_type;
+                ShaderStage stages;
+        };
+
+        struct IDescriptorSetLayoutDesc
+        {
+                std::vector<IDescriptorSetLayoutBindingDesc> binding_descs;
+        };
+
+        struct IDescriptorSetDesc
+        {
+                const IDescriptorPool* descriptor_pool = nullptr;
+                const IDescriptorSetLayout* descriptor_layout = nullptr;
+                u32 max_descriptor_count;
         };
 
         class IBuffer
@@ -331,6 +374,27 @@ namespace mag
                 virtual b8 resize(const math::uvec2& extent) = 0;
         };
 
+        class IDescriptorPool
+        {
+            public:
+                virtual ~IDescriptorPool() = default;
+        };
+
+        class IDescriptorSetLayout
+        {
+            public:
+                virtual ~IDescriptorSetLayout() = default;
+        };
+
+        class IDescriptorSet
+        {
+            public:
+                virtual ~IDescriptorSet() = default;
+
+                virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
+                                    const DescriptorType descriptor_type, const u64 offset = 0) = 0;
+        };
+
         class IGraphicsPipeline
         {
             public:
@@ -364,6 +428,8 @@ namespace mag
                 virtual void end_rendering() = 0;
 
                 virtual void bind_pipeline(const IGraphicsPipeline* pipeline) = 0;
+
+                virtual void bind_descriptor(const IGraphicsPipeline* pipeline, const IDescriptorSet* descriptor) = 0;
 
                 virtual void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
                                   const u32 first_instance = 0) = 0;
@@ -415,6 +481,13 @@ namespace mag
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) = 0;
 
                 virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) = 0;
+
+                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) = 0;
+
+                virtual unique<IDescriptorSetLayout> create_descriptor_set_layout(
+                    const IDescriptorSetLayoutDesc& desc) = 0;
+
+                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) = 0;
         };
 
         unique<IDevice> create_device();
@@ -426,3 +499,4 @@ ENABLE_BITMASK_OPERATORS(mag::gfx::TextureUsage);
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureAspect);
 ENABLE_BITMASK_OPERATORS(mag::gfx::AccessMask);
 ENABLE_BITMASK_OPERATORS(mag::gfx::PipelineStage);
+ENABLE_BITMASK_OPERATORS(mag::gfx::ShaderStage);

@@ -7,6 +7,7 @@
     #include <vulkan/vulkan.h>
 
     #include <string>
+    #include <vector>
 
     #include "VkBootstrap.h"
     #include "VkBootstrapDispatch.h"
@@ -139,6 +140,8 @@ namespace mag
                 virtual u64 get_size() const override { return size; }
 
                 virtual BufferUsage get_usage() const override { return usage; }
+
+                const VkBuffer& get_buffer() const { return buffer; }
 
             private:
                 const VmaAllocator& allocator;
@@ -353,6 +356,151 @@ namespace mag
                 std::vector<unique<VulkanTexture>> swapchain_textures;
         };
 
+        class VulkanDescriptorPool : public IDescriptorPool
+        {
+            public:
+                VulkanDescriptorPool(const IDescriptorPoolDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
+                {
+                    std::vector<VkDescriptorPoolSize> pool_sizes;
+                    for (const IDescriptorPoolSizeDesc& size_desc : desc.size_descs)
+                    {
+                        VkDescriptorPoolSize pool_size = {};
+                        pool_size.type = mag_to_vk(size_desc.type);
+                        pool_size.descriptorCount = size_desc.size;
+
+                        pool_sizes.push_back(pool_size);
+                    }
+
+                    VkDescriptorPoolCreateInfo pool_info = {};
+                    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    pool_info.poolSizeCount = pool_sizes.size();
+                    pool_info.pPoolSizes = pool_sizes.data();
+                    pool_info.maxSets = desc.max_sets;
+                    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT |
+                                      VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+
+                    VK_CHECK(disp.createDescriptorPool(&pool_info, nullptr, &descriptor_pool),
+                             "Failed to create descriptor pool");
+                }
+
+                ~VulkanDescriptorPool() { disp.destroyDescriptorPool(descriptor_pool, nullptr); }
+
+                const VkDescriptorPool& get_pool() const { return descriptor_pool; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkDescriptorPool descriptor_pool;
+        };
+
+        class VulkanDescriptorSetLayout : public IDescriptorSetLayout
+        {
+            public:
+                VulkanDescriptorSetLayout(const IDescriptorSetLayoutDesc& desc, const vkb::DispatchTable& disp)
+                    : disp(disp)
+                {
+                    std::vector<VkDescriptorSetLayoutBinding> bindings;
+                    std::vector<VkDescriptorBindingFlagsEXT> flags;
+
+                    for (const IDescriptorSetLayoutBindingDesc& binding_desc : desc.binding_descs)
+                    {
+                        VkDescriptorSetLayoutBinding binding = {};
+                        binding.binding = binding_desc.binding;
+                        binding.descriptorType = mag_to_vk(binding_desc.descriptor_type);
+                        binding.descriptorCount = binding_desc.descriptor_count;
+                        binding.stageFlags = mag_to_vk(binding_desc.stages);
+
+                        bindings.push_back(binding);
+                        flags.push_back(VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
+                                        VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
+                    }
+
+                    VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
+                    binding_flags.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                    binding_flags.bindingCount = bindings.size();
+                    binding_flags.pBindingFlags = flags.data();
+
+                    VkDescriptorSetLayoutCreateInfo layout_info = {};
+                    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    layout_info.bindingCount = bindings.size();
+                    layout_info.pBindings = bindings.data();
+                    layout_info.pNext = &binding_flags;
+                    layout_info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+
+                    VK_CHECK(disp.createDescriptorSetLayout(&layout_info, nullptr, &descriptor_layout),
+                             "Failed to create descriptor set layout");
+                }
+
+                ~VulkanDescriptorSetLayout() { disp.destroyDescriptorSetLayout(descriptor_layout, nullptr); }
+
+                const VkDescriptorSetLayout& get_layout() const { return descriptor_layout; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkDescriptorSetLayout descriptor_layout;
+        };
+
+        class VulkanDescriptorSet : public IDescriptorSet
+        {
+            public:
+                VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
+                {
+                    parent_pool = ((VulkanDescriptorPool*)desc.descriptor_pool)->get_pool();
+
+                    VkDescriptorSetLayout descriptor_layout =
+                        ((VulkanDescriptorSetLayout*)desc.descriptor_layout)->get_layout();
+
+                    VkDescriptorSetVariableDescriptorCountAllocateInfoEXT variable_count_info = {};
+                    variable_count_info.sType =
+                        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                    variable_count_info.descriptorSetCount = 1;
+                    variable_count_info.pDescriptorCounts = &desc.max_descriptor_count;
+
+                    VkDescriptorSetAllocateInfo alloc_info = {};
+                    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    alloc_info.descriptorPool = parent_pool;
+                    alloc_info.descriptorSetCount = 1;
+                    alloc_info.pSetLayouts = &descriptor_layout;
+                    alloc_info.pNext = &variable_count_info;
+
+                    VK_CHECK(disp.allocateDescriptorSets(&alloc_info, &descriptor_set),
+                             "Failed to allocate descriptor sets");
+                }
+
+                ~VulkanDescriptorSet() { disp.freeDescriptorSets(parent_pool, 1, &descriptor_set); }
+
+                virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
+                                    const DescriptorType descriptor_type, const u64 offset) override
+                {
+                    std::vector<VkWriteDescriptorSet> descriptor_writes;
+
+                    VkDescriptorBufferInfo buffer_info = {};
+                    buffer_info.buffer = ((VulkanBuffer*)buffer)->get_buffer();
+                    buffer_info.offset = offset;
+                    buffer_info.range = buffer->get_size();
+
+                    VkWriteDescriptorSet write = {};
+                    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    write.dstSet = descriptor_set;
+                    write.dstBinding = binding;
+                    write.dstArrayElement = array_element;
+                    write.descriptorType = mag_to_vk(descriptor_type);
+                    write.descriptorCount = 1;
+                    write.pBufferInfo = &buffer_info;
+
+                    descriptor_writes.push_back(write);
+
+                    disp.updateDescriptorSets(descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+                }
+
+                const VkDescriptorSet& get_descriptor_set() const { return descriptor_set; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkDescriptorSet descriptor_set;
+                VkDescriptorPool parent_pool;
+        };
+
         class VulkanGraphicsPipeline : public IGraphicsPipeline
         {
             public:
@@ -379,9 +527,18 @@ namespace mag
 
                         shader_stages[i] = {};
                         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                        shader_stages[i].stage = mag_to_vk(shader_module_desc.stage);
+                        shader_stages[i].stage = mag_to_vk_bits(shader_module_desc.stage);
                         shader_stages[i].module = shader_modules[i];
                         shader_stages[i].pName = "main";
+                    }
+
+                    std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
+                    for (const IDescriptorSetLayout* descriptor_layout : desc.descriptor_layouts)
+                    {
+                        const VkDescriptorSetLayout descriptor_set_layout =
+                            ((VulkanDescriptorSetLayout*)descriptor_layout)->get_layout();
+
+                        descriptor_set_layouts.push_back(descriptor_set_layout);
                     }
 
                     VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
@@ -446,7 +603,8 @@ namespace mag
 
                     VkPipelineLayoutCreateInfo pipeline_layout_info = {};
                     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-                    pipeline_layout_info.setLayoutCount = 0;
+                    pipeline_layout_info.setLayoutCount = descriptor_set_layouts.size();
+                    pipeline_layout_info.pSetLayouts = descriptor_set_layouts.data();
                     pipeline_layout_info.pushConstantRangeCount = 0;
 
                     if (disp.createPipelineLayout(&pipeline_layout_info, nullptr, &pipeline_layout) != VK_SUCCESS)
@@ -504,6 +662,8 @@ namespace mag
                 }
 
                 const VkPipeline& get_pipeline() const { return pipeline; }
+
+                const VkPipelineLayout& get_pipeline_layout() const { return pipeline_layout; }
 
             private:
                 const vkb::DispatchTable& disp;
@@ -691,6 +851,14 @@ namespace mag
                                          ((VulkanGraphicsPipeline*)pipeline)->get_pipeline());
                 }
 
+                virtual void bind_descriptor(const IGraphicsPipeline* pipeline,
+                                             const IDescriptorSet* descriptor) override
+                {
+                    disp.cmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                               ((VulkanGraphicsPipeline*)pipeline)->get_pipeline_layout(), 0, 1,
+                                               &((VulkanDescriptorSet*)descriptor)->get_descriptor_set(), 0, nullptr);
+                }
+
                 virtual void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                                   const u32 first_instance) override
                 {
@@ -857,10 +1025,23 @@ namespace mag
                     dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
                     dynamic_rendering_feature.dynamicRendering = true;
 
+                    VkPhysicalDeviceDescriptorIndexingFeatures descriptor_indexing_features = {};
+                    descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+                    descriptor_indexing_features.descriptorBindingPartiallyBound = true;
+                    descriptor_indexing_features.descriptorBindingVariableDescriptorCount = true;
+                    descriptor_indexing_features.descriptorBindingUniformBufferUpdateAfterBind = true;
+                    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = true;
+                    descriptor_indexing_features.descriptorBindingStorageBufferUpdateAfterBind = true;
+                    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
+                    descriptor_indexing_features.shaderStorageBufferArrayNonUniformIndexing = true;
+                    descriptor_indexing_features.shaderUniformBufferArrayNonUniformIndexing = true;
+
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
                     const auto phys_device_ret = phys_device_selector.set_minimum_version(1, 3)
                                                      .set_surface(surface)
                                                      .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
+                                                     .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
+                                                     .add_required_extension_features(descriptor_indexing_features)
                                                      .select();
 
                     MAG_ASSERT(phys_device_ret, phys_device_ret.error().message());
@@ -953,6 +1134,22 @@ namespace mag
                 virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) override
                 {
                     return create_unique<VulkanBuffer>(desc, allocator);
+                }
+
+                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) override
+                {
+                    return create_unique<VulkanDescriptorPool>(desc, disp);
+                }
+
+                virtual unique<IDescriptorSetLayout> create_descriptor_set_layout(
+                    const IDescriptorSetLayoutDesc& desc) override
+                {
+                    return create_unique<VulkanDescriptorSetLayout>(desc, disp);
+                }
+
+                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) override
+                {
+                    return create_unique<VulkanDescriptorSet>(desc, disp);
                 }
 
             private:

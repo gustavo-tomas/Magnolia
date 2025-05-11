@@ -62,7 +62,7 @@ namespace mag
             return vk_clear_color;
         }
 
-        inline VkShaderStageFlagBits mag_to_vk(const ShaderStage shader_stage)
+        inline VkShaderStageFlagBits mag_to_vk_bits(const ShaderStage shader_stage)
         {
             switch (shader_stage)
             {
@@ -76,7 +76,7 @@ namespace mag
             }
         }
 
-        inline ShaderStage vk_to_mag_shader_stage(const VkShaderStageFlags shader_stage)
+        inline ShaderStage vk_to_mag(const VkShaderStageFlagBits shader_stage)
         {
             switch (shader_stage)
             {
@@ -93,6 +93,38 @@ namespace mag
                     return ShaderStage::Vertex;
                     break;
             }
+        }
+
+        inline VkShaderStageFlags mag_to_vk(const ShaderStage shader_stage)
+        {
+            VkShaderStageFlags vk_shader_stage = {};
+
+            if (IS_BIT_SET(shader_stage, ShaderStage::Vertex))
+            {
+                vk_shader_stage |= VK_SHADER_STAGE_VERTEX_BIT;
+            }
+            if (IS_BIT_SET(shader_stage, ShaderStage::Fragment))
+            {
+                vk_shader_stage |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+
+            return vk_shader_stage;
+        }
+
+        inline ShaderStage vk_to_mag_shader_stage(const VkShaderStageFlags shader_stage)
+        {
+            ShaderStage mag_shader_stage = {};
+
+            if (IS_BIT_SET(shader_stage, VK_SHADER_STAGE_VERTEX_BIT))
+            {
+                mag_shader_stage |= ShaderStage::Vertex;
+            }
+            if (IS_BIT_SET(shader_stage, VK_SHADER_STAGE_FRAGMENT_BIT))
+            {
+                mag_shader_stage |= ShaderStage::Fragment;
+            }
+
+            return mag_shader_stage;
         }
 
         inline VkPresentModeKHR mag_to_vk(const PresentMode present_mode)
@@ -532,6 +564,47 @@ namespace mag
 
                 case SampleCount::e16:
                     return VK_SAMPLE_COUNT_16_BIT;
+                    break;
+            }
+        }
+
+        inline VkDescriptorType mag_to_vk(const DescriptorType descriptor_type)
+        {
+            switch (descriptor_type)
+            {
+                case DescriptorType::Uniform:
+                    return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    break;
+
+                case DescriptorType::Storage:
+                    return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    break;
+
+                case DescriptorType::CombinedImageSampler:
+                    return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    break;
+            }
+        }
+
+        inline DescriptorType vk_to_mag(const VkDescriptorType descriptor_type)
+        {
+            switch (descriptor_type)
+            {
+                case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+                    return DescriptorType::Uniform;
+                    break;
+
+                case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                    return DescriptorType::Storage;
+                    break;
+
+                case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                    return DescriptorType::CombinedImageSampler;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled descriptor type");
+                    return DescriptorType::Uniform;
                     break;
             }
         }
