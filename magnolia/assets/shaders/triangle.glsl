@@ -11,6 +11,14 @@ glslc -Imagnolia/assets/shaders
 	  and swap 'vert' for 'frag' or any other shader stage
 */
 
+// Global buffer
+layout (set = 0, binding = 0) uniform GlobalBuffer
+{
+    mat4 view;
+    mat4 projection;
+    mat4 model;
+} u_global;
+
 #ifdef VERTEX_SHADER
 
 layout (location = 0) out vec4 out_color;
@@ -31,7 +39,7 @@ const vec4 colors[] = vec4[3]
 
 void main()
 {
-	gl_Position = vec4(positions[gl_VertexIndex], 1.0);
+	gl_Position = u_global.projection * u_global.view * u_global.model * vec4(positions[gl_VertexIndex], 1.0);
 	out_color = colors[gl_VertexIndex];
 }
 

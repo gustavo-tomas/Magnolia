@@ -75,9 +75,21 @@ namespace game
 
         // Render the triangle
 
+        mag::Camera &cam = scene->get_camera();
+
         mag::gfx::begin_frame();
 
+        mat4 view = cam.get_view();
+        mat4 proj = cam.get_projection();
+        mat4 model = mag::math::scale(mat4(1.0f), mag::math::vec3(100.0f));
+        mat4 view_proj[] = {view, proj, model};
+
+        static mag::gfx::BufferHandle buf_handle = mag::gfx::create_buffer(sizeof(view_proj), view_proj);
+        mag::gfx::set_buffer_data(buf_handle, sizeof(view_proj), view_proj);
+
         mag::gfx::use_shader(shader_handle);
+
+        mag::gfx::set_shader_uniform(shader_handle, buf_handle);
 
         mag::gfx::draw(3);
 

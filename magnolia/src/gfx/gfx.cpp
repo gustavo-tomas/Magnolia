@@ -1,6 +1,7 @@
 #include "gfx/gfx.hpp"
 
-#include "core/assert.hpp"
+#include <map>
+
 #include "core/types.hpp"
 #include "gfx/backend/backend.hpp"
 #include "resources/resource_loader.hpp"
@@ -13,6 +14,18 @@ namespace mag
         // @TODO: temporary
 #define MAX_FRAMES_IN_FLIGHT 3
 
+        struct DescriptorData
+        {
+                unique<IDescriptorSet> descriptor_set;
+                BufferHandle last_bound_buffer = Invalid_ID;
+        };
+
+        struct ShaderData
+        {
+                unique<IGraphicsPipeline> pipeline;
+                unique<IDescriptorSetLayout> descriptor_layout;
+        };
+
         struct FrameData
         {
                 unique<ICommandPool> command_pool;
@@ -21,6 +34,8 @@ namespace mag
                 unique<ISemaphore> finished_semaphore;
                 unique<IFence> in_flight_fence;
                 unique<ITexture> render_target;
+                unique<IDescriptorPool> descriptor_pool;
+                std::map<ShaderHandle, DescriptorData> descriptor_set_map;
         };
 
         struct GfxState
@@ -30,19 +45,12 @@ namespace mag
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
                 std::vector<FrameData> frames;
-                std::map<ShaderHandle, unique<IGraphicsPipeline>> shaders;
+                std::map<ShaderHandle, ShaderData> shaders;
+                std::map<BufferHandle, unique<IBuffer>> buffers;
                 u32 current_frame = 0;
         };
 
         static GfxState* state = nullptr;
-
-        static ShaderHandle create_handle()
-        {
-            // @TODO: this is a pretty simple way to create handles, but it works
-            static ShaderHandle handle_counter = 0;
-
-            return handle_counter++;
-        }
 
         b8 initialize()
         {
@@ -88,6 +96,17 @@ namespace mag
                 texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
                 texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
                 state->frames[i].render_target = state->device->create_texture(texture_desc);
+
+                IDescriptorPoolDesc descriptor_pool_desc = {};
+                descriptor_pool_desc.max_sets = 1024;
+
+                IDescriptorPoolSizeDesc size_descs = {};
+                size_descs.type = DescriptorType::Uniform;
+                size_descs.size = 64;
+
+                descriptor_pool_desc.size_descs.push_back(size_descs);
+
+                state->frames[i].descriptor_pool = state->device->create_descriptor_pool(descriptor_pool_desc);
             }
 
             return state->device != nullptr;
@@ -176,56 +195,138 @@ namespace mag
             current_frame_idx = (current_frame_idx + 1) % MAX_FRAMES_IN_FLIGHT;
         }
 
+        static gfx::ShaderStage convert_resource_shader_stage(const ShaderResourceStage shader_stage)
+        {
+            switch (shader_stage)
+            {
+                case ShaderResourceStage::Vertex:
+                    return gfx::ShaderStage::Vertex;
+                    break;
+
+                case ShaderResourceStage::Fragment:
+                    return gfx::ShaderStage::Fragment;
+                    break;
+            }
+        }
+
+        static u32 create_handle()
+        {
+            // @TODO: this is a pretty simple way to create handles, but it works
+            static u32 handle_counter = 0;
+
+            return handle_counter++;
+        }
+
+        BufferHandle create_buffer(const u64 size, const void* data)
+        {
+            const BufferHandle handle = create_handle();
+
+            IBufferDesc buffer_desc = {};
+            buffer_desc.buffer_usage = BufferUsage::Uniform;
+            buffer_desc.memory_usage = MemoryUsage::Auto;
+            buffer_desc.size_bytes = size;
+
+            state->buffers[handle] = state->device->create_buffer(buffer_desc);
+            state->buffers[handle]->set_data(data, size);
+
+            return handle;
+        }
+
+        void set_buffer_data(const BufferHandle buffer_handle, const u64 size, const void* data)
+        {
+            state->buffers[buffer_handle]->set_data(data, size);
+        }
+
         ShaderHandle create_shader(const ShaderResource& shader)
         {
+            // Descriptors
+            // -------------------------------------------------------------------------------------------------
+
+            const ShaderHandle handle = create_handle();
+
+            // Descriptor set layout
+            IDescriptorSetLayoutDesc descriptor_layout_desc = {};
+
+            IDescriptorSetLayoutBindingDesc binding_desc = {};
+            binding_desc.binding = 0;
+            binding_desc.descriptor_count = 1;
+            binding_desc.descriptor_type = DescriptorType::Uniform;
+
+            // @TODO: this is hardcoded to make my life easier
+            binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
+
+            descriptor_layout_desc.binding_descs.push_back(binding_desc);
+
+            state->shaders[handle].descriptor_layout =
+                state->device->create_descriptor_set_layout(descriptor_layout_desc);
+
+            const unique<IDescriptorSetLayout>& descriptor_layout = state->shaders[handle].descriptor_layout;
+
+            // Descriptor set
+
+            for (u32 i = 0; i < state->frames.size(); i++)
+            {
+                IDescriptorSetDesc descriptor_desc = {};
+                descriptor_desc.descriptor_layout = descriptor_layout.get();
+                descriptor_desc.descriptor_pool = state->frames[i].descriptor_pool.get();
+                descriptor_desc.max_descriptor_count = 1;
+
+                state->frames[i].descriptor_set_map[handle].descriptor_set =
+                    state->device->create_descriptor_set(descriptor_desc);
+            }
+
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
             graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
             graphics_pipeline_desc.format = state->swapchain->get_format();
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
+            graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
 
             for (const auto& [shader_stage, code] : shader.stages)
             {
                 IShaderModuleDesc shader_module_desc = {};
                 shader_module_desc.code = code;
-
-                if (shader_stage == ShaderResourceStage::Vertex)
-                {
-                    shader_module_desc.stage = ShaderStage::Vertex;
-                }
-
-                else if (shader_stage == ShaderResourceStage::Fragment)
-                {
-                    shader_module_desc.stage = ShaderStage::Fragment;
-                }
-
-                else
-                {
-                    MAG_ASSERT(false, "Unhandled shader stage");
-                }
+                shader_module_desc.stage = convert_resource_shader_stage(shader_stage);
 
                 graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
             }
 
-            const ShaderHandle handle = create_handle();
-            state->shaders[handle] = state->device->create_graphics_pipeline(graphics_pipeline_desc);
+            state->shaders[handle].pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
 
             return handle;
         }
 
+        void set_shader_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle, const u32 binding,
+                                const u32 array_element)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            const ShaderData& shader = state->shaders[shader_handle];
+            const unique<IBuffer>& buffer = state->buffers[buffer_handle];
+            DescriptorData& descriptor_data = current_frame.descriptor_set_map[shader_handle];
+
+            // If we change the buffer, we need to update the descriptor sets (for each frame)
+
+            if (descriptor_data.last_bound_buffer != buffer_handle)
+            {
+                descriptor_data.descriptor_set->update(buffer.get(), binding, array_element, DescriptorType::Uniform);
+                descriptor_data.last_bound_buffer = buffer_handle;
+            }
+
+            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
+        }
+
         void use_shader(const ShaderHandle& handle)
         {
-            u32& current_frame_idx = state->current_frame;
-            FrameData& current_frame = state->frames[current_frame_idx];
+            FrameData& current_frame = state->frames[state->current_frame];
 
-            current_frame.command_buffer->bind_pipeline(state->shaders[handle].get());
+            current_frame.command_buffer->bind_pipeline(state->shaders[handle].pipeline.get());
         }
 
         void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
         {
-            u32& current_frame_idx = state->current_frame;
-            FrameData& current_frame = state->frames[current_frame_idx];
+            FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
         }
