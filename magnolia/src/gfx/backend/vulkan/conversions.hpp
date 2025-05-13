@@ -364,6 +364,10 @@ namespace mag
                 case TextureLayout::TransferDst:
                     return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                     break;
+
+                case TextureLayout::ShaderReadOnly:
+                    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    break;
             }
         }
 
@@ -389,6 +393,10 @@ namespace mag
 
                 case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
                     return TextureLayout::TransferDst;
+                    break;
+
+                case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                    return TextureLayout::ShaderReadOnly;
                     break;
 
                 default:
@@ -507,6 +515,129 @@ namespace mag
 
                 case TextureViewType::TextureCubeArray:
                     return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+                    break;
+            }
+        }
+
+        inline VkFilter mag_to_vk(const Filter filter)
+        {
+            switch (filter)
+            {
+                case Filter::Nearest:
+                    return VK_FILTER_NEAREST;
+                    break;
+
+                case Filter::Linear:
+                    return VK_FILTER_LINEAR;
+                    break;
+            }
+        }
+
+        inline Filter vk_to_mag(const VkFilter filter)
+        {
+            switch (filter)
+            {
+                case VK_FILTER_NEAREST:
+                    return Filter::Nearest;
+                    break;
+
+                case VK_FILTER_LINEAR:
+                    return Filter::Linear;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled filter type");
+                    return Filter::Linear;
+                    break;
+            }
+        }
+
+        inline VkSamplerMipmapMode mag_to_vk(const SamplerMipMapMode mip_map_mode)
+        {
+            switch (mip_map_mode)
+            {
+                case SamplerMipMapMode::Nearest:
+                    return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                    break;
+
+                case SamplerMipMapMode::Linear:
+                    return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                    break;
+            }
+        }
+
+        inline SamplerMipMapMode vk_to_mag(const VkSamplerMipmapMode mip_map_mode)
+        {
+            switch (mip_map_mode)
+            {
+                case VK_SAMPLER_MIPMAP_MODE_NEAREST:
+                    return SamplerMipMapMode::Nearest;
+                    break;
+
+                case VK_SAMPLER_MIPMAP_MODE_LINEAR:
+                    return SamplerMipMapMode::Linear;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled mipmap mode");
+                    return SamplerMipMapMode::Linear;
+                    break;
+            }
+        }
+
+        inline VkSamplerAddressMode mag_to_vk(const SamplerAddressMode address_mode)
+        {
+            switch (address_mode)
+            {
+                case SamplerAddressMode::Repeat:
+                    return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                    break;
+
+                case SamplerAddressMode::MirroredRepeat:
+                    return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+                    break;
+
+                case SamplerAddressMode::ClampToEdge:
+                    return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                    break;
+
+                case SamplerAddressMode::ClampToBorder:
+                    return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+                    break;
+
+                case SamplerAddressMode::MirrorClampToEdge:
+                    return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+                    break;
+            }
+        }
+
+        inline SamplerAddressMode vk_to_mag(const VkSamplerAddressMode address_mode)
+        {
+            switch (address_mode)
+            {
+                case VK_SAMPLER_ADDRESS_MODE_REPEAT:
+                    return SamplerAddressMode::Repeat;
+                    break;
+
+                case VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT:
+                    return SamplerAddressMode::MirroredRepeat;
+                    break;
+
+                case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE:
+                    return SamplerAddressMode::ClampToEdge;
+                    break;
+
+                case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER:
+                    return SamplerAddressMode::ClampToBorder;
+                    break;
+
+                case VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE:
+                    return SamplerAddressMode::MirrorClampToEdge;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled address mode");
+                    return SamplerAddressMode::Repeat;
                     break;
             }
         }
@@ -685,6 +816,10 @@ namespace mag
             {
                 vk_access |= VK_ACCESS_MEMORY_WRITE_BIT;
             }
+            if (IS_BIT_SET(mask, AccessMask::ShaderRead))
+            {
+                vk_access |= VK_ACCESS_SHADER_READ_BIT;
+            }
 
             return vk_access;
         }
@@ -716,6 +851,10 @@ namespace mag
             if (IS_BIT_SET(mask, VK_ACCESS_MEMORY_WRITE_BIT))
             {
                 mag_access |= AccessMask::MemoryWrite;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_SHADER_READ_BIT))
+            {
+                mag_access |= AccessMask::ShaderRead;
             }
 
             return mag_access;
@@ -805,6 +944,10 @@ namespace mag
             {
                 vk_stage |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
+            if (IS_BIT_SET(stage, PipelineStage::FragmentShader))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            }
             if (IS_BIT_SET(stage, PipelineStage::AllCommands))
             {
                 vk_stage |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
@@ -832,6 +975,10 @@ namespace mag
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_TRANSFER_BIT))
             {
                 mag_stage |= PipelineStage::Transfer;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT))
+            {
+                mag_stage |= PipelineStage::FragmentShader;
             }
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT))
             {

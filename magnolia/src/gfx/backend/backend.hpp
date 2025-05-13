@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "core/types.hpp"
 #include "math/types.hpp"
 
@@ -74,7 +76,8 @@ namespace mag
             ColorAttachment,
             Present,
             TransferSrc,
-            TransferDst
+            TransferDst,
+            ShaderReadOnly
         };
 
         enum class TextureAspect
@@ -83,6 +86,27 @@ namespace mag
             Color = 1 << 0,
             Depth = 1 << 1,
             Stencil = 1 << 2
+        };
+
+        enum class Filter
+        {
+            Nearest,
+            Linear
+        };
+
+        enum class SamplerMipMapMode
+        {
+            Nearest,
+            Linear
+        };
+
+        enum class SamplerAddressMode
+        {
+            Repeat,
+            MirroredRepeat,
+            ClampToEdge,
+            ClampToBorder,
+            MirrorClampToEdge
         };
 
         enum class SampleCount
@@ -101,7 +125,8 @@ namespace mag
             TransferRead = 1 << 1,
             TransferWrite = 1 << 2,
             MemoryRead = 1 << 3,
-            MemoryWrite = 1 << 4
+            MemoryWrite = 1 << 4,
+            ShaderRead = 1 << 5
         };
 
         enum class PipelineStage
@@ -110,7 +135,8 @@ namespace mag
             ColorAttachmentOutput = 1 << 1,
             BottomOfPipe = 1 << 2,
             Transfer = 1 << 3,
-            AllCommands = 1 << 4
+            FragmentShader = 1 << 4,
+            AllCommands = 1 << 5
         };
 
         enum class PrimitiveTopology
@@ -217,19 +243,18 @@ namespace mag
         struct IRenderPassDesc
         {
                 math::uvec2 extent;
-                math::ivec2 offset = {0.0f, 0.0f};
+                math::ivec2 offset = {0, 0};
                 std::vector<IRenderingAttachment*> color_attachments;
         };
 
         struct ITextureDesc
         {
-                math::uvec3 extent = {1.0f, 1.0f, 1.0f};
+                math::uvec3 extent = {1, 1, 1};
                 Format format = Format::B8G8R8A8_SRGB;
                 TextureType type = TextureType::Texture2D;
                 TextureViewType view_type = TextureViewType::Texture2D;
                 TextureAspect aspect = TextureAspect::Color;
                 TextureUsage usage = TextureUsage::ColorAttachment;
-                TextureLayout layout = TextureLayout::Undefined;
                 u32 mip_levels = 1;
                 u32 array_layers = 1;
                 SampleCount sample_count = SampleCount::e1;
@@ -272,6 +297,26 @@ namespace mag
                 const IDescriptorPool* descriptor_pool = nullptr;
                 const IDescriptorSetLayout* descriptor_layout = nullptr;
                 u32 max_descriptor_count;
+        };
+
+        struct ISamplerDesc
+        {
+                Filter min_filter = Filter::Linear;
+                Filter mag_filter = Filter::Linear;
+                SamplerMipMapMode mipmap_mode = SamplerMipMapMode::Linear;
+                SamplerAddressMode address_mode_u = SamplerAddressMode::Repeat;
+                SamplerAddressMode address_mode_v = SamplerAddressMode::Repeat;
+                SamplerAddressMode address_mode_w = SamplerAddressMode::Repeat;
+                f32 min_lod = 0.0f;
+                f32 max_lod = 0.0f;
+                b8 anisotropy_enable = false;
+                f32 max_anisotropy = 0.0f;
+        };
+
+        class ISampler
+        {
+            public:
+                virtual ~ISampler() = default;
         };
 
         class IBuffer
@@ -333,6 +378,8 @@ namespace mag
             public:
                 virtual ~ITexture() = default;
 
+                virtual void set_data(const void* data, const u64 size) = 0;
+
                 virtual const math::uvec3& get_extent() const = 0;
 
                 virtual Format get_format() const = 0;
@@ -393,6 +440,9 @@ namespace mag
 
                 virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
                                     const DescriptorType descriptor_type, const u64 offset = 0) = 0;
+
+                virtual void update(const ITexture* const texture, const ISampler* const sampler, const u32 binding,
+                                    const u32 array_element, const DescriptorType descriptor_type) = 0;
         };
 
         class IGraphicsPipeline
@@ -405,6 +455,8 @@ namespace mag
         {
             public:
                 virtual ~ICommandPool() = default;
+
+                virtual void reset() = 0;
         };
 
         class ICommandBuffer
@@ -440,6 +492,8 @@ namespace mag
                                               const PipelineStage dst_stage_mask) = 0;
 
                 virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) = 0;
+
+                virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) = 0;
         };
 
         class IQueue
@@ -459,6 +513,8 @@ namespace mag
                 virtual ~IDevice() = default;
 
                 virtual void wait_idle() = 0;
+
+                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) = 0;
 
                 virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) = 0;
 
@@ -488,6 +544,8 @@ namespace mag
                     const IDescriptorSetLayoutDesc& desc) = 0;
 
                 virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) = 0;
+
+                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) = 0;
         };
 
         unique<IDevice> create_device();

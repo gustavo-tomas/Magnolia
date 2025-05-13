@@ -3,7 +3,9 @@
 #include <core/application.hpp>
 #include <core/entry_point.hpp>
 #include <core/event.hpp>
+#include <gfx/gfx.hpp>
 #include <project/project.hpp>
+#include <resources/image.hpp>
 #include <resources/resource_loader.hpp>
 #include <resources/shader.hpp>
 #include <scene/scene.hpp>
@@ -13,6 +15,10 @@ mag::Application *mag::create_application() { return new game::TestGame("test_ga
 
 namespace game
 {
+    // @TODO: temp
+    static mag::Image image;
+    static mag::gfx::TextureHandle tex_handle;
+
     TestGame::TestGame(const str &config_file_path) : Application(config_file_path)
     {
         // Load the project
@@ -45,6 +51,9 @@ namespace game
         }
 
         scene->on_start();
+
+        MAG_ASSERT(mag::resource::load("magnolia/assets/test_texture.bmp", &image), "Failed to load image");
+        tex_handle = mag::gfx::create_texture(image.width, image.height, image.pixels.size(), image.pixels.data());
     }
 
     TestGame::~TestGame() = default;
@@ -89,7 +98,8 @@ namespace game
 
         mag::gfx::use_shader(shader_handle);
 
-        mag::gfx::set_shader_uniform(shader_handle, buf_handle);
+        mag::gfx::set_shader_buffer_uniform(shader_handle, buf_handle, 0);
+        mag::gfx::set_shader_texture_uniform(shader_handle, tex_handle, 1);
 
         mag::gfx::draw(3);
 

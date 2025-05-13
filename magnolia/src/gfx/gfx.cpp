@@ -18,12 +18,19 @@ namespace mag
         {
                 unique<IDescriptorSet> descriptor_set;
                 BufferHandle last_bound_buffer = Invalid_ID;
+                TextureHandle last_bound_texture = Invalid_ID;
         };
 
         struct ShaderData
         {
                 unique<IGraphicsPipeline> pipeline;
                 unique<IDescriptorSetLayout> descriptor_layout;
+        };
+
+        struct TextureData
+        {
+                unique<ITexture> texture;
+                unique<ISampler> sampler;
         };
 
         struct FrameData
@@ -47,6 +54,7 @@ namespace mag
                 std::vector<FrameData> frames;
                 std::map<ShaderHandle, ShaderData> shaders;
                 std::map<BufferHandle, unique<IBuffer>> buffers;
+                std::map<TextureHandle, TextureData> textures;
                 u32 current_frame = 0;
         };
 
@@ -100,11 +108,16 @@ namespace mag
                 IDescriptorPoolDesc descriptor_pool_desc = {};
                 descriptor_pool_desc.max_sets = 1024;
 
-                IDescriptorPoolSizeDesc size_descs = {};
-                size_descs.type = DescriptorType::Uniform;
-                size_descs.size = 64;
+                IDescriptorPoolSizeDesc size_desc_uniform = {};
+                size_desc_uniform.type = DescriptorType::Uniform;
+                size_desc_uniform.size = 64;
 
-                descriptor_pool_desc.size_descs.push_back(size_descs);
+                IDescriptorPoolSizeDesc size_desc_combined_sampler = {};
+                size_desc_combined_sampler.type = DescriptorType::CombinedImageSampler;
+                size_desc_combined_sampler.size = 64;
+
+                descriptor_pool_desc.size_descs.push_back(size_desc_uniform);
+                descriptor_pool_desc.size_descs.push_back(size_desc_combined_sampler);
 
                 state->frames[i].descriptor_pool = state->device->create_descriptor_pool(descriptor_pool_desc);
             }
@@ -237,6 +250,34 @@ namespace mag
             state->buffers[buffer_handle]->set_data(data, size);
         }
 
+        TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels)
+        {
+            const TextureHandle handle = create_handle();
+
+            ITextureDesc texture_desc = {};
+            texture_desc.extent = math::uvec3(width, height, 1);
+            texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::Sampled | TextureUsage::TransferDst;
+
+            ISamplerDesc sampler_desc = {};
+            sampler_desc.min_lod = 0.0f;
+            sampler_desc.max_lod = texture_desc.mip_levels;
+
+            state->textures[handle].sampler = state->device->create_sampler(sampler_desc);
+            state->textures[handle].texture = state->device->create_texture(texture_desc);
+
+            if (size && pixels)
+            {
+                set_texture_data(handle, size, pixels);
+            }
+
+            return handle;
+        }
+
+        void set_texture_data(const TextureHandle texture_handle, const u64 size, const void* data)
+        {
+            state->textures[texture_handle].texture->set_data(data, size);
+        }
+
         ShaderHandle create_shader(const ShaderResource& shader)
         {
             // Descriptors
@@ -247,15 +288,24 @@ namespace mag
             // Descriptor set layout
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
-            IDescriptorSetLayoutBindingDesc binding_desc = {};
-            binding_desc.binding = 0;
-            binding_desc.descriptor_count = 1;
-            binding_desc.descriptor_type = DescriptorType::Uniform;
+            IDescriptorSetLayoutBindingDesc binding_desc0 = {};
+            binding_desc0.binding = 0;
+            binding_desc0.descriptor_count = 1;
+            binding_desc0.descriptor_type = DescriptorType::Uniform;
 
             // @TODO: this is hardcoded to make my life easier
-            binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
+            binding_desc0.stages = ShaderStage::Vertex | ShaderStage::Fragment;
 
-            descriptor_layout_desc.binding_descs.push_back(binding_desc);
+            IDescriptorSetLayoutBindingDesc binding_desc1 = {};
+            binding_desc1.binding = 1;
+            binding_desc1.descriptor_count = 1;
+            binding_desc1.descriptor_type = DescriptorType::CombinedImageSampler;
+
+            // @TODO: this is hardcoded to make my life easier
+            binding_desc1.stages = ShaderStage::Vertex | ShaderStage::Fragment;
+
+            descriptor_layout_desc.binding_descs.push_back(binding_desc0);
+            descriptor_layout_desc.binding_descs.push_back(binding_desc1);
 
             state->shaders[handle].descriptor_layout =
                 state->device->create_descriptor_set_layout(descriptor_layout_desc);
@@ -297,8 +347,8 @@ namespace mag
             return handle;
         }
 
-        void set_shader_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle, const u32 binding,
-                                const u32 array_element)
+        void set_shader_buffer_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle,
+                                       const u32 binding, const u32 array_element)
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
@@ -312,6 +362,28 @@ namespace mag
             {
                 descriptor_data.descriptor_set->update(buffer.get(), binding, array_element, DescriptorType::Uniform);
                 descriptor_data.last_bound_buffer = buffer_handle;
+            }
+
+            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
+        }
+
+        void set_shader_texture_uniform(const ShaderHandle shader_handle, const TextureHandle texture_handle,
+                                        const u32 binding, const u32 array_element)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            const ShaderData& shader = state->shaders[shader_handle];
+            const unique<ITexture>& texture = state->textures[texture_handle].texture;
+            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+            DescriptorData& descriptor_data = current_frame.descriptor_set_map[shader_handle];
+
+            // If we change the texture, we need to update the descriptor sets (for each frame)
+
+            if (descriptor_data.last_bound_texture != texture_handle)
+            {
+                descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding, array_element,
+                                                       DescriptorType::CombinedImageSampler);
+                descriptor_data.last_bound_texture = texture_handle;
             }
 
             current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());

@@ -152,19 +152,50 @@ namespace mag
                 void* mapped_region = nullptr;
         };
 
+        class VulkanSampler : public ISampler
+        {
+            public:
+                VulkanSampler(const ISamplerDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
+                {
+                    VkSamplerCreateInfo sampler_info = {};
+                    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                    sampler_info.minFilter = mag_to_vk(desc.min_filter);
+                    sampler_info.magFilter = mag_to_vk(desc.mag_filter);
+                    sampler_info.mipmapMode = mag_to_vk(desc.mipmap_mode);
+                    sampler_info.addressModeU = mag_to_vk(desc.address_mode_u);
+                    sampler_info.addressModeV = mag_to_vk(desc.address_mode_v);
+                    sampler_info.addressModeW = mag_to_vk(desc.address_mode_w);
+                    sampler_info.minLod = desc.min_lod;
+                    sampler_info.maxLod = desc.max_lod;
+                    sampler_info.anisotropyEnable = desc.anisotropy_enable;
+                    sampler_info.maxAnisotropy = desc.max_anisotropy;
+
+                    disp.createSampler(&sampler_info, nullptr, &sampler);
+                }
+
+                ~VulkanSampler() { disp.destroySampler(sampler, nullptr); }
+
+                const VkSampler& get_sampler() const { return sampler; }
+
+            private:
+                const vkb::DispatchTable& disp;
+                VkSampler sampler;
+        };
+
         class VulkanTexture : public ITexture
         {
             public:
-                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const ITextureDesc& desc)
+                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, IDevice* device,
+                              const ITextureDesc& desc)
                     : disp(disp),
                       allocator(allocator),
+                      device(device),
                       extent(desc.extent),
                       format(desc.format),
                       type(desc.type),
                       view_type(desc.view_type),
                       aspect(desc.aspect),
                       usage(desc.usage),
-                      layout(desc.layout),
                       mip_levels(desc.mip_levels),
                       array_layers(desc.array_layers),
                       sample_count(desc.sample_count)
@@ -223,6 +254,35 @@ namespace mag
                     }
                 }
 
+                virtual void set_data(const void* data, const u64 size) override
+                {
+                    IBufferDesc staging_buffer_desc = {};
+                    staging_buffer_desc.buffer_usage = BufferUsage::TransferSrc;
+                    staging_buffer_desc.memory_usage = MemoryUsage::Auto;
+                    staging_buffer_desc.size_bytes = size;
+
+                    unique<IBuffer> staging_buffer = device->create_buffer(staging_buffer_desc);
+                    staging_buffer->set_data(data, size);
+
+                    // @TODO: use KTX to generate mip maps: https://www.khronos.org/ktx/
+
+                    device->submit_commands_immediate(
+                        [&](ICommandBuffer& cmd)
+                        {
+                            // Transition image layout to transfer dst
+                            cmd.pipeline_barrier(this, TextureLayout::TransferDst, AccessMask::None,
+                                                 AccessMask::TransferWrite, PipelineStage::TopOfPipe,
+                                                 PipelineStage::Transfer);
+
+                            cmd.copy_buffer_to_texture(staging_buffer.get(), this);
+
+                            // Transition image layout to shader read only
+                            cmd.pipeline_barrier(this, TextureLayout::ShaderReadOnly, AccessMask::TransferWrite,
+                                                 AccessMask::ShaderRead, PipelineStage::Transfer,
+                                                 PipelineStage::FragmentShader);
+                        });
+                }
+
                 virtual const math::uvec3& get_extent() const override { return extent; }
 
                 virtual Format get_format() const override { return format; }
@@ -252,6 +312,7 @@ namespace mag
             private:
                 const vkb::DispatchTable& disp;
                 const VmaAllocator& allocator;
+                IDevice* device = nullptr;
                 VkImage image = {};
                 VkImageView image_view = {};
                 VmaAllocation allocation = nullptr;
@@ -399,7 +460,7 @@ namespace mag
                     : disp(disp)
                 {
                     std::vector<VkDescriptorSetLayoutBinding> bindings;
-                    std::vector<VkDescriptorBindingFlagsEXT> flags;
+                    std::vector<VkDescriptorBindingFlags> flags;
 
                     for (const IDescriptorSetLayoutBindingDesc& binding_desc : desc.binding_descs)
                     {
@@ -409,10 +470,16 @@ namespace mag
                         binding.descriptorCount = binding_desc.descriptor_count;
                         binding.stageFlags = mag_to_vk(binding_desc.stages);
 
+                        VkDescriptorBindingFlags binding_flags =
+                            VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                        if (binding_desc.binding > 0)
+                        {
+                            binding_flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                        }
+
                         bindings.push_back(binding);
-                        flags.push_back(VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
-                                        VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-                                        VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT);
+                        flags.push_back(binding_flags);
                     }
 
                     VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
@@ -487,6 +554,30 @@ namespace mag
                     write.descriptorType = mag_to_vk(descriptor_type);
                     write.descriptorCount = 1;
                     write.pBufferInfo = &buffer_info;
+
+                    descriptor_writes.push_back(write);
+
+                    disp.updateDescriptorSets(descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+                }
+
+                virtual void update(const ITexture* const texture, const ISampler* const sampler, const u32 binding,
+                                    const u32 array_element, const DescriptorType descriptor_type) override
+                {
+                    std::vector<VkWriteDescriptorSet> descriptor_writes;
+
+                    VkDescriptorImageInfo image_info = {};
+                    image_info.imageLayout = mag_to_vk(texture->get_layout());
+                    image_info.imageView = ((VulkanTexture*)texture)->get_image_view();
+                    image_info.sampler = ((VulkanSampler*)sampler)->get_sampler();
+
+                    VkWriteDescriptorSet write = {};
+                    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    write.dstSet = descriptor_set;
+                    write.dstBinding = binding;
+                    write.dstArrayElement = array_element;
+                    write.descriptorType = mag_to_vk(descriptor_type);
+                    write.descriptorCount = 1;
+                    write.pImageInfo = &image_info;
 
                     descriptor_writes.push_back(write);
 
@@ -773,6 +864,8 @@ namespace mag
 
                 ~VulkanCommandPool() { disp.destroyCommandPool(pool, nullptr); }
 
+                virtual void reset() override { disp.resetCommandPool(pool, 0); }
+
                 const VkCommandPool& get_pool() const { return pool; }
 
             private:
@@ -885,8 +978,9 @@ namespace mag
                         .layerCount = 1,
                     };
 
-                    disp.cmdPipelineBarrier(command_buffer, mag_to_vk(src_stage_mask), mag_to_vk(dst_stage_mask), 0, 0,
-                                            nullptr, 0, nullptr, 1, &image_memory_barrier);
+                    disp.cmdPipelineBarrier(command_buffer, mag_to_vk(src_stage_mask), mag_to_vk(dst_stage_mask),
+                                            VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
+                                            &image_memory_barrier);
 
                     ((VulkanTexture*)texture)->set_new_layout(mag_to_vk(new_layout));
                 }
@@ -920,6 +1014,24 @@ namespace mag
                                       vk_dst->get_image(), mag_to_vk(vk_dst->get_layout()), 1, &image_copy);
                 }
 
+                virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) override
+                {
+                    VulkanBuffer* vk_buffer = (VulkanBuffer*)buffer;
+                    VulkanTexture* vk_texture = (VulkanTexture*)texture;
+
+                    VkBufferImageCopy buffer_image_copy = {};
+                    buffer_image_copy.bufferImageHeight = texture->get_extent().y;
+                    buffer_image_copy.bufferRowLength = texture->get_extent().x;
+                    buffer_image_copy.imageExtent = mag_to_vk(texture->get_extent());
+                    buffer_image_copy.imageSubresource.aspectMask = mag_to_vk(texture->get_aspect());
+                    buffer_image_copy.imageSubresource.baseArrayLayer = 0;
+                    buffer_image_copy.imageSubresource.layerCount = texture->get_array_layers();
+                    buffer_image_copy.imageSubresource.mipLevel = 0;
+
+                    disp.cmdCopyBufferToImage(command_buffer, vk_buffer->get_buffer(), vk_texture->get_image(),
+                                              mag_to_vk(vk_texture->get_layout()), 1, &buffer_image_copy);
+                }
+
                 const VkCommandBuffer& get_command_buffer() const { return command_buffer; }
 
             private:
@@ -950,15 +1062,25 @@ namespace mag
                     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
                     VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-                    submit_info.waitSemaphoreCount = 1;
-                    submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
                     submit_info.pWaitDstStageMask = wait_stages;
 
-                    submit_info.commandBufferCount = 1;
-                    submit_info.pCommandBuffers = &((VulkanCommandBuffer*)command_buffer)->get_command_buffer();
+                    if (wait_semaphore)
+                    {
+                        submit_info.waitSemaphoreCount = 1;
+                        submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    }
 
-                    submit_info.signalSemaphoreCount = 1;
-                    submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
+                    if (signal_semaphore)
+                    {
+                        submit_info.signalSemaphoreCount = 1;
+                        submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
+                    }
+
+                    if (command_buffer)
+                    {
+                        submit_info.commandBufferCount = 1;
+                        submit_info.pCommandBuffers = &((VulkanCommandBuffer*)command_buffer)->get_command_buffer();
+                    }
 
                     fence->reset();
 
@@ -1065,11 +1187,34 @@ namespace mag
 
                     VK_CHECK(vmaCreateAllocator(&allocator_create_info, &allocator),
                              "Failed to create memory allocator");
+
+                    // Immediate submission resources
+
+                    ICommandPoolDesc command_pool_desc = {};
+                    command_pool_desc.queue_type = QueueType::Graphics;
+                    immediate_command_pool = this->create_command_pool(command_pool_desc);
+
+                    ICommandBufferDesc command_buffer_desc = {};
+                    command_buffer_desc.command_buffer_level = CommandBufferLevel::Primary;
+                    command_buffer_desc.command_pool = immediate_command_pool.get();
+                    immediate_command_buffer = this->create_command_buffer(command_buffer_desc);
+
+                    IQueueDesc queue_desc = {};
+                    queue_desc.queue_type = QueueType::Graphics;
+                    immediate_queue = this->create_queue(queue_desc);
+
+                    IFenceDesc fence_desc = {};
+                    immediate_fence = this->create_fence(fence_desc);
                 }
 
                 ~VulkanDevice()
                 {
                     disp.deviceWaitIdle();
+
+                    immediate_fence.reset();
+                    immediate_queue.reset();
+                    immediate_command_buffer.reset();
+                    immediate_command_pool.reset();
 
                     vmaDestroyAllocator(allocator);
 
@@ -1079,6 +1224,21 @@ namespace mag
                 }
 
                 virtual void wait_idle() override { disp.deviceWaitIdle(); }
+
+                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) override
+                {
+                    const unique<ICommandBuffer>& cmd = immediate_command_buffer;
+
+                    cmd->begin_recording();
+                    function(*cmd);  // execute the function
+                    cmd->end_recording();
+
+                    immediate_queue->submit(nullptr, nullptr, immediate_fence.get(), immediate_command_buffer.get());
+                    immediate_fence->wait();
+
+                    immediate_fence->reset();
+                    immediate_command_pool->reset();
+                }
 
                 virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) override
                 {
@@ -1128,7 +1288,7 @@ namespace mag
 
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) override
                 {
-                    return create_unique<VulkanTexture>(disp, allocator, desc);
+                    return create_unique<VulkanTexture>(disp, allocator, this, desc);
                 }
 
                 virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) override
@@ -1152,6 +1312,11 @@ namespace mag
                     return create_unique<VulkanDescriptorSet>(desc, disp);
                 }
 
+                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) override
+                {
+                    return create_unique<VulkanSampler>(desc, disp);
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;
@@ -1159,6 +1324,11 @@ namespace mag
                 vkb::DispatchTable disp;
                 VkSurfaceKHR surface;
                 VmaAllocator allocator;
+
+                unique<ICommandBuffer> immediate_command_buffer;
+                unique<ICommandPool> immediate_command_pool;
+                unique<IQueue> immediate_queue;
+                unique<IFence> immediate_fence;
         };
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
