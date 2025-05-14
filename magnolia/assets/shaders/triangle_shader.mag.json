@@ -1,8 +1,9 @@
 {
     "Name": "Triangle",
+    "File": "triangle.glsl",
     "Stages": [
         "Vertex",
         "Fragment"
     ],
-    "File": "triangle.glsl"
+    "Topology": "TriangleList"
 }

@@ -21,6 +21,9 @@ namespace mag
             {"Vertex", {.extension = ".vert", .stage = ShaderResourceStage::Vertex}},
             {"Fragment", {.extension = ".frag", .stage = ShaderResourceStage::Fragment}}};
 
+        static const std::map<str, Topology> topology_map = {{"TriangleList", Topology::TriangleList},
+                                                             {"TriangleStrip", Topology::TriangleStrip}};
+
         b8 load(const str& file_path, ShaderResource* shader)
         {
             fs::json data;
@@ -31,15 +34,34 @@ namespace mag
                 return false;
             }
 
-            if (!data.contains("Name") || !data.contains("Stages") || !data.contains("File"))
+            b8 incomplete = false;
+            std::vector<str> mandatory_params = {"Name", "Stages", "File", "Topology"};
+            for (const str& param : mandatory_params)
             {
-                LOG_ERROR("Shader file '{0}' has incomplete fields", file_path);
+                if (!data.contains(param))
+                {
+                    LOG_ERROR("Shader file '{0}' has incomplete fields. Missing: '{1}' field", file_path, param);
+                    incomplete = true;
+                }
+            }
+
+            if (incomplete)
+            {
                 return false;
             }
 
             const str name = data["Name"];
             const str glsl_file_path = data["File"];
             const std::vector<str> stages = data["Stages"].get<std::vector<str>>();
+            const str topology = data["Topology"];
+
+            if (!topology_map.contains(topology))
+            {
+                LOG_ERROR("Invalid topology: {0}", topology);
+                return false;
+            }
+
+            shader->topology = topology_map.at(topology);
 
             for (const str& stage : stages)
             {

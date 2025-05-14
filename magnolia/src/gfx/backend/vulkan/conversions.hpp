@@ -251,6 +251,10 @@ namespace mag
                 case PrimitiveTopology::TriangleList:
                     return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
                     break;
+
+                case PrimitiveTopology::TriangleStrip:
+                    return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+                    break;
             }
         }
 
@@ -260,6 +264,10 @@ namespace mag
             {
                 case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
                     return PrimitiveTopology::TriangleList;
+                    break;
+
+                case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+                    return PrimitiveTopology::TriangleStrip;
                     break;
 
                 default:

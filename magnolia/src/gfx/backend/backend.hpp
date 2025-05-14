@@ -141,7 +141,8 @@ namespace mag
 
         enum class PrimitiveTopology
         {
-            TriangleList
+            TriangleList,
+            TriangleStrip
         };
 
         enum class CommandBufferLevel

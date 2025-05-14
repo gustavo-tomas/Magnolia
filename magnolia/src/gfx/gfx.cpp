@@ -208,19 +208,13 @@ namespace mag
             current_frame_idx = (current_frame_idx + 1) % MAX_FRAMES_IN_FLIGHT;
         }
 
-        static gfx::ShaderStage convert_resource_shader_stage(const ShaderResourceStage shader_stage)
-        {
-            switch (shader_stage)
-            {
-                case ShaderResourceStage::Vertex:
-                    return gfx::ShaderStage::Vertex;
-                    break;
+        static const std::map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
+            {ShaderResourceStage::Vertex, gfx::ShaderStage::Vertex},
+            {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment}};
 
-                case ShaderResourceStage::Fragment:
-                    return gfx::ShaderStage::Fragment;
-                    break;
-            }
-        }
+        static const std::map<Topology, gfx::PrimitiveTopology> convert_topology = {
+            {Topology::TriangleList, gfx::PrimitiveTopology::TriangleList},
+            {Topology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip}};
 
         static u32 create_handle()
         {
@@ -328,7 +322,7 @@ namespace mag
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
-            graphics_pipeline_desc.primitive_topology = PrimitiveTopology::TriangleList;
+            graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
             graphics_pipeline_desc.format = state->swapchain->get_format();
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
@@ -337,7 +331,7 @@ namespace mag
             {
                 IShaderModuleDesc shader_module_desc = {};
                 shader_module_desc.code = code;
-                shader_module_desc.stage = convert_resource_shader_stage(shader_stage);
+                shader_module_desc.stage = convert_resource_shader_stage.at(shader_stage);
 
                 graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
             }
