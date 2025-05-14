@@ -12,6 +12,7 @@
     #include "VkBootstrap.h"
     #include "VkBootstrapDispatch.h"
     #include "core/assert.hpp"
+    #include "core/debug.hpp"
     #include "core/window.hpp"
     #include "gfx/backend/vulkan/conversions.hpp"
 
@@ -1127,14 +1128,41 @@ namespace mag
                     // Device
                     // -------------------------------------------------------------------------------------------------
                     vkb::InstanceBuilder instance_builder;
-                    const auto instance_ret = instance_builder
+                    const auto instance_ret =
+                        instance_builder
 
     #if MAG_CONFIG_DEBUG
-                                                  .use_default_debug_messenger()
-                                                  .request_validation_layers()
+                            .set_debug_callback(
+                                [](VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+                                   VkDebugUtilsMessageTypeFlagsEXT message_type,
+                                   const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+                                   void* user_data) -> VkBool32
+                                {
+                                    (void)message_type;
+                                    (void)user_data;
+
+                                    if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+                                    {
+                                        LOG_WARNING("{0}\n", callback_data->pMessage);
+                                    }
+
+                                    else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+                                    {
+                                        LOG_ERROR("{0}\n", callback_data->pMessage);
+                                        DEBUG_BREAK();
+                                    }
+
+                                    else
+                                    {
+                                        LOG_INFO("{0}\n", callback_data->pMessage);
+                                    }
+
+                                    return VK_FALSE;
+                                })
+                            .request_validation_layers()
     #endif
-                                                  .require_api_version(1, 3, 0)
-                                                  .build();
+                            .require_api_version(1, 3, 0)
+                            .build();
 
                     MAG_ASSERT(instance_ret, instance_ret.error().message());
 
