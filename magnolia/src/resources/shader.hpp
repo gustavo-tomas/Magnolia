@@ -14,19 +14,44 @@ namespace mag
         Fragment
     };
 
-    enum class Topology
+    enum class ShaderResourceTopology
     {
         TriangleList,
         TriangleStrip
+    };
+
+    enum class ShaderResourceDescriptorType
+    {
+        Uniform,
+        Storage,
+        CombinedImageSampler
+    };
+
+    struct ShaderResourceBindingData
+    {
+            u32 binding;
+            u32 count;
+            ShaderResourceDescriptorType descriptor_type;
+    };
+
+    struct ShaderResourceDescriptorData
+    {
+            u32 set;
+            std::vector<ShaderResourceBindingData> bindings;
+    };
+
+    struct ShaderResourceModuleData
+    {
+            std::vector<ShaderResourceDescriptorData> descriptors;
+            std::vector<u8> code;
     };
 
     struct ShaderResource : public IResource
     {
             str name = "";
             str glsl_file_path = "";
-            Topology topology;
-
-            std::map<ShaderResourceStage, std::vector<u8>> stages;
+            ShaderResourceTopology topology;
+            std::map<ShaderResourceStage, ShaderResourceModuleData> stages;
     };
 
     namespace resource

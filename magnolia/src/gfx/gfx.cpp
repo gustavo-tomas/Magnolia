@@ -212,9 +212,14 @@ namespace mag
             {ShaderResourceStage::Vertex, gfx::ShaderStage::Vertex},
             {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment}};
 
-        static const std::map<Topology, gfx::PrimitiveTopology> convert_topology = {
-            {Topology::TriangleList, gfx::PrimitiveTopology::TriangleList},
-            {Topology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip}};
+        static const std::map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
+            {ShaderResourceTopology::TriangleList, gfx::PrimitiveTopology::TriangleList},
+            {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip}};
+
+        static const std::map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
+            {ShaderResourceDescriptorType::Uniform, gfx::DescriptorType::Uniform},
+            {ShaderResourceDescriptorType::Storage, gfx::DescriptorType::Storage},
+            {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler}};
 
         static u32 create_handle()
         {
@@ -282,24 +287,23 @@ namespace mag
             // Descriptor set layout
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
-            IDescriptorSetLayoutBindingDesc binding_desc0 = {};
-            binding_desc0.binding = 0;
-            binding_desc0.descriptor_count = 1;
-            binding_desc0.descriptor_type = DescriptorType::Uniform;
-
             // @TODO: this is hardcoded to make my life easier
-            binding_desc0.stages = ShaderStage::Vertex | ShaderStage::Fragment;
+            for (const ShaderResourceDescriptorData& descriptor :
+                 shader.stages.at(ShaderResourceStage::Vertex).descriptors)
+            {
+                for (const ShaderResourceBindingData& binding : descriptor.bindings)
+                {
+                    IDescriptorSetLayoutBindingDesc binding_desc = {};
+                    binding_desc.binding = binding.binding;
+                    binding_desc.descriptor_count = binding.count;
+                    binding_desc.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
 
-            IDescriptorSetLayoutBindingDesc binding_desc1 = {};
-            binding_desc1.binding = 1;
-            binding_desc1.descriptor_count = 1;
-            binding_desc1.descriptor_type = DescriptorType::CombinedImageSampler;
+                    // @TODO: this is hardcoded to make my life easier
+                    binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
 
-            // @TODO: this is hardcoded to make my life easier
-            binding_desc1.stages = ShaderStage::Vertex | ShaderStage::Fragment;
-
-            descriptor_layout_desc.binding_descs.push_back(binding_desc0);
-            descriptor_layout_desc.binding_descs.push_back(binding_desc1);
+                    descriptor_layout_desc.binding_descs.push_back(binding_desc);
+                }
+            }
 
             state->shaders[handle].descriptor_layout =
                 state->device->create_descriptor_set_layout(descriptor_layout_desc);
@@ -327,10 +331,10 @@ namespace mag
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
 
-            for (const auto& [shader_stage, code] : shader.stages)
+            for (const auto& [shader_stage, shader_data] : shader.stages)
             {
                 IShaderModuleDesc shader_module_desc = {};
-                shader_module_desc.code = code;
+                shader_module_desc.code = shader_data.code;
                 shader_module_desc.stage = convert_resource_shader_stage.at(shader_stage);
 
                 graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
