@@ -132,10 +132,10 @@ namespace mag
 
                 virtual void unmap() override { vmaUnmapMemory(allocator, allocation); }
 
-                virtual void set_data(const void* data, const u64 size, const u64 offset = 0) override
+                virtual void set_data(const void* data, const u64 data_size, const u64 offset = 0) override
                 {
-                    MAG_ASSERT(offset + size <= size, "Size limit exceeded");
-                    memcpy(static_cast<c8*>(mapped_region) + offset, data, size);
+                    MAG_ASSERT(offset + data_size <= size, "Size limit exceeded");
+                    memcpy(static_cast<c8*>(mapped_region) + offset, data, data_size);
                 }
 
                 virtual u64 get_size() const override { return size; }
@@ -474,7 +474,7 @@ namespace mag
                         VkDescriptorBindingFlags binding_flags =
                             VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
 
-                        if (binding_desc.binding > 0)
+                        if (binding_desc.descriptor_count > 1)
                         {
                             binding_flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
                         }
@@ -518,7 +518,7 @@ namespace mag
                     VkDescriptorSetLayout descriptor_layout =
                         ((VulkanDescriptorSetLayout*)desc.descriptor_layout)->get_layout();
 
-                    VkDescriptorSetVariableDescriptorCountAllocateInfoEXT variable_count_info = {};
+                    VkDescriptorSetVariableDescriptorCountAllocateInfo variable_count_info = {};
                     variable_count_info.sType =
                         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
                     variable_count_info.descriptorSetCount = 1;
@@ -668,7 +668,7 @@ namespace mag
                     rasterizer.rasterizerDiscardEnable = VK_FALSE;
                     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
                     rasterizer.lineWidth = 1.0f;
-                    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+                    rasterizer.cullMode = VK_CULL_MODE_NONE;
                     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
                     rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -1185,6 +1185,7 @@ namespace mag
                     descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = true;
                     descriptor_indexing_features.shaderStorageBufferArrayNonUniformIndexing = true;
                     descriptor_indexing_features.shaderUniformBufferArrayNonUniformIndexing = true;
+                    descriptor_indexing_features.runtimeDescriptorArray = true;
 
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
                     const auto phys_device_ret = phys_device_selector.set_minimum_version(1, 3)

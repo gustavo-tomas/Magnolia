@@ -289,6 +289,10 @@ namespace mag
                     return VK_FORMAT_B8G8R8A8_UNORM;
                     break;
 
+                case Format::R8G8B8A8_SRGB:
+                    return VK_FORMAT_R8G8B8A8_SRGB;
+                    break;
+
                 case Format::B8G8R8A8_SRGB:
                     return VK_FORMAT_B8G8R8A8_SRGB;
                     break;
@@ -321,6 +325,10 @@ namespace mag
 
                 case VK_FORMAT_B8G8R8A8_UNORM:
                     return Format::B8G8R8A8_UNORM;
+                    break;
+
+                case VK_FORMAT_R8G8B8A8_SRGB:
+                    return Format::R8G8B8A8_SRGB;
                     break;
 
                 case VK_FORMAT_B8G8R8A8_SRGB:
