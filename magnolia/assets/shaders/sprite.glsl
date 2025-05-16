@@ -2,9 +2,29 @@
 
 #version 460
 
-#include "sprite.include.glsl"
+#include "include/common.h"
+
+// Global buffer
+layout (set = 0, binding = 0) uniform GlobalBuffer
+{
+    // Camera
+    mat4 view;
+    mat4 projection;
+} u_global;
+
+// Instance buffer
+layout (std140, set = 0, binding = 1) readonly buffer InstanceBuffer
+{
+    SpriteData sprites[];
+} u_instance;
+
+// Textures
+layout (set = 0, binding = 2) uniform sampler2D u_sprite_textures[Max_Descriptor_Array_Size];
+
+#ifdef VERTEX_SHADER
 
 layout (location = 0) out vec2 out_tex_coords;
+layout (location = 1) out flat uint out_tex_idx;
 
 const vec2 sprite_quad[] = vec2[]
 (
@@ -18,6 +38,9 @@ const vec2 tex_coords[] = vec2[]
 
 void main()
 {
+	const mat4 VIEW_MATRIX = u_global.view;
+	const mat4 PROJ_MATRIX = u_global.projection;
+
 	SpriteData sprite = u_instance.sprites[gl_InstanceIndex];
 
 	vec2 sprite_size = sprite.size_const_face.xy;
@@ -55,4 +78,29 @@ void main()
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * model_matrix * vec4(position, 1.0);
 	out_tex_coords = tex_coords[gl_VertexIndex];
+	out_tex_idx = sprite.texture_idx;
 }
+
+#endif
+
+#ifdef FRAGMENT_SHADER
+
+layout (location = 0) in vec2 in_tex_coords;
+layout (location = 1) in flat uint in_tex_idx;
+
+layout (location = 0) out vec4 out_frag_color;
+
+void main()
+{
+	vec4 object_color = texture(u_sprite_textures[nonuniformEXT(in_tex_idx)], in_tex_coords);
+
+    out_frag_color = object_color;
+
+	// Discard transparent fragments
+    if (out_frag_color.a < 0.5)
+	{
+		discard;
+	}
+}
+
+#endif

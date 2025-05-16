@@ -1,25 +1,9 @@
 {
-    "Shader": "Sprite",
-    "Files": [
-        "sprite.vert",
-        "sprite.frag"
+    "Name": "Sprite",
+    "File": "sprite.glsl",
+    "Stages": [
+        "Vertex",
+        "Fragment"
     ],
-    "Pipeline": {
-        "InputAssembly": {
-            "Topology": "TriangleStrip"
-        },
-        "Rasterization": {
-            "PolygonMode": "Fill",
-            "CullMode": "Back"
-        },
-        "ColorBlend": {
-            "Enabled": false
-        },
-        "ColorWrite": {
-            "Enabled": true
-        },
-        "DepthWrite": {
-            "Enabled": true
-        }
-    }
+    "Topology": "TriangleStrip"
 }

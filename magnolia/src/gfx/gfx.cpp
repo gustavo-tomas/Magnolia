@@ -112,11 +112,16 @@ namespace mag
                 size_desc_uniform.type = DescriptorType::Uniform;
                 size_desc_uniform.size = 64;
 
+                IDescriptorPoolSizeDesc size_desc_storage = {};
+                size_desc_storage.type = DescriptorType::Storage;
+                size_desc_storage.size = 64;
+
                 IDescriptorPoolSizeDesc size_desc_combined_sampler = {};
                 size_desc_combined_sampler.type = DescriptorType::CombinedImageSampler;
                 size_desc_combined_sampler.size = 64;
 
                 descriptor_pool_desc.size_descs.push_back(size_desc_uniform);
+                descriptor_pool_desc.size_descs.push_back(size_desc_storage);
                 descriptor_pool_desc.size_descs.push_back(size_desc_combined_sampler);
 
                 state->frames[i].descriptor_pool = state->device->create_descriptor_pool(descriptor_pool_desc);
@@ -234,19 +239,23 @@ namespace mag
             const BufferHandle handle = create_handle();
 
             IBufferDesc buffer_desc = {};
-            buffer_desc.buffer_usage = BufferUsage::Uniform;
+            buffer_desc.buffer_usage = BufferUsage::Uniform | BufferUsage::Storage;
             buffer_desc.memory_usage = MemoryUsage::Auto;
             buffer_desc.size_bytes = size;
 
             state->buffers[handle] = state->device->create_buffer(buffer_desc);
-            state->buffers[handle]->set_data(data, size);
+
+            if (data)
+            {
+                state->buffers[handle]->set_data(data, size);
+            }
 
             return handle;
         }
 
-        void set_buffer_data(const BufferHandle buffer_handle, const u64 size, const void* data)
+        void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
         {
-            state->buffers[buffer_handle]->set_data(data, size);
+            state->buffers[buffer_handle]->set_data(data, size, offset);
         }
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels)
@@ -256,6 +265,7 @@ namespace mag
             ITextureDesc texture_desc = {};
             texture_desc.extent = math::uvec3(width, height, 1);
             texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::Sampled | TextureUsage::TransferDst;
+            texture_desc.format = Format::R8G8B8A8_SRGB;
 
             ISamplerDesc sampler_desc = {};
             sampler_desc.min_lod = 0.0f;
@@ -287,7 +297,10 @@ namespace mag
             // Descriptor set layout
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
-            // @TODO: this is hardcoded to make my life easier
+            u32 max_descriptor_count = 1;
+
+            // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
+            // the vertex and fragment shaders.
             for (const ShaderResourceDescriptorData& descriptor :
                  shader.stages.at(ShaderResourceStage::Vertex).descriptors)
             {
@@ -300,6 +313,8 @@ namespace mag
 
                     // @TODO: this is hardcoded to make my life easier
                     binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
+
+                    max_descriptor_count = math::max(max_descriptor_count, binding.count);
 
                     descriptor_layout_desc.binding_descs.push_back(binding_desc);
                 }
@@ -317,7 +332,7 @@ namespace mag
                 IDescriptorSetDesc descriptor_desc = {};
                 descriptor_desc.descriptor_layout = descriptor_layout.get();
                 descriptor_desc.descriptor_pool = state->frames[i].descriptor_pool.get();
-                descriptor_desc.max_descriptor_count = 1;
+                descriptor_desc.max_descriptor_count = max_descriptor_count;
 
                 state->frames[i].descriptor_set_map[handle].descriptor_set =
                     state->device->create_descriptor_set(descriptor_desc);
@@ -358,7 +373,18 @@ namespace mag
 
             if (descriptor_data.last_bound_buffer != buffer_handle)
             {
-                descriptor_data.descriptor_set->update(buffer.get(), binding, array_element, DescriptorType::Uniform);
+                // @TODO: temporary
+                if (binding > 0)
+                {
+                    descriptor_data.descriptor_set->update(buffer.get(), binding, array_element,
+                                                           DescriptorType::Storage);
+                }
+
+                else
+                {
+                    descriptor_data.descriptor_set->update(buffer.get(), binding, array_element,
+                                                           DescriptorType::Uniform);
+                }
                 descriptor_data.last_bound_buffer = buffer_handle;
             }
 

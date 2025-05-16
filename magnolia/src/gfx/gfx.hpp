@@ -19,8 +19,8 @@ namespace mag
         void begin_frame();
         void end_frame();
 
-        BufferHandle create_buffer(const u64 size, const void* data);
-        void set_buffer_data(const BufferHandle buffer_handle, const u64 size, const void* data);
+        BufferHandle create_buffer(const u64 size, const void* data = nullptr);
+        void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset = 0);
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size = 0,
                                      const void* pixels = nullptr);

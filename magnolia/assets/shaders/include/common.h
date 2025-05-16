@@ -9,21 +9,20 @@ using namespace mag::math;
 
 #else
 
-    #define f32 float
-    #define alignas(x)
-
 // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
+    #extension GL_EXT_nonuniform_qualifier : require
 
-// Macros
-    #define MODEL_MATRIX u_instance.models[gl_InstanceIndex].model
-    #define PROJ_MATRIX u_global.projection
-    #define VIEW_MATRIX u_global.view
-    #define NEAR_FAR u_global.near_far
+    #define f32 float
+    #define u32 uint
+    #define alignas(x)
 
 // Constants
 const float PI = 3.1415926535;
 
 #endif
+
+// Including unbounded arrays
+const u32 Max_Descriptor_Array_Size = 1000;
 
 // Types shared by c++ and glsl
 
@@ -43,6 +42,7 @@ struct alignas(16) SpriteData
 {
         mat4 model;            // 64 bytes
         vec4 size_const_face;  // Size + Constant Size + Always Face Camera
+        u32 texture_idx;
 };
 
 struct alignas(16) TextData
