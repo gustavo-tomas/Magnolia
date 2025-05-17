@@ -635,8 +635,37 @@ namespace mag
 
                     VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
                     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-                    vertex_input_info.vertexBindingDescriptionCount = 0;
-                    vertex_input_info.vertexAttributeDescriptionCount = 0;
+                    vertex_input_info.vertexAttributeDescriptionCount = desc.vertex_attribute_descs.size();
+                    vertex_input_info.vertexBindingDescriptionCount = desc.vertex_binding_descs.size();
+
+                    std::vector<VkVertexInputAttributeDescription> vertex_attribute_infos;
+                    std::vector<VkVertexInputBindingDescription> vertex_binding_infos;
+
+                    for (const IVertexAttributeDesc& vertex_attribute_desc : desc.vertex_attribute_descs)
+                    {
+                        VkVertexInputAttributeDescription vertex_attribute_info = {};
+
+                        vertex_attribute_info.format = mag_to_vk(vertex_attribute_desc.format);
+                        vertex_attribute_info.binding = vertex_attribute_desc.binding;
+                        vertex_attribute_info.location = vertex_attribute_desc.location;
+                        vertex_attribute_info.offset = vertex_attribute_desc.offset;
+
+                        vertex_attribute_infos.push_back(vertex_attribute_info);
+                    }
+
+                    for (const IVertexBindingDesc& vertex_binding_desc : desc.vertex_binding_descs)
+                    {
+                        VkVertexInputBindingDescription vertex_binding_info = {};
+
+                        vertex_binding_info.inputRate = mag_to_vk(vertex_binding_desc.input_rate);
+                        vertex_binding_info.binding = vertex_binding_desc.binding;
+                        vertex_binding_info.stride = vertex_binding_desc.stride;
+
+                        vertex_binding_infos.push_back(vertex_binding_info);
+                    }
+
+                    vertex_input_info.pVertexAttributeDescriptions = vertex_attribute_infos.data();
+                    vertex_input_info.pVertexBindingDescriptions = vertex_binding_infos.data();
 
                     VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
                     input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -711,7 +740,7 @@ namespace mag
                     dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
                     dynamic_info.pDynamicStates = dynamic_states.data();
 
-                    VkFormat swapchain_format = mag_to_vk(desc.format);
+                    VkFormat swapchain_format = mag_to_vk(desc.color_attachment_format);
 
                     VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
                     pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;

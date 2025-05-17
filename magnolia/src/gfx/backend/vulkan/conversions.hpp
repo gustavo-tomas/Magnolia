@@ -277,10 +277,47 @@ namespace mag
             }
         }
 
+        inline VkVertexInputRate mag_to_vk(const VertexInputRate input_rate)
+        {
+            switch (input_rate)
+            {
+                case VertexInputRate::Vertex:
+                    return VK_VERTEX_INPUT_RATE_VERTEX;
+                    break;
+
+                case VertexInputRate::Instance:
+                    return VK_VERTEX_INPUT_RATE_INSTANCE;
+                    break;
+            }
+        }
+
+        inline VertexInputRate mag_to_vk(const VkVertexInputRate input_rate)
+        {
+            switch (input_rate)
+            {
+                case VK_VERTEX_INPUT_RATE_VERTEX:
+                    return VertexInputRate::Vertex;
+                    break;
+
+                case VK_VERTEX_INPUT_RATE_INSTANCE:
+                    return VertexInputRate::Instance;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled vertex input rate");
+                    return VertexInputRate::Vertex;
+                    break;
+            }
+        }
+
         inline VkFormat mag_to_vk(const Format format)
         {
             switch (format)
             {
+                case Format::Undefined:
+                    return VK_FORMAT_UNDEFINED;
+                    break;
+
                 case Format::R8G8B8A8_UNORM:
                     return VK_FORMAT_R8G8B8A8_UNORM;
                     break;
@@ -299,6 +336,18 @@ namespace mag
 
                 case Format::R16G16B16A16_SFLOAT:
                     return VK_FORMAT_R16G16B16A16_SFLOAT;
+                    break;
+
+                case Format::R32_UINT:
+                    return VK_FORMAT_R32_UINT;
+                    break;
+
+                case Format::R32G32_SFLOAT:
+                    return VK_FORMAT_R32G32_SFLOAT;
+                    break;
+
+                case Format::R32G32B32_SFLOAT:
+                    return VK_FORMAT_R32G32B32_SFLOAT;
                     break;
 
                 case Format::R32G32B32A32_SFLOAT:

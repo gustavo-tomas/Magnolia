@@ -33,11 +33,15 @@ namespace mag
 
         enum class Format
         {
+            Undefined,
             R8G8B8A8_UNORM,
             B8G8R8A8_UNORM,
             R8G8B8A8_SRGB,
             B8G8R8A8_SRGB,
             R16G16B16A16_SFLOAT,
+            R32_UINT,
+            R32G32_SFLOAT,
+            R32G32B32_SFLOAT,
             R32G32B32A32_SFLOAT,
             D32_SFLOAT,
             D24_UNORM_S8_UINT
@@ -188,6 +192,12 @@ namespace mag
             CombinedImageSampler
         };
 
+        enum class VertexInputRate
+        {
+            Vertex,
+            Instance
+        };
+
         struct IShaderModuleDesc
         {
                 ShaderStage stage;
@@ -213,12 +223,29 @@ namespace mag
                 QueueType queue_type;
         };
 
+        struct IVertexAttributeDesc
+        {
+                Format format;
+                u32 binding;
+                u32 location;
+                u32 offset;
+        };
+
+        struct IVertexBindingDesc
+        {
+                u32 binding;
+                u32 stride;
+                VertexInputRate input_rate;
+        };
+
         struct IGraphicsPipelineDesc
         {
                 PrimitiveTopology primitive_topology;
                 std::vector<IShaderModuleDesc> shader_modules;
                 std::vector<const IDescriptorSetLayout*> descriptor_layouts;
-                Format format;
+                std::vector<IVertexAttributeDesc> vertex_attribute_descs;
+                std::vector<IVertexBindingDesc> vertex_binding_descs;
+                Format color_attachment_format;
                 math::uvec2 extent;
         };
 

@@ -20,6 +20,15 @@ namespace mag
         TriangleStrip
     };
 
+    enum class ShaderResourceFormat
+    {
+        Undefined,
+        R32_UINT,
+        R32G32_SFLOAT,
+        R32G32B32_SFLOAT,
+        R32G32B32A32_SFLOAT
+    };
+
     enum class ShaderResourceDescriptorType
     {
         Uniform,
@@ -46,11 +55,20 @@ namespace mag
             std::vector<u8> code;
     };
 
+    struct ShaderResourceVertexInputData
+    {
+            ShaderResourceFormat format;
+            u32 location;
+            u32 size;
+            u32 offset;
+    };
+
     struct ShaderResource : public IResource
     {
             str name = "";
             str glsl_file_path = "";
             ShaderResourceTopology topology;
+            std::vector<ShaderResourceVertexInputData> vertex_inputs;
             std::map<ShaderResourceStage, ShaderResourceModuleData> stages;
     };
 

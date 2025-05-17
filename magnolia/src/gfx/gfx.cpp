@@ -215,16 +215,27 @@ namespace mag
 
         static const std::map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
             {ShaderResourceStage::Vertex, gfx::ShaderStage::Vertex},
-            {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment}};
+            {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment},
+        };
 
         static const std::map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
             {ShaderResourceTopology::TriangleList, gfx::PrimitiveTopology::TriangleList},
-            {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip}};
+            {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip},
+        };
 
         static const std::map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
             {ShaderResourceDescriptorType::Uniform, gfx::DescriptorType::Uniform},
             {ShaderResourceDescriptorType::Storage, gfx::DescriptorType::Storage},
-            {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler}};
+            {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler},
+        };
+
+        static const std::map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
+            {ShaderResourceFormat::Undefined, gfx::Format::Undefined},
+            {ShaderResourceFormat::R32_UINT, gfx::Format::R32_UINT},
+            {ShaderResourceFormat::R32G32_SFLOAT, gfx::Format::R32G32_SFLOAT},
+            {ShaderResourceFormat::R32G32B32_SFLOAT, gfx::Format::R32G32B32_SFLOAT},
+            {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
+        };
 
         static u32 create_handle()
         {
@@ -342,9 +353,33 @@ namespace mag
             // -------------------------------------------------------------------------------------------------
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
             graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
-            graphics_pipeline_desc.format = state->swapchain->get_format();
+            graphics_pipeline_desc.color_attachment_format = state->swapchain->get_format();
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
+
+            u32 stride = 0;
+            for (const ShaderResourceVertexInputData& vertex_input : shader.vertex_inputs)
+            {
+                IVertexAttributeDesc vertex_attribute_desc = {};
+                vertex_attribute_desc.binding = 0;
+                vertex_attribute_desc.format = convert_resource_format.at(vertex_input.format);
+                vertex_attribute_desc.location = vertex_input.location;
+                vertex_attribute_desc.offset = vertex_input.offset;
+
+                graphics_pipeline_desc.vertex_attribute_descs.push_back(vertex_attribute_desc);
+
+                stride += vertex_input.size;
+            }
+
+            if (!shader.vertex_inputs.empty())
+            {
+                IVertexBindingDesc vertex_binding_desc = {};
+                vertex_binding_desc.binding = 0;
+                vertex_binding_desc.input_rate = VertexInputRate::Vertex;
+                vertex_binding_desc.stride = stride;
+
+                graphics_pipeline_desc.vertex_binding_descs.push_back(vertex_binding_desc);
+            }
 
             for (const auto& [shader_stage, shader_data] : shader.stages)
             {

@@ -20,16 +20,27 @@ namespace mag
 
         static const std::map<str, ShaderStageData> shader_stage_map = {
             {"Vertex", {.extension = ".vert", .stage = ShaderResourceStage::Vertex}},
-            {"Fragment", {.extension = ".frag", .stage = ShaderResourceStage::Fragment}}};
+            {"Fragment", {.extension = ".frag", .stage = ShaderResourceStage::Fragment}},
+        };
 
         static const std::map<str, ShaderResourceTopology> topology_map = {
             {"TriangleList", ShaderResourceTopology::TriangleList},
-            {"TriangleStrip", ShaderResourceTopology::TriangleStrip}};
+            {"TriangleStrip", ShaderResourceTopology::TriangleStrip},
+        };
 
         static const std::map<SpvReflectDescriptorType, ShaderResourceDescriptorType> descriptor_type_map = {
             {SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ShaderResourceDescriptorType::Uniform},
             {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, ShaderResourceDescriptorType::Storage},
-            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler}};
+            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
+        };
+
+        static const std::map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
+            {SPV_REFLECT_FORMAT_UNDEFINED, ShaderResourceFormat::Undefined},
+            {SPV_REFLECT_FORMAT_R32_UINT, ShaderResourceFormat::R32_UINT},
+            {SPV_REFLECT_FORMAT_R32G32_SFLOAT, ShaderResourceFormat::R32G32_SFLOAT},
+            {SPV_REFLECT_FORMAT_R32G32B32_SFLOAT, ShaderResourceFormat::R32G32B32_SFLOAT},
+            {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},
+        };
 
         b8 load(const str& file_path, ShaderResource* shader)
         {
@@ -100,6 +111,7 @@ namespace mag
                     return false;
                 }
 
+                // Descriptor sets
                 for (u32 i = 0; i < spv_module.descriptor_set_count; i++)
                 {
                     const SpvReflectDescriptorSet spv_descriptor_set = spv_module.descriptor_sets[i];
@@ -120,6 +132,41 @@ namespace mag
                     }
 
                     shader->stages[shader_stage].descriptors.push_back(descriptor);
+                }
+
+                // Vertex input attributes
+                if (shader_stage == ShaderResourceStage::Vertex)
+                {
+                    // Add vertex attributes sorted by location
+                    std::map<u32, const SpvReflectInterfaceVariable*> sorted_input_variables;
+                    for (u32 i = 0; i < spv_module.input_variable_count; i++)
+                    {
+                        const SpvReflectInterfaceVariable* const variable = spv_module.input_variables[i];
+
+                        // Filter built-in variables
+                        if (variable->location < Max_U32)
+                        {
+                            sorted_input_variables[variable->location] = variable;
+                        }
+                    }
+
+                    u32 offset = 0;
+                    for (const auto& [location, variable] : sorted_input_variables)
+                    {
+                        u32 size = variable->numeric.scalar.width / 8;
+                        size *=
+                            variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
+
+                        ShaderResourceVertexInputData vertex_input = {};
+                        vertex_input.format = format_type_map.at(variable->format);
+                        vertex_input.offset = offset;
+                        vertex_input.location = location;
+                        vertex_input.size = size;
+
+                        shader->vertex_inputs.push_back(vertex_input);
+
+                        offset += size;
+                    }
                 }
             }
 
