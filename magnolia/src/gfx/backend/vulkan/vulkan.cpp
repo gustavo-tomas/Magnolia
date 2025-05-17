@@ -982,10 +982,39 @@ namespace mag
                                                &((VulkanDescriptorSet*)descriptor)->get_descriptor_set(), 0, nullptr);
                 }
 
+                virtual void bind_vertex_buffers(const u32 first_binding, const u32 binding_count,
+                                                 const std::vector<IBuffer*>& buffers,
+                                                 const std::vector<u64>& offsets) override
+                {
+                    std::vector<VkBuffer> vk_buffers;
+                    for (const IBuffer* buffer : buffers)
+                    {
+                        vk_buffers.push_back(((VulkanBuffer*)buffer)->get_buffer());
+                    }
+
+                    disp.cmdBindVertexBuffers(command_buffer, first_binding, binding_count, vk_buffers.data(),
+                                              offsets.data());
+                }
+
+                virtual void bind_index_buffer(const IBuffer* buffer, const u64 offset) override
+                {
+                    const VkBuffer vk_buffer = ((VulkanBuffer*)buffer)->get_buffer();
+
+                    disp.cmdBindIndexBuffer(command_buffer, vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+                }
+
                 virtual void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
                                   const u32 first_instance) override
                 {
                     disp.cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
+                }
+
+                virtual void draw_indexed(const u32 index_count, const u32 instance_count = 1,
+                                          const u32 first_index = 0, const i32 vertex_offset = 0,
+                                          const u32 first_instance = 0) override
+                {
+                    disp.cmdDrawIndexed(command_buffer, index_count, instance_count, first_index, vertex_offset,
+                                        first_instance);
                 }
 
                 virtual void pipeline_barrier(const ITexture* texture, const TextureLayout new_layout,

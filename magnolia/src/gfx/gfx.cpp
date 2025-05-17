@@ -250,7 +250,8 @@ namespace mag
             const BufferHandle handle = create_handle();
 
             IBufferDesc buffer_desc = {};
-            buffer_desc.buffer_usage = BufferUsage::Uniform | BufferUsage::Storage;
+            buffer_desc.buffer_usage =
+                BufferUsage::Uniform | BufferUsage::Storage | BufferUsage::Vertex | BufferUsage::Index;
             buffer_desc.memory_usage = MemoryUsage::Auto;
             buffer_desc.size_bytes = size;
 
@@ -455,11 +456,34 @@ namespace mag
             current_frame.command_buffer->bind_pipeline(state->shaders[handle].pipeline.get());
         }
 
+        void bind_vertex_buffer(const BufferHandle buffer_handle)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            current_frame.command_buffer->bind_vertex_buffers(0, 1, {state->buffers[buffer_handle].get()}, {0});
+        }
+
+        void bind_index_buffer(const BufferHandle buffer_handle)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            current_frame.command_buffer->bind_index_buffer(state->buffers[buffer_handle].get(), 0);
+        }
+
         void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
+        }
+
+        void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                          const i32 vertex_offset, const u32 first_instance)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            current_frame.command_buffer->draw_indexed(index_count, instance_count, first_index, vertex_offset,
+                                                       first_instance);
         }
     };  // namespace gfx
 };      // namespace mag

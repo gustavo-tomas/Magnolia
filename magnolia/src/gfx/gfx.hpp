@@ -33,7 +33,13 @@ namespace mag
         void set_shader_texture_uniform(const ShaderHandle shader_handle, const TextureHandle texture_handle,
                                         const u32 binding = 0, const u32 array_element = 0);
 
+        void bind_vertex_buffer(const BufferHandle buffer_handle);
+        void bind_index_buffer(const BufferHandle buffer_handle);
+
         void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
                   const u32 first_instance = 0);
+
+        void draw_indexed(const u32 index_count, const u32 instance_count = 1, const u32 first_index = 0,
+                          const i32 vertex_offset = 0, const u32 first_instance = 0);
     };  // namespace gfx
 };      // namespace mag
