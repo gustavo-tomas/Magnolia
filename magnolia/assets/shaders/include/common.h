@@ -26,9 +26,10 @@ const u32 Max_Descriptor_Array_Size = 1000;
 
 // Types shared by c++ and glsl
 
-struct alignas(16) ModelData
+struct alignas(16) MeshData
 {
-        mat4 model;  // 64 bytes (16 x 4)
+        mat4 model;        // 64 bytes (16 x 4)
+        u32 material_idx;  // 4 bytes
 };
 
 struct alignas(16) LightData
@@ -53,7 +54,11 @@ struct alignas(16) TextData
 
 struct alignas(16) MaterialData
 {
-        vec4 albedo;    // 16 bytes
-        f32 roughness;  // 4 bytes
-        f32 metallic;   // 4 bytes
+        vec4 albedo;            // 16 bytes
+        f32 roughness;          // 4 bytes
+        f32 metallic;           // 4 bytes
+        u32 albedo_tex_idx;     // 4 bytes
+        u32 normal_tex_idx;     // 4 bytes
+        u32 roughness_tex_idx;  // 4 bytes
+        u32 metalness_tex_idx;  // 4 bytes
 };
