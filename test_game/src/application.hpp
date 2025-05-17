@@ -15,8 +15,12 @@ namespace game
             virtual void on_update(const f32 dt) override;
             virtual void on_event(const mag::Event& e) override;
 
+            void render_sprites();
+            void render_models();
+
         private:
             unique<mag::Scene> scene = nullptr;
-            mag::gfx::ShaderHandle shader_handle;
+            mag::gfx::ShaderHandle sprite_shader;
+            mag::gfx::ShaderHandle mesh_shader;
     };
 };  // namespace game
