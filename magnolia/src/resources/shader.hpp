@@ -41,6 +41,7 @@ namespace mag
             u32 binding;
             u32 count;
             ShaderResourceDescriptorType descriptor_type;
+            str name;
     };
 
     struct ShaderResourceDescriptorData

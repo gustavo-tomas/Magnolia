@@ -14,9 +14,15 @@ namespace mag
         // @TODO: temporary
 #define MAX_FRAMES_IN_FLIGHT 3
 
+        struct BindingData
+        {
+                str name;
+        };
+
         struct DescriptorData
         {
                 unique<IDescriptorSet> descriptor_set;
+                std::map<u32, BindingData> bindings_map;
                 BufferHandle last_bound_buffer = Invalid_ID;
                 TextureHandle last_bound_texture = Invalid_ID;
         };
@@ -310,6 +316,7 @@ namespace mag
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
             u32 max_descriptor_count = 1;
+            std::map<u32, BindingData> bindings_map;
 
             // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
             // the vertex and fragment shaders.
@@ -329,6 +336,11 @@ namespace mag
                     max_descriptor_count = math::max(max_descriptor_count, binding.count);
 
                     descriptor_layout_desc.binding_descs.push_back(binding_desc);
+
+                    BindingData binding_data = {};
+                    binding_data.name = binding.name;
+
+                    bindings_map[binding.binding] = binding_data;
                 }
             }
 
@@ -348,6 +360,9 @@ namespace mag
 
                 state->frames[i].descriptor_set_map[handle].descriptor_set =
                     state->device->create_descriptor_set(descriptor_desc);
+
+                // @TODO: this causes a bit of unecessary data duplication but its good enough for now
+                state->frames[i].descriptor_set_map[handle].bindings_map = bindings_map;
             }
 
             // Graphics Pipeline

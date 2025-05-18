@@ -126,6 +126,7 @@ namespace mag
                         ShaderResourceBindingData binding = {};
                         binding.binding = spv_binding->binding;
                         binding.count = spv_binding->count;
+                        binding.name = spv_binding->name;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
 
                         descriptor.bindings.push_back(binding);
