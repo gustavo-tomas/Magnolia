@@ -14,11 +14,14 @@ namespace mag
         // @TODO: temporary
 #define MAX_FRAMES_IN_FLIGHT 3
 
+        typedef u32 BufferHandle;
+
         struct BindingData
         {
                 u32 binding = 0;
                 u64 block_size = 0;
                 u64 max_size = 0;
+                DescriptorType descriptor_type;
                 BufferHandle buffer_handle = Invalid_ID;
         };
 
@@ -255,26 +258,19 @@ namespace mag
             return handle_counter++;
         }
 
-        static void set_shader_buffer_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle,
-                                              const u32 binding = 0, const u32 array_element = 0);
-
         static void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size,
                                     const u64 offset = 0);
 
         static void set_texture_data(const TextureHandle texture_handle, const u64 size, const void* data);
 
-        static void set_shader_texture_uniform(const ShaderHandle shader_handle, const TextureHandle texture_handle,
-                                               const u32 binding, const u32 array_element);
-
-        BufferHandle create_buffer(const u64 size, const void* data)
+        static BufferHandle create_buffer(const u64 size, const void* data, const BufferUsage usage)
         {
             const BufferHandle handle = create_handle();
 
             IBufferDesc buffer_desc = {};
-            buffer_desc.buffer_usage =
-                BufferUsage::Uniform | BufferUsage::Storage | BufferUsage::Vertex | BufferUsage::Index;
-            buffer_desc.memory_usage = MemoryUsage::Auto;
             buffer_desc.size_bytes = size;
+            buffer_desc.buffer_usage = usage;
+            buffer_desc.memory_usage = MemoryUsage::Auto;
 
             state->buffers[handle] = state->device->create_buffer(buffer_desc);
 
@@ -286,6 +282,16 @@ namespace mag
             return handle;
         }
 
+        VertexBufferHandle create_vertex_buffer(const u64 size, const void* data)
+        {
+            return create_buffer(size, data, BufferUsage::Vertex);
+        }
+
+        IndexBufferHandle create_index_buffer(const u64 size, const void* data)
+        {
+            return create_buffer(size, data, BufferUsage::Index);
+        }
+
         void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
         {
             state->buffers[buffer_handle]->set_data(data, size, offset);
@@ -295,27 +301,62 @@ namespace mag
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
-            std::map<str, BindingData>& bindings_map =
-                current_frame.descriptor_set_map[state->current_bound_shader].bindings_map;
+            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+
+            std::map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             BindingData& binding = bindings_map[uniform_name];
 
+            const ShaderData& shader = state->shaders[state->current_bound_shader];
             const BufferHandle buffer_handle = binding.buffer_handle;
+            const unique<IBuffer>& buffer = state->buffers[buffer_handle];
+
+            // Set the buffer data
 
             set_buffer_data(buffer_handle, data, binding.block_size, binding.block_size * array_element);
-            set_shader_buffer_uniform(state->current_bound_shader, buffer_handle, binding.binding, array_element);
+
+            // If we change the buffer, we need to update the descriptor sets (for each frame)
+
+            if (descriptor_data.last_bound_buffer != buffer_handle)
+            {
+                descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element,
+                                                       bindings_map[uniform_name].descriptor_type);
+
+                descriptor_data.last_bound_buffer = buffer_handle;
+            }
+
+            // Finally bind the descriptor
+
+            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
         }
 
         void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
-            std::map<str, BindingData>& bindings_map =
-                current_frame.descriptor_set_map[state->current_bound_shader].bindings_map;
+            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+
+            std::map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             BindingData& binding = bindings_map[uniform_name];
 
-            set_shader_texture_uniform(state->current_bound_shader, texture_handle, binding.binding, array_element);
+            const ShaderData& shader = state->shaders[state->current_bound_shader];
+            const unique<ITexture>& texture = state->textures[texture_handle].texture;
+            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+
+            // If we change the texture, we need to update the descriptor sets (for each frame)
+
+            if (descriptor_data.last_bound_texture != texture_handle)
+            {
+                descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
+                                                       DescriptorType::CombinedImageSampler);
+
+                descriptor_data.last_bound_texture = texture_handle;
+            }
+
+            // Finally bind the descriptor
+
+            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
         }
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels)
@@ -383,6 +424,7 @@ namespace mag
                     binding_data.binding = binding.binding;
                     binding_data.block_size = binding.block_size;
                     binding_data.max_size = binding.max_size;
+                    binding_data.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
 
                     bindings_map[binding.name] = binding_data;
                 }
@@ -409,9 +451,16 @@ namespace mag
 
                 for (auto& [binding_name, binding_data] : bindings_map)
                 {
-                    if (binding_data.max_size > 0)
+                    if (binding_data.descriptor_type == DescriptorType::Uniform)
                     {
-                        binding_data.buffer_handle = create_buffer(binding_data.max_size);
+                        binding_data.buffer_handle =
+                            create_buffer(binding_data.max_size, nullptr, BufferUsage::Uniform);
+                    }
+
+                    else if (binding_data.descriptor_type == DescriptorType::Storage)
+                    {
+                        binding_data.buffer_handle =
+                            create_buffer(binding_data.max_size, nullptr, BufferUsage::Storage);
                     }
                 }
 
@@ -465,59 +514,6 @@ namespace mag
             return handle;
         }
 
-        void set_shader_buffer_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle,
-                                       const u32 binding, const u32 array_element)
-        {
-            FrameData& current_frame = state->frames[state->current_frame];
-
-            const ShaderData& shader = state->shaders[shader_handle];
-            const unique<IBuffer>& buffer = state->buffers[buffer_handle];
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[shader_handle];
-
-            // If we change the buffer, we need to update the descriptor sets (for each frame)
-
-            if (descriptor_data.last_bound_buffer != buffer_handle)
-            {
-                // @TODO: temporary
-                if (binding > 0)
-                {
-                    descriptor_data.descriptor_set->update(buffer.get(), binding, array_element,
-                                                           DescriptorType::Storage);
-                }
-
-                else
-                {
-                    descriptor_data.descriptor_set->update(buffer.get(), binding, array_element,
-                                                           DescriptorType::Uniform);
-                }
-                descriptor_data.last_bound_buffer = buffer_handle;
-            }
-
-            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
-        }
-
-        void set_shader_texture_uniform(const ShaderHandle shader_handle, const TextureHandle texture_handle,
-                                        const u32 binding, const u32 array_element)
-        {
-            FrameData& current_frame = state->frames[state->current_frame];
-
-            const ShaderData& shader = state->shaders[shader_handle];
-            const unique<ITexture>& texture = state->textures[texture_handle].texture;
-            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[shader_handle];
-
-            // If we change the texture, we need to update the descriptor sets (for each frame)
-
-            if (descriptor_data.last_bound_texture != texture_handle)
-            {
-                descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding, array_element,
-                                                       DescriptorType::CombinedImageSampler);
-                descriptor_data.last_bound_texture = texture_handle;
-            }
-
-            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
-        }
-
         void use_shader(const ShaderHandle& handle)
         {
             FrameData& current_frame = state->frames[state->current_frame];
@@ -527,18 +523,18 @@ namespace mag
             state->current_bound_shader = handle;
         }
 
-        void bind_vertex_buffer(const BufferHandle buffer_handle)
+        void bind_vertex_buffer(const BufferHandle vertex_buffer_handle)
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
-            current_frame.command_buffer->bind_vertex_buffers(0, 1, {state->buffers[buffer_handle].get()}, {0});
+            current_frame.command_buffer->bind_vertex_buffers(0, 1, {state->buffers[vertex_buffer_handle].get()}, {0});
         }
 
-        void bind_index_buffer(const BufferHandle buffer_handle)
+        void bind_index_buffer(const BufferHandle index_buffer_handle)
         {
             FrameData& current_frame = state->frames[state->current_frame];
 
-            current_frame.command_buffer->bind_index_buffer(state->buffers[buffer_handle].get(), 0);
+            current_frame.command_buffer->bind_index_buffer(state->buffers[index_buffer_handle].get(), 0);
         }
 
         void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)

@@ -150,8 +150,8 @@ namespace game
         static std::map<str, Material> materials;
         static std::map<str, Image> textures;
         static std::map<str, mag::gfx::TextureHandle> texture_handles;
-        static std::map<str, mag::gfx::BufferHandle> vertex_buffer_handles;
-        static std::map<str, mag::gfx::BufferHandle> index_buffer_handles;
+        static std::map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
+        static std::map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -166,11 +166,11 @@ namespace game
             const str& model_name = model->name;
             if (!vertex_buffer_handles.contains(model_name))
             {
-                const mag::gfx::BufferHandle vertex_buffer =
-                    mag::gfx::create_buffer(VEC_SIZE_BYTES(model->vertices), model->vertices.data());
+                const mag::gfx::VertexBufferHandle vertex_buffer =
+                    mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(model->vertices), model->vertices.data());
 
-                const mag::gfx::BufferHandle index_buffer =
-                    mag::gfx::create_buffer(VEC_SIZE_BYTES(model->indices), model->indices.data());
+                const mag::gfx::IndexBufferHandle index_buffer =
+                    mag::gfx::create_index_buffer(VEC_SIZE_BYTES(model->indices), model->indices.data());
 
                 vertex_buffer_handles[model_name] = vertex_buffer;
                 index_buffer_handles[model_name] = index_buffer;
