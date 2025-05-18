@@ -8,6 +8,9 @@
 #include "resources/shader.hpp"
 #include "spirv_reflect.h"
 
+// @TODO: temp
+#include "../magnolia/assets/shaders/include/common.h"
+
 namespace mag
 {
     namespace resource
@@ -34,6 +37,11 @@ namespace mag
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
         };
 
+        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_size_map = {
+            {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Byte_Size},
+            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Descriptor_Array_Size},
+        };
+
         static const std::map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
             {SPV_REFLECT_FORMAT_UNDEFINED, ShaderResourceFormat::Undefined},
             {SPV_REFLECT_FORMAT_R32_UINT, ShaderResourceFormat::R32_UINT},
@@ -41,6 +49,11 @@ namespace mag
             {SPV_REFLECT_FORMAT_R32G32B32_SFLOAT, ShaderResourceFormat::R32G32B32_SFLOAT},
             {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},
         };
+
+        static u64 get_aligned_size(const u64 original_size, const u64 alignment)
+        {
+            return (original_size + alignment - 1) & ~(alignment - 1);
+        }
 
         b8 load(const str& file_path, ShaderResource* shader)
         {
@@ -126,7 +139,8 @@ namespace mag
                         u64 block_size = 0;
                         for (u32 k = 0; k < spv_binding->block.member_count; k++)
                         {
-                            block_size += spv_binding->block.members[k].size;
+                            // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
+                            block_size += get_aligned_size(spv_binding->block.members[k].size, 16);
                         }
 
                         ShaderResourceBindingData binding = {};
@@ -135,6 +149,18 @@ namespace mag
                         binding.block_size = block_size;
                         binding.name = spv_binding->name;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
+
+                        // Uniform buffer has a fixed size
+                        if (spv_binding->descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                        {
+                            binding.max_size = block_size;
+                        }
+
+                        // Arrays have other limits
+                        else
+                        {
+                            binding.max_size = descriptor_type_size_map.at(spv_binding->descriptor_type);
+                        }
 
                         descriptor.bindings.push_back(binding);
                     }

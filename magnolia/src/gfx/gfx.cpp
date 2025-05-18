@@ -16,13 +16,16 @@ namespace mag
 
         struct BindingData
         {
-                str name;
+                u32 binding = 0;
+                u64 block_size = 0;
+                u64 max_size = 0;
+                BufferHandle buffer_handle = Invalid_ID;
         };
 
         struct DescriptorData
         {
                 unique<IDescriptorSet> descriptor_set;
-                std::map<u32, BindingData> bindings_map;
+                std::map<str, BindingData> bindings_map;
                 BufferHandle last_bound_buffer = Invalid_ID;
                 TextureHandle last_bound_texture = Invalid_ID;
         };
@@ -62,6 +65,7 @@ namespace mag
                 std::map<BufferHandle, unique<IBuffer>> buffers;
                 std::map<TextureHandle, TextureData> textures;
                 u32 current_frame = 0;
+                ShaderHandle current_bound_shader = Invalid_ID;
         };
 
         static GfxState* state = nullptr;
@@ -251,6 +255,17 @@ namespace mag
             return handle_counter++;
         }
 
+        static void set_shader_buffer_uniform(const ShaderHandle shader_handle, const BufferHandle buffer_handle,
+                                              const u32 binding = 0, const u32 array_element = 0);
+
+        static void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size,
+                                    const u64 offset = 0);
+
+        static void set_texture_data(const TextureHandle texture_handle, const u64 size, const void* data);
+
+        static void set_shader_texture_uniform(const ShaderHandle shader_handle, const TextureHandle texture_handle,
+                                               const u32 binding, const u32 array_element);
+
         BufferHandle create_buffer(const u64 size, const void* data)
         {
             const BufferHandle handle = create_handle();
@@ -274,6 +289,33 @@ namespace mag
         void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
         {
             state->buffers[buffer_handle]->set_data(data, size, offset);
+        }
+
+        void set_uniform(const str& uniform_name, const void* data, const u32 array_element)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            std::map<str, BindingData>& bindings_map =
+                current_frame.descriptor_set_map[state->current_bound_shader].bindings_map;
+
+            BindingData& binding = bindings_map[uniform_name];
+
+            const BufferHandle buffer_handle = binding.buffer_handle;
+
+            set_buffer_data(buffer_handle, data, binding.block_size, binding.block_size * array_element);
+            set_shader_buffer_uniform(state->current_bound_shader, buffer_handle, binding.binding, array_element);
+        }
+
+        void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            std::map<str, BindingData>& bindings_map =
+                current_frame.descriptor_set_map[state->current_bound_shader].bindings_map;
+
+            BindingData& binding = bindings_map[uniform_name];
+
+            set_shader_texture_uniform(state->current_bound_shader, texture_handle, binding.binding, array_element);
         }
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels)
@@ -316,7 +358,7 @@ namespace mag
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
             u32 max_descriptor_count = 1;
-            std::map<u32, BindingData> bindings_map;
+            std::map<str, BindingData> bindings_map;
 
             // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
             // the vertex and fragment shaders.
@@ -338,9 +380,11 @@ namespace mag
                     descriptor_layout_desc.binding_descs.push_back(binding_desc);
 
                     BindingData binding_data = {};
-                    binding_data.name = binding.name;
+                    binding_data.binding = binding.binding;
+                    binding_data.block_size = binding.block_size;
+                    binding_data.max_size = binding.max_size;
 
-                    bindings_map[binding.binding] = binding_data;
+                    bindings_map[binding.name] = binding_data;
                 }
             }
 
@@ -360,6 +404,16 @@ namespace mag
 
                 state->frames[i].descriptor_set_map[handle].descriptor_set =
                     state->device->create_descriptor_set(descriptor_desc);
+
+                // Allocate memory for buffer uniforms
+
+                for (auto& [binding_name, binding_data] : bindings_map)
+                {
+                    if (binding_data.max_size > 0)
+                    {
+                        binding_data.buffer_handle = create_buffer(binding_data.max_size);
+                    }
+                }
 
                 // @TODO: this causes a bit of unecessary data duplication but its good enough for now
                 state->frames[i].descriptor_set_map[handle].bindings_map = bindings_map;
@@ -469,6 +523,8 @@ namespace mag
             FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->bind_pipeline(state->shaders[handle].pipeline.get());
+
+            state->current_bound_shader = handle;
         }
 
         void bind_vertex_buffer(const BufferHandle buffer_handle)

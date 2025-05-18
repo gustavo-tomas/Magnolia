@@ -127,20 +127,17 @@ namespace game
 
         // Global buffer
         {
-            struct GlobalBuffer
+            struct GlobalData
             {
                     mat4 view;
                     mat4 projection;
             };
 
-            static GlobalBuffer global_buffer = {};
+            static GlobalData global_data = {};
+            global_data.view = camera.get_view();
+            global_data.projection = camera.get_projection();
 
-            global_buffer.view = camera.get_view();
-            global_buffer.projection = camera.get_projection();
-
-            static mag::gfx::BufferHandle global_buffer_h = mag::gfx::create_buffer(sizeof(GlobalBuffer));
-            mag::gfx::set_buffer_data(global_buffer_h, &global_buffer, sizeof(GlobalBuffer));
-            mag::gfx::set_shader_buffer_uniform(mesh_shader, global_buffer_h, 0);
+            mag::gfx::set_uniform("u_global", &global_data);
         }
 
         u32 mesh_offset = 0;
@@ -184,9 +181,7 @@ namespace game
 
             for (auto& mesh : model->meshes)
             {
-                // Instance buffer
-                static mag::gfx::BufferHandle mesh_buffer_h = mag::gfx::create_buffer(sizeof(MeshData) * 1000);
-
+                // Instance
                 mesh_data.model = transform->get_transformation_matrix();
 
                 // Set the material. The meshes are sorted by material index (see model loader), so we draw all meshes
@@ -221,7 +216,7 @@ namespace game
                     const mag::Material& material = materials[material_name];
 
                     // @TODO: hardcoded material parameters
-                    static MaterialData material_data;
+                    static MaterialData material_data = {};
                     material_data.albedo = vec4(1, 1, 1, 1);
                     material_data.roughness = 1;
                     material_data.metallic = 1;
@@ -230,34 +225,28 @@ namespace game
                     material_data.roughness_tex_idx = texture_offset + 2;
                     material_data.metalness_tex_idx = texture_offset + 3;
 
-                    static mag::gfx::BufferHandle material_buffer_h =
-                        mag::gfx::create_buffer(sizeof(MaterialData) * 1000);
+                    mag::gfx::set_uniform("u_material", &material_data, material_offset);
 
-                    mag::gfx::set_buffer_data(material_buffer_h, &material_data, sizeof(MaterialData),
-                                              sizeof(MaterialData) * material_offset);
+                    mag::gfx::set_uniform("u_material_textures",
+                                          texture_handles[material.textures.at(TextureSlot::Albedo)], texture_offset);
 
-                    mag::gfx::set_shader_buffer_uniform(mesh_shader, material_buffer_h, 2, material_offset);
+                    mag::gfx::set_uniform("u_material_textures",
+                                          texture_handles[material.textures.at(TextureSlot::Normal)],
+                                          texture_offset + 1);
 
-                    mag::gfx::set_shader_texture_uniform(
-                        mesh_shader, texture_handles[material.textures.at(TextureSlot::Albedo)], 3, texture_offset);
+                    mag::gfx::set_uniform("u_material_textures",
+                                          texture_handles[material.textures.at(TextureSlot::Roughness)],
+                                          texture_offset + 2);  // ARM texture
 
-                    mag::gfx::set_shader_texture_uniform(
-                        mesh_shader, texture_handles[material.textures.at(TextureSlot::Normal)], 3, texture_offset + 1);
-
-                    mag::gfx::set_shader_texture_uniform(mesh_shader,
-                                                         texture_handles[material.textures.at(TextureSlot::Roughness)],
-                                                         3, texture_offset + 2);  // ARM texture
-
-                    mag::gfx::set_shader_texture_uniform(mesh_shader,
-                                                         texture_handles[material.textures.at(TextureSlot::Metalness)],
-                                                         3, texture_offset + 2);  // ARM texture
+                    mag::gfx::set_uniform("u_material_textures",
+                                          texture_handles[material.textures.at(TextureSlot::Metalness)],
+                                          texture_offset + 2);  // ARM texture
 
                     material_offset++;
                     texture_offset += 4;
                 }
 
-                mag::gfx::set_buffer_data(mesh_buffer_h, &mesh_data, sizeof(MeshData), sizeof(MeshData) * mesh_offset);
-                mag::gfx::set_shader_buffer_uniform(mesh_shader, mesh_buffer_h, 1);
+                mag::gfx::set_uniform("u_instance", &mesh_data, mesh_offset);
 
                 // Draw the mesh
                 mag::gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
@@ -269,26 +258,23 @@ namespace game
 
     void TestGame::render_sprites()
     {
-        mag::Camera& cam = scene->get_camera();
+        mag::Camera& camera = scene->get_camera();
 
         mag::gfx::use_shader(sprite_shader);
 
         // Global buffer
         {
-            struct alignas(16) GlobalBuffer
+            struct GlobalData
             {
                     mat4 view;
                     mat4 projection;
             };
 
-            static GlobalBuffer global_buffer = {};
+            static GlobalData global_data = {};
+            global_data.view = camera.get_view();
+            global_data.projection = camera.get_projection();
 
-            global_buffer.view = cam.get_view();
-            global_buffer.projection = cam.get_projection();
-
-            static mag::gfx::BufferHandle buf_handle = mag::gfx::create_buffer(sizeof(GlobalBuffer), &global_buffer);
-            mag::gfx::set_buffer_data(buf_handle, &global_buffer, sizeof(GlobalBuffer));
-            mag::gfx::set_shader_buffer_uniform(sprite_shader, buf_handle, 0);
+            mag::gfx::set_uniform("u_global", &global_data);
         }
 
         for (u32 i = 0; i < texture_handles.size(); i++)
@@ -298,13 +284,11 @@ namespace game
             sprite_data.size_const_face = vec4(textures[i].width * 0.05f, textures[i].height * 0.05f, 0, 0);
             sprite_data.texture_idx = i;
 
-            // Instance buffer
-            static mag::gfx::BufferHandle buf_handle_sprite = mag::gfx::create_buffer(sizeof(SpriteData) * 2);
-            mag::gfx::set_buffer_data(buf_handle_sprite, &sprite_data, sizeof(SpriteData), sizeof(SpriteData) * i);
-            mag::gfx::set_shader_buffer_uniform(sprite_shader, buf_handle_sprite, 1, i);
+            // Instance
+            mag::gfx::set_uniform("u_instance", &sprite_data, i);
 
             // Textures
-            mag::gfx::set_shader_texture_uniform(sprite_shader, texture_handles[i], 2, i);
+            mag::gfx::set_uniform("u_sprite_textures", texture_handles[i], i);
 
             mag::gfx::draw(4, 1, 0, i);
         }

@@ -41,6 +41,7 @@ namespace mag
             u32 binding;
             u32 count;
             u64 block_size;
+            u64 max_size;
             str name;
             ShaderResourceDescriptorType descriptor_type;
     };
