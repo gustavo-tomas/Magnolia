@@ -140,6 +140,7 @@ namespace mag
                         for (u32 k = 0; k < spv_binding->block.member_count; k++)
                         {
                             // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
+                            // https://github.com/KhronosGroup/SPIRV-Reflect/issues/280
                             block_size += get_aligned_size(spv_binding->block.members[k].size, 16);
                         }
 
