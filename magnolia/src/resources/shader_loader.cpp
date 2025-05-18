@@ -123,9 +123,16 @@ namespace mag
                     {
                         const SpvReflectDescriptorBinding* spv_binding = spv_descriptor_set.bindings[j];
 
+                        u64 block_size = 0;
+                        for (u32 k = 0; k < spv_binding->block.member_count; k++)
+                        {
+                            block_size += spv_binding->block.members[k].size;
+                        }
+
                         ShaderResourceBindingData binding = {};
                         binding.binding = spv_binding->binding;
                         binding.count = spv_binding->count;
+                        binding.block_size = block_size;
                         binding.name = spv_binding->name;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
 
