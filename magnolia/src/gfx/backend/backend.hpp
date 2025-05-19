@@ -246,6 +246,7 @@ namespace mag
                 std::vector<IVertexAttributeDesc> vertex_attribute_descs;
                 std::vector<IVertexBindingDesc> vertex_binding_descs;
                 Format color_attachment_format;
+                Format depth_attachment_format;
                 math::uvec2 extent;
         };
 
@@ -273,7 +274,8 @@ namespace mag
         {
                 math::uvec2 extent;
                 math::ivec2 offset = {0, 0};
-                std::vector<IRenderingAttachment*> color_attachments;
+                std::vector<const IRenderingAttachment*> color_attachments;
+                const IRenderingAttachment* depth_attachment = nullptr;
         };
 
         struct ITextureDesc

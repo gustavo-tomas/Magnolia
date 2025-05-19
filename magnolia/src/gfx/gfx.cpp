@@ -52,7 +52,8 @@ namespace mag
                 unique<ISemaphore> available_semaphore;
                 unique<ISemaphore> finished_semaphore;
                 unique<IFence> in_flight_fence;
-                unique<ITexture> render_target;
+                unique<ITexture> render_target_color;
+                unique<ITexture> render_target_depth;
                 unique<IDescriptorPool> descriptor_pool;
                 std::map<ShaderHandle, DescriptorData> descriptor_set_map;
         };
@@ -113,10 +114,17 @@ namespace mag
                 state->frames[i].finished_semaphore = state->device->create_semaphore(sem_desc);
                 state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
 
-                ITextureDesc texture_desc = {};
-                texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
-                texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
-                state->frames[i].render_target = state->device->create_texture(texture_desc);
+                ITextureDesc render_target_color_texture_desc = {};
+                render_target_color_texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+                render_target_color_texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
+                state->frames[i].render_target_color = state->device->create_texture(render_target_color_texture_desc);
+
+                ITextureDesc render_target_depth_texture_desc = {};
+                render_target_depth_texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+                render_target_depth_texture_desc.usage = TextureUsage::DepthStencilAttachment;
+                render_target_depth_texture_desc.aspect = TextureAspect::Depth;
+                render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
+                state->frames[i].render_target_depth = state->device->create_texture(render_target_depth_texture_desc);
 
                 IDescriptorPoolDesc descriptor_pool_desc = {};
                 descriptor_pool_desc.max_sets = 1024;
@@ -153,7 +161,9 @@ namespace mag
         void begin_frame()
         {
             FrameData& current_frame = state->frames[state->current_frame];
-            const unique<ITexture>& render_target = current_frame.render_target;
+            const unique<ITexture>& render_target = current_frame.render_target_color;
+            const unique<ITexture>& render_target_color = current_frame.render_target_color;
+            const unique<ITexture>& render_target_depth = current_frame.render_target_depth;
 
             current_frame.in_flight_fence->wait();
             state->swapchain->acquire_next_image(current_frame.available_semaphore.get());
@@ -162,16 +172,24 @@ namespace mag
             // -------------------------------------------------------------------------------------------------
             unique<IRenderPass> render_pass;
             unique<IRenderingAttachment> color_attachment;
+            unique<IRenderingAttachment> depth_attachment;
 
             IRenderingAttachmentDesc color_attachment_desc = {};
             color_attachment_desc.type = RenderingAttachmentType::Color;
             color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
-            color_attachment_desc.texture = render_target.get();
+            color_attachment_desc.texture = render_target_color.get();
             color_attachment = state->device->create_render_attachment(color_attachment_desc);
+
+            IRenderingAttachmentDesc depth_attachment_desc = {};
+            depth_attachment_desc.type = RenderingAttachmentType::Depth;
+            depth_attachment_desc.clear_depth = 1.0f;
+            depth_attachment_desc.texture = render_target_depth.get();
+            depth_attachment = state->device->create_render_attachment(depth_attachment_desc);
 
             IRenderPassDesc render_pass_desc = {};
             render_pass_desc.extent = state->swapchain->get_extent();
             render_pass_desc.color_attachments.push_back(color_attachment.get());
+            render_pass_desc.depth_attachment = depth_attachment.get();
             render_pass = state->device->create_render_pass(render_pass_desc);
 
             current_frame.command_buffer->begin_recording();
@@ -191,7 +209,7 @@ namespace mag
         {
             u32& current_frame_idx = state->current_frame;
             FrameData& current_frame = state->frames[current_frame_idx];
-            const unique<ITexture>& render_target = current_frame.render_target;
+            const unique<ITexture>& render_target = current_frame.render_target_color;
 
             const u32 image_index = state->swapchain->get_current_image_index();
 
@@ -473,6 +491,8 @@ namespace mag
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
             graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
             graphics_pipeline_desc.color_attachment_format = state->swapchain->get_format();
+            graphics_pipeline_desc.depth_attachment_format =
+                state->frames[state->current_frame].render_target_depth->get_format();
             graphics_pipeline_desc.extent = state->swapchain->get_extent();
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
 

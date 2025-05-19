@@ -745,10 +745,19 @@ namespace mag
                     VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
                     pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
                     pipeline_rendering_create_info.colorAttachmentCount = 1;
+                    pipeline_rendering_create_info.depthAttachmentFormat = mag_to_vk(desc.depth_attachment_format);
                     pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain_format;
+
+                    VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
+                    depth_stencil_create_info.depthTestEnable = true;
+                    depth_stencil_create_info.depthWriteEnable = true;
+                    depth_stencil_create_info.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+                    depth_stencil_create_info.minDepthBounds = 0.0f;
+                    depth_stencil_create_info.maxDepthBounds = 1.0f;
 
                     VkGraphicsPipelineCreateInfo pipeline_info = {};
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+                    pipeline_info.pDepthStencilState = &depth_stencil_create_info;
                     pipeline_info.stageCount = shader_module_count;
                     pipeline_info.pStages = shader_stages;
                     pipeline_info.pVertexInputState = &vertex_input_info;
@@ -860,8 +869,18 @@ namespace mag
                     render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
                     render_info.renderArea = render_area;
                     render_info.layerCount = 1;
-                    render_info.colorAttachmentCount = color_attachments.size();
-                    render_info.pColorAttachments = color_attachments.data();
+
+                    if (!color_attachments.empty())
+                    {
+                        render_info.colorAttachmentCount = color_attachments.size();
+                        render_info.pColorAttachments = color_attachments.data();
+                    }
+
+                    if (desc.depth_attachment != nullptr)
+                    {
+                        depth_attachment = ((VulkanRenderingAttachment*)desc.depth_attachment)->get_attachment_info();
+                        render_info.pDepthAttachment = &depth_attachment;
+                    }
                 }
 
                 ~VulkanRenderPass() {}
@@ -875,6 +894,7 @@ namespace mag
             private:
                 VkRenderingInfoKHR render_info = {};
                 std::vector<VkRenderingAttachmentInfo> color_attachments;
+                VkRenderingAttachmentInfo depth_attachment = {};
         };
 
         class VulkanCommandPool : public ICommandPool
