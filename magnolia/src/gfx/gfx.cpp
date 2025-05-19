@@ -199,7 +199,13 @@ namespace mag
                 render_target.get(), TextureLayout::ColorAttachment, AccessMask::None, AccessMask::ColorAttachmentWrite,
                 PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
-            current_frame.command_buffer->set_viewport(state->swapchain->get_extent());
+            // Flip the viewport to correct vulkan coordinate system
+            math::vec2 extent = state->swapchain->get_extent();
+            math::vec2 offset = math::vec2(0.0f, extent.y);
+
+            extent.y = -extent.y;
+
+            current_frame.command_buffer->set_viewport(extent, offset);
             current_frame.command_buffer->set_scissor(state->swapchain->get_extent());
 
             current_frame.command_buffer->begin_rendering(render_pass.get());
