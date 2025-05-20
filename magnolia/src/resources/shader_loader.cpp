@@ -148,17 +148,23 @@ namespace mag
                         binding.binding = spv_binding->binding;
                         binding.count = spv_binding->count;
                         binding.block_size = block_size;
+                        binding.max_size = block_size;
                         binding.name = spv_binding->name;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
 
-                        // Uniform buffer has a fixed size
-                        if (spv_binding->descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                        // Set the correct values for descriptor count and max binding size.
+                        // We need to to this because spv is a little confused and can't process arrays
+                        // correctly
+
+                        // Check if binding is an array
+                        if (spv_binding->array.dims_count > 0)
                         {
-                            binding.max_size = block_size;
+                            binding.max_size = descriptor_type_size_map.at(spv_binding->descriptor_type);
+                            binding.count = binding.max_size;
                         }
 
-                        // Arrays have other limits
-                        else
+                        // Storage buffers max size also needs to be set manually
+                        if (binding.descriptor_type == ShaderResourceDescriptorType::Storage)
                         {
                             binding.max_size = descriptor_type_size_map.at(spv_binding->descriptor_type);
                         }

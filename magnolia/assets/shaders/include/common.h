@@ -23,8 +23,8 @@ const float PI = 3.1415926535;
 
 // Including unbounded arrays
 // @TODO: these values should be retrieved from the renderer backend
-const u32 Max_Descriptor_Array_Size = 1000;
-const u32 Max_SSBO_Byte_Size = 4 * 1024 * 1024;  // 1 MiB
+const u32 Max_Descriptor_Array_Size = 2 * 1024;
+const u32 Max_SSBO_Byte_Size = 4 * 1024 * 1024;  // 4 MiB
 
 // Types shared by c++ and glsl
 

@@ -19,7 +19,7 @@ layout (std140, set = 0, binding = 1) readonly buffer InstanceBuffer
 } u_instance;
 
 // Textures
-layout (set = 0, binding = 2) uniform sampler2D u_sprite_textures[Max_Descriptor_Array_Size];
+layout (set = 0, binding = 2) uniform sampler2D u_sprite_textures[];
 
 #ifdef VERTEX_SHADER
 

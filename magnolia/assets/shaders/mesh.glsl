@@ -26,7 +26,7 @@ layout (std140, set = 0, binding = 2) readonly buffer MaterialBuffer
 } u_material;
 
 // Material textures
-layout (set = 0, binding = 3) uniform sampler2D u_material_textures[Max_Descriptor_Array_Size];
+layout (set = 0, binding = 3) uniform sampler2D u_material_textures[];
 
 #define VIEW_MATRIX u_global.view
 #define PROJ_MATRIX u_global.projection
