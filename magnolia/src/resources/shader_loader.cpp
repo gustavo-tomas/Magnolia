@@ -37,9 +37,12 @@ namespace mag
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
         };
 
-        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_size_map = {
-            {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Byte_Size},
+        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_array_size_map = {
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Descriptor_Array_Size},
+        };
+
+        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_size_bytes_map = {
+            {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Size_Byte},
         };
 
         static const std::map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
@@ -147,8 +150,7 @@ namespace mag
                         ShaderResourceBindingData binding = {};
                         binding.binding = spv_binding->binding;
                         binding.count = spv_binding->count;
-                        binding.block_size = block_size;
-                        binding.max_size = block_size;
+                        binding.block_size_bytes = block_size;
                         binding.name = spv_binding->name;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
 
@@ -159,14 +161,19 @@ namespace mag
                         // Check if binding is an array
                         if (spv_binding->array.dims_count > 0)
                         {
-                            binding.max_size = descriptor_type_size_map.at(spv_binding->descriptor_type);
-                            binding.count = binding.max_size;
+                            // Assume that arrays with count = 1 are variable count
+                            if (binding.count == 1)
+                            {
+                                binding.variable_count = true;
+                            }
+                            binding.count = descriptor_type_array_size_map.at(spv_binding->descriptor_type);
                         }
 
-                        // Storage buffers max size also needs to be set manually
+                        // Storage buffers count also needs to be set manually
                         if (binding.descriptor_type == ShaderResourceDescriptorType::Storage)
                         {
-                            binding.max_size = descriptor_type_size_map.at(spv_binding->descriptor_type);
+                            const u64 size_bytes = descriptor_type_size_bytes_map.at(spv_binding->descriptor_type);
+                            binding.count = size_bytes / binding.block_size_bytes;
                         }
 
                         descriptor.bindings.push_back(binding);

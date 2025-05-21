@@ -474,7 +474,7 @@ namespace mag
                         VkDescriptorBindingFlags binding_flags =
                             VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
 
-                        if (binding_desc.descriptor_count > 1)
+                        if (binding_desc.variable_descriptor_count)
                         {
                             binding_flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
                         }
@@ -522,7 +522,7 @@ namespace mag
                     variable_count_info.sType =
                         VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
                     variable_count_info.descriptorSetCount = 1;
-                    variable_count_info.pDescriptorCounts = &desc.max_descriptor_count;
+                    variable_count_info.pDescriptorCounts = &desc.max_variable_descriptor_count;
 
                     VkDescriptorSetAllocateInfo alloc_info = {};
                     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

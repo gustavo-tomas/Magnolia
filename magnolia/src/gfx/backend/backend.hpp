@@ -314,6 +314,7 @@ namespace mag
         {
                 u32 binding;
                 u32 descriptor_count;
+                b8 variable_descriptor_count;
                 DescriptorType descriptor_type;
                 ShaderStage stages;
         };
@@ -327,7 +328,7 @@ namespace mag
         {
                 const IDescriptorPool* descriptor_pool = nullptr;
                 const IDescriptorSetLayout* descriptor_layout = nullptr;
-                u32 max_descriptor_count;
+                u32 max_variable_descriptor_count;
         };
 
         struct ISamplerDesc

@@ -20,7 +20,7 @@ namespace mag
         {
                 u32 binding = 0;
                 u64 block_size = 0;
-                u64 max_size = 0;
+                u64 max_size_bytes = 0;
                 DescriptorType descriptor_type;
                 BufferHandle buffer_handle = Invalid_ID;
         };
@@ -344,7 +344,7 @@ namespace mag
             if (descriptor_data.last_bound_buffer != buffer_handle)
             {
                 descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element,
-                                                       bindings_map[uniform_name].descriptor_type);
+                                                       binding.descriptor_type);
 
                 descriptor_data.last_bound_buffer = buffer_handle;
             }
@@ -373,7 +373,7 @@ namespace mag
             if (descriptor_data.last_bound_texture != texture_handle)
             {
                 descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
-                                                       DescriptorType::CombinedImageSampler);
+                                                       binding.descriptor_type);
 
                 descriptor_data.last_bound_texture = texture_handle;
             }
@@ -422,7 +422,7 @@ namespace mag
             // Descriptor set layout
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
-            u32 max_descriptor_count = 1;
+            u32 max_variable_descriptor_count = 1;
             std::map<str, BindingData> bindings_map;
 
             // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
@@ -435,20 +435,24 @@ namespace mag
                     IDescriptorSetLayoutBindingDesc binding_desc = {};
                     binding_desc.binding = binding.binding;
                     binding_desc.descriptor_count = binding.count;
+                    binding_desc.variable_descriptor_count = binding.variable_count;
                     binding_desc.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
 
                     // @TODO: this is hardcoded to make my life easier
                     binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
 
-                    max_descriptor_count = math::max(max_descriptor_count, binding.count);
-
                     descriptor_layout_desc.binding_descs.push_back(binding_desc);
 
                     BindingData binding_data = {};
                     binding_data.binding = binding.binding;
-                    binding_data.block_size = binding.block_size;
-                    binding_data.max_size = binding.max_size;
+                    binding_data.block_size = binding.block_size_bytes;
+                    binding_data.max_size_bytes = binding.count * binding.block_size_bytes;
                     binding_data.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
+
+                    if (binding.variable_count)
+                    {
+                        max_variable_descriptor_count = math::max(max_variable_descriptor_count, binding.count);
+                    }
 
                     bindings_map[binding.name] = binding_data;
                 }
@@ -466,7 +470,7 @@ namespace mag
                 IDescriptorSetDesc descriptor_desc = {};
                 descriptor_desc.descriptor_layout = descriptor_layout.get();
                 descriptor_desc.descriptor_pool = state->frames[i].descriptor_pool.get();
-                descriptor_desc.max_descriptor_count = max_descriptor_count;
+                descriptor_desc.max_variable_descriptor_count = max_variable_descriptor_count;
 
                 state->frames[i].descriptor_set_map[handle].descriptor_set =
                     state->device->create_descriptor_set(descriptor_desc);
@@ -478,13 +482,13 @@ namespace mag
                     if (binding_data.descriptor_type == DescriptorType::Uniform)
                     {
                         binding_data.buffer_handle =
-                            create_buffer(binding_data.max_size, nullptr, BufferUsage::Uniform);
+                            create_buffer(binding_data.max_size_bytes, nullptr, BufferUsage::Uniform);
                     }
 
                     else if (binding_data.descriptor_type == DescriptorType::Storage)
                     {
                         binding_data.buffer_handle =
-                            create_buffer(binding_data.max_size, nullptr, BufferUsage::Storage);
+                            create_buffer(binding_data.max_size_bytes, nullptr, BufferUsage::Storage);
                     }
                 }
 
