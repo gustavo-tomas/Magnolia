@@ -249,7 +249,7 @@ namespace game
                 mag::gfx::set_uniform("u_instance", &mesh_data, mesh_offset);
 
                 // Draw the mesh
-                mag::gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, i);
+                mag::gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, mesh_offset);
 
                 mesh_offset++;
             }
