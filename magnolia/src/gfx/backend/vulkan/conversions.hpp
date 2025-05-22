@@ -318,6 +318,10 @@ namespace mag
                     return VK_FORMAT_UNDEFINED;
                     break;
 
+                case Format::R8_UNORM:
+                    return VK_FORMAT_R8_UNORM;
+                    break;
+
                 case Format::R8G8B8A8_UNORM:
                     return VK_FORMAT_R8G8B8A8_UNORM;
                     break;
@@ -368,6 +372,10 @@ namespace mag
         {
             switch (format)
             {
+                case VK_FORMAT_R8_UNORM:
+                    return Format::R8_UNORM;
+                    break;
+
                 case VK_FORMAT_R8G8B8A8_UNORM:
                     return Format::R8G8B8A8_UNORM;
                     break;
