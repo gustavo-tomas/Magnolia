@@ -17,10 +17,12 @@ namespace game
 
             void render_sprites();
             void render_models();
+            void render_text();
 
         private:
             unique<mag::Scene> scene = nullptr;
             mag::gfx::ShaderHandle sprite_shader;
             mag::gfx::ShaderHandle mesh_shader;
+            mag::gfx::ShaderHandle text_shader;
     };
 };  // namespace game

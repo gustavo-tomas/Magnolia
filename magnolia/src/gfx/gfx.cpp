@@ -383,14 +383,15 @@ namespace mag
             current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
         }
 
-        TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels)
+        TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels,
+                                     const Format format)
         {
             const TextureHandle handle = create_handle();
 
             ITextureDesc texture_desc = {};
             texture_desc.extent = math::uvec3(width, height, 1);
             texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::Sampled | TextureUsage::TransferDst;
-            texture_desc.format = Format::R8G8B8A8_SRGB;
+            texture_desc.format = format;
 
             ISamplerDesc sampler_desc = {};
             sampler_desc.min_lod = 0.0f;

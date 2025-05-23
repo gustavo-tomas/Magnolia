@@ -4,8 +4,10 @@
 #include <core/entry_point.hpp>
 #include <core/event.hpp>
 #include <gfx/gfx.hpp>
+#include <gfx/types.hpp>
 #include <map>
 #include <project/project.hpp>
+#include <resources/font.hpp>
 #include <resources/image.hpp>
 #include <resources/material.hpp>
 #include <resources/model.hpp>
@@ -49,6 +51,11 @@ namespace game
         MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/mesh_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         mesh_shader = mag::gfx::create_shader(shader_resource);
+
+        shader_resource = {};
+        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/text_shader.mag.json", &shader_resource),
+                   "Failed to load shader");
+        text_shader = mag::gfx::create_shader(shader_resource);
 
         // Then load starting scene
 
@@ -106,6 +113,7 @@ namespace game
 
         render_sprites();
         render_models();
+        render_text();
 
         mag::gfx::end_frame();
     }
@@ -292,5 +300,137 @@ namespace game
 
             mag::gfx::draw(4, 1, 0, i);
         }
+    }
+
+    // @TODO: temp
+    struct _FontData
+    {
+            std::map<c8, Image> char_textures;
+            std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
+            Font font;
+            u32 idx;
+    };
+
+    static std::map<str, _FontData> fonts;
+
+    void TestGame::render_text()
+    {
+        mag::gfx::use_shader(text_shader);
+
+        mag::Camera& camera = scene->get_camera();
+
+        struct GlobalData
+        {
+                mat4 view;
+                mat4 projection;
+        };
+
+        static GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        auto text_entities = scene->get_ecs().get_all_components_of_types<TransformComponent, TextComponent>();
+
+        u32 char_offset = 0;
+        for (u32 i = 0; i < text_entities.size(); i++)
+        {
+            const auto& transform = std::get<0>(text_entities[i]);
+            const auto& text = std::get<1>(text_entities[i]);
+
+            const str& name = text->font->name;
+
+            if (!fonts.contains(name))
+            {
+                Font font = {};
+                mag::resource::load(name, &font);
+
+                _FontData font_data = {};
+                font_data.font = font;
+                font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
+
+                for (auto& [c, ch] : font.characters)
+                {
+                    // Skip non visual characters
+                    if (ch.texture.pixels.empty())
+                    {
+                        continue;
+                    }
+
+                    font_data.char_texture_handles[c] =
+                        mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
+                                                 ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
+
+                    font_data.char_textures[c] = ch.texture;
+                }
+
+                fonts[name] = font_data;
+            }
+
+            // Skip fonts that are not loaded yet
+            if (text->font->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
+
+            const f32 scale = transform->scale.x;
+            f32 x = transform->translation.x;
+            f32 y = transform->translation.y;
+            f32 z = transform->translation.z;
+
+            for (auto& c : text->text)
+            {
+                Character& ch = text->font->characters[c];
+
+                // Skip chars with no visual representation (i.e. spaces)
+                if (ch.data.empty())
+                {
+                    x += (ch.advance.x >> 6) * scale;
+                    continue;
+                }
+
+                // Format newlines
+                if (c == '\n')
+                {
+                    y -= ch.size.y * 1.5 * scale;  // @TODO: hardcoded line spacing
+                    x = transform->translation.x;
+                    continue;
+                }
+
+                // Don't offset the first letter of the text
+                const f32 xpos = x + (char_offset > 0 ? ch.bearing.x * scale : 0);
+                const f32 ypos = y - (char_offset > 0 ? (ch.size.y - ch.bearing.y) * scale : 0);
+                const f32 zpos = z;
+
+                TransformComponent char_transform;
+                char_transform.translation = vec3(xpos, ypos, zpos);
+                char_transform.scale = vec3(ch.size.x * scale, ch.size.y * scale, 1.0f);
+                char_transform.rotation = transform->rotation;
+
+                // @TODO: rotation is a bit iffy but for now its ok
+                const mat4 model_matrix = char_transform.get_transformation_matrix();
+
+                const u32 font_offset = fonts[name].idx * 128;  // skip next 128 character textures
+                const u32 texture_idx = font_offset + c;
+
+                TextData text_data;
+                text_data.color = text->color;
+                text_data.model = model_matrix;
+                text_data.texture_idx = texture_idx;
+
+                mag::gfx::set_uniform("u_instance", &text_data, char_offset);
+
+                mag::gfx::set_uniform("u_char_textures", fonts[name].char_texture_handles[c], texture_idx);
+
+                char_offset++;
+
+                // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to get
+                // value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+                x += (ch.advance.x >> 6) * scale;
+            }
+        }
+
+        gfx::draw(4, char_offset);
     }
 };  // namespace game

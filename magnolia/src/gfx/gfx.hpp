@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "gfx/types.hpp"
 
 namespace mag
 {
@@ -27,7 +28,7 @@ namespace mag
         IndexBufferHandle create_index_buffer(const u64 size, const void* data = nullptr);
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size = 0,
-                                     const void* pixels = nullptr);
+                                     const void* pixels = nullptr, const Format format = Format::R8G8B8A8_SRGB);
 
         ShaderHandle create_shader(const ShaderResource& shader);
 

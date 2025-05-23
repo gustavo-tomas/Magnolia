@@ -45,13 +45,14 @@ struct alignas(16) SpriteData
 {
         mat4 model;            // 64 bytes
         vec4 size_const_face;  // Size + Constant Size + Always Face Camera
-        u32 texture_idx;
+        u32 texture_idx;       // 4 bytes
 };
 
 struct alignas(16) TextData
 {
-        mat4 model;  // 64 bytes (16 x 4)
-        vec4 color;  // 16 bytes ( 4 x 4)
+        mat4 model;       // 64 bytes (16 x 4)
+        vec4 color;       // 16 bytes ( 4 x 4)
+        u32 texture_idx;  // 4 bytes
 };
 
 struct alignas(16) MaterialData
