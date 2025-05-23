@@ -5,7 +5,7 @@
 #include "VkBootstrap.h"
 #include "core/assert.hpp"
 #include "core/types.hpp"
-#include "gfx/backend/backend.hpp"
+#include "gfx/types.hpp"
 #include "math/types.hpp"
 #include "vk_mem_alloc.h"
 
