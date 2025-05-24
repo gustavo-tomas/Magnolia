@@ -236,12 +236,13 @@ namespace mag
                 }
 
                 // Special case for swapchain images
-                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const VkImage image,
-                              const VkImageView image_view)
+                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, const math::uvec3& extent,
+                              const VkImage image, const VkImageView image_view)
                     : disp(disp),
                       allocator(allocator),
                       image(image),
                       image_view(image_view),
+                      extent(extent),
                       usage(TextureUsage::TransferDst)
                 {
                 }
@@ -333,32 +334,9 @@ namespace mag
         {
             public:
                 VulkanSwapchain(const vkb::DispatchTable& disp, const vkb::Device& device, const ISwapchainDesc& desc)
-                    : disp(disp)
+                    : disp(disp), device(device), present_mode(desc.desired_present_mode)
                 {
-                    vkb::SwapchainBuilder swapchain_builder{device};
-                    const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
-                                              .set_desired_present_mode(mag_to_vk(desc.desired_present_mode))
-                                              .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
-                                              .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
-                                              .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
-                                              .add_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                                                                     VK_IMAGE_USAGE_TRANSFER_DST_BIT)
-                                              .build();
-
-                    MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
-
-                    vkb::destroy_swapchain(swapchain);
-
-                    swapchain = swap_ret.value();
-
-                    const std::vector<VkImage>& swapchain_images = swapchain.get_images().value();
-                    const std::vector<VkImageView>& swapchain_image_views = swapchain.get_image_views().value();
-                    for (u32 i = 0; i < swapchain.image_count; i++)
-                    {
-                        VulkanTexture* texture =
-                            new VulkanTexture(disp, nullptr, swapchain_images[i], swapchain_image_views[i]);
-                        swapchain_textures.emplace_back(texture);
-                    }
+                    recreate_swapchain();
                 }
 
                 ~VulkanSwapchain()
@@ -397,13 +375,47 @@ namespace mag
                     return vk_to_mag(result);
                 }
 
-                virtual b8 resize(const math::uvec2& extent) override { MAG_ASSERT(false, "@TODO"); }
+                virtual void resize() override { recreate_swapchain(); }
 
                 const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
 
             private:
+                void recreate_swapchain()
+                {
+                    vkb::SwapchainBuilder swapchain_builder{device};
+                    const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
+                                              .set_desired_present_mode(mag_to_vk(present_mode))
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
+                                              .add_fallback_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+                                              .add_image_usage_flags(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                                                     VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+                                              .build();
+
+                    MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
+
+                    swapchain_textures.clear();
+
+                    vkb::destroy_swapchain(swapchain);
+
+                    swapchain = swap_ret.value();
+
+                    const std::vector<VkImage>& swapchain_images = swapchain.get_images().value();
+                    const std::vector<VkImageView>& swapchain_image_views = swapchain.get_image_views().value();
+
+                    for (u32 i = 0; i < swapchain.image_count; i++)
+                    {
+                        VulkanTexture* texture =
+                            new VulkanTexture(disp, nullptr, math::uvec3(vk_to_mag(swapchain.extent), 1),
+                                              swapchain_images[i], swapchain_image_views[i]);
+                        swapchain_textures.emplace_back(texture);
+                    }
+                }
+
                 const vkb::DispatchTable& disp;
+                const vkb::Device& device;
                 vkb::Swapchain swapchain;
+                PresentMode present_mode = PresentMode::Mailbox;
                 u32 current_image_index = 0;
                 std::vector<unique<VulkanTexture>> swapchain_textures;
         };
@@ -1054,30 +1066,60 @@ namespace mag
                     ((VulkanTexture*)texture)->set_new_layout(mag_to_vk(new_layout));
                 }
 
+                virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
+                                          const Filter filter) override
+                {
+                    const VulkanTexture* vk_src = static_cast<const VulkanTexture*>(src_texture);
+                    const VulkanTexture* vk_dst = static_cast<const VulkanTexture*>(dst_texture);
+
+                    VkImageBlit image_blit = {};
+
+                    // Src
+                    const math::uvec3 src_extent = vk_src->get_extent();
+
+                    image_blit.srcOffsets[1].x = src_extent.x;
+                    image_blit.srcOffsets[1].y = src_extent.y;
+                    image_blit.srcOffsets[1].z = src_extent.z;
+
+                    image_blit.srcSubresource.layerCount = src_texture->get_array_layers();
+                    image_blit.srcSubresource.aspectMask = mag_to_vk(vk_src->get_aspect());
+                    image_blit.srcSubresource.baseArrayLayer = 0;
+                    image_blit.srcSubresource.mipLevel = 0;
+
+                    // Dst
+                    const math::uvec3 dst_extent = vk_dst->get_extent();
+
+                    image_blit.dstOffsets[1].x = dst_extent.x;
+                    image_blit.dstOffsets[1].y = dst_extent.y;
+                    image_blit.dstOffsets[1].z = dst_extent.z;
+
+                    image_blit.dstSubresource.layerCount = dst_texture->get_array_layers();
+                    image_blit.dstSubresource.aspectMask = mag_to_vk(vk_dst->get_aspect());
+                    image_blit.dstSubresource.baseArrayLayer = 0;
+                    image_blit.dstSubresource.mipLevel = 0;
+
+                    disp.cmdBlitImage(command_buffer, vk_src->get_image(), mag_to_vk(vk_src->get_layout()),
+                                      vk_dst->get_image(), mag_to_vk(vk_dst->get_layout()), 1, &image_blit,
+                                      mag_to_vk(filter));
+                }
+
                 virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) override
                 {
                     const VulkanTexture* vk_src = static_cast<const VulkanTexture*>(src_texture);
                     const VulkanTexture* vk_dst = static_cast<const VulkanTexture*>(dst_texture);
 
-                    VkImageSubresourceLayers src_subresource = {};
-                    src_subresource.layerCount = src_texture->get_array_layers();
-                    src_subresource.aspectMask = mag_to_vk(vk_src->get_aspect());
-
-                    VkImageSubresourceLayers dst_subresource = {};
-                    dst_subresource.layerCount = dst_texture->get_array_layers();
-                    dst_subresource.aspectMask = mag_to_vk(vk_dst->get_aspect());
-
-                    const math::uvec3 extent = vk_src->get_extent();
-
-                    VkOffset3D src_offset = {};
-                    VkOffset3D dst_offset = {};
+                    const math::uvec3 extent = math::min(vk_src->get_extent(), vk_dst->get_extent());
 
                     VkImageCopy image_copy = {};
                     image_copy.extent = mag_to_vk(extent);
-                    image_copy.srcOffset = src_offset;
-                    image_copy.srcSubresource = src_subresource;
-                    image_copy.dstOffset = dst_offset;
-                    image_copy.dstSubresource = dst_subresource;
+
+                    image_copy.srcSubresource.layerCount = src_texture->get_array_layers();
+                    image_copy.srcSubresource.aspectMask = mag_to_vk(vk_src->get_aspect());
+                    image_copy.srcOffset = {};
+
+                    image_copy.dstSubresource.layerCount = dst_texture->get_array_layers();
+                    image_copy.dstSubresource.aspectMask = mag_to_vk(vk_dst->get_aspect());
+                    image_copy.dstOffset = {};
 
                     disp.cmdCopyImage(command_buffer, vk_src->get_image(), mag_to_vk(vk_src->get_layout()),
                                       vk_dst->get_image(), mag_to_vk(vk_dst->get_layout()), 1, &image_copy);

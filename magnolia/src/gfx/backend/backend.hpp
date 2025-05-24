@@ -270,7 +270,7 @@ namespace mag
                 virtual Result acquire_next_image(const ISemaphore* signal_semaphore,
                                                   const IFence* fence = nullptr) = 0;
 
-                virtual b8 resize(const math::uvec2& extent) = 0;
+                virtual void resize() = 0;
         };
 
         class IDescriptorPool
@@ -352,6 +352,9 @@ namespace mag
                                               const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                               const PipelineStage src_stage_mask,
                                               const PipelineStage dst_stage_mask) = 0;
+
+                virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
+                                          const Filter filter) = 0;
 
                 virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) = 0;
 

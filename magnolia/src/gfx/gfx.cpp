@@ -176,7 +176,7 @@ namespace mag
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
                 MAG_ASSERT(false, "@TODO");
-                state->swapchain->resize({});
+                state->swapchain->resize();
             }
 
             else if (result != Result::Success)
@@ -250,7 +250,7 @@ namespace mag
                                                            PipelineStage::TopOfPipe, PipelineStage::Transfer);
 
             // Copy from the render target to the swapchain image
-            current_frame.command_buffer->copy_texture(render_target.get(), swapchain_texture);
+            current_frame.command_buffer->blit_texture(render_target.get(), swapchain_texture, Filter::Linear);
 
             // Transition swapchain image to present
             current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::Present,
@@ -269,7 +269,7 @@ namespace mag
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
                 MAG_ASSERT(false, "@TODO");
-                state->swapchain->resize({});
+                state->swapchain->resize();
             }
 
             else if (result != Result::Success)
@@ -618,11 +618,11 @@ namespace mag
 
         void on_resize(const WindowResizeEvent& e)
         {
-            const math::uvec2& size = {e.width, e.height};
+            (void)e;
 
             state->device->wait_idle();
 
-            state->swapchain->resize(size);
+            state->swapchain->resize();
         }
 
         void on_event(const Event& e) { mag::dispatch_event<WindowResizeEvent>(e, on_resize); }
