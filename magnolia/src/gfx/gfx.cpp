@@ -11,9 +11,6 @@ namespace mag
 {
     namespace gfx
     {
-        // @TODO: temporary
-#define MAX_FRAMES_IN_FLIGHT 3
-
         typedef u32 BufferHandle;
 
         struct BindingData
@@ -92,7 +89,10 @@ namespace mag
 
             // Command Pool, Command Buffers and Sync Objects
             // -------------------------------------------------------------------------------------------------
-            state->frames.resize(MAX_FRAMES_IN_FLIGHT);
+
+            // Triple buffering if the device supports it
+            const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
+            state->frames.resize(max_frames_in_flight);
 
             for (u32 i = 0; i < state->frames.size(); i++)
             {
@@ -247,7 +247,7 @@ namespace mag
 
             state->present_queue->present(state->swapchain.get(), current_frame.finished_semaphore.get());
 
-            current_frame_idx = (current_frame_idx + 1) % MAX_FRAMES_IN_FLIGHT;
+            current_frame_idx = (current_frame_idx + 1) % state->frames.size();
         }
 
         static const std::map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
