@@ -2,8 +2,11 @@
 
 #include <map>
 
+#include "core/assert.hpp"
+#include "core/event.hpp"
 #include "core/types.hpp"
 #include "gfx/backend/backend.hpp"
+#include "gfx/types.hpp"
 #include "resources/resource_loader.hpp"
 #include "resources/shader.hpp"
 
@@ -166,7 +169,21 @@ namespace mag
             const unique<ITexture>& render_target_depth = current_frame.render_target_depth;
 
             current_frame.in_flight_fence->wait();
-            state->swapchain->acquire_next_image(current_frame.available_semaphore.get());
+
+            const Result result = state->swapchain->acquire_next_image(current_frame.available_semaphore.get());
+
+            if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
+            {
+                MAG_ASSERT(false, "@TODO");
+                state->swapchain->resize({});
+            }
+
+            else if (result != Result::Success)
+            {
+                MAG_ASSERT(false, "Failed to acquire swapchain image");
+            }
+
+            const math::uvec2 extent = state->swapchain->get_extent();
 
             // Render Passes
             // -------------------------------------------------------------------------------------------------
@@ -187,7 +204,7 @@ namespace mag
             depth_attachment = state->device->create_render_attachment(depth_attachment_desc);
 
             IRenderPassDesc render_pass_desc = {};
-            render_pass_desc.extent = state->swapchain->get_extent();
+            render_pass_desc.extent = extent;
             render_pass_desc.color_attachments.push_back(color_attachment.get());
             render_pass_desc.depth_attachment = depth_attachment.get();
             render_pass = state->device->create_render_pass(render_pass_desc);
@@ -200,13 +217,12 @@ namespace mag
                 PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
             // Flip the viewport to correct vulkan coordinate system
-            math::vec2 extent = state->swapchain->get_extent();
-            math::vec2 offset = math::vec2(0.0f, extent.y);
+            math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
+            math::vec2 viewport_extent = extent;
+            viewport_extent.y = -viewport_extent.y;
 
-            extent.y = -extent.y;
-
-            current_frame.command_buffer->set_viewport(extent, offset);
-            current_frame.command_buffer->set_scissor(state->swapchain->get_extent());
+            current_frame.command_buffer->set_viewport(viewport_extent, viewport_offset);
+            current_frame.command_buffer->set_scissor(extent);
 
             current_frame.command_buffer->begin_rendering(render_pass.get());
         }
@@ -245,7 +261,19 @@ namespace mag
                                           current_frame.finished_semaphore.get(), current_frame.in_flight_fence.get(),
                                           current_frame.command_buffer.get());
 
-            state->present_queue->present(state->swapchain.get(), current_frame.finished_semaphore.get());
+            const Result result =
+                state->present_queue->present(state->swapchain.get(), current_frame.finished_semaphore.get());
+
+            if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
+            {
+                MAG_ASSERT(false, "@TODO");
+                state->swapchain->resize({});
+            }
+
+            else if (result != Result::Success)
+            {
+                MAG_ASSERT(false, "Failed to present swapchain image");
+            }
 
             current_frame_idx = (current_frame_idx + 1) % state->frames.size();
         }
@@ -582,5 +610,16 @@ namespace mag
             current_frame.command_buffer->draw_indexed(index_count, instance_count, first_index, vertex_offset,
                                                        first_instance);
         }
+
+        void on_resize(const WindowResizeEvent& e)
+        {
+            const math::uvec2& size = {e.width, e.height};
+
+            state->device->wait_idle();
+
+            state->swapchain->resize(size);
+        }
+
+        void on_event(const Event& e) { mag::dispatch_event<WindowResizeEvent>(e, on_resize); }
     };  // namespace gfx
 };      // namespace mag

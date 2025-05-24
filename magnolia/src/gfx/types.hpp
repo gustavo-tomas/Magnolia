@@ -6,6 +6,13 @@ namespace mag
 {
     namespace gfx
     {
+        enum class Result
+        {
+            Success,
+            ErrorOutOfDate,
+            SubOptimal
+        };
+
         enum class PresentMode
         {
             Immediate,

@@ -102,7 +102,11 @@ namespace game
         mag::gfx::end_frame();
     }
 
-    void TestGame::on_event(const mag::Event& e) { scene->on_event(e); }
+    void TestGame::on_event(const mag::Event& e)
+    {
+        scene->on_event(e);
+        mag::gfx::on_event(e);
+    }
 
     void TestGame::render_models()
     {

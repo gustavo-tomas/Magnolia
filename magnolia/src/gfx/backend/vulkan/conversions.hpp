@@ -62,6 +62,47 @@ namespace mag
             return vk_clear_color;
         }
 
+        inline VkResult mag_to_vk(const Result result)
+        {
+            switch (result)
+            {
+                case Result::Success:
+                    return VK_SUCCESS;
+                    break;
+
+                case Result::ErrorOutOfDate:
+                    return VK_ERROR_OUT_OF_DATE_KHR;
+                    break;
+
+                case Result::SubOptimal:
+                    return VK_SUBOPTIMAL_KHR;
+                    break;
+            }
+        }
+
+        inline Result vk_to_mag(const VkResult result)
+        {
+            switch (result)
+            {
+                case VK_SUCCESS:
+                    return Result::Success;
+                    break;
+
+                case VK_ERROR_OUT_OF_DATE_KHR:
+                    return Result::ErrorOutOfDate;
+                    break;
+
+                case VK_SUBOPTIMAL_KHR:
+                    return Result::SubOptimal;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled result");
+                    return Result::Success;
+                    break;
+            }
+        }
+
         inline VkShaderStageFlagBits mag_to_vk_bits(const ShaderStage shader_stage)
         {
             switch (shader_stage)

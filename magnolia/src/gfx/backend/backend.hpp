@@ -267,7 +267,8 @@ namespace mag
 
                 virtual const ITexture* get_texture(const u32 index) const = 0;
 
-                virtual b8 acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence = nullptr) = 0;
+                virtual Result acquire_next_image(const ISemaphore* signal_semaphore,
+                                                  const IFence* fence = nullptr) = 0;
 
                 virtual b8 resize(const math::uvec2& extent) = 0;
         };
@@ -365,7 +366,7 @@ namespace mag
                 virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
                                     const ICommandBuffer* command_buffer) = 0;
 
-                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
+                virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
         };
 
         class IDevice

@@ -380,8 +380,8 @@ namespace mag
                     return swapchain_textures[index].get();
                 }
 
-                virtual b8 acquire_next_image(const ISemaphore* signal_semaphore,
-                                              const IFence* fence = nullptr) override
+                virtual Result acquire_next_image(const ISemaphore* signal_semaphore,
+                                                  const IFence* fence = nullptr) override
                 {
                     const VkSemaphore vk_sem = static_cast<const VulkanSemaphore*>(signal_semaphore)->get_semaphore();
                     VkFence vk_fen = nullptr;
@@ -394,17 +394,7 @@ namespace mag
                     const VkResult result =
                         disp.acquireNextImageKHR(swapchain, Timeout, vk_sem, vk_fen, &current_image_index);
 
-                    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-                    {
-                        resize({});
-                    }
-
-                    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-                    {
-                        MAG_ASSERT(false, "Failed to acquire swapchain image");
-                    }
-
-                    return true;
+                    return vk_to_mag(result);
                 }
 
                 virtual b8 resize(const math::uvec2& extent) override { MAG_ASSERT(false, "@TODO"); }
@@ -1077,13 +1067,13 @@ namespace mag
                     dst_subresource.layerCount = dst_texture->get_array_layers();
                     dst_subresource.aspectMask = mag_to_vk(vk_dst->get_aspect());
 
-                    auto src_extent = vk_src->get_extent();
+                    const math::uvec3 extent = vk_src->get_extent();
 
                     VkOffset3D src_offset = {};
                     VkOffset3D dst_offset = {};
 
                     VkImageCopy image_copy = {};
-                    image_copy.extent = mag_to_vk(src_extent);
+                    image_copy.extent = mag_to_vk(extent);
                     image_copy.srcOffset = src_offset;
                     image_copy.srcSubresource = src_subresource;
                     image_copy.dstOffset = dst_offset;
@@ -1167,7 +1157,7 @@ namespace mag
                              "Failed to submit draw command buffer");
                 }
 
-                virtual i32 present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
+                virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
                 {
                     const u32 image_index = ((VulkanSwapchain*)swapchain)->get_current_image_index();
 
@@ -1181,16 +1171,7 @@ namespace mag
 
                     const VkResult result = disp.queuePresentKHR(queue, &present_info);
 
-                    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-                    {
-                        MAG_ASSERT(false, "@TODO: resize swapchain");
-                    }
-                    else if (result != VK_SUCCESS)
-                    {
-                        MAG_ASSERT(false, "Failed to present swapchain image");
-                    }
-
-                    return result;
+                    return vk_to_mag(result);
                 }
 
             private:

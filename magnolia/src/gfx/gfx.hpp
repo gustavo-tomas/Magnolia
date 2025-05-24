@@ -6,6 +6,7 @@
 namespace mag
 {
     struct ShaderResource;
+    struct Event;
 
     namespace gfx
     {
@@ -49,5 +50,7 @@ namespace mag
 
         void draw_indexed(const u32 index_count, const u32 instance_count = 1, const u32 first_index = 0,
                           const i32 vertex_offset = 0, const u32 first_instance = 0);
+
+        void on_event(const Event& e);
     };  // namespace gfx
 };      // namespace mag
