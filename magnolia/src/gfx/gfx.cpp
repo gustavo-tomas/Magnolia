@@ -95,7 +95,9 @@ namespace mag
 
             // Triple buffering if the device supports it
             const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
-            const math::uvec3 render_target_extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+
+            // @TODO: this resolution can be higher than the swapchain extent
+            const math::uvec3 render_target_extent = math::uvec3(state->swapchain->get_extent(), 1);
 
             state->frames.resize(max_frames_in_flight);
 
@@ -163,7 +165,7 @@ namespace mag
             delete state;
         }
 
-        void begin_frame()
+        b8 begin_frame()
         {
             FrameData& current_frame = state->frames[state->current_frame];
             const unique<ITexture>& render_target_color = current_frame.render_target_color;
@@ -175,13 +177,14 @@ namespace mag
 
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
-                MAG_ASSERT(false, "@TODO");
                 state->swapchain->resize();
+                return false;
             }
 
             else if (result != Result::Success)
             {
                 MAG_ASSERT(false, "Failed to acquire swapchain image");
+                return false;
             }
 
             const math::uvec2 extent = render_target_color->get_extent();
@@ -226,9 +229,11 @@ namespace mag
             current_frame.command_buffer->set_scissor(extent);
 
             current_frame.command_buffer->begin_rendering(render_pass.get());
+
+            return true;
         }
 
-        void end_frame()
+        b8 end_frame()
         {
             u32& current_frame_idx = state->current_frame;
             FrameData& current_frame = state->frames[current_frame_idx];
@@ -268,16 +273,19 @@ namespace mag
 
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
-                MAG_ASSERT(false, "@TODO");
                 state->swapchain->resize();
+                return false;
             }
 
             else if (result != Result::Success)
             {
                 MAG_ASSERT(false, "Failed to present swapchain image");
+                return false;
             }
 
             current_frame_idx = (current_frame_idx + 1) % state->frames.size();
+
+            return true;
         }
 
         static const std::map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {

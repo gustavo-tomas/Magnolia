@@ -20,9 +20,9 @@ namespace mag
 
         void shutdown();
 
-        void begin_frame();
+        b8 begin_frame();
 
-        void end_frame();
+        b8 end_frame();
 
         VertexBufferHandle create_vertex_buffer(const u64 size, const void* data = nullptr);
 

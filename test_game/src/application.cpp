@@ -93,13 +93,19 @@ namespace game
 
         scene->on_update(dt);
 
-        mag::gfx::begin_frame();
+        if (!mag::gfx::begin_frame())
+        {
+            return;
+        }
 
         render_sprites();
         render_models();
         render_text();
 
-        mag::gfx::end_frame();
+        if (!mag::gfx::end_frame())
+        {
+            return;
+        }
     }
 
     void TestGame::on_event(const mag::Event& e)
