@@ -331,7 +331,6 @@ namespace mag
 
             BindingData& binding = bindings_map[uniform_name];
 
-            const ShaderData& shader = state->shaders[state->current_bound_shader];
             const BufferHandle buffer_handle = binding.buffer_handle;
             const unique<IBuffer>& buffer = state->buffers[buffer_handle];
 
@@ -348,10 +347,6 @@ namespace mag
 
                 descriptor_data.last_bound_buffer = buffer_handle;
             }
-
-            // Finally bind the descriptor
-
-            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
         }
 
         void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
@@ -364,7 +359,6 @@ namespace mag
 
             BindingData& binding = bindings_map[uniform_name];
 
-            const ShaderData& shader = state->shaders[state->current_bound_shader];
             const unique<ITexture>& texture = state->textures[texture_handle].texture;
             const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
 
@@ -377,10 +371,6 @@ namespace mag
 
                 descriptor_data.last_bound_texture = texture_handle;
             }
-
-            // Finally bind the descriptor
-
-            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
         }
 
         TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels,
@@ -548,8 +538,17 @@ namespace mag
         void use_shader(const ShaderHandle& handle)
         {
             FrameData& current_frame = state->frames[state->current_frame];
+            const ShaderData& shader = state->shaders[handle];
+            const DescriptorData& descriptor_data = current_frame.descriptor_set_map[handle];
 
+            // Because we are using the descriptor indexing extension with the update after bind feature, we can bind
+            // descriptors sets only once and later update them
+
+            // Bind pipeline
             current_frame.command_buffer->bind_pipeline(state->shaders[handle].pipeline.get());
+
+            // Bind the descriptor sets
+            current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
 
             state->current_bound_shader = handle;
         }

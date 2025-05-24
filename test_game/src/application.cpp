@@ -458,6 +458,6 @@ namespace game
             }
         }
 
-        gfx::draw(4, char_offset);
+        mag::gfx::draw(4, char_offset);
     }
 };  // namespace game
