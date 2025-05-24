@@ -95,6 +95,8 @@ namespace mag
 
             // Triple buffering if the device supports it
             const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
+            const math::uvec3 render_target_extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+
             state->frames.resize(max_frames_in_flight);
 
             for (u32 i = 0; i < state->frames.size(); i++)
@@ -118,12 +120,12 @@ namespace mag
                 state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
 
                 ITextureDesc render_target_color_texture_desc = {};
-                render_target_color_texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+                render_target_color_texture_desc.extent = render_target_extent;
                 render_target_color_texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
                 state->frames[i].render_target_color = state->device->create_texture(render_target_color_texture_desc);
 
                 ITextureDesc render_target_depth_texture_desc = {};
-                render_target_depth_texture_desc.extent = math::uvec3(state->swapchain->get_extent(), 1.0f);
+                render_target_depth_texture_desc.extent = render_target_extent;
                 render_target_depth_texture_desc.usage = TextureUsage::DepthStencilAttachment;
                 render_target_depth_texture_desc.aspect = TextureAspect::Depth;
                 render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
@@ -234,6 +236,7 @@ namespace mag
             const unique<ITexture>& render_target = current_frame.render_target_color;
 
             const u32 image_index = state->swapchain->get_current_image_index();
+            const ITexture* swapchain_texture = state->swapchain->get_texture(image_index);
 
             current_frame.command_buffer->end_rendering();
 
@@ -243,17 +246,17 @@ namespace mag
                 AccessMask::TransferRead, PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
             // Transition swapchain image to transfer
-            current_frame.command_buffer->pipeline_barrier(
-                state->swapchain->get_texture(image_index), TextureLayout::TransferDst, AccessMask::None,
-                AccessMask::TransferWrite, PipelineStage::TopOfPipe, PipelineStage::Transfer);
+            current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::TransferDst,
+                                                           AccessMask::None, AccessMask::TransferWrite,
+                                                           PipelineStage::TopOfPipe, PipelineStage::Transfer);
 
             // Copy from the render target to the swapchain image
-            current_frame.command_buffer->copy_texture(render_target.get(), state->swapchain->get_texture(image_index));
+            current_frame.command_buffer->copy_texture(render_target.get(), swapchain_texture);
 
             // Transition swapchain image to present
-            current_frame.command_buffer->pipeline_barrier(
-                state->swapchain->get_texture(image_index), TextureLayout::Present, AccessMask::TransferWrite,
-                AccessMask::MemoryRead, PipelineStage::Transfer, PipelineStage::BottomOfPipe);
+            current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::Present,
+                                                           AccessMask::TransferWrite, AccessMask::MemoryRead,
+                                                           PipelineStage::Transfer, PipelineStage::BottomOfPipe);
 
             current_frame.command_buffer->end_recording();
 
@@ -517,12 +520,15 @@ namespace mag
 
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
+            const Format color_format = state->frames[state->current_frame].render_target_color->get_format();
+            const Format depth_format = state->frames[state->current_frame].render_target_depth->get_format();
+            const math::uvec2 extent = state->frames[state->current_frame].render_target_color->get_extent();
+
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
             graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
-            graphics_pipeline_desc.color_attachment_format = state->swapchain->get_format();
-            graphics_pipeline_desc.depth_attachment_format =
-                state->frames[state->current_frame].render_target_depth->get_format();
-            graphics_pipeline_desc.extent = state->swapchain->get_extent();
+            graphics_pipeline_desc.color_attachment_format = color_format;
+            graphics_pipeline_desc.depth_attachment_format = depth_format;
+            graphics_pipeline_desc.extent = extent;
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
 
             u32 stride = 0;
