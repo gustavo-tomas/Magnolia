@@ -166,7 +166,6 @@ namespace mag
         void begin_frame()
         {
             FrameData& current_frame = state->frames[state->current_frame];
-            const unique<ITexture>& render_target = current_frame.render_target_color;
             const unique<ITexture>& render_target_color = current_frame.render_target_color;
             const unique<ITexture>& render_target_depth = current_frame.render_target_depth;
 
@@ -185,7 +184,7 @@ namespace mag
                 MAG_ASSERT(false, "Failed to acquire swapchain image");
             }
 
-            const math::uvec2 extent = state->swapchain->get_extent();
+            const math::uvec2 extent = render_target_color->get_extent();
 
             // Render Passes
             // -------------------------------------------------------------------------------------------------
@@ -215,8 +214,8 @@ namespace mag
 
             // Prepare render target for rendering
             current_frame.command_buffer->pipeline_barrier(
-                render_target.get(), TextureLayout::ColorAttachment, AccessMask::None, AccessMask::ColorAttachmentWrite,
-                PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
+                render_target_color.get(), TextureLayout::ColorAttachment, AccessMask::None,
+                AccessMask::ColorAttachmentWrite, PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
             // Flip the viewport to correct vulkan coordinate system
             math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
