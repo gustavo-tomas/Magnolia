@@ -74,7 +74,7 @@ namespace mag
 
         static GfxState* state = nullptr;
 
-        b8 initialize()
+        b8 initialize(const GfxOptions& options)
         {
             state = new GfxState();
             state->device = create_device();
@@ -95,9 +95,7 @@ namespace mag
 
             // Triple buffering if the device supports it
             const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
-
-            // @TODO: this resolution can be higher than the swapchain extent
-            const math::uvec3 render_target_extent = math::uvec3(state->swapchain->get_extent(), 1);
+            const math::uvec3 render_target_extent = math::uvec3(options.resolution, 1);
 
             state->frames.resize(max_frames_in_flight);
 

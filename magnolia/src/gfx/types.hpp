@@ -1,11 +1,23 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "math/types.hpp"
 
 namespace mag
 {
     namespace gfx
     {
+        // Keep it simple
+        typedef u32 ShaderHandle;
+        typedef u32 VertexBufferHandle;
+        typedef u32 IndexBufferHandle;
+        typedef u32 TextureHandle;
+
+        struct GfxOptions
+        {
+                math::uvec2 resolution = math::uvec2(1280, 720);
+        };
+
         enum class Result
         {
             Success,

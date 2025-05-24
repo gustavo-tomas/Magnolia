@@ -10,13 +10,7 @@ namespace mag
 
     namespace gfx
     {
-        // Keep it simple
-        typedef u32 ShaderHandle;
-        typedef u32 VertexBufferHandle;
-        typedef u32 IndexBufferHandle;
-        typedef u32 TextureHandle;
-
-        b8 initialize();
+        b8 initialize(const GfxOptions& options);
 
         void shutdown();
 

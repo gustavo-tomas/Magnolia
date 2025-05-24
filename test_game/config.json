@@ -3,6 +3,10 @@
         1280,
         720
     ],
+    "ScreenResolution": [
+        1920,
+        1080
+    ],
     "WindowPosition": [],
     "WindowTitle": "TestGame",
     "WindowIcon": "",

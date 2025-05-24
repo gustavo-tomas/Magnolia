@@ -53,6 +53,7 @@ namespace mag
 
         math::uvec2 window_size = WindowOptions::MaxSize;
         math::ivec2 window_position = WindowOptions::CenterPos;
+        math::uvec2 screen_resolution = {1280, 720};
         str window_title = "Magnolia";
         str window_icon = "";
 
@@ -72,6 +73,13 @@ namespace mag
                 window_position[count++] = num;
             }
 
+            count = 0;
+            for (const auto& num : config["ScreenResolution"])
+            {
+                if (count >= screen_resolution.length()) break;
+                screen_resolution[count++] = num;
+            }
+
             window_title = config["WindowTitle"].get<str>();
             window_icon = config["WindowIcon"].get<str>();
         }
@@ -86,7 +94,9 @@ namespace mag
         initialized = initialized && window::initialize(window_options);
 
         // Initialize graphics subsystem
-        initialized = initialized && gfx::initialize();
+        gfx::GfxOptions gfx_options = {};
+        gfx_options.resolution = screen_resolution;
+        initialized = initialized && gfx::initialize(gfx_options);
 
         // Initialize the resource subsystem
         initialized = initialized && resource::initialize();
