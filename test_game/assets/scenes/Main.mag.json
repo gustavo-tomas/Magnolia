@@ -234,6 +234,60 @@
         },
         {
             "NameComponent": {
+                "Name": "Sprite1"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    0.0,
+                    0.0,
+                    -10.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            },
+            "SpriteComponent": {
+                "FilePath":"test_game/assets/sprites/test_texture0.png",
+                "ConstantSize":false,
+                "AlwaysFaceCamera":false
+            }
+        },
+        {
+            "NameComponent": {
+                "Name": "Sprite2"
+            },
+            "TransformComponent": {
+                "Translation": [
+                    140.0,
+                    0.0,
+                    -10.0
+                ],
+                "Rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "Scale": [
+                    0.10,
+                    0.10,
+                    0.10
+                ]
+            },
+            "SpriteComponent": {
+                "FilePath":"test_game/assets/sprites/test_texture1.png",
+                "ConstantSize":false,
+                "AlwaysFaceCamera":false
+            }
+        },
+        {
+            "NameComponent": {
                 "Name": "AlphabetText"
             },
             "TransformComponent": {

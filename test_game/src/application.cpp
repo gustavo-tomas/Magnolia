@@ -23,10 +23,6 @@ mag::Application* mag::create_application() { return new game::TestGame("test_ga
 
 namespace game
 {
-    // @TODO: temp
-    static std::vector<mag::gfx::TextureHandle> texture_handles;
-    static std::vector<mag::Image> textures;
-
     TestGame::TestGame(const str& config_file_path) : Application(config_file_path)
     {
         // Load the project
@@ -69,18 +65,6 @@ namespace game
         }
 
         scene->on_start();
-
-        u32 texture_count = 2;
-
-        textures.resize(texture_count);
-
-        for (u32 i = 0; i < texture_count; i++)
-        {
-            MAG_ASSERT(mag::resource::load("magnolia/assets/test_texture" + std::to_string(i) + ".png", &textures[i]),
-                       "Failed to load textures[{0}]", i);
-            texture_handles.push_back(mag::gfx::create_texture(textures[i].width, textures[i].height,
-                                                               textures[i].pixels.size(), textures[i].pixels.data()));
-        }
     }
 
     TestGame::~TestGame() = default;
@@ -285,21 +269,64 @@ namespace game
             mag::gfx::set_uniform("u_global", &global_data);
         }
 
-        for (u32 i = 0; i < texture_handles.size(); i++)
+        auto sprite_entities = scene->get_ecs().get_all_components_of_types<TransformComponent, SpriteComponent>();
+
+        u32 texture_offset = 0;
+        for (u32 i = 0; i < sprite_entities.size(); i++)
         {
-            static SpriteData sprite_data = {};
-            sprite_data.model = math::translate(mat4(1.0f), vec3(i * 100.0f, 0, 0));
-            sprite_data.size_const_face = vec4(textures[i].width * 0.05f, textures[i].height * 0.05f, 0, 0);
-            sprite_data.texture_idx = i;
+            const auto& transform = std::get<0>(sprite_entities[i]);
+            const auto& sprite = std::get<1>(sprite_entities[i]);
+
+            // @TODO: temp
+            static std::map<str, mag::gfx::TextureHandle> texture_handles;
+            static std::map<str, mag::Image> textures;
+
+            const str& name = sprite->texture_file_path;
+
+            if (!textures.contains(sprite->texture_file_path))
+            {
+                mag::Image texture = {};
+                mag::resource::load(name, &texture);
+
+                textures[name] = texture;
+
+                texture_handles[name] = mag::gfx::create_texture(texture.width, texture.height, texture.pixels.size(),
+                                                                 texture.pixels.data());
+            }
+
+            // Skip sprites that are not loaded yet
+            if (sprite->texture->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
+
+            // Remove rotation if sprite is aligned to the camera
+            const vec3 model_rotation = transform->rotation;
+            if (sprite->always_face_camera)
+            {
+                transform->rotation = vec3(0);
+            }
+
+            const auto model_matrix = transform->get_transformation_matrix();
+            SpriteData sprite_data = {};
+
+            sprite_data.model = model_matrix;
+            sprite_data.size_const_face = {sprite->texture->width, sprite->texture->height, sprite->constant_size,
+                                           sprite->always_face_camera};
+            sprite_data.texture_idx = texture_offset;
+
+            transform->rotation = model_rotation;
 
             // Instance
-            mag::gfx::set_uniform("u_instance", &sprite_data, i);
+            mag::gfx::set_uniform("u_instance", &sprite_data, texture_offset);
 
             // Textures
-            mag::gfx::set_uniform("u_sprite_textures", texture_handles[i], i);
+            mag::gfx::set_uniform("u_sprite_textures", texture_handles[name], texture_offset);
 
-            mag::gfx::draw(4, 1, 0, i);
+            texture_offset++;
         }
+
+        mag::gfx::draw(4, texture_offset);
     }
 
     // @TODO: temp
