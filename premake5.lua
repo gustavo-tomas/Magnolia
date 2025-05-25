@@ -172,13 +172,14 @@ project "magnolia"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -186,6 +187,7 @@ project "magnolia"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -238,13 +240,14 @@ project "sprout_editor"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -252,6 +255,7 @@ project "sprout_editor"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -305,13 +309,14 @@ project "test_game"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -319,6 +324,7 @@ project "test_game"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
         flags { build_flags }
         symbols "off"
