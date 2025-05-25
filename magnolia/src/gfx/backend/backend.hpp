@@ -177,9 +177,9 @@ namespace mag
 
                 virtual void* map() = 0;
 
-                virtual void unmap() = 0;
+                virtual void unmap() const = 0;
 
-                virtual void set_data(const void* data, const u64 size, const u64 offset = 0) = 0;
+                virtual void set_data(const void* const data, const u64 size, const u64 offset = 0) const = 0;
 
                 virtual u64 get_size() const = 0;
 
@@ -219,9 +219,9 @@ namespace mag
             public:
                 virtual ~IFence() = default;
 
-                virtual void wait(const u64 timeout = Timeout) = 0;
+                virtual void wait(const u64 timeout = Timeout) const = 0;
 
-                virtual void reset() = 0;
+                virtual void reset() const = 0;
         };
 
         class ITexture
@@ -229,7 +229,7 @@ namespace mag
             public:
                 virtual ~ITexture() = default;
 
-                virtual void set_data(const void* data, const u64 size) = 0;
+                virtual void set_data(const void* const data, const u64 size) = 0;
 
                 virtual const math::uvec3& get_extent() const = 0;
 
@@ -265,10 +265,10 @@ namespace mag
 
                 virtual Format get_format() const = 0;
 
-                virtual const ITexture* get_texture(const u32 index) const = 0;
+                virtual ITexture* get_texture(const u32 index) const = 0;
 
-                virtual Result acquire_next_image(const ISemaphore* signal_semaphore,
-                                                  const IFence* fence = nullptr) = 0;
+                virtual Result acquire_next_image(const ISemaphore* const signal_semaphore,
+                                                  const IFence* const fence = nullptr) = 0;
 
                 virtual void resize() = 0;
         };
@@ -291,10 +291,10 @@ namespace mag
                 virtual ~IDescriptorSet() = default;
 
                 virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
-                                    const DescriptorType descriptor_type, const u64 offset = 0) = 0;
+                                    const DescriptorType descriptor_type, const u64 offset = 0) const = 0;
 
                 virtual void update(const ITexture* const texture, const ISampler* const sampler, const u32 binding,
-                                    const u32 array_element, const DescriptorType descriptor_type) = 0;
+                                    const u32 array_element, const DescriptorType descriptor_type) const = 0;
         };
 
         class IGraphicsPipeline
@@ -308,7 +308,7 @@ namespace mag
             public:
                 virtual ~ICommandPool() = default;
 
-                virtual void reset() = 0;
+                virtual void reset() const = 0;
         };
 
         class ICommandBuffer
@@ -316,49 +316,52 @@ namespace mag
             public:
                 virtual ~ICommandBuffer() = default;
 
-                virtual void begin_recording() = 0;
+                virtual void begin_recording() const = 0;
 
-                virtual void end_recording() = 0;
+                virtual void end_recording() const = 0;
 
-                virtual void reset() = 0;
+                virtual void reset() const = 0;
 
                 virtual void set_viewport(const math::vec2& extent, const math::vec2& offset = {0.0f, 0.0f},
-                                          const f32 min_depth = 0.0f, const f32 max_depth = 1.0f) = 0;
+                                          const f32 min_depth = 0.0f, const f32 max_depth = 1.0f) const = 0;
 
-                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) = 0;
+                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) const = 0;
 
-                virtual void begin_rendering(const IRenderPass* render_pass) = 0;
+                virtual void begin_rendering(const IRenderPass* const render_pass) const = 0;
 
-                virtual void end_rendering() = 0;
+                virtual void end_rendering() const = 0;
 
-                virtual void bind_pipeline(const IGraphicsPipeline* pipeline) = 0;
+                virtual void bind_pipeline(const IGraphicsPipeline* const pipeline) const = 0;
 
-                virtual void bind_descriptor(const IGraphicsPipeline* pipeline, const IDescriptorSet* descriptor) = 0;
+                virtual void bind_descriptor(const IGraphicsPipeline* const pipeline,
+                                             const IDescriptorSet* const descriptor) const = 0;
 
                 virtual void bind_vertex_buffers(const u32 first_binding, const u32 binding_count,
-                                                 const std::vector<IBuffer*>& buffers,
-                                                 const std::vector<u64>& offsets) = 0;
+                                                 const std::vector<const IBuffer*>& buffers,
+                                                 const std::vector<u64>& offsets) const = 0;
 
-                virtual void bind_index_buffer(const IBuffer* buffer, const u64 offset) = 0;
+                virtual void bind_index_buffer(const IBuffer* const buffer, const u64 offset) const = 0;
 
                 virtual void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
-                                  const u32 first_instance = 0) = 0;
+                                  const u32 first_instance = 0) const = 0;
 
                 virtual void draw_indexed(const u32 index_count, const u32 instance_count = 1,
                                           const u32 first_index = 0, const i32 vertex_offset = 0,
-                                          const u32 first_instance = 0) = 0;
+                                          const u32 first_instance = 0) const = 0;
 
-                virtual void pipeline_barrier(const ITexture* texture, const TextureLayout new_layout,
+                virtual void pipeline_barrier(ITexture* const texture, const TextureLayout new_layout,
                                               const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                               const PipelineStage src_stage_mask,
-                                              const PipelineStage dst_stage_mask) = 0;
+                                              const PipelineStage dst_stage_mask) const = 0;
 
-                virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
-                                          const Filter filter) = 0;
+                virtual void blit_texture(const ITexture* const src_texture, const ITexture* const dst_texture,
+                                          const Filter filter) const = 0;
 
-                virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) = 0;
+                virtual void copy_texture(const ITexture* const src_texture,
+                                          const ITexture* const dst_texture) const = 0;
 
-                virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) = 0;
+                virtual void copy_buffer_to_texture(const IBuffer* const buffer,
+                                                    const ITexture* const texture) const = 0;
         };
 
         class IQueue
@@ -366,10 +369,11 @@ namespace mag
             public:
                 virtual ~IQueue() = default;
 
-                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
-                                    const ICommandBuffer* command_buffer) = 0;
+                virtual void submit(const ISemaphore* const wait_semaphore, const ISemaphore* const signal_semaphore,
+                                    const IFence* const fence, const ICommandBuffer* const command_buffer) const = 0;
 
-                virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) = 0;
+                virtual Result present(const ISwapchain* const swapchain,
+                                       const ISemaphore* const wait_semaphore) const = 0;
         };
 
         class IDevice
@@ -377,40 +381,41 @@ namespace mag
             public:
                 virtual ~IDevice() = default;
 
-                virtual void wait_idle() = 0;
+                virtual void wait_idle() const = 0;
 
-                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) = 0;
+                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) const = 0;
 
-                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) = 0;
+                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) const = 0;
 
-                virtual unique<IFence> create_fence(const IFenceDesc& desc) = 0;
+                virtual unique<IFence> create_fence(const IFenceDesc& desc) const = 0;
 
-                virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) = 0;
+                virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) const = 0;
 
-                virtual unique<IQueue> create_queue(const IQueueDesc& desc) = 0;
+                virtual unique<IQueue> create_queue(const IQueueDesc& desc) const = 0;
 
-                virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) = 0;
+                virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) const = 0;
 
-                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) = 0;
+                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) const = 0;
 
-                virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) = 0;
+                virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) const = 0;
 
-                virtual unique<IRenderingAttachment> create_render_attachment(const IRenderingAttachmentDesc& desc) = 0;
+                virtual unique<IRenderingAttachment> create_render_attachment(
+                    const IRenderingAttachmentDesc& desc) const = 0;
 
-                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) = 0;
+                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) const = 0;
 
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) = 0;
 
-                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) = 0;
+                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) const = 0;
 
-                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) = 0;
+                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) const = 0;
 
                 virtual unique<IDescriptorSetLayout> create_descriptor_set_layout(
-                    const IDescriptorSetLayoutDesc& desc) = 0;
+                    const IDescriptorSetLayoutDesc& desc) const = 0;
 
-                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) = 0;
+                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) const = 0;
 
-                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) = 0;
+                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) const = 0;
         };
 
         unique<IDevice> create_device();

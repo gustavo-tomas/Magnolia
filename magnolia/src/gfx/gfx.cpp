@@ -238,7 +238,7 @@ namespace mag
             const unique<ITexture>& render_target = current_frame.render_target_color;
 
             const u32 image_index = state->swapchain->get_current_image_index();
-            const ITexture* swapchain_texture = state->swapchain->get_texture(image_index);
+            ITexture* const swapchain_texture = state->swapchain->get_texture(image_index);
 
             current_frame.command_buffer->end_rendering();
 

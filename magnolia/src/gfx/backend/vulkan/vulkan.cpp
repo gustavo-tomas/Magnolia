@@ -46,7 +46,7 @@ namespace mag
         class VulkanSemaphore : public ISemaphore
         {
             public:
-                VulkanSemaphore(const vkb::DispatchTable& disp, const ISemaphoreDesc& desc) : disp(disp)
+                VulkanSemaphore(const ISemaphoreDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
                 {
                     (void)desc;
 
@@ -68,7 +68,7 @@ namespace mag
         class VulkanFence : public IFence
         {
             public:
-                VulkanFence(const vkb::DispatchTable& disp, const IFenceDesc& desc) : disp(disp)
+                VulkanFence(const IFenceDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
                 {
                     VkFenceCreateInfo fence_info = {};
                     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -83,9 +83,9 @@ namespace mag
 
                 ~VulkanFence() { disp.destroyFence(fence, nullptr); }
 
-                virtual void wait(const u64 timeout) override { disp.waitForFences(1, &fence, VK_TRUE, timeout); }
+                virtual void wait(const u64 timeout) const override { disp.waitForFences(1, &fence, VK_TRUE, timeout); }
 
-                virtual void reset() override { disp.resetFences(1, &fence); }
+                virtual void reset() const override { disp.resetFences(1, &fence); }
 
                 const VkFence& get_fence() const { return fence; }
 
@@ -130,9 +130,9 @@ namespace mag
                     return mapped_region;
                 }
 
-                virtual void unmap() override { vmaUnmapMemory(allocator, allocation); }
+                virtual void unmap() const override { vmaUnmapMemory(allocator, allocation); }
 
-                virtual void set_data(const void* data, const u64 data_size, const u64 offset = 0) override
+                virtual void set_data(const void* const data, const u64 data_size, const u64 offset = 0) const override
                 {
                     MAG_ASSERT(offset + data_size <= size, "Size limit exceeded");
                     memcpy(static_cast<c8*>(mapped_region) + offset, data, data_size);
@@ -186,8 +186,8 @@ namespace mag
         class VulkanTexture : public ITexture
         {
             public:
-                VulkanTexture(const vkb::DispatchTable& disp, const VmaAllocator& allocator, IDevice* device,
-                              const ITextureDesc& desc)
+                VulkanTexture(const ITextureDesc& desc, const vkb::DispatchTable& disp, IDevice* device,
+                              const VmaAllocator& allocator)
                     : disp(disp),
                       allocator(allocator),
                       device(device),
@@ -256,7 +256,7 @@ namespace mag
                     }
                 }
 
-                virtual void set_data(const void* data, const u64 size) override
+                virtual void set_data(const void* const data, const u64 size) override
                 {
                     IBufferDesc staging_buffer_desc = {};
                     staging_buffer_desc.buffer_usage = BufferUsage::TransferSrc;
@@ -333,7 +333,7 @@ namespace mag
         class VulkanSwapchain : public ISwapchain
         {
             public:
-                VulkanSwapchain(const vkb::DispatchTable& disp, const vkb::Device& device, const ISwapchainDesc& desc)
+                VulkanSwapchain(const ISwapchainDesc& desc, const vkb::DispatchTable& disp, const vkb::Device& device)
                     : disp(disp), device(device), present_mode(desc.desired_present_mode)
                 {
                     recreate_swapchain();
@@ -353,20 +353,21 @@ namespace mag
 
                 virtual Format get_format() const override { return vk_to_mag(swapchain.image_format); }
 
-                virtual const ITexture* get_texture(const u32 index) const override
+                virtual ITexture* get_texture(const u32 index) const override
                 {
                     return swapchain_textures[index].get();
                 }
 
-                virtual Result acquire_next_image(const ISemaphore* signal_semaphore,
-                                                  const IFence* fence = nullptr) override
+                virtual Result acquire_next_image(const ISemaphore* const signal_semaphore,
+                                                  const IFence* const fence = nullptr) override
                 {
-                    const VkSemaphore vk_sem = static_cast<const VulkanSemaphore*>(signal_semaphore)->get_semaphore();
+                    const VkSemaphore vk_sem =
+                        static_cast<const VulkanSemaphore* const>(signal_semaphore)->get_semaphore();
                     VkFence vk_fen = nullptr;
 
                     if (fence != nullptr)
                     {
-                        vk_fen = static_cast<const VulkanFence*>(fence)->get_fence();
+                        vk_fen = static_cast<const VulkanFence* const>(fence)->get_fence();
                     }
 
                     const VkResult result =
@@ -405,9 +406,10 @@ namespace mag
 
                     for (u32 i = 0; i < swapchain.image_count; i++)
                     {
-                        VulkanTexture* texture =
+                        VulkanTexture* const texture =
                             new VulkanTexture(disp, nullptr, math::uvec3(vk_to_mag(swapchain.extent), 1),
                                               swapchain_images[i], swapchain_image_views[i]);
+
                         swapchain_textures.emplace_back(texture);
                     }
                 }
@@ -515,10 +517,10 @@ namespace mag
             public:
                 VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
                 {
-                    parent_pool = ((VulkanDescriptorPool*)desc.descriptor_pool)->get_pool();
+                    parent_pool = static_cast<const VulkanDescriptorPool* const>(desc.descriptor_pool)->get_pool();
 
-                    VkDescriptorSetLayout descriptor_layout =
-                        ((VulkanDescriptorSetLayout*)desc.descriptor_layout)->get_layout();
+                    const VkDescriptorSetLayout descriptor_layout =
+                        static_cast<const VulkanDescriptorSetLayout* const>(desc.descriptor_layout)->get_layout();
 
                     VkDescriptorSetVariableDescriptorCountAllocateInfo variable_count_info = {};
                     variable_count_info.sType =
@@ -540,12 +542,12 @@ namespace mag
                 ~VulkanDescriptorSet() { disp.freeDescriptorSets(parent_pool, 1, &descriptor_set); }
 
                 virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
-                                    const DescriptorType descriptor_type, const u64 offset) override
+                                    const DescriptorType descriptor_type, const u64 offset) const override
                 {
                     std::vector<VkWriteDescriptorSet> descriptor_writes;
 
                     VkDescriptorBufferInfo buffer_info = {};
-                    buffer_info.buffer = ((VulkanBuffer*)buffer)->get_buffer();
+                    buffer_info.buffer = static_cast<const VulkanBuffer* const>(buffer)->get_buffer();
                     buffer_info.offset = offset;
                     buffer_info.range = buffer->get_size();
 
@@ -564,14 +566,14 @@ namespace mag
                 }
 
                 virtual void update(const ITexture* const texture, const ISampler* const sampler, const u32 binding,
-                                    const u32 array_element, const DescriptorType descriptor_type) override
+                                    const u32 array_element, const DescriptorType descriptor_type) const override
                 {
                     std::vector<VkWriteDescriptorSet> descriptor_writes;
 
                     VkDescriptorImageInfo image_info = {};
                     image_info.imageLayout = mag_to_vk(texture->get_layout());
-                    image_info.imageView = ((VulkanTexture*)texture)->get_image_view();
-                    image_info.sampler = ((VulkanSampler*)sampler)->get_sampler();
+                    image_info.imageView = static_cast<const VulkanTexture* const>(texture)->get_image_view();
+                    image_info.sampler = static_cast<const VulkanSampler* const>(sampler)->get_sampler();
 
                     VkWriteDescriptorSet write = {};
                     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -598,7 +600,7 @@ namespace mag
         class VulkanGraphicsPipeline : public IGraphicsPipeline
         {
             public:
-                VulkanGraphicsPipeline(const vkb::DispatchTable& disp, const IGraphicsPipelineDesc& desc) : disp(disp)
+                VulkanGraphicsPipeline(const IGraphicsPipelineDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
                 {
                     const u32 shader_module_count = desc.shader_modules.size();
 
@@ -612,7 +614,7 @@ namespace mag
                         VkShaderModuleCreateInfo shader_module_info = {};
                         shader_module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                         shader_module_info.codeSize = shader_module_desc.code.size();
-                        shader_module_info.pCode = reinterpret_cast<const u32*>(shader_module_desc.code.data());
+                        shader_module_info.pCode = reinterpret_cast<const u32* const>(shader_module_desc.code.data());
 
                         shader_modules[i] = {};
 
@@ -627,10 +629,10 @@ namespace mag
                     }
 
                     std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
-                    for (const IDescriptorSetLayout* descriptor_layout : desc.descriptor_layouts)
+                    for (const IDescriptorSetLayout* const descriptor_layout : desc.descriptor_layouts)
                     {
                         const VkDescriptorSetLayout descriptor_set_layout =
-                            ((VulkanDescriptorSetLayout*)descriptor_layout)->get_layout();
+                            static_cast<const VulkanDescriptorSetLayout* const>(descriptor_layout)->get_layout();
 
                         descriptor_set_layouts.push_back(descriptor_set_layout);
                     }
@@ -824,7 +826,8 @@ namespace mag
 
                     rendering_attachment_info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
                     rendering_attachment_info.imageLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR;
-                    rendering_attachment_info.imageView = ((VulkanTexture*)desc.texture)->get_image_view();
+                    rendering_attachment_info.imageView =
+                        static_cast<const VulkanTexture* const>(desc.texture)->get_image_view();
                     rendering_attachment_info.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                     rendering_attachment_info.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     rendering_attachment_info.clearValue = clear_value;
@@ -862,10 +865,13 @@ namespace mag
                     render_area.extent = mag_to_vk(desc.extent);
                     render_area.offset = mag_to_vk(desc.offset);
 
-                    for (const IRenderingAttachment* color_attachment : desc.color_attachments)
+                    for (const IRenderingAttachment* const color_attachment : desc.color_attachments)
                     {
-                        color_attachments.push_back(
-                            ((VulkanRenderingAttachment*)color_attachment)->get_attachment_info());
+                        const VkRenderingAttachmentInfo attachment_info =
+                            static_cast<const VulkanRenderingAttachment* const>(color_attachment)
+                                ->get_attachment_info();
+
+                        color_attachments.push_back(attachment_info);
                     }
 
                     render_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
@@ -880,7 +886,9 @@ namespace mag
 
                     if (desc.depth_attachment != nullptr)
                     {
-                        depth_attachment = ((VulkanRenderingAttachment*)desc.depth_attachment)->get_attachment_info();
+                        depth_attachment = static_cast<const VulkanRenderingAttachment* const>(desc.depth_attachment)
+                                               ->get_attachment_info();
+
                         render_info.pDepthAttachment = &depth_attachment;
                     }
                 }
@@ -902,8 +910,8 @@ namespace mag
         class VulkanCommandPool : public ICommandPool
         {
             public:
-                VulkanCommandPool(const vkb::DispatchTable& disp, const vkb::Device& device,
-                                  const ICommandPoolDesc& desc)
+                VulkanCommandPool(const ICommandPoolDesc& desc, const vkb::DispatchTable& disp,
+                                  const vkb::Device& device)
                     : disp(disp)
                 {
                     VkCommandPoolCreateInfo pool_info = {};
@@ -916,7 +924,7 @@ namespace mag
 
                 ~VulkanCommandPool() { disp.destroyCommandPool(pool, nullptr); }
 
-                virtual void reset() override { disp.resetCommandPool(pool, 0); }
+                virtual void reset() const override { disp.resetCommandPool(pool, 0); }
 
                 const VkCommandPool& get_pool() const { return pool; }
 
@@ -928,9 +936,9 @@ namespace mag
         class VulkanCommandBuffer : public ICommandBuffer
         {
             public:
-                VulkanCommandBuffer(const vkb::DispatchTable& disp, const ICommandBufferDesc& desc) : disp(disp)
+                VulkanCommandBuffer(const ICommandBufferDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
                 {
-                    command_pool = (VulkanCommandPool*)desc.command_pool;
+                    command_pool = static_cast<const VulkanCommandPool* const>(desc.command_pool);
 
                     VkCommandBufferAllocateInfo alloc_info = {};
                     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -944,7 +952,7 @@ namespace mag
 
                 ~VulkanCommandBuffer() { disp.freeCommandBuffers(command_pool->get_pool(), 1, &command_buffer); }
 
-                virtual void begin_recording() override
+                virtual void begin_recording() const override
                 {
                     VkCommandBufferBeginInfo begin_info = {};
                     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -953,15 +961,15 @@ namespace mag
                              "Failed to begin command buffer recording");
                 }
 
-                virtual void end_recording() override
+                virtual void end_recording() const override
                 {
                     VK_CHECK(disp.endCommandBuffer(command_buffer), "Failed to record command buffer");
                 }
 
-                virtual void reset() override { disp.resetCommandBuffer(command_buffer, 0); }
+                virtual void reset() const override { disp.resetCommandBuffer(command_buffer, 0); }
 
                 virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, const f32 min_depth,
-                                          const f32 max_depth) override
+                                          const f32 max_depth) const override
                 {
                     VkViewport viewport = {};
                     viewport.width = extent.x;
@@ -974,7 +982,8 @@ namespace mag
                     disp.cmdSetViewport(command_buffer, 0, 1, &viewport);
                 }
 
-                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) override
+                virtual void set_scissor(const math::uvec2& extent,
+                                         const math::ivec2& offset = {0.0f, 0.0f}) const override
                 {
                     VkRect2D scissor = {};
                     scissor.extent = mag_to_vk(extent);
@@ -983,66 +992,74 @@ namespace mag
                     disp.cmdSetScissor(command_buffer, 0, 1, &scissor);
                 }
 
-                virtual void begin_rendering(const IRenderPass* render_pass) override
+                virtual void begin_rendering(const IRenderPass* render_pass) const override
                 {
-                    disp.cmdBeginRendering(command_buffer, &((VulkanRenderPass*)render_pass)->get_rendering_info());
+                    const VkRenderingInfo* rendering_info =
+                        &static_cast<const VulkanRenderPass* const>(render_pass)->get_rendering_info();
+
+                    disp.cmdBeginRendering(command_buffer, rendering_info);
                 }
 
-                virtual void end_rendering() override { disp.cmdEndRenderingKHR(command_buffer); }
+                virtual void end_rendering() const override { disp.cmdEndRenderingKHR(command_buffer); }
 
-                virtual void bind_pipeline(const IGraphicsPipeline* pipeline) override
+                virtual void bind_pipeline(const IGraphicsPipeline* const pipeline) const override
                 {
                     disp.cmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                         ((VulkanGraphicsPipeline*)pipeline)->get_pipeline());
+                                         static_cast<const VulkanGraphicsPipeline* const>(pipeline)->get_pipeline());
                 }
 
-                virtual void bind_descriptor(const IGraphicsPipeline* pipeline,
-                                             const IDescriptorSet* descriptor) override
+                virtual void bind_descriptor(const IGraphicsPipeline* const pipeline,
+                                             const IDescriptorSet* const descriptor) const override
                 {
-                    disp.cmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                               ((VulkanGraphicsPipeline*)pipeline)->get_pipeline_layout(), 0, 1,
-                                               &((VulkanDescriptorSet*)descriptor)->get_descriptor_set(), 0, nullptr);
+                    const VkPipelineLayout pipeline_layout =
+                        static_cast<const VulkanGraphicsPipeline* const>(pipeline)->get_pipeline_layout();
+
+                    const VkDescriptorSet descriptor_set =
+                        static_cast<const VulkanDescriptorSet* const>(descriptor)->get_descriptor_set();
+
+                    disp.cmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1,
+                                               &descriptor_set, 0, nullptr);
                 }
 
                 virtual void bind_vertex_buffers(const u32 first_binding, const u32 binding_count,
-                                                 const std::vector<IBuffer*>& buffers,
-                                                 const std::vector<u64>& offsets) override
+                                                 const std::vector<const IBuffer*>& buffers,
+                                                 const std::vector<u64>& offsets) const override
                 {
                     std::vector<VkBuffer> vk_buffers;
-                    for (const IBuffer* buffer : buffers)
+                    for (const IBuffer* const buffer : buffers)
                     {
-                        vk_buffers.push_back(((VulkanBuffer*)buffer)->get_buffer());
+                        vk_buffers.push_back(static_cast<const VulkanBuffer* const>(buffer)->get_buffer());
                     }
 
                     disp.cmdBindVertexBuffers(command_buffer, first_binding, binding_count, vk_buffers.data(),
                                               offsets.data());
                 }
 
-                virtual void bind_index_buffer(const IBuffer* buffer, const u64 offset) override
+                virtual void bind_index_buffer(const IBuffer* const buffer, const u64 offset) const override
                 {
-                    const VkBuffer vk_buffer = ((VulkanBuffer*)buffer)->get_buffer();
+                    const VkBuffer vk_buffer = static_cast<const VulkanBuffer* const>(buffer)->get_buffer();
 
                     disp.cmdBindIndexBuffer(command_buffer, vk_buffer, offset, VK_INDEX_TYPE_UINT32);
                 }
 
                 virtual void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex,
-                                  const u32 first_instance) override
+                                  const u32 first_instance) const override
                 {
                     disp.cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
                 }
 
                 virtual void draw_indexed(const u32 index_count, const u32 instance_count = 1,
                                           const u32 first_index = 0, const i32 vertex_offset = 0,
-                                          const u32 first_instance = 0) override
+                                          const u32 first_instance = 0) const override
                 {
                     disp.cmdDrawIndexed(command_buffer, index_count, instance_count, first_index, vertex_offset,
                                         first_instance);
                 }
 
-                virtual void pipeline_barrier(const ITexture* texture, const TextureLayout new_layout,
+                virtual void pipeline_barrier(ITexture* const texture, const TextureLayout new_layout,
                                               const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                               const PipelineStage src_stage_mask,
-                                              const PipelineStage dst_stage_mask) override
+                                              const PipelineStage dst_stage_mask) const override
                 {
                     VkImageMemoryBarrier image_memory_barrier = {};
                     image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -1050,7 +1067,7 @@ namespace mag
                     image_memory_barrier.dstAccessMask = mag_to_vk(dst_access_mask);
                     image_memory_barrier.oldLayout = mag_to_vk(texture->get_layout());
                     image_memory_barrier.newLayout = mag_to_vk(new_layout);
-                    image_memory_barrier.image = ((VulkanTexture*)texture)->get_image();
+                    image_memory_barrier.image = static_cast<const VulkanTexture* const>(texture)->get_image();
                     image_memory_barrier.subresourceRange = {
                         .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                         .baseMipLevel = 0,
@@ -1063,19 +1080,19 @@ namespace mag
                                             VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1,
                                             &image_memory_barrier);
 
-                    ((VulkanTexture*)texture)->set_new_layout(mag_to_vk(new_layout));
+                    reinterpret_cast<VulkanTexture*>(texture)->set_new_layout(mag_to_vk(new_layout));
                 }
 
-                virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
-                                          const Filter filter) override
+                virtual void blit_texture(const ITexture* const src_texture, const ITexture* const dst_texture,
+                                          const Filter filter) const override
                 {
-                    const VulkanTexture* vk_src = static_cast<const VulkanTexture*>(src_texture);
-                    const VulkanTexture* vk_dst = static_cast<const VulkanTexture*>(dst_texture);
+                    const VulkanTexture* const vk_src = static_cast<const VulkanTexture*>(src_texture);
+                    const VulkanTexture* const vk_dst = static_cast<const VulkanTexture*>(dst_texture);
 
                     VkImageBlit image_blit = {};
 
                     // Src
-                    const math::uvec3 src_extent = vk_src->get_extent();
+                    const math::uvec3& src_extent = vk_src->get_extent();
 
                     image_blit.srcOffsets[1].x = src_extent.x;
                     image_blit.srcOffsets[1].y = src_extent.y;
@@ -1087,7 +1104,7 @@ namespace mag
                     image_blit.srcSubresource.mipLevel = 0;
 
                     // Dst
-                    const math::uvec3 dst_extent = vk_dst->get_extent();
+                    const math::uvec3& dst_extent = vk_dst->get_extent();
 
                     image_blit.dstOffsets[1].x = dst_extent.x;
                     image_blit.dstOffsets[1].y = dst_extent.y;
@@ -1103,12 +1120,13 @@ namespace mag
                                       mag_to_vk(filter));
                 }
 
-                virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) override
+                virtual void copy_texture(const ITexture* const src_texture,
+                                          const ITexture* const dst_texture) const override
                 {
-                    const VulkanTexture* vk_src = static_cast<const VulkanTexture*>(src_texture);
-                    const VulkanTexture* vk_dst = static_cast<const VulkanTexture*>(dst_texture);
+                    const VulkanTexture* const vk_src = static_cast<const VulkanTexture*>(src_texture);
+                    const VulkanTexture* const vk_dst = static_cast<const VulkanTexture*>(dst_texture);
 
-                    const math::uvec3 extent = math::min(vk_src->get_extent(), vk_dst->get_extent());
+                    const math::uvec3& extent = math::min(vk_src->get_extent(), vk_dst->get_extent());
 
                     VkImageCopy image_copy = {};
                     image_copy.extent = mag_to_vk(extent);
@@ -1125,10 +1143,11 @@ namespace mag
                                       vk_dst->get_image(), mag_to_vk(vk_dst->get_layout()), 1, &image_copy);
                 }
 
-                virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) override
+                virtual void copy_buffer_to_texture(const IBuffer* const buffer,
+                                                    const ITexture* const texture) const override
                 {
-                    VulkanBuffer* vk_buffer = (VulkanBuffer*)buffer;
-                    VulkanTexture* vk_texture = (VulkanTexture*)texture;
+                    const VulkanBuffer* const vk_buffer = static_cast<const VulkanBuffer*>(buffer);
+                    const VulkanTexture* const vk_texture = static_cast<const VulkanTexture*>(texture);
 
                     VkBufferImageCopy buffer_image_copy = {};
                     buffer_image_copy.bufferImageHeight = texture->get_extent().y;
@@ -1154,10 +1173,10 @@ namespace mag
         class VulkanQueue : public IQueue
         {
             public:
-                VulkanQueue(const vkb::DispatchTable& disp, const vkb::Device& device, const IQueueDesc& desc)
+                VulkanQueue(const IQueueDesc& desc, const vkb::DispatchTable& disp, const vkb::Device& device)
                     : disp(disp)
                 {
-                    const auto queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
+                    const vkb::Result<VkQueue> queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
 
                     MAG_ASSERT(queue_ret, queue_ret.error().message());
 
@@ -1166,8 +1185,9 @@ namespace mag
 
                 ~VulkanQueue() {}
 
-                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore, IFence* fence,
-                                    const ICommandBuffer* command_buffer) override
+                virtual void submit(const ISemaphore* const wait_semaphore, const ISemaphore* const signal_semaphore,
+                                    const IFence* const fence,
+                                    const ICommandBuffer* const command_buffer) const override
                 {
                     VkSubmitInfo submit_info = {};
                     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1178,37 +1198,45 @@ namespace mag
                     if (wait_semaphore)
                     {
                         submit_info.waitSemaphoreCount = 1;
-                        submit_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                        submit_info.pWaitSemaphores =
+                            &reinterpret_cast<const VulkanSemaphore* const>(wait_semaphore)->get_semaphore();
                     }
 
                     if (signal_semaphore)
                     {
                         submit_info.signalSemaphoreCount = 1;
-                        submit_info.pSignalSemaphores = &((VulkanSemaphore*)signal_semaphore)->get_semaphore();
+                        submit_info.pSignalSemaphores =
+                            &reinterpret_cast<const VulkanSemaphore* const>(signal_semaphore)->get_semaphore();
                     }
 
                     if (command_buffer)
                     {
                         submit_info.commandBufferCount = 1;
-                        submit_info.pCommandBuffers = &((VulkanCommandBuffer*)command_buffer)->get_command_buffer();
+                        submit_info.pCommandBuffers =
+                            &reinterpret_cast<const VulkanCommandBuffer* const>(command_buffer)->get_command_buffer();
                     }
 
                     fence->reset();
 
-                    VK_CHECK(disp.queueSubmit(queue, 1, &submit_info, ((VulkanFence*)fence)->get_fence()),
+                    VK_CHECK(disp.queueSubmit(queue, 1, &submit_info,
+                                              static_cast<const VulkanFence* const>(fence)->get_fence()),
                              "Failed to submit draw command buffer");
                 }
 
-                virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) override
+                virtual Result present(const ISwapchain* const swapchain,
+                                       const ISemaphore* const wait_semaphore) const override
                 {
-                    const u32 image_index = ((VulkanSwapchain*)swapchain)->get_current_image_index();
+                    const u32 image_index =
+                        static_cast<const VulkanSwapchain* const>(swapchain)->get_current_image_index();
 
                     VkPresentInfoKHR present_info = {};
                     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
                     present_info.waitSemaphoreCount = 1;
-                    present_info.pWaitSemaphores = &((VulkanSemaphore*)wait_semaphore)->get_semaphore();
+                    present_info.pWaitSemaphores =
+                        &reinterpret_cast<const VulkanSemaphore* const>(wait_semaphore)->get_semaphore();
                     present_info.swapchainCount = 1;
-                    present_info.pSwapchains = &((VulkanSwapchain*)swapchain)->get_swapchain();
+                    present_info.pSwapchains =
+                        &reinterpret_cast<const VulkanSwapchain* const>(swapchain)->get_swapchain();
                     present_info.pImageIndices = &image_index;
 
                     const VkResult result = disp.queuePresentKHR(queue, &present_info);
@@ -1229,7 +1257,7 @@ namespace mag
                     // Device
                     // -------------------------------------------------------------------------------------------------
                     vkb::InstanceBuilder instance_builder;
-                    const auto instance_ret =
+                    const vkb::Result<vkb::Instance> instance_ret =
                         instance_builder
 
     #if MAG_CONFIG_DEBUG
@@ -1289,18 +1317,20 @@ namespace mag
                     descriptor_indexing_features.runtimeDescriptorArray = true;
 
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
-                    const auto phys_device_ret = phys_device_selector.set_minimum_version(1, 3)
-                                                     .set_surface(surface)
-                                                     .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
-                                                     .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
-                                                     .add_required_extension_features(descriptor_indexing_features)
-                                                     .select();
+                    const vkb::Result<vkb::PhysicalDevice> phys_device_ret =
+                        phys_device_selector.set_minimum_version(1, 3)
+                            .set_surface(surface)
+                            .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
+                            .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
+                            .add_required_extension_features(descriptor_indexing_features)
+                            .select();
 
                     MAG_ASSERT(phys_device_ret, phys_device_ret.error().message());
 
                     vkb::PhysicalDevice physical_device = phys_device_ret.value();
                     vkb::DeviceBuilder device_builder{physical_device};
-                    const auto device_ret = device_builder.add_pNext(&dynamic_rendering_feature).build();
+                    const vkb::Result<vkb::Device> device_ret =
+                        device_builder.add_pNext(&dynamic_rendering_feature).build();
 
                     MAG_ASSERT(device_ret, device_ret.error().message());
 
@@ -1353,9 +1383,10 @@ namespace mag
                     vkb::destroy_instance(instance);
                 }
 
-                virtual void wait_idle() override { disp.deviceWaitIdle(); }
+                virtual void wait_idle() const override { disp.deviceWaitIdle(); }
 
-                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) override
+                virtual void submit_commands_immediate(
+                    std::function<void(ICommandBuffer& cmd)>&& function) const override
                 {
                     const unique<ICommandBuffer>& cmd = immediate_command_buffer;
 
@@ -1370,79 +1401,80 @@ namespace mag
                     immediate_command_pool->reset();
                 }
 
-                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) override
+                virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) const override
                 {
-                    return create_unique<VulkanSemaphore>(disp, desc);
+                    return create_unique<VulkanSemaphore>(desc, disp);
                 }
 
-                virtual unique<IFence> create_fence(const IFenceDesc& desc) override
+                virtual unique<IFence> create_fence(const IFenceDesc& desc) const override
                 {
-                    return create_unique<VulkanFence>(disp, desc);
+                    return create_unique<VulkanFence>(desc, disp);
                 }
 
-                virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) override
+                virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) const override
                 {
-                    return create_unique<VulkanSwapchain>(disp, device, desc);
+                    return create_unique<VulkanSwapchain>(desc, disp, device);
                 }
 
-                virtual unique<IQueue> create_queue(const IQueueDesc& desc) override
+                virtual unique<IQueue> create_queue(const IQueueDesc& desc) const override
                 {
-                    return create_unique<VulkanQueue>(disp, device, desc);
+                    return create_unique<VulkanQueue>(desc, disp, device);
                 }
 
-                virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) override
+                virtual unique<IGraphicsPipeline> create_graphics_pipeline(
+                    const IGraphicsPipelineDesc& desc) const override
                 {
-                    return create_unique<VulkanGraphicsPipeline>(disp, desc);
+                    return create_unique<VulkanGraphicsPipeline>(desc, disp);
                 }
 
-                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) override
+                virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) const override
                 {
-                    return create_unique<VulkanCommandPool>(disp, device, desc);
+                    return create_unique<VulkanCommandPool>(desc, disp, device);
                 }
 
-                virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) override
+                virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) const override
                 {
-                    return create_unique<VulkanCommandBuffer>(disp, desc);
+                    return create_unique<VulkanCommandBuffer>(desc, disp);
                 }
 
                 virtual unique<IRenderingAttachment> create_render_attachment(
-                    const IRenderingAttachmentDesc& desc) override
+                    const IRenderingAttachmentDesc& desc) const override
                 {
                     return create_unique<VulkanRenderingAttachment>(desc);
                 }
 
-                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) override
+                virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) const override
                 {
                     return create_unique<VulkanRenderPass>(desc);
                 }
 
                 virtual unique<ITexture> create_texture(const ITextureDesc& desc) override
                 {
-                    return create_unique<VulkanTexture>(disp, allocator, this, desc);
+                    return create_unique<VulkanTexture>(desc, disp, this, allocator);
                 }
 
-                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) override
+                virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) const override
                 {
                     return create_unique<VulkanBuffer>(desc, allocator);
                 }
 
-                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) override
+                virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) const override
                 {
                     return create_unique<VulkanDescriptorPool>(desc, disp);
                 }
 
                 virtual unique<IDescriptorSetLayout> create_descriptor_set_layout(
-                    const IDescriptorSetLayoutDesc& desc) override
+                    const IDescriptorSetLayoutDesc& desc) const override
                 {
                     return create_unique<VulkanDescriptorSetLayout>(desc, disp);
                 }
 
-                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) override
+                virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) const override
                 {
                     return create_unique<VulkanDescriptorSet>(desc, disp);
                 }
 
-                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) override
+                virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) const override
                 {
                     return create_unique<VulkanSampler>(desc, disp);
                 }
