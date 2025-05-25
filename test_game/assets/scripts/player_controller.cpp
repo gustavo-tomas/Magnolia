@@ -99,7 +99,7 @@ class PlayerController : public ScriptableEntity
             TransformComponent* bullet_transform = new TransformComponent(transform);
             bullet_transform->scale = vec3(100.0f);
 
-            const ref<Model> model =
+            const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             auto* model_c = new ModelComponent(model);

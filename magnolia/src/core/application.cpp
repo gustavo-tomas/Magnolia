@@ -116,21 +116,21 @@ namespace mag
             [](const IResource* resource)
             {
                 // Upload texture data to the GPU
-                if (const Image* image = dynamic_cast<const Image*>(resource))
+                if (const TextureResource* image = dynamic_cast<const TextureResource*>(resource))
                 {
                 }
 
                 // Upload model data to the GPU
-                else if (const Model* model = dynamic_cast<const Model*>(resource))
+                else if (const ModelResource* model = dynamic_cast<const ModelResource*>(resource))
                 {
                 }
 
                 // Upload font data to the GPU
-                else if (const Font* font = dynamic_cast<const Font*>(resource))
+                else if (const FontResource* font = dynamic_cast<const FontResource*>(resource))
                 {
                 }
 
-                else if (const Material* material = dynamic_cast<const Material*>(resource))
+                else if (const MaterialResource* material = dynamic_cast<const MaterialResource*>(resource))
                 {
                 }
 
@@ -138,7 +138,7 @@ namespace mag
                 {
                 }
 
-                else if (const Audio* audio = dynamic_cast<const Audio*>(resource))
+                else if (const AudioResource* audio = dynamic_cast<const AudioResource*>(resource))
                 {
                 }
             });

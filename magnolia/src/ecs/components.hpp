@@ -41,15 +41,15 @@ namespace mag
             mat4 get_transformation_matrix() const;
     };
 
-    struct Image;
+    struct TextureResource;
     struct MAG_API SpriteComponent : public Component
     {
-            SpriteComponent(const ref<Image>& texture, const str& texture_file_path, const b8 constant_size = false,
-                            const b8 always_face_camera = false);
+            SpriteComponent(const ref<TextureResource>& texture, const str& texture_file_path,
+                            const b8 constant_size = false, const b8 always_face_camera = false);
 
             CLONE_DECLARATION(SpriteComponent);
 
-            ref<Image> texture;
+            ref<TextureResource> texture;
             str texture_file_path;  // @TODO: this is not ideal
             b8 constant_size;
             b8 always_face_camera;
@@ -57,37 +57,37 @@ namespace mag
 
     // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
     // and i find that a bit weird
-    struct Model;
+    struct ModelResource;
     struct MAG_API ModelComponent : public Component
     {
-            ModelComponent(const ref<Model>& model);
+            ModelComponent(const ref<ModelResource>& model);
 
             CLONE_DECLARATION(ModelComponent);
 
-            ref<Model> model;
+            ref<ModelResource> model;
     };
 
-    struct Font;
+    struct FontResource;
     struct MAG_API TextComponent : public Component
     {
-            TextComponent(const ref<Font>& font, const vec4& color, const str& text);
+            TextComponent(const ref<FontResource>& font, const vec4& color, const str& text);
 
             CLONE_DECLARATION(TextComponent);
 
-            ref<Font> font;
+            ref<FontResource> font;
             vec4 color;
             str text;
     };
 
-    struct Audio;
+    struct AudioResource;
     struct MAG_API AudioComponent : public Component
     {
-            AudioComponent(const ref<Audio>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
+            AudioComponent(const ref<AudioResource>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
                            const vec3& position = vec3(0), const vec3& velocity = vec3(0));
 
             CLONE_DECLARATION(AudioComponent);
 
-            ref<Audio> audio;
+            ref<AudioResource> audio;
             f32 volume;
             vec3 position;
             vec3 velocity;

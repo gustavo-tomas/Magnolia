@@ -11,7 +11,7 @@ namespace mag
 {
     namespace resource
     {
-        b8 load(const str& file_path, Model* model)
+        b8 load(const str& file_path, ModelResource* model)
         {
             fs::json data;
 

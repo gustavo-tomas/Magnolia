@@ -13,7 +13,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Image>> textures;
+                std::map<str, ref<TextureResource>> textures;
                 ResourceLoadedCallbackFn on_texture_loaded;
         };
 
@@ -31,7 +31,7 @@ namespace mag
             delete state;
         }
 
-        ref<Image> get_texture(const str& name)
+        ref<TextureResource> get_texture(const str& name)
         {
             // Texture found
             auto it = state->textures.find(name);
@@ -41,9 +41,9 @@ namespace mag
             }
 
             // Create a new texture
-            Image* image = new Image();
+            TextureResource* image = new TextureResource();
             image->loading_status = LoadingStatus::InProgress;
-            state->textures[name] = ref<Image>(image);
+            state->textures[name] = ref<TextureResource>(image);
 
             // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
             if (resource::get_image_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
@@ -58,7 +58,7 @@ namespace mag
             }
 
             // Temporary image to load data into
-            Image* transfer_image = new Image(*image);
+            TextureResource* transfer_image = new TextureResource(*image);
 
             // Load in another thread
             auto execute = [name, transfer_image]

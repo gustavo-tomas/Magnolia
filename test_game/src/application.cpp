@@ -18,6 +18,7 @@
 
 // @TODO: temp
 #include "../magnolia/assets/shaders/include/common.h"
+#include "scripting/scripting_engine.hpp"
 
 mag::Application* mag::create_application() { return new game::TestGame("test_game/config.json"); }
 
@@ -149,8 +150,8 @@ namespace game
         static MeshData mesh_data = {};
         mesh_data.material_idx = Max_U32;
 
-        static std::map<str, Material> materials;
-        static std::map<str, Image> textures;
+        static std::map<str, MaterialResource> materials;
+        static std::map<str, TextureResource> textures;
         static std::map<str, mag::gfx::TextureHandle> texture_handles;
         static std::map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
         static std::map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
@@ -195,7 +196,7 @@ namespace game
                     const str& material_name = model->materials[mesh.material_index];
                     if (!materials.contains(material_name))
                     {
-                        Material material = {};
+                        MaterialResource material = {};
                         mag::resource::load(material_name, &material);
 
                         materials[material_name] = material;
@@ -204,7 +205,7 @@ namespace game
                         {
                             if (!textures.contains(name))
                             {
-                                Image texture = {};
+                                TextureResource texture = {};
                                 mag::resource::load(name, &texture);
 
                                 texture_handles[name] = mag::gfx::create_texture(
@@ -215,7 +216,7 @@ namespace game
                         }
                     }
 
-                    const mag::Material& material = materials[material_name];
+                    const mag::MaterialResource& material = materials[material_name];
 
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data = {};
@@ -289,13 +290,13 @@ namespace game
 
             // @TODO: temp
             static std::map<str, mag::gfx::TextureHandle> texture_handles;
-            static std::map<str, mag::Image> textures;
+            static std::map<str, mag::TextureResource> textures;
 
             const str& name = sprite->texture_file_path;
 
             if (!textures.contains(sprite->texture_file_path))
             {
-                mag::Image texture = {};
+                mag::TextureResource texture = {};
                 mag::resource::load(name, &texture);
 
                 textures[name] = texture;
@@ -342,9 +343,9 @@ namespace game
     // @TODO: temp
     struct _FontData
     {
-            std::map<c8, Image> char_textures;
+            std::map<c8, TextureResource> char_textures;
             std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
-            Font font;
+            FontResource font;
             u32 idx;
     };
 
@@ -380,7 +381,7 @@ namespace game
 
             if (!fonts.contains(name))
             {
-                Font font = {};
+                FontResource font = {};
                 mag::resource::load(name, &font);
 
                 _FontData font_data = {};

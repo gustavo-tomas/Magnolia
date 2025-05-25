@@ -12,7 +12,7 @@ namespace mag
 #define DEFAULT_ROUGHNESS_TEXTURE_NAME "__mag_default_roughness_texture__"
 #define DEFAULT_METALNESS_TEXTURE_NAME "__mag_default_metalness_texture__"
 
-    struct Image : public IResource
+    struct TextureResource : public IResource
     {
             u8 channels = 4;
             u32 width = 64;
@@ -23,7 +23,7 @@ namespace mag
 
     namespace resource
     {
-        ref<Image> MAG_API get_texture(const str& name);
-        ref<Image> MAG_API get_default_texture();
+        ref<TextureResource> MAG_API get_texture(const str& name);
+        ref<TextureResource> MAG_API get_default_texture();
     };  // namespace resource
 };      // namespace mag

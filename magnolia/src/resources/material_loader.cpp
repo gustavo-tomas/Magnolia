@@ -10,7 +10,7 @@ namespace mag
 {
     namespace resource
     {
-        b8 load(const str& file_path, Material* material)
+        b8 load(const str& file_path, MaterialResource* material)
         {
             fs::json data;
 

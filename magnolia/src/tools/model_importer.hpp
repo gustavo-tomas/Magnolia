@@ -4,7 +4,7 @@
 
 namespace mag
 {
-    struct Model;
+    struct ModelResource;
     struct Vertex;
 
     class ModelImporter

@@ -16,7 +16,7 @@ namespace mag
 {
     namespace resource
     {
-        b8 load(const str& file_path, Image* image)
+        b8 load(const str& file_path, TextureResource* image)
         {
             if (!image)
             {

@@ -12,7 +12,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Model>> models;
+                std::map<str, ref<ModelResource>> models;
                 ResourceLoadedCallbackFn on_model_loaded;
         };
 
@@ -30,7 +30,7 @@ namespace mag
             delete state;
         }
 
-        ref<Model> get_model(const str& name)
+        ref<ModelResource> get_model(const str& name)
         {
             auto it = state->models.find(name);
             if (it != state->models.end())
@@ -39,12 +39,12 @@ namespace mag
             }
 
             // Create a new model
-            Model* model = new Model();
+            ModelResource* model = new ModelResource();
             model->loading_status = LoadingStatus::InProgress;
-            state->models[name] = ref<Model>(model);
+            state->models[name] = ref<ModelResource>(model);
 
             // Temporary model to load data into
-            Model* transfer_model = new Model(*model);
+            ModelResource* transfer_model = new ModelResource(*model);
 
             // Load in another thread
             auto execute = [name, transfer_model]

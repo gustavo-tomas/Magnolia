@@ -10,7 +10,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Font>> fonts;
+                std::map<str, ref<FontResource>> fonts;
                 ResourceLoadedCallbackFn on_resource_loaded;
         };
 
@@ -28,7 +28,7 @@ namespace mag
             delete state;
         }
 
-        ref<Font> get_font(const str& name)
+        ref<FontResource> get_font(const str& name)
         {
             auto it = state->fonts.find(name);
             if (it != state->fonts.end())
@@ -37,12 +37,12 @@ namespace mag
             }
 
             // Create a new font
-            Font* font = new Font();
+            FontResource* font = new FontResource();
             font->loading_status = LoadingStatus::InProgress;
-            state->fonts[name] = ref<Font>(font);
+            state->fonts[name] = ref<FontResource>(font);
 
             // Temporary font to load data into
-            Font* transfer_font = new Font(*font);
+            FontResource* transfer_font = new FontResource(*font);
 
             // Load in another thread
             auto execute = [name, transfer_font]
