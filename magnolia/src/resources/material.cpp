@@ -1,8 +1,8 @@
 #include "resources/material.hpp"
 
-#include "resources/image.hpp"
 #include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
+#include "resources/texture.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag

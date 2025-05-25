@@ -9,8 +9,8 @@
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
 #include "resources/audio.hpp"
-#include "resources/image.hpp"
 #include "resources/model.hpp"
+#include "resources/texture.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 

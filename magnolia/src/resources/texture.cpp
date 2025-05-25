@@ -1,4 +1,4 @@
-#include "resources/image.hpp"
+#include "resources/texture.hpp"
 
 #include <map>
 

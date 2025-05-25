@@ -4,8 +4,8 @@
 
 #include "core/types.hpp"
 #include "math/types.hpp"
-#include "resources/image.hpp"
 #include "resources/resource.hpp"
+#include "resources/texture.hpp"
 
 namespace mag
 {

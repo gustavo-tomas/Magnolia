@@ -5,8 +5,8 @@
 #include "platform/file_system.hpp"
 #include "resources/audio.hpp"
 #include "resources/font.hpp"
-#include "resources/image.hpp"
 #include "resources/model.hpp"
+#include "resources/texture.hpp"
 #include "scene/scene.hpp"
 
 namespace mag

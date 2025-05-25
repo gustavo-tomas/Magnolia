@@ -8,11 +8,11 @@
 #include <map>
 #include <project/project.hpp>
 #include <resources/font.hpp>
-#include <resources/image.hpp>
 #include <resources/material.hpp>
 #include <resources/model.hpp>
 #include <resources/resource_loader.hpp>
 #include <resources/shader.hpp>
+#include <resources/texture.hpp>
 #include <scene/scene.hpp>
 #include <scene/scene_serializer.hpp>
 
