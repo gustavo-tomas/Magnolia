@@ -23,7 +23,7 @@ namespace mag
 
     namespace resource
     {
-        ref<Image> get_texture(const str& name);
-        ref<Image> get_default_texture();
+        ref<Image> MAG_API get_texture(const str& name);
+        ref<Image> MAG_API get_default_texture();
     };  // namespace resource
 };      // namespace mag

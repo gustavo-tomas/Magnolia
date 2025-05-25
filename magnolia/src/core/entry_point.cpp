@@ -8,7 +8,7 @@
     #error "Undefined entry point"
 #endif
 
-int _main_(int argc, char* argv[])
+MAG_API int _main_(int argc, char* argv[])
 {
     // Ignore unused parameter warning
     (void)argc;

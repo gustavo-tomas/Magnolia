@@ -27,7 +27,7 @@ namespace mag
 
     namespace resource
     {
-        ref<Material> get_material(const str& name);
-        ref<Material> get_default_material();
+        ref<Material> MAG_API get_material(const str& name);
+        ref<Material> MAG_API get_default_material();
     };  // namespace resource
 };      // namespace mag

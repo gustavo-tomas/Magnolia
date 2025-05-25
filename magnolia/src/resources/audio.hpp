@@ -14,6 +14,6 @@ namespace mag
 
     namespace resource
     {
-        ref<Audio> get_audio(const str& name);
+        ref<Audio> MAG_API get_audio(const str& name);
     };  // namespace resource
 };      // namespace mag

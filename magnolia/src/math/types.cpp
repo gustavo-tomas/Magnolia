@@ -4,7 +4,7 @@ namespace mag
 {
     namespace math
     {
-        b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation)
+        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation)
         {
             quat orientation;
             vec3 skew;
@@ -16,7 +16,7 @@ namespace mag
             return result;
         }
 
-        mat4 calculate_rotation_mat(const vec3& rotation)
+        MAG_API mat4 calculate_rotation_mat(const vec3& rotation)
         {
             const quat pitch_rotation = angleAxis(rotation.x, vec3(1, 0, 0));
             const quat yaw_rotation = angleAxis(rotation.y, vec3(0, 1, 0));

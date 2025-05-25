@@ -77,6 +77,6 @@ namespace mag
 
     namespace resource
     {
-        ref<ShaderResource> get_shader(const str& name);
+        ref<ShaderResource> MAG_API get_shader(const str& name);
     };  // namespace resource
 };      // namespace mag

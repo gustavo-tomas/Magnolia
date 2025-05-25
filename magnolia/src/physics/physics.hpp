@@ -10,7 +10,7 @@ namespace mag::math
 
 namespace mag
 {
-    class PhysicsWorld
+    class MAG_API PhysicsWorld
     {
         public:
             PhysicsWorld();

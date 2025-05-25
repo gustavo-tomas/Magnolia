@@ -9,7 +9,7 @@ namespace mag
     struct WindowCloseEvent;
     struct WindowResizeEvent;
 
-    class Application
+    class MAG_API Application
     {
         public:
             explicit Application(const str& config_file_path);
@@ -41,5 +41,5 @@ namespace mag
     Application& get_application();
 
     // Defined by the client
-    Application* create_application();
+    MAG_API Application* create_application();
 };  // namespace mag

@@ -9,7 +9,7 @@ namespace mag
     class PhysicsWorld;
     class Scene;
 
-    class ScriptableEntity
+    class MAG_API ScriptableEntity
     {
         public:
             ScriptableEntity();

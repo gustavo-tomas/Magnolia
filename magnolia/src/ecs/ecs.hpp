@@ -15,7 +15,7 @@ namespace mag
 
     using Entity = std::vector<unique<Component>>;
 
-    class ECS
+    class MAG_API ECS
     {
 #define ASSERT_TYPE(T) static_assert(std::is_base_of<Component, T>::value, "T must be derived from Component")
 

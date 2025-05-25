@@ -132,7 +132,8 @@ project "magnolia"
 
     defines
     {
-        "VULKAN_HPP_NO_EXCEPTIONS"
+        "VULKAN_HPP_NO_EXCEPTIONS",
+        "MAG_BUILD_SHARED"
     }
 
     links
@@ -172,14 +173,14 @@ project "magnolia"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions", "-fvisibility=hidden" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
-        buildoptions { "-fno-exceptions" }
+        buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -187,7 +188,7 @@ project "magnolia"
         runtime "release"
 
     filter "configurations:release"
-        buildoptions { "-fno-exceptions" }
+        buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"

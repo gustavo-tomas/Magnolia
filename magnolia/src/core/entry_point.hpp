@@ -2,4 +2,4 @@
 
 #include "core/application.hpp"
 
-extern mag::Application* mag::create_application();
+extern MAG_API mag::Application* mag::create_application();

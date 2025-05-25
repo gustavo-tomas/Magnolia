@@ -9,7 +9,7 @@ namespace mag
 
     class Frustum;
 
-    class Camera
+    class MAG_API Camera
     {
         public:
             Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,

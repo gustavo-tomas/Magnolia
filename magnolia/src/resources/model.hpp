@@ -42,6 +42,6 @@ namespace mag
 
     namespace resource
     {
-        ref<Model> get_model(const str& name);
+        MAG_API ref<Model> get_model(const str& name);
     };  // namespace resource
 };      // namespace mag

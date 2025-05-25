@@ -26,6 +26,6 @@ namespace mag
 
     namespace resource
     {
-        ref<Font> get_font(const str& name);
+        ref<Font> MAG_API get_font(const str& name);
     };  // namespace resource
 };      // namespace mag

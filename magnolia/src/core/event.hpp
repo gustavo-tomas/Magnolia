@@ -7,7 +7,7 @@ namespace mag
     enum class Keys : u64;
     enum class Buttons : u64;
 
-    struct Event
+    struct MAG_API Event
     {
             virtual ~Event();
     };

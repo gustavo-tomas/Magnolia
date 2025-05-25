@@ -16,11 +16,11 @@ namespace mag
                 fmt::color color;
         };
 
-        str timestamp();
+        MAG_API str timestamp();
 
         template <typename... Args>
-        void log_message(const std::source_location& location, const LogData log_data, const str& message,
-                         const Args&... args)
+        MAG_API void log_message(const std::source_location& location, const LogData log_data, const str& message,
+                                 const Args&... args)
         {
             fmt::print(fmt::emphasis::bold | fg(fmt::color::violet), "[{0}]", timestamp());
 

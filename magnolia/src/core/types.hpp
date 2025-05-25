@@ -166,6 +166,22 @@ typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type opera
     #error "Unknown platform"
 #endif
 
+// DLL imports and exports
+
+#ifdef MAG_BUILD_SHARED
+    #if MAG_PLATFORM_LINUX
+        #define MAG_API __attribute__((visibility("default")))
+    #else
+        #error "Undefined DLL configuration"
+    #endif
+#else
+    #if MAG_PLATFORM_LINUX
+        #define MAG_API
+    #else
+        #error "Undefined DLL configuration"
+    #endif
+#endif
+
 // Paths and build configurations
 
 // @TODO: idk if defining these macros is the best solution, but it'll keep things simple for now

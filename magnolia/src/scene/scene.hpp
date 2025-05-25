@@ -12,7 +12,7 @@ namespace mag
     struct Component;
     struct ScriptComponent;
 
-    class Scene
+    class MAG_API Scene
     {
         public:
             Scene();
