@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -8,6 +9,7 @@ namespace mag
     struct QuitEvent;
     struct WindowCloseEvent;
     struct WindowResizeEvent;
+    struct IResource;
 
     class MAG_API Application
     {
@@ -28,13 +30,18 @@ namespace mag
             // Process events from the user application
             void process_user_application_event(const Event& e);
 
+            // Sets a callback that is called when a resource is finished loading
+            void set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback);
+
         private:
             void process_event(const Event& e);
             void on_window_close(const WindowCloseEvent& e);
             void on_quit(const QuitEvent& e);
+            void on_resource_loaded(const IResource* resource);
 
             b8 running;
             f32 target_frame_rate;
+            ResourceLoadedCallbackFn on_resource_loaded_user_callback = nullptr;
     };
 
     // Access to the application

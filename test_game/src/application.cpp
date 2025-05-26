@@ -7,9 +7,11 @@
 #include <gfx/types.hpp>
 #include <map>
 #include <project/project.hpp>
+#include <resources/audio.hpp>
 #include <resources/font.hpp>
 #include <resources/material.hpp>
 #include <resources/model.hpp>
+#include <resources/resource.hpp>
 #include <resources/resource_loader.hpp>
 #include <resources/shader.hpp>
 #include <resources/texture.hpp>
@@ -18,7 +20,6 @@
 
 // @TODO: temp
 #include "../magnolia/assets/shaders/include/common.h"
-#include "scripting/scripting_engine.hpp"
 
 mag::Application* mag::create_application() { return new game::TestGame("test_game/config.json"); }
 
@@ -26,6 +27,9 @@ namespace game
 {
     TestGame::TestGame(const str& config_file_path) : Application(config_file_path)
     {
+        // Set a callback to manage resources
+        set_on_resource_loaded_callback(BIND_FN(TestGame::on_resource_loaded));
+
         // Load the project
 
         mag::Project project;
@@ -113,6 +117,36 @@ namespace game
     {
         scene->on_event(e);
         mag::gfx::on_event(e);
+    }
+
+    void TestGame::on_resource_loaded(const mag::IResource* resource)
+    {
+        // Upload texture data to the GPU
+        if (const TextureResource* texture = dynamic_cast<const TextureResource*>(resource))
+        {
+        }
+
+        // Upload model data to the GPU
+        else if (const ModelResource* model = dynamic_cast<const ModelResource*>(resource))
+        {
+        }
+
+        // Upload font data to the GPU
+        else if (const FontResource* font = dynamic_cast<const FontResource*>(resource))
+        {
+        }
+
+        else if (const MaterialResource* material = dynamic_cast<const MaterialResource*>(resource))
+        {
+        }
+
+        else if (const ShaderResource* shader = dynamic_cast<const ShaderResource*>(resource))
+        {
+        }
+
+        else if (const AudioResource* audio = dynamic_cast<const AudioResource*>(resource))
+        {
+        }
     }
 
     void TestGame::render_models()

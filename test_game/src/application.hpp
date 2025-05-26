@@ -20,6 +20,8 @@ namespace game
             void render_text();
 
         private:
+            void on_resource_loaded(const mag::IResource* resource);
+
             unique<mag::Scene> scene = nullptr;
             mag::gfx::ShaderHandle sprite_shader;
             mag::gfx::ShaderHandle mesh_shader;

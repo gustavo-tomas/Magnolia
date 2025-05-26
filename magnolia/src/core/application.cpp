@@ -9,12 +9,6 @@
 #include "gfx/gfx.hpp"
 #include "platform/file_system.hpp"
 #include "platform/platform.hpp"
-#include "resources/audio.hpp"
-#include "resources/font.hpp"
-#include "resources/material.hpp"
-#include "resources/model.hpp"
-#include "resources/resource.hpp"
-#include "resources/shader.hpp"
 #include "threads/job_system.hpp"
 #include "threads/thread.hpp"
 #include "tools/profiler.hpp"
@@ -112,36 +106,7 @@ namespace mag
         }
 
         // Set resource load callback
-        resource::set_on_resource_loaded_callback(
-            [](const IResource* resource)
-            {
-                // Upload texture data to the GPU
-                if (const TextureResource* image = dynamic_cast<const TextureResource*>(resource))
-                {
-                }
-
-                // Upload model data to the GPU
-                else if (const ModelResource* model = dynamic_cast<const ModelResource*>(resource))
-                {
-                }
-
-                // Upload font data to the GPU
-                else if (const FontResource* font = dynamic_cast<const FontResource*>(resource))
-                {
-                }
-
-                else if (const MaterialResource* material = dynamic_cast<const MaterialResource*>(resource))
-                {
-                }
-
-                else if (const ShaderResource* shader = dynamic_cast<const ShaderResource*>(resource))
-                {
-                }
-
-                else if (const AudioResource* audio = dynamic_cast<const AudioResource*>(resource))
-                {
-                }
-            });
+        resource::set_on_resource_loaded_callback(BIND_FN(Application::on_resource_loaded));
     }
 
     Application::~Application()
@@ -193,6 +158,15 @@ namespace mag
         }
     }
 
+    void Application::on_resource_loaded(const IResource* resource)
+    {
+        // Send the event to the user.
+        if (on_resource_loaded_user_callback != nullptr)
+        {
+            on_resource_loaded_user_callback(resource);
+        }
+    }
+
     void Application::process_event(const Event& e)
     {
         // Process the event internally
@@ -218,4 +192,9 @@ namespace mag
     }
 
     void Application::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }
+
+    void Application::set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback)
+    {
+        on_resource_loaded_user_callback = callback;
+    }
 };  // namespace mag
