@@ -281,6 +281,7 @@ namespace mag
 
                 default:
                     MAG_ASSERT(false, "Unhandled command buffer level");
+                    return CommandBufferLevel::Primary;
                     break;
             }
         }
@@ -515,6 +516,7 @@ namespace mag
 
                 default:
                     MAG_ASSERT(false, "Unhandled texture layout");
+                    return TextureLayout::Undefined;
                     break;
             }
         }
@@ -1202,6 +1204,7 @@ namespace mag
 
                 default:
                     MAG_ASSERT(false, "Unhandled memory usage");
+                    return MemoryUsage::Auto;
                     break;
             }
         }

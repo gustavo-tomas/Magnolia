@@ -317,7 +317,7 @@ project "test_game"
         runtime "debug"
 
     filter "configurations:profile"
-        buildoptions { "-fno-exceptions" }
+        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -325,7 +325,7 @@ project "test_game"
         runtime "release"
 
     filter "configurations:release"
-        buildoptions { "-fno-exceptions" }
+        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
         flags { build_flags }
         symbols "off"
