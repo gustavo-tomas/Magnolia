@@ -91,7 +91,7 @@ class PlayerController : public ScriptableEntity
 
         void fire_bullet(const TransformComponent& transform)
         {
-            PhysicsWorld& physics = get_physics_world();
+            IPhysicsWorld& physics = get_physics_world();
 
             // Create a bullet
             const u32 bullet_id = create_entity();

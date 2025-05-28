@@ -8,7 +8,7 @@ namespace mag
 {
     class ECS;
     class Camera;
-    class PhysicsWorld;
+    class IPhysicsWorld;
     struct Component;
     struct ScriptComponent;
 
@@ -38,7 +38,7 @@ namespace mag
 
             const str& get_name() const;
             const str& get_next_scene() const;
-            const PhysicsWorld* get_physics_world() const;
+            const IPhysicsWorld* get_physics_world() const;
             ECS& get_ecs();
             virtual Camera& get_camera();
 
@@ -53,7 +53,7 @@ namespace mag
 
             str name;
             unique<ECS> ecs;
-            unique<PhysicsWorld> physics_world;
+            unique<IPhysicsWorld> physics_world;
 
         private:
             void on_component_added(const u32 id, Component* component);

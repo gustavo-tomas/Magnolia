@@ -10,44 +10,44 @@ namespace mag::math
 
 namespace mag
 {
-    class MAG_API PhysicsWorld
+    class MAG_API IPhysicsWorld
     {
         public:
-            PhysicsWorld();
-            ~PhysicsWorld();
+            virtual ~IPhysicsWorld() = default;
 
-            void on_update(const f32 dt);
+            virtual void on_update(const f32 dt) = 0;
 
-            void* add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                 const math::vec3& collider_dimensions, const f32 mass) const;
+            virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation,
+                                         const math::vec3& collider_dimensions, const f32 mass) const = 0;
 
-            void remove_rigid_body(void* collision_object);
+            virtual void remove_rigid_body(void* collision_object) = 0;
 
-            void reset_rigid_body(void* collision_object, const math::vec3& position, const math::vec3& rotation,
-                                  const math::vec3& collider_dimensions, const f32 mass = -1.0f) const;
+            virtual void reset_rigid_body(void* collision_object, const math::vec3& position,
+                                          const math::vec3& rotation, const math::vec3& collider_dimensions,
+                                          const f32 mass = -1.0f) const = 0;
 
             // Applies continuous force over time
-            void apply_force(void* collision_object, const math::vec3& force);
+            virtual void apply_force(void* collision_object, const math::vec3& force) = 0;
 
             // Applies an instantaneous change in momentum
-            void apply_impulse(void* collision_object, const math::vec3& impulse);
+            virtual void apply_impulse(void* collision_object, const math::vec3& impulse) = 0;
 
             // Applies continuous torque over time
-            void apply_torque(void* collision_object, const math::vec3& force);
+            virtual void apply_torque(void* collision_object, const math::vec3& force) = 0;
 
             // Applies an instantaneous change in torque
-            void apply_torque_impulse(void* collision_object, const math::vec3& force);
+            virtual void apply_torque_impulse(void* collision_object, const math::vec3& force) = 0;
 
             // Get current transform of a collision object
-            void get_collision_object_transform(void* collision_object, math::vec3& position,
-                                                math::vec3& rotation) const;
+            virtual void get_collision_object_transform(void* collision_object, math::vec3& position,
+                                                        math::vec3& rotation) const = 0;
 
-            const math::LineList& get_line_list() const;
+            // Debug lines for visualization
+            virtual const math::LineList& get_debug_line_list() const = 0;
 
         private:
-            void render_debug_lines();
-
-            struct PhysicsInternalData* internal_data = nullptr;
-            unique<class PhysicsDebugDraw> physics_debug_draw;
+            virtual void render_debug_lines() = 0;
     };
+
+    unique<IPhysicsWorld> create_physics_world();
 };  // namespace mag
