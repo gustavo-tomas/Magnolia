@@ -16,7 +16,7 @@ namespace mag
     {
         static b8 compile_script(const str& input_file_path, const str& output_file_path,
                                  const std::vector<str>& include_paths, const std::vector<str>& lib_paths,
-                                 const std::vector<str>& link_libs);
+                                 const std::vector<str>& link_libs, const std::vector<str>& defines);
 
         void* load_script(const str& file_path)
         {
@@ -74,8 +74,10 @@ namespace mag
             const std::vector<str> include_paths = {"magnolia/src", "libs/fmt/include"};
             const std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "fmt", MAG_BUILD_DIR_BIN "magnolia"};
             const std::vector<str> link_libs = {"magnolia", "fmt"};
+            const std::vector<str> defines = {"MAG_CONFIG_DEBUG", "FMT_HEADER_ONLY=0", "MAG_ASSERTIONS_ENABLED=1",
+                                              "MAG_PROFILE_ENABLED=1"};
 
-            if (!compile_script(file_path, bin_script_file_path, include_paths, lib_paths, link_libs))
+            if (!compile_script(file_path, bin_script_file_path, include_paths, lib_paths, link_libs, defines))
             {
                 LOG_ERROR("Failed to compile script: '{0}'", file_path);
                 return false;
@@ -91,7 +93,7 @@ namespace mag
 
         static b8 compile_script(const str& input_file_path, const str& output_file_path,
                                  const std::vector<str>& include_paths, const std::vector<str>& lib_paths,
-                                 const std::vector<str>& link_libs)
+                                 const std::vector<str>& link_libs, const std::vector<str>& defines)
         {
             LOG_INFO("Compiling script '{0}'...", input_file_path);
 
@@ -105,6 +107,12 @@ namespace mag
             for (const str& path : include_paths)
             {
                 compile_script_cmd += " -I" + path;
+            }
+
+            // Defines
+            for (const str& def : defines)
+            {
+                compile_script_cmd += " -D" + def;
             }
 
             // Libs paths
