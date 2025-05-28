@@ -1,4 +1,4 @@
-#include "core/window.hpp"
+#include "platform/window.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -9,8 +9,8 @@
 #include "core/buffer.hpp"
 #include "core/event.hpp"
 #include "core/logger.hpp"
+#include "platform/backend/sdl/conversions.hpp"
 #include "platform/file_system.hpp"
-#include "private/key_mappings.hpp"
 
 namespace mag
 {
@@ -112,7 +112,7 @@ namespace mag
                 {
                     case SDL_KEYDOWN:
                     {
-                        auto event = KeyPressEvent(KeycodeMapper::from_SDL_keycode(key));
+                        auto event = KeyPressEvent(sdl_to_mag_key(key));
                         state->event_callback(event);
 
                         if (e.key.repeat == 1)
@@ -127,7 +127,7 @@ namespace mag
 
                     case SDL_KEYUP:
                     {
-                        auto event = KeyReleaseEvent(KeycodeMapper::from_SDL_keycode(key));
+                        auto event = KeyReleaseEvent(sdl_to_mag_key(key));
                         state->event_callback(event);
 
                         state->key_state[key] = false;
@@ -157,7 +157,7 @@ namespace mag
 
                     case SDL_MOUSEBUTTONDOWN:
                     {
-                        auto event = MousePressEvent(KeycodeMapper::from_SDL_button(button));
+                        auto event = MousePressEvent(sdl_to_mag_button(button));
                         state->event_callback(event);
 
                         state->button_state[button] = true;
@@ -199,19 +199,18 @@ namespace mag
 
         b8 is_key_pressed(const Key key)
         {
-            return state->key_state[KeycodeMapper::to_SDL_keycode(key)] &&
-                   (state->key_update[KeycodeMapper::to_SDL_keycode(key)] == state->update_counter);
+            return state->key_state[mag_to_sdl(key)] && (state->key_update[mag_to_sdl(key)] == state->update_counter);
         }
 
         b8 is_button_pressed(const Button button)
         {
-            return state->button_state[KeycodeMapper::to_SDL_button(button)] &&
-                   (state->button_update[KeycodeMapper::to_SDL_button(button)] == state->update_counter);
+            return state->button_state[mag_to_sdl(button)] &&
+                   (state->button_update[mag_to_sdl(button)] == state->update_counter);
         }
 
-        b8 is_key_down(const Key key) { return state->key_state[KeycodeMapper::to_SDL_keycode(key)]; }
+        b8 is_key_down(const Key key) { return state->key_state[mag_to_sdl(key)]; }
 
-        b8 is_button_down(const Button button) { return state->button_state[KeycodeMapper::to_SDL_button(button)]; }
+        b8 is_button_down(const Button button) { return state->button_state[mag_to_sdl(button)]; }
 
         b8 is_mouse_captured() { return static_cast<b8>(SDL_GetRelativeMouseMode()); }
 
@@ -303,8 +302,6 @@ namespace mag
             SDL_Vulkan_GetDrawableSize(state->handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
             return size;
         }
-
-        void* get_handle() { return state->handle; }
 
         const std::vector<const c8*>& get_instance_extensions() { return state->extensions; }
     };  // namespace window

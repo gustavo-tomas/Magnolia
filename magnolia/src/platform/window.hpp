@@ -50,7 +50,6 @@ namespace mag
         MAG_API math::ivec2 get_mouse_position();
         MAG_API math::uvec2 get_size();
 
-        void* get_handle();
         const std::vector<const c8*>& get_instance_extensions();
     };  // namespace window
 };      // namespace mag

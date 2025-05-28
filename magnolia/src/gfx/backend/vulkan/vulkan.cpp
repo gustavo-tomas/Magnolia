@@ -13,8 +13,8 @@
     #include "VkBootstrapDispatch.h"
     #include "core/assert.hpp"
     #include "core/debug.hpp"
-    #include "core/window.hpp"
     #include "gfx/backend/vulkan/conversions.hpp"
+    #include "platform/window.hpp"
 
     // Use to trace VMA allocations
     #if MAG_CONFIG_DEBUG_TRACE
