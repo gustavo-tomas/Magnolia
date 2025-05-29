@@ -40,9 +40,13 @@ namespace mag
             virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
             {
                 // We dont actually draw in this method, only keep a record of the lines.
-                line_list.starts.push_back(bt_to_mag(from));
-                line_list.ends.push_back(bt_to_mag(to));
-                line_list.colors.push_back(bt_to_mag(color));
+
+                Line line = {};
+                line.start = bt_to_mag(from);
+                line.end = bt_to_mag(to);
+                line.color = bt_to_mag(color);
+
+                line_list.append(line);
             }
 
             // @TODO: finish debug mode
@@ -50,12 +54,7 @@ namespace mag
 
             virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
 
-            void reset_lines()
-            {
-                line_list.starts.clear();
-                line_list.ends.clear();
-                line_list.colors.clear();
-            }
+            void reset_lines() { line_list.lines.clear(); }
 
             const LineList& get_line_list() const { return line_list; }
 

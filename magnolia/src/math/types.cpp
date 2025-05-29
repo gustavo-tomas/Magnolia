@@ -27,12 +27,7 @@ namespace mag
             return rotation_mat;
         }
 
-        void LineList::append(const LineList& lines)
-        {
-            starts.insert(starts.begin(), lines.starts.begin(), lines.starts.end());
-            ends.insert(ends.begin(), lines.ends.begin(), lines.ends.end());
-            colors.insert(colors.begin(), lines.colors.begin(), lines.colors.end());
-        }
+        void LineList::append(const Line& line) { lines.push_back(line); }
 
         // @TODO: DRY helper methods
         BoundingBox BoundingBox::get_transformed_bounding_box(const mat4& transform) const
@@ -114,9 +109,13 @@ namespace mag
                 const auto& start = edge.first;
                 const auto& end = edge.second;
 
-                lines.starts.push_back(corners[start]);
-                lines.ends.push_back(corners[end]);
-                lines.colors.push_back(color);
+                Line line = {};
+
+                line.start = corners[start];
+                line.end = corners[end];
+                line.color = color;
+
+                lines.append(line);
             }
 
             return lines;
