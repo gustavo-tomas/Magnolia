@@ -294,6 +294,7 @@ namespace mag
         static const std::map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
             {ShaderResourceTopology::TriangleList, gfx::PrimitiveTopology::TriangleList},
             {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip},
+            {ShaderResourceTopology::LineList, gfx::PrimitiveTopology::LineList},
         };
 
         static const std::map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {

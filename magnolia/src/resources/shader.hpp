@@ -17,7 +17,8 @@ namespace mag
     enum class ShaderResourceTopology
     {
         TriangleList,
-        TriangleStrip
+        TriangleStrip,
+        LineList
     };
 
     enum class ShaderResourceFormat

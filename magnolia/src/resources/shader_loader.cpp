@@ -29,6 +29,7 @@ namespace mag
         static const std::map<str, ShaderResourceTopology> topology_map = {
             {"TriangleList", ShaderResourceTopology::TriangleList},
             {"TriangleStrip", ShaderResourceTopology::TriangleStrip},
+            {"LineList", ShaderResourceTopology::LineList},
         };
 
         static const std::map<SpvReflectDescriptorType, ShaderResourceDescriptorType> descriptor_type_map = {
