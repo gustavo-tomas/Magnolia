@@ -57,6 +57,17 @@ namespace mag
                 VertexInputRate input_rate;
         };
 
+        struct IGraphicsPipelineColorBlend
+        {
+                b8 blend_enable = false;
+                BlendOp color_blend_op = BlendOp::Add;
+                BlendOp alpha_blend_op = BlendOp::Add;
+                BlendFactor src_color_blend_factor = BlendFactor::SrcAlpha;
+                BlendFactor dst_color_blend_factor = BlendFactor::OneMinusSrcAlpha;
+                BlendFactor src_alpha_blend_factor = BlendFactor::One;
+                BlendFactor dst_alpha_blend_factor = BlendFactor::OneMinusSrcAlpha;
+        };
+
         struct IGraphicsPipelineDesc
         {
                 PrimitiveTopology primitive_topology;
@@ -67,6 +78,7 @@ namespace mag
                 Format color_attachment_format;
                 Format depth_attachment_format;
                 math::uvec2 extent;
+                IGraphicsPipelineColorBlend color_blend;
         };
 
         struct ICommandPoolDesc

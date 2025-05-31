@@ -713,7 +713,13 @@ namespace mag
                     VkPipelineColorBlendAttachmentState color_blend_attachment = {};
                     color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-                    color_blend_attachment.blendEnable = VK_FALSE;
+                    color_blend_attachment.blendEnable = desc.color_blend.blend_enable;
+                    color_blend_attachment.colorBlendOp = mag_to_vk(desc.color_blend.color_blend_op);
+                    color_blend_attachment.srcColorBlendFactor = mag_to_vk(desc.color_blend.src_color_blend_factor);
+                    color_blend_attachment.dstColorBlendFactor = mag_to_vk(desc.color_blend.dst_color_blend_factor);
+                    color_blend_attachment.alphaBlendOp = mag_to_vk(desc.color_blend.alpha_blend_op);
+                    color_blend_attachment.srcAlphaBlendFactor = mag_to_vk(desc.color_blend.src_alpha_blend_factor);
+                    color_blend_attachment.dstAlphaBlendFactor = mag_to_vk(desc.color_blend.dst_alpha_blend_factor);
 
                     VkPipelineColorBlendStateCreateInfo color_blending = {};
                     color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -721,10 +727,6 @@ namespace mag
                     color_blending.logicOp = VK_LOGIC_OP_COPY;
                     color_blending.attachmentCount = 1;
                     color_blending.pAttachments = &color_blend_attachment;
-                    color_blending.blendConstants[0] = 0.0f;
-                    color_blending.blendConstants[1] = 0.0f;
-                    color_blending.blendConstants[2] = 0.0f;
-                    color_blending.blendConstants[3] = 0.0f;
 
                     VkPipelineLayoutCreateInfo pipeline_layout_info = {};
                     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

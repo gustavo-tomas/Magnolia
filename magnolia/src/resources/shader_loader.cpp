@@ -54,6 +54,16 @@ namespace mag
             {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},
         };
 
+        static const std::map<str, ShaderResourceBlendOp> blend_op_map = {
+            {"Add", ShaderResourceBlendOp::Add},
+        };
+
+        static const std::map<str, ShaderResourceBlendFactor> blend_factor_map = {
+            {"One", ShaderResourceBlendFactor::One},
+            {"SrcAlpha", ShaderResourceBlendFactor::SrcAlpha},
+            {"OneMinusSrcAlpha", ShaderResourceBlendFactor::OneMinusSrcAlpha},
+        };
+
         static u64 get_aligned_size(const u64 original_size, const u64 alignment)
         {
             return (original_size + alignment - 1) & ~(alignment - 1);
@@ -94,6 +104,22 @@ namespace mag
             {
                 LOG_ERROR("Invalid topology: {0}", topology);
                 return false;
+            }
+
+            if (data.contains("ColorBlendOp") || data.contains("AlphaBlendOp"))
+            {
+                shader->color_blend.blend_enable = true;
+                shader->color_blend.color_blend_op = blend_op_map.at(data["ColorBlendOp"]);
+                shader->color_blend.alpha_blend_op = blend_op_map.at(data["AlphaBlendOp"]);
+                shader->color_blend.src_color_blend_factor = blend_factor_map.at(data["SrcColorBlendFactor"]);
+                shader->color_blend.dst_color_blend_factor = blend_factor_map.at(data["DstColorBlendFactor"]);
+                shader->color_blend.src_alpha_blend_factor = blend_factor_map.at(data["SrcAlphaBlendFactor"]);
+                shader->color_blend.dst_alpha_blend_factor = blend_factor_map.at(data["DstAlphaBlendFactor"]);
+            }
+
+            else
+            {
+                shader->color_blend.blend_enable = false;
             }
 
             shader->topology = topology_map.at(topology);

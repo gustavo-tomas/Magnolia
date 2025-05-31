@@ -37,6 +37,13 @@ namespace game
         MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/text_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         text_shader = mag::gfx::create_shader(shader_resource);
+
+        // Debug
+
+        shader_resource = {};
+        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/grid_shader.mag.json", &shader_resource),
+                   "Failed to load shader");
+        grid_shader = mag::gfx::create_shader(shader_resource);
     }
 
     Renderer::~Renderer() = default;
@@ -51,6 +58,7 @@ namespace game
         render_sprites(scene);
         render_models(scene);
         render_text(scene);
+        render_debug(scene);
 
         if (!mag::gfx::end_frame())
         {
@@ -415,5 +423,29 @@ namespace game
         }
 
         mag::gfx::draw(4, char_offset);
+    }
+
+    void Renderer::render_debug(mag::Scene& scene)
+    {
+        mag::gfx::use_shader(grid_shader);
+
+        mag::Camera& camera = scene.get_camera();
+
+        struct GlobalData
+        {
+                mat4 view;
+                mat4 projection;
+                vec2 near_far;
+        };
+
+        static GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+        global_data.near_far = camera.get_near_far();
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        // Draw the grid
+        gfx::draw(4);
     }
 };  // namespace game

@@ -208,6 +208,18 @@ namespace mag
             Vertex,
             Instance
         };
+
+        enum class BlendOp
+        {
+            Add
+        };
+
+        enum class BlendFactor
+        {
+            One,
+            SrcAlpha,
+            OneMinusSrcAlpha
+        };
     };  // namespace gfx
 };      // namespace mag
 

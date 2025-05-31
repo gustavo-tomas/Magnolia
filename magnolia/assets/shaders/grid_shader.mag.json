@@ -1,0 +1,15 @@
+{
+  "Name": "Grid",
+  "File": "grid.glsl",
+  "Stages": [
+    "Vertex",
+    "Fragment"
+  ],
+  "Topology": "TriangleStrip",
+  "ColorBlendOp": "Add",
+  "AlphaBlendOp": "Add",
+  "SrcColorBlendFactor": "SrcAlpha",
+  "DstColorBlendFactor": "OneMinusSrcAlpha",
+  "SrcAlphaBlendFactor": "One",
+  "DstAlphaBlendFactor": "OneMinusSrcAlpha"
+}

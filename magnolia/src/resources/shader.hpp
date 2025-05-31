@@ -37,6 +37,18 @@ namespace mag
         CombinedImageSampler
     };
 
+    enum class ShaderResourceBlendOp
+    {
+        Add
+    };
+
+    enum class ShaderResourceBlendFactor
+    {
+        One,
+        SrcAlpha,
+        OneMinusSrcAlpha
+    };
+
     struct ShaderResourceBindingData
     {
             u32 binding;
@@ -67,11 +79,23 @@ namespace mag
             u32 offset;
     };
 
+    struct ShaderResourceColorBlend
+    {
+            b8 blend_enable;
+            ShaderResourceBlendOp color_blend_op;
+            ShaderResourceBlendFactor src_color_blend_factor;
+            ShaderResourceBlendFactor dst_color_blend_factor;
+            ShaderResourceBlendOp alpha_blend_op;
+            ShaderResourceBlendFactor src_alpha_blend_factor;
+            ShaderResourceBlendFactor dst_alpha_blend_factor;
+    };
+
     struct ShaderResource : public IResource
     {
             str name = "";
             str glsl_file_path = "";
             ShaderResourceTopology topology;
+            ShaderResourceColorBlend color_blend;
             std::vector<ShaderResourceVertexInputData> vertex_inputs;
             std::map<ShaderResourceStage, ShaderResourceModuleData> stages;
     };

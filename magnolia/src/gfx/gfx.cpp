@@ -311,6 +311,16 @@ namespace mag
             {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
         };
 
+        static const std::map<ShaderResourceBlendOp, gfx::BlendOp> convert_blend_op = {
+            {ShaderResourceBlendOp::Add, gfx::BlendOp::Add},
+        };
+
+        static const std::map<ShaderResourceBlendFactor, gfx::BlendFactor> convert_blend_factor = {
+            {ShaderResourceBlendFactor::One, gfx::BlendFactor::One},
+            {ShaderResourceBlendFactor::SrcAlpha, gfx::BlendFactor::SrcAlpha},
+            {ShaderResourceBlendFactor::OneMinusSrcAlpha, gfx::BlendFactor::OneMinusSrcAlpha},
+        };
+
         static u32 create_handle()
         {
             // @TODO: this is a pretty simple way to create handles, but it works
@@ -536,6 +546,18 @@ namespace mag
             graphics_pipeline_desc.depth_attachment_format = depth_format;
             graphics_pipeline_desc.extent = extent;
             graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
+
+            graphics_pipeline_desc.color_blend.blend_enable = shader.color_blend.blend_enable;
+            graphics_pipeline_desc.color_blend.color_blend_op = convert_blend_op.at(shader.color_blend.color_blend_op);
+            graphics_pipeline_desc.color_blend.alpha_blend_op = convert_blend_op.at(shader.color_blend.alpha_blend_op);
+            graphics_pipeline_desc.color_blend.src_color_blend_factor =
+                convert_blend_factor.at(shader.color_blend.src_color_blend_factor);
+            graphics_pipeline_desc.color_blend.dst_color_blend_factor =
+                convert_blend_factor.at(shader.color_blend.dst_color_blend_factor);
+            graphics_pipeline_desc.color_blend.src_alpha_blend_factor =
+                convert_blend_factor.at(shader.color_blend.src_alpha_blend_factor);
+            graphics_pipeline_desc.color_blend.dst_alpha_blend_factor =
+                convert_blend_factor.at(shader.color_blend.dst_alpha_blend_factor);
 
             u32 stride = 0;
             for (const ShaderResourceVertexInputData& vertex_input : shader.vertex_inputs)

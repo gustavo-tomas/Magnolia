@@ -1216,5 +1216,71 @@ namespace mag
                     break;
             }
         }
+
+        inline VkBlendOp mag_to_vk(const BlendOp blend_op)
+        {
+            switch (blend_op)
+            {
+                case BlendOp::Add:
+                    return VK_BLEND_OP_ADD;
+                    break;
+            }
+        }
+
+        inline BlendOp vk_to_mag(const VkBlendOp blend_op)
+        {
+            switch (blend_op)
+            {
+                case VK_BLEND_OP_ADD:
+                    return BlendOp::Add;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled blend op");
+                    return BlendOp::Add;
+                    break;
+            }
+        }
+
+        inline VkBlendFactor mag_to_vk(const BlendFactor blend_factor)
+        {
+            switch (blend_factor)
+            {
+                case BlendFactor::One:
+                    return VK_BLEND_FACTOR_ONE;
+                    break;
+
+                case BlendFactor::SrcAlpha:
+                    return VK_BLEND_FACTOR_SRC_ALPHA;
+                    break;
+
+                case BlendFactor::OneMinusSrcAlpha:
+                    return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                    break;
+            }
+        }
+
+        inline BlendFactor vk_to_mag(const VkBlendFactor blend_factor)
+        {
+            switch (blend_factor)
+            {
+                case VK_BLEND_FACTOR_ONE:
+                    return BlendFactor::One;
+                    break;
+
+                case VK_BLEND_FACTOR_SRC_ALPHA:
+                    return BlendFactor::SrcAlpha;
+                    break;
+
+                case VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA:
+                    return BlendFactor::OneMinusSrcAlpha;
+                    break;
+
+                default:
+                    MAG_ASSERT(false, "Unhandled blend factor");
+                    return BlendFactor::One;
+                    break;
+            }
+        }
     };  // namespace gfx
 };      // namespace mag
