@@ -12,7 +12,7 @@ namespace mag
     typedef std::function<b8()> JobExecuteFn;
     typedef std::function<void(const b8)> JobCallbackFn;
 
-    struct Job
+    struct MAG_API Job
     {
             Job(const JobExecuteFn& execute, const JobCallbackFn& on_execute_finished);
 
@@ -22,7 +22,7 @@ namespace mag
 
     namespace thread
     {
-        void add_job(Job job);
-        void process_callbacks();
+        MAG_API void add_job(Job job);
+        MAG_API void process_callbacks();
     };  // namespace thread
 };      // namespace mag
