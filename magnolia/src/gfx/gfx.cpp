@@ -358,6 +358,15 @@ namespace mag
             return create_buffer(size, data, BufferUsage::Vertex);
         }
 
+        void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle)
+        {
+            // @TODO: we need to make sure that a buffer is not in use when we delete it. A more robust approach would
+            // be adding the buffer to a deletion queue and/or finding a way to query if the buffer is in use or not
+            // before deleting. WaitIdle is, however, simpler.
+            state->device->wait_idle();
+            state->buffers.erase(vertex_buffer_handle);
+        }
+
         IndexBufferHandle create_index_buffer(const u64 size, const void* data)
         {
             return create_buffer(size, data, BufferUsage::Index);
