@@ -44,6 +44,11 @@ namespace game
         MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/grid_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         grid_shader = mag::gfx::create_shader(shader_resource);
+
+        shader_resource = {};
+        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/line_shader.mag.json", &shader_resource),
+                   "Failed to load shader");
+        line_shader = mag::gfx::create_shader(shader_resource);
     }
 
     Renderer::~Renderer() = default;
@@ -427,25 +432,75 @@ namespace game
 
     void Renderer::render_debug(mag::Scene& scene)
     {
-        mag::gfx::use_shader(grid_shader);
-
         mag::Camera& camera = scene.get_camera();
 
-        struct GlobalData
+        // Draw physics colliders
         {
-                mat4 view;
-                mat4 projection;
-                vec2 near_far;
-        };
+            mag::gfx::use_shader(line_shader);
 
-        static GlobalData global_data = {};
-        global_data.view = camera.get_view();
-        global_data.projection = camera.get_projection();
-        global_data.near_far = camera.get_near_far();
+            struct GlobalData
+            {
+                    mat4 view;
+                    mat4 projection;
+            };
 
-        mag::gfx::set_uniform("u_global", &global_data);
+            static GlobalData global_data = {};
+            global_data.view = camera.get_view();
+            global_data.projection = camera.get_projection();
+
+            mag::gfx::set_uniform("u_global", &global_data);
+
+            struct Line
+            {
+                    vec3 position;
+                    vec3 color;
+            };
+
+            std::vector<Line> lines;
+
+            const mag::IPhysicsWorld* physics = scene.get_physics_world();
+
+            const mag::math::LineList& line_list = physics->get_debug_line_list();
+
+            for (const mag::Line& line : line_list.lines)
+            {
+                lines.push_back({.position = line.start, .color = line.color});
+                lines.push_back({.position = line.end, .color = line.color});
+            }
+
+            static mag::gfx::VertexBufferHandle vb = Max_U32;
+
+            if (vb != Max_U32)
+            {
+                mag::gfx::destroy_vertex_buffer(vb);
+            }
+
+            vb = mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(lines), lines.data());
+
+            mag::gfx::bind_vertex_buffer(vb);
+
+            mag::gfx::draw(lines.size());
+        }
 
         // Draw the grid
-        gfx::draw(4);
+        {
+            mag::gfx::use_shader(grid_shader);
+
+            struct GlobalData
+            {
+                    mat4 view;
+                    mat4 projection;
+                    vec2 near_far;
+            };
+
+            static GlobalData global_data = {};
+            global_data.view = camera.get_view();
+            global_data.projection = camera.get_projection();
+            global_data.near_far = camera.get_near_far();
+
+            mag::gfx::set_uniform("u_global", &global_data);
+
+            gfx::draw(4);
+        }
     }
 };  // namespace game

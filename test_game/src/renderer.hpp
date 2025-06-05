@@ -28,5 +28,6 @@ namespace game
             mag::gfx::ShaderHandle mesh_shader;
             mag::gfx::ShaderHandle text_shader;
             mag::gfx::ShaderHandle grid_shader;
+            mag::gfx::ShaderHandle line_shader;
     };
 };  // namespace game
