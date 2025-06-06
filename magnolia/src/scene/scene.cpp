@@ -243,7 +243,7 @@ namespace mag
 
         for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(size);
+            camera_c->camera.set_viewport_size(size);
         }
     }
 

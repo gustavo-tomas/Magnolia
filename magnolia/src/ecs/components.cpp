@@ -51,7 +51,7 @@ namespace mag
 
     LightComponent::LightComponent(const vec3& color, const f32 intensity) : color(color), intensity(intensity) {}
 
-    CameraComponent::CameraComponent(const Camera& camera) : camera(camera) {}
+    CameraComponent::CameraComponent(const PerspectiveCamera& camera) : camera(camera) {}
 
     ScriptComponent::ScriptComponent(const str& file_path, void* handle, CreateScriptFn create_entity,
                                      DestroyScriptFn destroy_entity)

@@ -225,8 +225,7 @@
             "CameraComponent": {
                 "Fov": 1.0471980571746826,
                 "Near": 1.0,
-                "Far": 10000.0,
-                "AspectRatio": 1.7302100658416748
+                "Far": 10000.0
             },
             "ScriptComponent": {
                 "FilePath": "test_game/assets/scripts/player_controller.cpp"
@@ -254,9 +253,9 @@
                 ]
             },
             "SpriteComponent": {
-                "FilePath":"test_game/assets/sprites/test_texture0.png",
-                "ConstantSize":false,
-                "AlwaysFaceCamera":false
+                "FilePath": "test_game/assets/sprites/test_texture0.png",
+                "ConstantSize": false,
+                "AlwaysFaceCamera": false
             }
         },
         {
@@ -281,9 +280,9 @@
                 ]
             },
             "SpriteComponent": {
-                "FilePath":"test_game/assets/sprites/test_texture1.png",
-                "ConstantSize":false,
-                "AlwaysFaceCamera":false
+                "FilePath": "test_game/assets/sprites/test_texture1.png",
+                "ConstantSize": false,
+                "AlwaysFaceCamera": false
             }
         },
         {

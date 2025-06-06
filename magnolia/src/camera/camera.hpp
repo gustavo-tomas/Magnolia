@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera/frustum.hpp"
 #include "core/types.hpp"
 #include "math/types.hpp"
 
@@ -7,23 +8,17 @@ namespace mag
 {
     using namespace mag::math;
 
-    class Frustum;
-
     class MAG_API Camera
     {
         public:
-            Camera(const vec3& position, const vec3& rotation, const f32 fov, const f32 aspect_ratio, const f32 near,
-                   const f32 far);
-            Camera(const Camera& other);
-            ~Camera();
+            Camera() = default;
+            virtual ~Camera() = default;
 
             void set_position(const vec3& position);
             void set_rotation(const vec3& rotation);
-            void set_aspect_ratio(const vec2& size);
-            void set_fov(const f32 fov);
             void set_near_far(const vec2& near_far);
+            void set_viewport_size(const vec2& size);
 
-            const f32& get_fov() const;
             const mat4& get_view() const;
             const mat4& get_projection() const;
             const vec3& get_position() const;
@@ -42,12 +37,74 @@ namespace mag
 
             b8 is_aabb_visible(const BoundingBox& aabb) const;
 
-        private:
-            void calculate_view();
-            void calculate_projection();
+        protected:
+            virtual void calculate_projection() = 0;
             void calculate_frustum();
 
-            struct IMPL;
-            unique<IMPL> impl;
+            mat4 projection = mat4(1.0f);
+            f32 aspect_ratio = 16.0f / 9.0f;
+            f32 near = 1.0f;
+            f32 far = 100.0f;
+
+        private:
+            void calculate_view();
+
+            Frustum frustum;
+            mat4 view = mat4(1.0f);
+            mat4 rotation_mat = mat4(1.0f);
+            vec3 position = vec3(0.0f);
+            vec3 rotation = vec3(0.0f);
+    };
+
+    struct PerspectiveCameraDesc
+    {
+            vec3 position = vec3(0.0f);
+            vec3 rotation = vec3(0.0f);
+            vec2 viewport_size = vec2(1280.0f, 720.0f);
+            f32 near = 1.0f;
+            f32 far = 1000.0f;
+            f32 fov = 1.047198f;  // 60°
+    };
+
+    class MAG_API PerspectiveCamera : public Camera
+    {
+        public:
+            PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
+            ~PerspectiveCamera();
+
+            void set_fov(const f32 fov);
+            const f32& get_fov() const;
+
+        protected:
+            virtual void calculate_projection() override;
+
+        private:
+            f32 fov;
+    };
+
+    struct OrhographicCameraDesc
+    {
+            vec3 position = vec3(0.0f);
+            vec3 rotation = vec3(0.0f);
+            vec2 viewport_size = vec2(1280.0f, 720.0f);
+            f32 near = -1.0f;
+            f32 far = 1000.0f;
+            f32 size = 1000.0f;
+    };
+
+    class MAG_API OrthographicCamera : public Camera
+    {
+        public:
+            OrthographicCamera(const OrhographicCameraDesc& camera_desc);
+            ~OrthographicCamera();
+
+            void set_size(const f32 size);
+            f32 get_size() const;
+
+        protected:
+            virtual void calculate_projection() override;
+
+        private:
+            f32 size;
     };
 };  // namespace mag

@@ -125,14 +125,14 @@ namespace mag
             f32 intensity;
     };
 
-    class Camera;
+    class PerspectiveCamera;
     struct MAG_API CameraComponent : public Component
     {
-            CameraComponent(const Camera& camera);
+            CameraComponent(const PerspectiveCamera& camera);
 
             CLONE_DECLARATION(CameraComponent);
 
-            Camera camera;
+            PerspectiveCamera camera;
     };
 
     class ScriptableEntity;
