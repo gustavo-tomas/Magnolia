@@ -65,3 +65,12 @@ struct alignas(16) MaterialData
         u32 roughness_tex_idx;  // 4 bytes
         u32 metalness_tex_idx;  // 4 bytes
 };
+
+// Debug
+
+struct alignas(16) DebugTextData
+{
+        mat4 model;       // 64 bytes (16 x 4)
+        vec4 color;       // 16 bytes ( 4 x 4)
+        u32 texture_idx;  // 4 bytes
+};

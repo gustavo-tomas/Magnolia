@@ -76,7 +76,7 @@ namespace game
         }
 
         scene->on_update(dt);
-        renderer->render_scene(*scene);
+        renderer->render_scene(*scene, dt);
     }
 
     void TestGame::on_event(const mag::Event& e)
