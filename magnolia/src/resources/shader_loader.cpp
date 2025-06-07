@@ -18,12 +18,22 @@ namespace mag
         struct ShaderStageData
         {
                 str extension;
+                str define;
+                str stage_str;
                 ShaderResourceStage stage;
         };
 
         static const std::map<str, ShaderStageData> shader_stage_map = {
-            {"Vertex", {.extension = ".vert", .stage = ShaderResourceStage::Vertex}},
-            {"Fragment", {.extension = ".frag", .stage = ShaderResourceStage::Fragment}},
+            {"Vertex",
+             {.extension = ".vert",
+              .define = "VERTEX_SHADER",
+              .stage_str = "vertex",
+              .stage = ShaderResourceStage::Vertex}},
+            {"Fragment",
+             {.extension = ".frag",
+              .define = "FRAGMENT_SHADER",
+              .stage_str = "fragment",
+              .stage = ShaderResourceStage::Fragment}},
         };
 
         static const std::map<str, ShaderResourceTopology> topology_map = {
@@ -63,6 +73,10 @@ namespace mag
             {"SrcAlpha", ShaderResourceBlendFactor::SrcAlpha},
             {"OneMinusSrcAlpha", ShaderResourceBlendFactor::OneMinusSrcAlpha},
         };
+
+        static b8 compile_shader_submodule(const str& input_file_path, const str& output_file_path,
+                                           const std::vector<str>& include_paths, const std::vector<str>& defines,
+                                           const str& shader_stage);
 
         static u64 get_aligned_size(const u64 original_size, const u64 alignment)
         {
@@ -250,6 +264,75 @@ namespace mag
 
             LOG_SUCCESS("Loaded shader: {0}", file_path);
             return true;
+        }
+
+        b8 compile_shader(const str& input_file_path)
+        {
+            mag::ShaderResource shader_resource = {};
+
+            if (!resource::load(input_file_path, &shader_resource))
+            {
+                LOG_ERROR("Failed to compile shader: '{0}'", input_file_path);
+                return false;
+            }
+
+            b8 result = true;
+            for (const auto& [stage, data] : shader_stage_map)
+            {
+                if (shader_resource.stages.contains(data.stage))
+                {
+                    const str extension = shader_stage_map.at(stage).extension;
+                    const str binary_file_path =
+                        MAG_BUILD_SHADER_NAME(fs::get_file_name(shader_resource.glsl_file_path) + extension);
+
+                    const str& submodule_file_path =
+                        fs::path(input_file_path).parent_path() / shader_resource.glsl_file_path;
+
+                    result =
+                        result && compile_shader_submodule(submodule_file_path, binary_file_path,
+                                                           {MAG_ASSET_DIR "/shaders"}, {data.define}, data.stage_str);
+                }
+            }
+
+            if (result)
+            {
+                LOG_SUCCESS("Finished compiling shader: '{0}'", input_file_path);
+            }
+
+            return result;
+        }
+
+        static b8 compile_shader_submodule(const str& input_file_path, const str& output_file_path,
+                                           const std::vector<str>& include_paths, const std::vector<str>& defines,
+                                           const str& shader_stage)
+        {
+            LOG_INFO("Compiling shader '{0}'...", input_file_path);
+
+            // Create directories if they dont exist
+            fs::create_directories(fs::path(output_file_path).parent_path());
+
+            // @TODO: for now no optimizations
+            str compile_script_cmd = MAG_EXT_GLSLC " -O0";
+
+            // Include paths
+            for (const str& path : include_paths)
+            {
+                compile_script_cmd += " -I" + path;
+            }
+
+            // Defines
+            for (const str& def : defines)
+            {
+                compile_script_cmd += " -D" + def;
+            }
+
+            // Stage
+            compile_script_cmd += " -fshader-stage=" + shader_stage;
+
+            compile_script_cmd += " " + input_file_path + " -o " + output_file_path;
+
+            // Execute
+            return system(compile_script_cmd.c_str()) == 0;
         }
     };  // namespace resource
 };      // namespace mag
