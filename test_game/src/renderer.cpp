@@ -38,6 +38,11 @@ namespace game
                    "Failed to load shader");
         text_shader = mag::gfx::create_shader(shader_resource);
 
+        shader_resource = {};
+        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/floor_shader.mag.json", &shader_resource),
+                   "Failed to load shader");
+        floor_shader = mag::gfx::create_shader(shader_resource);
+
         // Debug
 
         shader_resource = {};
@@ -68,7 +73,8 @@ namespace game
         render_sprites(scene);
         render_models(scene);
         render_text(scene);
-        render_debug(scene, dt);
+        render_floor(scene);
+        // render_debug(scene, dt);
 
         if (!mag::gfx::end_frame())
         {
@@ -301,6 +307,27 @@ namespace game
         }
 
         mag::gfx::draw(4, texture_offset);
+    }
+
+    void Renderer::render_floor(mag::Scene& scene)
+    {
+        mag::gfx::use_shader(floor_shader);
+
+        mag::Camera& camera = scene.get_camera();
+
+        struct GlobalData
+        {
+                mat4 view;
+                mat4 projection;
+        };
+
+        static GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        mag::gfx::draw(4);
     }
 
     void Renderer::render_text(mag::Scene& scene)

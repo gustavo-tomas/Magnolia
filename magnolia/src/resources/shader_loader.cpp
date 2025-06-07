@@ -83,7 +83,7 @@ namespace mag
             return (original_size + alignment - 1) & ~(alignment - 1);
         }
 
-        b8 load(const str& file_path, ShaderResource* shader)
+        static b8 load_shader_description(const str& file_path, ShaderResource* shader)
         {
             fs::json data;
 
@@ -136,13 +136,32 @@ namespace mag
                 shader->color_blend.blend_enable = false;
             }
 
-            shader->topology = topology_map.at(topology);
-
             for (const str& stage : stages)
             {
+                const ShaderResourceStage shader_stage = shader_stage_map.at(stage).stage;
+                shader->stages[shader_stage].stage = stage;
+            }
+
+            shader->name = name;
+            shader->glsl_file_path = glsl_file_path;
+            shader->topology = topology_map.at(topology);
+
+            return true;
+        }
+
+        b8 load(const str& file_path, ShaderResource* shader)
+        {
+            if (!load_shader_description(file_path, shader))
+            {
+                return false;
+            }
+
+            for (const auto& [stage, module_data] : shader->stages)
+            {
                 // Build the binary name from the glsl name
-                const str extension = shader_stage_map.at(stage).extension;
-                const str binary_file_path = MAG_BUILD_SHADER_NAME(fs::get_file_name(glsl_file_path) + extension);
+                const str extension = shader_stage_map.at(module_data.stage).extension;
+                const str binary_file_path =
+                    MAG_BUILD_SHADER_NAME(fs::get_file_name(shader->glsl_file_path) + extension);
 
                 Buffer buffer;
                 const b8 result = fs::read_binary_data(binary_file_path, buffer);
@@ -153,7 +172,7 @@ namespace mag
                     return false;
                 }
 
-                const ShaderResourceStage shader_stage = shader_stage_map.at(stage).stage;
+                const ShaderResourceStage shader_stage = shader_stage_map.at(module_data.stage).stage;
                 shader->stages[shader_stage].code = buffer.data;
 
                 SpvReflectShaderModule spv_module;
@@ -259,9 +278,6 @@ namespace mag
                 }
             }
 
-            shader->name = name;
-            shader->glsl_file_path = glsl_file_path;
-
             LOG_SUCCESS("Loaded shader: {0}", file_path);
             return true;
         }
@@ -270,7 +286,7 @@ namespace mag
         {
             mag::ShaderResource shader_resource = {};
 
-            if (!resource::load(input_file_path, &shader_resource))
+            if (!load_shader_description(input_file_path, &shader_resource))
             {
                 LOG_ERROR("Failed to compile shader: '{0}'", input_file_path);
                 return false;

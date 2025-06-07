@@ -21,12 +21,14 @@ namespace game
         private:
             void render_models(mag::Scene& scene);
             void render_sprites(mag::Scene& scene);
+            void render_floor(mag::Scene& scene);
             void render_text(mag::Scene& scene);
             void render_debug(mag::Scene& scene, const f32 dt);
 
             mag::gfx::ShaderHandle sprite_shader;
             mag::gfx::ShaderHandle mesh_shader;
             mag::gfx::ShaderHandle text_shader;
+            mag::gfx::ShaderHandle floor_shader;
             mag::gfx::ShaderHandle grid_shader;
             mag::gfx::ShaderHandle line_shader;
             mag::gfx::ShaderHandle debug_text_shader;

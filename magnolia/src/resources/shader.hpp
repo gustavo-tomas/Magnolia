@@ -67,6 +67,7 @@ namespace mag
 
     struct ShaderResourceModuleData
     {
+            str stage;
             std::vector<ShaderResourceDescriptorData> descriptors;
             std::vector<u8> code;
     };
