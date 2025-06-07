@@ -477,6 +477,11 @@ namespace game
 
             const mag::math::LineList& line_list = physics->get_debug_line_list();
 
+            if (line_list.lines.empty())
+            {
+                goto no_colliders;
+            }
+
             for (const mag::Line& line : line_list.lines)
             {
                 lines.push_back({.position = line.start, .color = line.color});
@@ -496,6 +501,7 @@ namespace game
 
             mag::gfx::draw(lines.size());
         }
+    no_colliders:
 
         // Draw the floor
         {
