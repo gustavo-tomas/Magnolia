@@ -29,7 +29,7 @@ namespace mag
             vec3 aabb_max;
     };
 
-    struct Model : public IResource
+    struct ModelResource : public IResource
     {
             str name = "";
             str file_path = "";
@@ -42,6 +42,6 @@ namespace mag
 
     namespace resource
     {
-        ref<Model> get_model(const str& name);
+        MAG_API ref<ModelResource> get_model(const str& name);
     };  // namespace resource
 };      // namespace mag

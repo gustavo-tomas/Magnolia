@@ -37,7 +37,7 @@ namespace mag
             delete state;
         }
 
-        void play(ref<Audio>& audio, const f32 volume, const math::vec3& position, const math::vec3& velocity)
+        void play(ref<AudioResource>& audio, const f32 volume, const math::vec3& position, const math::vec3& velocity)
         {
             audio->handle = state->soloud.play3d(*static_cast<SoLoud::Wav*>(audio->source), position.x, position.y,
                                                  position.z, velocity.x, velocity.y, velocity.z, volume);

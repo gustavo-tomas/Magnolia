@@ -5,14 +5,14 @@
 
 namespace mag
 {
-    struct Audio;
+    struct AudioResource;
 
     namespace audio
     {
         b8 initialize();
         void shutdown();
 
-        void play(ref<Audio>& audio, const f32 volume = 1.0f, const math::vec3& position = math::vec3(0.0f),
+        void play(ref<AudioResource>& audio, const f32 volume = 1.0f, const math::vec3& position = math::vec3(0.0f),
                   const math::vec3& velocity = math::vec3(0.0f));
     };  // namespace audio
 };      // namespace mag

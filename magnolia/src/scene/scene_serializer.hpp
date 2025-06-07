@@ -8,7 +8,7 @@ namespace mag
 
     namespace scene
     {
-        b8 load(const str& file_path, Scene& scene);
-        b8 save(const str& file_path, Scene& scene);
+        MAG_API b8 load(const str& file_path, Scene& scene);
+        MAG_API b8 save(const str& file_path, Scene& scene);
     };  // namespace scene
 };      // namespace mag

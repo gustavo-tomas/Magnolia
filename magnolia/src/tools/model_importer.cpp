@@ -24,12 +24,12 @@ namespace mag
             IMPL() : importer(new Assimp::Importer()) {}
             ~IMPL() = default;
 
-            b8 create_native_file(const str& output_directory, const Model& model, str& imported_model_path);
+            b8 create_native_file(const str& output_directory, const ModelResource& model, str& imported_model_path);
 
-            b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model& model);
+            b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
             void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
-                                      Model& model);
-            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model& model);
+                                      ModelResource& model);
+            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, ModelResource& model);
 
             const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
 
@@ -57,7 +57,7 @@ namespace mag
             return false;
         }
 
-        Model model = {};
+        ModelResource model = {};
         model.name = scene->mRootNode->mName.C_Str();
         model.meshes.resize(scene->mNumMeshes);
 
@@ -85,7 +85,7 @@ namespace mag
         return impl->create_native_file(output_directory, model, imported_model_path);
     }
 
-    b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const Model& model,
+    b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const ModelResource& model,
                                                str& imported_model_path)
     {
         const str native_model_file_path = output_directory + "/" + model.name + MODEL_FILE_EXTENSION;
@@ -155,7 +155,7 @@ namespace mag
         return true;
     }
 
-    b8 ModelImporter::IMPL::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, Model& model)
+    b8 ModelImporter::IMPL::initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model)
     {
         if (!ai_mesh->HasFaces())
         {
@@ -233,7 +233,8 @@ namespace mag
         return true;
     }
 
-    void ModelImporter::IMPL::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, Model& model)
+    void ModelImporter::IMPL::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices,
+                                            ModelResource& model)
     {
         const u32 vertex_count = vertices.size();
         const u32 index_count = indices.size();
@@ -268,7 +269,7 @@ namespace mag
     }
 
     void ModelImporter::IMPL::initialize_materials(const aiScene* ai_scene, const str& file_path,
-                                                   const str& output_directory, Model& model)
+                                                   const str& output_directory, ModelResource& model)
     {
         const str model_directory = fs::path(file_path).parent_path();
 

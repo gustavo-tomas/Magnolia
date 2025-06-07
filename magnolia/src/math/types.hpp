@@ -33,12 +33,20 @@ namespace mag
         // Calculate a rotation mat from XYZ rotation
         mat4 calculate_rotation_mat(const vec3& rotation);
 
+        // A structure that represents a line that goes from start to end.
+        struct Line
+        {
+                vec3 start;
+                vec3 end;
+                vec3 color;
+        };
+
         // Sequence of lines. Starts, ends and colors size must match.
         struct LineList
         {
-                std::vector<vec3> starts, ends, colors;
+                std::vector<Line> lines;
 
-                void append(const LineList& lines);
+                void append(const Line& line);
         };
 
         // Axis Aligned Bounding Box

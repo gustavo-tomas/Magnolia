@@ -4,18 +4,30 @@
 #include <core/entry_point.hpp>
 #include <core/event.hpp>
 #include <project/project.hpp>
-#include <renderer/passes/scene_pass.hpp>
-#include <renderer/render_graph.hpp>
-#include <renderer/renderer.hpp>
+#include <resources/audio.hpp>
+#include <resources/font.hpp>
+#include <resources/material.hpp>
+#include <resources/model.hpp>
+#include <resources/resource.hpp>
+#include <resources/resource_loader.hpp>
+#include <resources/shader.hpp>
+#include <resources/texture.hpp>
 #include <scene/scene.hpp>
 #include <scene/scene_serializer.hpp>
 
-mag::Application *mag::create_application() { return new game::TestGame("test_game/config.json"); }
+#include "renderer.hpp"
+
+mag::Application* mag::create_application() { return new game::TestGame("test_game/config.json"); }
 
 namespace game
 {
-    TestGame::TestGame(const str &config_file_path) : Application(config_file_path)
+    TestGame::TestGame(const str& config_file_path) : Application(config_file_path), renderer(new Renderer())
     {
+        // Set a callback to manage resources
+        set_on_resource_loaded_callback(BIND_FN(TestGame::on_resource_loaded));
+
+        // Load the project
+
         mag::Project project;
 
         const str project_file_path = "test_game/TestGame.proj.json";
@@ -36,8 +48,6 @@ namespace game
             return;
         }
 
-        build_render_graph(mag::window::get_size());
-
         scene->on_start();
     }
 
@@ -46,10 +56,10 @@ namespace game
     void TestGame::on_update(const f32 dt)
     {
         // Check for scene swaps
-        const str &next_scene_file_path = scene->get_next_scene();
+        const str& next_scene_file_path = scene->get_next_scene();
         if (!next_scene_file_path.empty())
         {
-            mag::Scene *next_scene = new mag::Scene();
+            mag::Scene* next_scene = new mag::Scene();
             if (!mag::scene::load(next_scene_file_path, *next_scene))
             {
                 LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);
@@ -66,37 +76,42 @@ namespace game
         }
 
         scene->on_update(dt);
-
-        mag::gfx::on_update(*render_graph, *scene);
+        renderer->render_scene(*scene, dt);
     }
 
-    void TestGame::on_event(const mag::Event &e)
+    void TestGame::on_event(const mag::Event& e)
     {
         scene->on_event(e);
-
-        mag::dispatch_event<mag::WindowResizeEvent>(e,
-                                                    [this](const mag::WindowResizeEvent &e) {
-                                                        this->build_render_graph({e.width, e.height});
-                                                    });
+        renderer->on_event(e);
     }
 
-    void TestGame::build_render_graph(const uvec2 &size)
+    void TestGame::on_resource_loaded(const mag::IResource* resource)
     {
-        render_graph.reset(new mag::RenderGraph());
+        // Upload texture data to the GPU
+        if (const mag::TextureResource* texture = dynamic_cast<const mag::TextureResource*>(resource))
+        {
+        }
 
-        // @TODO: for now only one output attachment of each type is supported (one color and one depth maximum)
-        // @TODO: whatever change is made here has to be copied to the editor (or vice-versa) and this is not good :(
+        // Upload model data to the GPU
+        else if (const mag::ModelResource* model = dynamic_cast<const mag::ModelResource*>(resource))
+        {
+        }
 
-        // mag::DepthPrePass *depth_prepass = new mag::DepthPrePass(size);
-        mag::ScenePass *scene_pass = new mag::ScenePass(size);
-        mag::PostProcessingPass *post_pass = new mag::PostProcessingPass(size);
+        // Upload font data to the GPU
+        else if (const mag::FontResource* font = dynamic_cast<const mag::FontResource*>(resource))
+        {
+        }
 
-        render_graph->set_output_attachment("OutputColor");
+        else if (const mag::MaterialResource* material = dynamic_cast<const mag::MaterialResource*>(resource))
+        {
+        }
 
-        // render_graph->add_pass(depth_prepass);
-        render_graph->add_pass(scene_pass);
-        render_graph->add_pass(post_pass);
+        else if (const mag::ShaderResource* shader = dynamic_cast<const mag::ShaderResource*>(resource))
+        {
+        }
 
-        render_graph->build();
+        else if (const mag::AudioResource* audio = dynamic_cast<const mag::AudioResource*>(resource))
+        {
+        }
     }
 };  // namespace game

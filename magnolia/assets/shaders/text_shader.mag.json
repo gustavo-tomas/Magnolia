@@ -1,31 +1,9 @@
 {
-    "Shader": "Text",
-    "Files": [
-        "text.vert",
-        "text.frag"
+    "Name": "Text",
+    "File": "text.glsl",
+    "Stages": [
+        "Vertex",
+        "Fragment"
     ],
-    "Pipeline": {
-        "InputAssembly": {
-            "Topology": "TriangleStrip"
-        },
-        "Rasterization": {
-            "PolygonMode": "Fill",
-            "CullMode": "None"
-        },
-        "ColorBlend": {
-            "Enabled": true,
-            "ColorBlendOp": "Add",
-            "AlphaBlendOp": "Add",
-            "SrcColorBlendFactor": "SrcAlpha",
-            "DstColorBlendFactor": "OneMinusSrcAlpha",
-            "SrcAlphaBlendFactor": "One",
-            "DstAlphaBlendFactor": "OneMinusSrcAlpha"
-        },
-        "ColorWrite": {
-            "Enabled": true
-        },
-        "DepthWrite": {
-            "Enabled": true
-        }
-    }
+    "Topology": "TriangleStrip"
 }

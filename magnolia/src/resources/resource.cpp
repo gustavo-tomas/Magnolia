@@ -30,6 +30,7 @@ namespace mag
 
         b8 initialize_shader_subsystem();
         void shutdown_shader_subsystem();
+        void set_on_shader_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         b8 initialize_audio_subsystem();
         void shutdown_audio_subsystem();
@@ -66,6 +67,7 @@ namespace mag
             resource::set_on_texture_loaded_callback(callback);
             resource::set_on_material_loaded_callback(callback);
             resource::set_on_model_loaded_callback(callback);
+            resource::set_on_shader_loaded_callback(callback);
             resource::set_on_font_loaded_callback(callback);
             resource::set_on_audio_loaded_callback(callback);
         }

@@ -5,15 +5,10 @@
 #include "core/event.hpp"
 #include "core/logger.hpp"
 #include "core/types.hpp"
-#include "core/window.hpp"
+#include "gfx/gfx.hpp"
 #include "platform/file_system.hpp"
 #include "platform/platform.hpp"
-#include "renderer/renderer.hpp"
-#include "resources/audio.hpp"
-#include "resources/font.hpp"
-#include "resources/material.hpp"
-#include "resources/model.hpp"
-#include "resources/resource.hpp"
+#include "platform/window.hpp"
 #include "threads/job_system.hpp"
 #include "threads/thread.hpp"
 #include "tools/profiler.hpp"
@@ -52,6 +47,7 @@ namespace mag
 
         math::uvec2 window_size = WindowOptions::MaxSize;
         math::ivec2 window_position = WindowOptions::CenterPos;
+        math::uvec2 screen_resolution = {1280, 720};
         str window_title = "Magnolia";
         str window_icon = "";
 
@@ -71,6 +67,13 @@ namespace mag
                 window_position[count++] = num;
             }
 
+            count = 0;
+            for (const auto& num : config["ScreenResolution"])
+            {
+                if (count >= screen_resolution.length()) break;
+                screen_resolution[count++] = num;
+            }
+
             window_title = config["WindowTitle"].get<str>();
             window_icon = config["WindowIcon"].get<str>();
         }
@@ -85,7 +88,9 @@ namespace mag
         initialized = initialized && window::initialize(window_options);
 
         // Initialize graphics subsystem
-        initialized = initialized && gfx::initialize();
+        gfx::GfxOptions gfx_options = {};
+        gfx_options.resolution = screen_resolution;
+        initialized = initialized && gfx::initialize(gfx_options);
 
         // Initialize the resource subsystem
         initialized = initialized && resource::initialize();
@@ -101,41 +106,7 @@ namespace mag
         }
 
         // Set resource load callback
-        resource::set_on_resource_loaded_callback(
-            [](const IResource* resource)
-            {
-                // Upload texture data to the GPU
-                if (const Image* image = dynamic_cast<const Image*>(resource))
-                {
-                    gfx::update_image(image);
-                }
-
-                // Upload model data to the GPU
-                else if (const Model* model = dynamic_cast<const Model*>(resource))
-                {
-                    gfx::upload_model(model);
-                }
-
-                // Upload font data to the GPU
-                else if (const Font* font = dynamic_cast<const Font*>(resource))
-                {
-                    for (const auto& [c, character] : font->characters)
-                    {
-                        if (!character.data.empty())
-                        {
-                            gfx::upload_image(&character.texture, SamplerAddressMode::ClampToEdge);
-                        }
-                    }
-                }
-
-                else if (const Material* material = dynamic_cast<const Material*>(resource))
-                {
-                }
-
-                else if (const Audio* audio = dynamic_cast<const Audio*>(resource))
-                {
-                }
-            });
+        resource::set_on_resource_loaded_callback(BIND_FN(Application::on_resource_loaded));
     }
 
     Application::~Application()
@@ -187,13 +158,20 @@ namespace mag
         }
     }
 
+    void Application::on_resource_loaded(const IResource* resource)
+    {
+        // Send the event to the user.
+        if (on_resource_loaded_user_callback != nullptr)
+        {
+            on_resource_loaded_user_callback(resource);
+        }
+    }
+
     void Application::process_event(const Event& e)
     {
         // Process the event internally
         dispatch_event<WindowCloseEvent>(e, BIND_FN(Application::on_window_close));
         dispatch_event<QuitEvent>(e, BIND_FN(Application::on_quit));
-
-        gfx::on_event(e);
 
         // Send event to be processed by the user application
         on_event(e);
@@ -214,4 +192,9 @@ namespace mag
     }
 
     void Application::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }
+
+    void Application::set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback)
+    {
+        on_resource_loaded_user_callback = callback;
+    }
 };  // namespace mag

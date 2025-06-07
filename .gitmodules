@@ -52,3 +52,6 @@
 [submodule "libs/soloud"]
 	path = libs/soloud
 	url = https://github.com/jarikomppa/soloud.git
+[submodule "libs/vkbootstrap"]
+	path = libs/vkbootstrap
+	url = https://github.com/charles-lunarg/vk-bootstrap.git

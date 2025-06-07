@@ -19,7 +19,7 @@ namespace mag
         TextureCount
     };
 
-    struct Material : public IResource
+    struct MaterialResource : public IResource
     {
             std::map<TextureSlot, str> textures;
             str name = "";
@@ -27,7 +27,7 @@ namespace mag
 
     namespace resource
     {
-        ref<Material> get_material(const str& name);
-        ref<Material> get_default_material();
+        ref<MaterialResource> MAG_API get_material(const str& name);
+        ref<MaterialResource> MAG_API get_default_material();
     };  // namespace resource
 };      // namespace mag

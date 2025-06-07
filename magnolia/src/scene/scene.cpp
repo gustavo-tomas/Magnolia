@@ -8,16 +8,18 @@
 #include "math/types.hpp"
 #include "physics/physics.hpp"
 #include "platform/file_system.hpp"
-#include "renderer/test_model.hpp"
 #include "resources/audio.hpp"
-#include "resources/image.hpp"
+#include "resources/model.hpp"
+#include "resources/texture.hpp"
 #include "scene/scriptable_entity.hpp"
 #include "scripting/scripting_engine.hpp"
 
 namespace mag
 {
     Scene::Scene()
-        : name("Untitled"), ecs(new ECS(10'000, BIND_FN2(Scene::on_component_added))), physics_world(new PhysicsWorld())
+        : name("Untitled"),
+          ecs(new ECS(10'000, BIND_FN2(Scene::on_component_added))),
+          physics_world(create_physics_world())
     {
     }
 
@@ -241,7 +243,7 @@ namespace mag
 
         for (auto camera_c : ecs->get_all_components_of_type<CameraComponent>())
         {
-            camera_c->camera.set_aspect_ratio(size);
+            camera_c->camera.set_viewport_size(size);
         }
     }
 
@@ -284,7 +286,7 @@ namespace mag
 
     const str& Scene::get_next_scene() const { return next_scene; }
 
-    const PhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
+    const IPhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
 
     ECS& Scene::get_ecs() { return *ecs; }
 

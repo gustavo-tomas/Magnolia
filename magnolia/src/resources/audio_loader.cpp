@@ -12,7 +12,7 @@ namespace mag
 {
     namespace resource
     {
-        b8 load(const str &file_path, Audio *audio)
+        b8 load(const str &file_path, AudioResource *audio)
         {
             if (!audio)
             {

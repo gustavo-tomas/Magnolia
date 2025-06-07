@@ -220,6 +220,12 @@ namespace mag
             return file_path.extension().c_str();
         }
 
+        str get_file_name(const fs::path& raw_file_path)
+        {
+            const auto file_path = get_fixed_path(raw_file_path);
+            return file_path.stem().string();
+        }
+
         b8 exists(const fs::path& raw_file_path)
         {
             const auto path = get_fixed_path(raw_file_path);

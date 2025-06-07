@@ -4,22 +4,21 @@
 
 namespace mag
 {
-    struct Image;
-    struct Material;
-    struct Model;
-    struct Font;
-    struct Audio;
-    struct ShaderConfiguration;
-    struct ShaderModule;
+    struct TextureResource;
+    struct MaterialResource;
+    struct ModelResource;
+    struct FontResource;
+    struct AudioResource;
+    struct ShaderResource;
 
     namespace resource
     {
-        b8 load(const str& file_path, Image* image);
-        b8 load(const str& file_path, Material* material);
-        b8 load(const str& file_path, Model* model);
-        b8 load(const str& file_path, Font* font);
-        b8 load(const str& file_path, Audio* audio);
-        b8 load(const str& file_path, ShaderConfiguration* shader, const b8 force_recompilation = false);
+        MAG_API b8 load(const str& file_path, TextureResource* texture);
+        MAG_API b8 load(const str& file_path, MaterialResource* material);
+        MAG_API b8 load(const str& file_path, ModelResource* model);
+        MAG_API b8 load(const str& file_path, FontResource* font);
+        MAG_API b8 load(const str& file_path, AudioResource* audio);
+        MAG_API b8 load(const str& file_path, ShaderResource* shader);
 
         b8 get_image_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels);
         b8 is_image_extension_supported(const str& extension_with_dot);

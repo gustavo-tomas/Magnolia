@@ -4,7 +4,7 @@
 
 namespace mag
 {
-    class Project
+    class MAG_API Project
     {
         public:
             Project();
@@ -26,7 +26,7 @@ namespace mag
 
     namespace project
     {
-        b8 load(const str& file_path, Project& project);
-        b8 save(const str& file_path, Project& project);
+        MAG_API b8 load(const str& file_path, Project& project);
+        MAG_API b8 save(const str& file_path, Project& project);
     };  // namespace project
 };      // namespace mag

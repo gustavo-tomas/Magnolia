@@ -44,6 +44,7 @@ workspace "magnolia"
         "libs/sdl/include",
         "libs/fmt/include",
         "libs/vulkan/include",
+        "libs/vkbootstrap/src",
         "libs/vma/include",
         "libs/assimp/include",
         "libs/glm",
@@ -116,7 +117,10 @@ project "magnolia"
         "%{prj.name}/src/**.cpp",
         "libs/spirv_reflect/spirv_reflect.h",
         "libs/spirv_reflect/spirv_reflect.cpp",
-        "libs/json/single_include/nlohmann/json.hpp"
+        "libs/json/single_include/nlohmann/json.hpp",
+        "libs/vkbootstrap/src/VkBootstrap.h",
+        "libs/vkbootstrap/src/VkBootstrapDispatch.h",
+        "libs/vkbootstrap/src/VkBootstrap.cpp"
     }
 
     includedirs
@@ -128,7 +132,8 @@ project "magnolia"
 
     defines
     {
-        "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC"
+        "VULKAN_HPP_NO_EXCEPTIONS",
+        "MAG_BUILD_SHARED"
     }
 
     links
@@ -168,13 +173,14 @@ project "magnolia"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions", "-fvisibility=hidden" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -182,6 +188,7 @@ project "magnolia"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -234,13 +241,14 @@ project "sprout_editor"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -248,6 +256,7 @@ project "sprout_editor"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -301,13 +310,14 @@ project "test_game"
         }
         
     filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace" }
+        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
         defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
 
     filter "configurations:profile"
+        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -315,6 +325,7 @@ project "test_game"
         runtime "release"
 
     filter "configurations:release"
+        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
         flags { build_flags }
         symbols "off"

@@ -6,10 +6,10 @@
 namespace mag
 {
     struct Event;
-    class PhysicsWorld;
+    class IPhysicsWorld;
     class Scene;
 
-    class ScriptableEntity
+    class MAG_API ScriptableEntity
     {
         public:
             ScriptableEntity();
@@ -58,13 +58,13 @@ namespace mag
                 ecs->add_component(entity_id, c);
             }
 
-            PhysicsWorld& get_physics_world() const;
+            IPhysicsWorld& get_physics_world() const;
 
         private:
             friend class Scene;
 
             Scene* scene = nullptr;
-            PhysicsWorld* physics_world = nullptr;
+            IPhysicsWorld* physics_world = nullptr;
             ECS* ecs = nullptr;
             u32 entity_id = Invalid_ID;
     };

@@ -1,25 +1,9 @@
 {
-    "Shader": "Mesh",
-    "Files": [
-        "mesh.vert",
-        "mesh.frag"
+    "Name": "Mesh",
+    "File": "mesh.glsl",
+    "Stages": [
+        "Vertex",
+        "Fragment"
     ],
-    "Pipeline": {
-        "InputAssembly": {
-            "Topology": "Triangle"
-        },
-        "Rasterization": {
-            "PolygonMode": "Fill",
-            "CullMode": "Back"
-        },
-        "ColorBlend": {
-            "Enabled": false
-        },
-        "ColorWrite": {
-            "Enabled": true
-        },
-        "DepthWrite": {
-            "Enabled": true
-        }
-    }
+    "Topology": "TriangleList"
 }

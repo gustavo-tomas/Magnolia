@@ -1,12 +1,14 @@
 #include "scene/scene_serializer.hpp"
 
+#include "camera/camera.hpp"
 #include "ecs/components.hpp"
 #include "ecs/ecs.hpp"
 #include "platform/file_system.hpp"
-#include "renderer/test_model.hpp"
+#include "platform/window.hpp"
 #include "resources/audio.hpp"
 #include "resources/font.hpp"
-#include "resources/image.hpp"
+#include "resources/model.hpp"
+#include "resources/texture.hpp"
 #include "scene/scene.hpp"
 
 namespace mag
@@ -121,7 +123,6 @@ namespace mag
                     entity["CameraComponent"]["Fov"] = component->camera.get_fov();
                     entity["CameraComponent"]["Near"] = component->camera.get_near();
                     entity["CameraComponent"]["Far"] = component->camera.get_far();
-                    entity["CameraComponent"]["AspectRatio"] = component->camera.get_aspect_ratio();
                 }
 
                 if (auto component = ecs.get_component<ScriptComponent>(entity_id))
@@ -287,9 +288,16 @@ namespace mag
                     const f32 fov = component["Fov"].get<f32>();
                     const f32 near = component["Near"].get<f32>();
                     const f32 far = component["Far"].get<f32>();
-                    const f32 aspect = component["AspectRatio"].get<f32>();
 
-                    Camera camera = Camera(vec3(0), vec3(0), fov, aspect, near, far);
+                    PerspectiveCameraDesc camera_desc = {};
+                    camera_desc.near = near;
+                    camera_desc.far = far;
+                    camera_desc.fov = fov;
+                    camera_desc.viewport_size = window::get_size();
+                    camera_desc.position = vec3(0.0f);
+                    camera_desc.rotation = vec3(0.0f);
+
+                    PerspectiveCamera camera = PerspectiveCamera(camera_desc);
 
                     ecs.add_component(entity_id, new CameraComponent(camera));
                 }

@@ -3,8 +3,12 @@
         1280,
         720
     ],
+    "ScreenResolution": [
+        1920,
+        1080
+    ],
     "WindowPosition": [],
     "WindowTitle": "TestGame",
     "WindowIcon": "",
-    "TargetFrameRate": 60
+    "TargetFrameRate": 120
 }

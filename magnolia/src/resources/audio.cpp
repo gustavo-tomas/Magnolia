@@ -14,7 +14,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Audio>> audios;
+                std::map<str, ref<AudioResource>> audios;
                 ResourceLoadedCallbackFn on_audio_loaded;
         };
 
@@ -39,7 +39,7 @@ namespace mag
             delete state;
         }
 
-        ref<Audio> get_audio(const str& name)
+        ref<AudioResource> get_audio(const str& name)
         {
             auto it = state->audios.find(name);
             if (it != state->audios.end())
@@ -48,9 +48,9 @@ namespace mag
             }
 
             // Create a new audio
-            Audio* audio = new Audio();
+            AudioResource* audio = new AudioResource();
             audio->loading_status = LoadingStatus::InProgress;
-            state->audios[name] = ref<Audio>(audio);
+            state->audios[name] = ref<AudioResource>(audio);
 
             if (resource::load(name, audio))
             {

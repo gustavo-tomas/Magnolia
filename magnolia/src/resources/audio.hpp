@@ -5,7 +5,7 @@
 
 namespace mag
 {
-    struct Audio : public IResource
+    struct AudioResource : public IResource
     {
             u32 handle = 0;
             void* source = nullptr;
@@ -14,6 +14,6 @@ namespace mag
 
     namespace resource
     {
-        ref<Audio> get_audio(const str& name);
+        ref<AudioResource> MAG_API get_audio(const str& name);
     };  // namespace resource
 };      // namespace mag

@@ -23,8 +23,8 @@ namespace mag
         return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
     }
 
-    SpriteComponent::SpriteComponent(const ref<Image>& texture, const str& texture_file_path, const b8 constant_size,
-                                     const b8 always_face_camera)
+    SpriteComponent::SpriteComponent(const ref<TextureResource>& texture, const str& texture_file_path,
+                                     const b8 constant_size, const b8 always_face_camera)
         : texture(texture),
           texture_file_path(texture_file_path),
           constant_size(constant_size),
@@ -32,14 +32,14 @@ namespace mag
     {
     }
 
-    ModelComponent::ModelComponent(const ref<Model>& model) : model(model) {}
+    ModelComponent::ModelComponent(const ref<ModelResource>& model) : model(model) {}
 
-    TextComponent::TextComponent(const ref<Font>& font, const vec4& color, const str& text)
+    TextComponent::TextComponent(const ref<FontResource>& font, const vec4& color, const str& text)
         : font(font), color(color), text(text)
     {
     }
 
-    AudioComponent::AudioComponent(const ref<Audio>& audio, const f32 volume, const b8 play_on_load,
+    AudioComponent::AudioComponent(const ref<AudioResource>& audio, const f32 volume, const b8 play_on_load,
                                    const vec3& position, const vec3& velocity)
         : audio(audio), volume(volume), position(position), velocity(velocity), play_on_load(play_on_load)
     {
@@ -51,7 +51,7 @@ namespace mag
 
     LightComponent::LightComponent(const vec3& color, const f32 intensity) : color(color), intensity(intensity) {}
 
-    CameraComponent::CameraComponent(const Camera& camera) : camera(camera) {}
+    CameraComponent::CameraComponent(const PerspectiveCamera& camera) : camera(camera) {}
 
     ScriptComponent::ScriptComponent(const str& file_path, void* handle, CreateScriptFn create_entity,
                                      DestroyScriptFn destroy_entity)

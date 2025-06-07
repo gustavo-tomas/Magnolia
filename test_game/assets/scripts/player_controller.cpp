@@ -91,7 +91,7 @@ class PlayerController : public ScriptableEntity
 
         void fire_bullet(const TransformComponent& transform)
         {
-            PhysicsWorld& physics = get_physics_world();
+            IPhysicsWorld& physics = get_physics_world();
 
             // Create a bullet
             const u32 bullet_id = create_entity();
@@ -99,7 +99,7 @@ class PlayerController : public ScriptableEntity
             TransformComponent* bullet_transform = new TransformComponent(transform);
             bullet_transform->scale = vec3(100.0f);
 
-            const ref<Model> model =
+            const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             auto* model_c = new ModelComponent(model);

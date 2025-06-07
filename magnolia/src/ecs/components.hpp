@@ -14,13 +14,13 @@ namespace mag
 
 #define CLONE_DECLARATION(type) virtual Component* clone() const override;
 
-    struct Component
+    struct MAG_API Component
     {
             virtual ~Component();
             virtual Component* clone() const = 0;
     };
 
-    struct NameComponent : public Component
+    struct MAG_API NameComponent : public Component
     {
             NameComponent(const str& name);
 
@@ -29,7 +29,7 @@ namespace mag
             str name;
     };
 
-    struct TransformComponent : public Component
+    struct MAG_API TransformComponent : public Component
     {
             TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),
                                const vec3& scale = vec3(1));
@@ -41,15 +41,15 @@ namespace mag
             mat4 get_transformation_matrix() const;
     };
 
-    struct Image;
-    struct SpriteComponent : public Component
+    struct TextureResource;
+    struct MAG_API SpriteComponent : public Component
     {
-            SpriteComponent(const ref<Image>& texture, const str& texture_file_path, const b8 constant_size = false,
-                            const b8 always_face_camera = false);
+            SpriteComponent(const ref<TextureResource>& texture, const str& texture_file_path,
+                            const b8 constant_size = false, const b8 always_face_camera = false);
 
             CLONE_DECLARATION(SpriteComponent);
 
-            ref<Image> texture;
+            ref<TextureResource> texture;
             str texture_file_path;  // @TODO: this is not ideal
             b8 constant_size;
             b8 always_face_camera;
@@ -57,44 +57,44 @@ namespace mag
 
     // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
     // and i find that a bit weird
-    struct Model;
-    struct ModelComponent : public Component
+    struct ModelResource;
+    struct MAG_API ModelComponent : public Component
     {
-            ModelComponent(const ref<Model>& model);
+            ModelComponent(const ref<ModelResource>& model);
 
             CLONE_DECLARATION(ModelComponent);
 
-            ref<Model> model;
+            ref<ModelResource> model;
     };
 
-    struct Font;
-    struct TextComponent : public Component
+    struct FontResource;
+    struct MAG_API TextComponent : public Component
     {
-            TextComponent(const ref<Font>& font, const vec4& color, const str& text);
+            TextComponent(const ref<FontResource>& font, const vec4& color, const str& text);
 
             CLONE_DECLARATION(TextComponent);
 
-            ref<Font> font;
+            ref<FontResource> font;
             vec4 color;
             str text;
     };
 
-    struct Audio;
-    struct AudioComponent : public Component
+    struct AudioResource;
+    struct MAG_API AudioComponent : public Component
     {
-            AudioComponent(const ref<Audio>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
+            AudioComponent(const ref<AudioResource>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
                            const vec3& position = vec3(0), const vec3& velocity = vec3(0));
 
             CLONE_DECLARATION(AudioComponent);
 
-            ref<Audio> audio;
+            ref<AudioResource> audio;
             f32 volume;
             vec3 position;
             vec3 velocity;
             b8 play_on_load;
     };
 
-    struct BoxColliderComponent : public Component
+    struct MAG_API BoxColliderComponent : public Component
     {
             BoxColliderComponent(const vec3& dimensions = vec3(1));
 
@@ -103,7 +103,7 @@ namespace mag
             vec3 dimensions;
     };
 
-    struct RigidBodyComponent : public Component
+    struct MAG_API RigidBodyComponent : public Component
     {
             RigidBodyComponent(const f32 mass = 0.0f);
 
@@ -115,7 +115,7 @@ namespace mag
             void* collision_object = nullptr;
     };
 
-    struct LightComponent : public Component
+    struct MAG_API LightComponent : public Component
     {
             LightComponent(const vec3& color = vec3(1), const f32 intensity = 1);
 
@@ -125,21 +125,21 @@ namespace mag
             f32 intensity;
     };
 
-    class Camera;
-    struct CameraComponent : public Component
+    class PerspectiveCamera;
+    struct MAG_API CameraComponent : public Component
     {
-            CameraComponent(const Camera& camera);
+            CameraComponent(const PerspectiveCamera& camera);
 
             CLONE_DECLARATION(CameraComponent);
 
-            Camera camera;
+            PerspectiveCamera camera;
     };
 
     class ScriptableEntity;
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
 
-    struct ScriptComponent : public Component
+    struct MAG_API ScriptComponent : public Component
     {
             ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
                             DestroyScriptFn destroy_entity = nullptr);

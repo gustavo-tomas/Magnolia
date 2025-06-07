@@ -50,7 +50,7 @@ class EnemySpawner : public ScriptableEntity
             // Spawn an enemy
             const u32 enemy_id = create_entity("MenacingHammer" + std::to_string(counter));
 
-            const ref<Model> model =
+            const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             TransformComponent* enemy_transform = new TransformComponent(*spawner_transform);

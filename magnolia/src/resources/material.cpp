@@ -1,8 +1,8 @@
 #include "resources/material.hpp"
 
-#include "resources/image.hpp"
 #include "resources/resource.hpp"
 #include "resources/resource_loader.hpp"
+#include "resources/texture.hpp"
 #include "threads/job_system.hpp"
 
 namespace mag
@@ -11,7 +11,7 @@ namespace mag
     {
         struct State
         {
-                std::map<str, ref<Material>> materials;
+                std::map<str, ref<MaterialResource>> materials;
                 ResourceLoadedCallbackFn on_material_loaded;
         };
 
@@ -21,7 +21,7 @@ namespace mag
         {
             state = new State();
 
-            state->materials[DEFAULT_MATERIAL_NAME] = create_ref<Material>();
+            state->materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
             state->materials[DEFAULT_MATERIAL_NAME]->name = "Default";
             state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
             state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
@@ -37,7 +37,7 @@ namespace mag
             delete state;
         }
 
-        ref<Material> get_material(const str& name)
+        ref<MaterialResource> get_material(const str& name)
         {
             auto it = state->materials.find(name);
             if (it != state->materials.end())
@@ -46,12 +46,12 @@ namespace mag
             }
 
             // Create a new material
-            Material* material = new Material(*state->materials[DEFAULT_MATERIAL_NAME]);
+            MaterialResource* material = new MaterialResource(*state->materials[DEFAULT_MATERIAL_NAME]);
             material->loading_status = LoadingStatus::InProgress;
-            state->materials[name] = ref<Material>(material);
+            state->materials[name] = ref<MaterialResource>(material);
 
             // Temporary material to load data into
-            Material* transfer_material = new Material(*material);
+            MaterialResource* transfer_material = new MaterialResource(*material);
 
             // Load in another thread
             auto execute = [name, transfer_material]
@@ -92,7 +92,7 @@ namespace mag
             return state->materials[name];
         }
 
-        ref<Material> get_default_material() { return state->materials[DEFAULT_MATERIAL_NAME]; }
+        ref<MaterialResource> get_default_material() { return state->materials[DEFAULT_MATERIAL_NAME]; }
 
         void set_on_material_loaded_callback(const ResourceLoadedCallbackFn& callback)
         {

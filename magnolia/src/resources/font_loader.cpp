@@ -16,7 +16,7 @@ namespace mag
 {
     namespace resource
     {
-        b8 load(const str &file_path, Font *font)
+        b8 load(const str &file_path, FontResource *font)
         {
             if (!font)
             {

@@ -2,14 +2,11 @@
 
 #include <magnolia.hpp>
 
-namespace mag
-{
-    class RenderGraph;
-};
-
 namespace game
 {
     using namespace mag::math;
+
+    class Renderer;
 
     class TestGame : public mag::Application
     {
@@ -21,9 +18,9 @@ namespace game
             virtual void on_event(const mag::Event& e) override;
 
         private:
-            void build_render_graph(const uvec2& size);
+            void on_resource_loaded(const mag::IResource* resource);
 
+            unique<Renderer> renderer = nullptr;
             unique<mag::Scene> scene = nullptr;
-            unique<mag::RenderGraph> render_graph = nullptr;
     };
 };  // namespace game

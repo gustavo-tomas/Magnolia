@@ -38,5 +38,5 @@ namespace mag
 
     u32 ScriptableEntity::create_entity(const str& name) const { return ecs->create_entity(name); }
 
-    PhysicsWorld& ScriptableEntity::get_physics_world() const { return *physics_world; }
+    IPhysicsWorld& ScriptableEntity::get_physics_world() const { return *physics_world; }
 };  // namespace mag

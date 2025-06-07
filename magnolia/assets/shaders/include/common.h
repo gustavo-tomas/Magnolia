@@ -9,27 +9,29 @@ using namespace mag::math;
 
 #else
 
-    #define f32 float
-    #define alignas(x)
-
 // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
+    #extension GL_EXT_nonuniform_qualifier : require
 
-// Macros
-    #define MODEL_MATRIX u_instance.models[gl_InstanceIndex].model
-    #define PROJ_MATRIX u_global.projection
-    #define VIEW_MATRIX u_global.view
-    #define NEAR_FAR u_global.near_far
+    #define f32 float
+    #define u32 uint
+    #define alignas(x)
 
 // Constants
 const float PI = 3.1415926535;
 
 #endif
 
+// Including unbounded arrays
+// @TODO: these values should be retrieved from the renderer backend
+const u32 Max_Descriptor_Array_Size = 2 * 1024;
+const u32 Max_SSBO_Size_Byte = 4 * 1024 * 1024;  // 4 MiB
+
 // Types shared by c++ and glsl
 
-struct alignas(16) ModelData
+struct alignas(16) MeshData
 {
-        mat4 model;  // 64 bytes (16 x 4)
+        mat4 model;        // 64 bytes (16 x 4)
+        u32 material_idx;  // 4 bytes
 };
 
 struct alignas(16) LightData
@@ -43,17 +45,32 @@ struct alignas(16) SpriteData
 {
         mat4 model;            // 64 bytes
         vec4 size_const_face;  // Size + Constant Size + Always Face Camera
+        u32 texture_idx;       // 4 bytes
 };
 
 struct alignas(16) TextData
 {
-        mat4 model;  // 64 bytes (16 x 4)
-        vec4 color;  // 16 bytes ( 4 x 4)
+        mat4 model;       // 64 bytes (16 x 4)
+        vec4 color;       // 16 bytes ( 4 x 4)
+        u32 texture_idx;  // 4 bytes
 };
 
 struct alignas(16) MaterialData
 {
-        vec4 albedo;    // 16 bytes
-        f32 roughness;  // 4 bytes
-        f32 metallic;   // 4 bytes
+        vec4 albedo;            // 16 bytes
+        f32 roughness;          // 4 bytes
+        f32 metallic;           // 4 bytes
+        u32 albedo_tex_idx;     // 4 bytes
+        u32 normal_tex_idx;     // 4 bytes
+        u32 roughness_tex_idx;  // 4 bytes
+        u32 metalness_tex_idx;  // 4 bytes
+};
+
+// Debug
+
+struct alignas(16) DebugTextData
+{
+        mat4 model;       // 64 bytes (16 x 4)
+        vec4 color;       // 16 bytes ( 4 x 4)
+        u32 texture_idx;  // 4 bytes
 };
