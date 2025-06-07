@@ -8,8 +8,10 @@
 #include "resources/shader.hpp"
 #include "spirv_reflect.h"
 
-// @TODO: temp
-#include "../magnolia/assets/shaders/include/common.h"
+// Including unbounded arrays
+// @TODO: these values should be retrieved from the renderer backend
+const u32 Max_Descriptor_Array_Size = 2 * 1024;
+const u32 Max_SSBO_Size_Byte = 4 * 1024 * 1024;  // 4 MiB
 
 namespace mag
 {

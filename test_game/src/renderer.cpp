@@ -11,7 +11,7 @@
 #include <scene/scene.hpp>
 
 // @TODO: temp
-#include "../magnolia/assets/shaders/include/common.h"
+#include "../assets/shaders/include/common.h"
 
 // This is the game renderer. It sits one layer above the gfx frontend and manages shaders, buffers and textures.
 
@@ -24,34 +24,34 @@ namespace game
         mag::ShaderResource shader_resource = {};
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/sprite_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/sprite_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         sprite_shader = mag::gfx::create_shader(shader_resource);
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/mesh_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/mesh_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         mesh_shader = mag::gfx::create_shader(shader_resource);
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/text_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/text_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         text_shader = mag::gfx::create_shader(shader_resource);
 
         // Debug
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/floor_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/floor_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         floor_shader = mag::gfx::create_shader(shader_resource);
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/line_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/line_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         line_shader = mag::gfx::create_shader(shader_resource);
 
         shader_resource = {};
-        MAG_ASSERT(mag::resource::load("magnolia/assets/shaders/debug_text_shader.mag.json", &shader_resource),
+        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/debug_text_shader.mag.json", &shader_resource),
                    "Failed to load shader");
         debug_text_shader = mag::gfx::create_shader(shader_resource);
     }
