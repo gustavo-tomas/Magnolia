@@ -97,13 +97,29 @@ namespace game
             {
                     mat4 view;
                     mat4 projection;
+                    u32 light_count;
             };
 
             static GlobalData global_data = {};
             global_data.view = camera.get_view();
             global_data.projection = camera.get_projection();
+            global_data.light_count = light_entities.size();
 
             mag::gfx::set_uniform("u_global", &global_data);
+        }
+
+        // Lights buffer
+        {
+            u32 light_num = 0;
+            for (const auto& [transform, light] : light_entities)
+            {
+                LightData light_data = {};
+                light_data.position = transform->translation;
+                light_data.color = light->color;
+                light_data.intensity = light->intensity;
+
+                mag::gfx::set_uniform("u_light", &light_data, light_num++);
+            }
         }
 
         u32 mesh_offset = 0;
@@ -449,6 +465,8 @@ namespace game
 
         const mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
 
+        auto light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
+
         // Draw physics colliders
         {
             mag::gfx::use_shader(line_shader);
@@ -511,11 +529,25 @@ namespace game
             {
                     mat4 view;
                     mat4 projection;
+                    u32 light_count;
             };
 
             static GlobalData global_data = {};
             global_data.view = camera.get_view();
             global_data.projection = camera.get_projection();
+            global_data.light_count = light_entities.size();
+
+            // Lights buffer
+            u32 light_num = 0;
+            for (const auto& [transform, light] : light_entities)
+            {
+                LightData light_data = {};
+                light_data.position = transform->translation;
+                light_data.color = light->color;
+                light_data.intensity = light->intensity;
+
+                mag::gfx::set_uniform("u_light", &light_data, light_num++);
+            }
 
             mag::gfx::set_uniform("u_global", &global_data);
 

@@ -1,7 +1,14 @@
 // Phong shading model
 // https://learnopengl.com/Lighting/Basic-Lighting
 
-vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, Light light)
+struct PhongLight
+{
+	vec3 position;
+	vec3 color;
+	float intensity;
+};
+
+vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, PhongLight light)
 {
 	vec3 normal = normalize(surface_normal);
 	vec3 light_dir = normalize(light.position - frag_position);

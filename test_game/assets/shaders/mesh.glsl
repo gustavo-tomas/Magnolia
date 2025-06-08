@@ -1,6 +1,7 @@
 #version 460
 
 #include "include/common.h"
+#include "include/phong.glsl"
 
 // @TODO: move to material
 uint normal_output = 0;
@@ -11,6 +12,9 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
     // Camera
     mat4 view;
     mat4 projection;
+
+	// Lights
+	uint light_count;
 } u_global;
 
 // Instance buffer
@@ -19,14 +23,20 @@ layout (std140, set = 0, binding = 1) readonly buffer InstanceBuffer
     MeshData meshes[];
 } u_instance;
 
+// Light buffer
+layout (std140, set = 0, binding = 2) readonly buffer LightBuffer
+{
+    LightData lights[];
+} u_light;
+
 // Material buffer
-layout (std140, set = 0, binding = 2) readonly buffer MaterialBuffer
+layout (std140, set = 0, binding = 3) readonly buffer MaterialBuffer
 {
     MaterialData materials[];
 } u_material;
 
 // Material textures
-layout (set = 0, binding = 3) uniform sampler2D u_material_textures[];
+layout (set = 0, binding = 4) uniform sampler2D u_material_textures[];
 
 #define VIEW_MATRIX u_global.view
 #define PROJ_MATRIX u_global.projection
@@ -123,7 +133,22 @@ void main()
 		// normal = normalize(in_tbn * normal);
 	}
 
-	out_frag_color = object_color;
+	// Lighting
+
+	out_frag_color = vec4(0.0, 0.0, 0.0, object_color.a);
+
+	for (uint i = 0; i < u_global.light_count; i++)
+	{	
+		PhongLight light;
+		light.position = u_light.lights[i].position;
+		light.color = u_light.lights[i].color;
+		light.intensity = u_light.lights[i].intensity;
+
+		vec3 lighting_color = phong_shading(in_normal, in_frag_position, camera_position, light);
+		out_frag_color.rgb += object_color.rgb * lighting_color;
+	}
+
+	out_frag_color = clamp(out_frag_color, vec4(0.0), vec4(1.0));
 
 	if (out_frag_color.a < 0.5)
 	{
