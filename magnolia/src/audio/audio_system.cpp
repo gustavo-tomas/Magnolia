@@ -42,5 +42,7 @@ namespace mag
             audio->handle = state->soloud.play3d(*static_cast<SoLoud::Wav*>(audio->source), position.x, position.y,
                                                  position.z, velocity.x, velocity.y, velocity.z, volume);
         }
+
+        void stop(const ref<AudioResource>& audio) { state->soloud.stop(audio->handle); }
     };  // namespace audio
 };      // namespace mag

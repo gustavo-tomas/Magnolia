@@ -126,6 +126,12 @@ namespace mag
             destroy_script(script);
         }
 
+        // Stop audios
+        for (auto audio : ecs->get_all_components_of_type<AudioComponent>())
+        {
+            mag::audio::stop(audio->audio);
+        }
+
         on_stop_internal();
 
         running = false;
