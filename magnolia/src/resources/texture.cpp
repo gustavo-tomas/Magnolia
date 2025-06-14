@@ -1,106 +1,81 @@
 #include "resources/texture.hpp"
 
-#include <map>
+#include <set>
 
+#include "core/buffer.hpp"
 #include "core/logger.hpp"
-#include "resources/resource.hpp"
-#include "resources/resource_loader.hpp"
-#include "threads/job_system.hpp"
+#include "platform/file_system.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace mag
 {
     namespace resource
     {
-        struct State
-        {
-                std::map<str, ref<TextureResource>> textures;
-                ResourceLoadedCallbackFn on_texture_loaded;
-        };
+        TextureLoader::TextureLoader() = default;
 
-        static State* state = nullptr;
+        TextureLoader::~TextureLoader() = default;
 
-        b8 initialize_texture_subsystem()
+        IResource* TextureLoader::load(const str& file_path)
         {
-            state = new State();
-            return state != nullptr;
-        }
+            TextureResource* texture = new TextureResource();
 
-        void shutdown_texture_subsystem()
-        {
-            state->textures.clear();
-            delete state;
-        }
+            Buffer buffer;
+            fs::read_binary_data(file_path, buffer);
 
-        ref<TextureResource> get_texture(const str& name)
-        {
-            // Texture found
-            auto it = state->textures.find(name);
-            if (it != state->textures.end())
+            i32 tex_width = 0, tex_height = 0, tex_channels = 0;
+            stbi_uc* pixels = stbi_load_from_memory(buffer.data.data(), buffer.get_size(), &tex_width, &tex_height,
+                                                    &tex_channels, STBI_rgb_alpha);
+
+            if (pixels == NULL)
             {
-                return it->second;
+                LOG_ERROR("Failed to load image file: {0}", file_path);
+                stbi_image_free(pixels);
+
+                delete texture;
+                return nullptr;
             }
 
-            // Create a new texture
-            TextureResource* image = new TextureResource();
-            image->loading_status = LoadingStatus::InProgress;
-            state->textures[name] = ref<TextureResource>(image);
+            // @TODO: hardcoded channels
+            tex_channels = 4;
 
-            // Try to create placeholder texture with the texture dimensions (otherwise use default settings)
-            if (resource::get_image_info(name, &image->width, &image->height, reinterpret_cast<u32*>(&image->channels),
-                                         &image->mip_levels))
-            {
-                image->pixels.resize(image->width * image->height * image->channels, image->pixels[0]);
-            }
+            const u64 image_size = tex_width * tex_height * tex_channels;
 
-            else
-            {
-                LOG_ERROR("Failed to retrieve image dimensions for '{0}'", name);
-            }
+            // Update image data
+            texture->width = tex_width;
+            texture->height = tex_height;
+            texture->channels = tex_channels;
+            texture->mip_levels = static_cast<u32>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
+            texture->pixels = std::vector<u8>(pixels, pixels + image_size);
 
-            // Temporary image to load data into
-            TextureResource* transfer_image = new TextureResource(*image);
+            stbi_image_free(pixels);
 
-            // Load in another thread
-            auto execute = [name, transfer_image]
-            {
-                const b8 result = resource::load(name, transfer_image);
-
-                if (result)
-                {
-                    transfer_image->loading_status = LoadingStatus::Finished;
-                }
-
-                else
-                {
-                    transfer_image->loading_status = LoadingStatus::Error;
-                }
-
-                return result;
-            };
-
-            // Callback when finished loading
-            auto load_finished_callback = [image, transfer_image](const b8 result)
-            {
-                // Update the image data
-                if (result == true)
-                {
-                    *image = *transfer_image;
-                    state->on_texture_loaded(image);
-                }
-
-                // We can dispose of the temporary image now
-                delete transfer_image;
-            };
-
-            Job load_job = Job(execute, load_finished_callback);
-            thread::add_job(load_job);
-
-            return state->textures[name];
+            return texture;
         }
 
-        void set_on_texture_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        b8 get_image_info(const str& raw_file_path, u32* width, u32* height, u32* channels, u32* mip_levels)
         {
-            state->on_texture_loaded = callback;
+            const str file_path = fs::get_fixed_path(raw_file_path);
+
+            const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width),
+                                        reinterpret_cast<i32*>(height), reinterpret_cast<i32*>(channels));
+
+            // @TODO: hardcoded channels
+            *channels = 4;
+
+            *mip_levels = static_cast<u32>(std::floor(std::log2(std::max(*width, *height)))) + 1;
+
+            return result;
+        }
+
+        b8 is_image_extension_supported(const str& extension_with_dot)
+        {
+            // Extensions supported by stb
+            static const std::set<str> supported_formats = {".jpeg", ".png", ".tga", ".bmp", ".psd",
+                                                            ".gif",  ".hdr", ".pic", ".pnm"};
+
+            return supported_formats.contains(extension_with_dot);
         }
     };  // namespace resource
 };      // namespace mag

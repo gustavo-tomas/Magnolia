@@ -7,7 +7,6 @@
 #include "core/types.hpp"
 #include "gfx/backend/backend.hpp"
 #include "gfx/types.hpp"
-#include "resources/resource_loader.hpp"
 #include "resources/shader.hpp"
 
 namespace mag

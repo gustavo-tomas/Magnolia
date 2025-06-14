@@ -9,7 +9,6 @@
 #include <resources/material.hpp>
 #include <resources/model.hpp>
 #include <resources/resource.hpp>
-#include <resources/resource_loader.hpp>
 #include <resources/shader.hpp>
 #include <resources/texture.hpp>
 #include <scene/scene.hpp>

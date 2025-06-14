@@ -1,102 +1,71 @@
 #include "resources/material.hpp"
 
+#include "platform/file_system.hpp"
 #include "resources/resource.hpp"
-#include "resources/resource_loader.hpp"
-#include "resources/texture.hpp"
-#include "threads/job_system.hpp"
 
 namespace mag
 {
     namespace resource
     {
-        struct State
+        MaterialLoader::MaterialLoader()
         {
-                std::map<str, ref<MaterialResource>> materials;
-                ResourceLoadedCallbackFn on_material_loaded;
-        };
-
-        static State* state = nullptr;
-
-        b8 initialize_material_subsystem()
-        {
-            state = new State();
-
-            state->materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
-            state->materials[DEFAULT_MATERIAL_NAME]->name = "Default";
-            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
-            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
-            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Roughness] = DEFAULT_ROUGHNESS_TEXTURE_NAME;
-            state->materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
-
-            return state != nullptr;
+            // materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
+            // materials[DEFAULT_MATERIAL_NAME]->name = "Default";
+            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
+            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
+            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Roughness] = DEFAULT_ROUGHNESS_TEXTURE_NAME;
+            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
         }
 
-        void shutdown_material_subsystem()
-        {
-            state->materials.clear();
-            delete state;
-        }
+        MaterialLoader::~MaterialLoader() {}
 
-        ref<MaterialResource> get_material(const str& name)
+        IResource* MaterialLoader::load(const str& file_path)
         {
-            auto it = state->materials.find(name);
-            if (it != state->materials.end())
+            MaterialResource* material = new MaterialResource();
+
+            fs::json data;
+
+            if (!fs::read_json_data(file_path, data))
             {
-                return it->second;
+                LOG_ERROR("Failed to load material: '{0}'", file_path);
+                delete material;
+                return nullptr;
             }
 
-            // Create a new material
-            MaterialResource* material = new MaterialResource(*state->materials[DEFAULT_MATERIAL_NAME]);
-            material->loading_status = LoadingStatus::InProgress;
-            state->materials[name] = ref<MaterialResource>(material);
-
-            // Temporary material to load data into
-            MaterialResource* transfer_material = new MaterialResource(*material);
-
-            // Load in another thread
-            auto execute = [name, transfer_material]
+            if (!data.contains("Name"))
             {
-                // If the load fails we still have valid data
-                const b8 result = resource::load(name, transfer_material);
+                LOG_ERROR("Material file '{0}' has no name", file_path);
+                delete material;
+                return nullptr;
+            }
 
-                if (result)
-                {
-                    transfer_material->loading_status = LoadingStatus::Finished;
-                }
-
-                else
-                {
-                    transfer_material->loading_status = LoadingStatus::Error;
-                }
-
-                return result;
-            };
-
-            // Callback when finished loading
-            auto load_finished_callback = [material, transfer_material](const b8 result)
+            if (!data.contains("Textures"))
             {
-                // Update the material and the renderer material data
-                if (result == true)
-                {
-                    *material = *transfer_material;
-                    state->on_material_loaded(material);
-                }
+                LOG_ERROR("Material file '{0}' has no textures", file_path);
+                delete material;
+                return nullptr;
+            }
 
-                // We can dispose of the temporary material now
-                delete transfer_material;
-            };
+            const str material_name = data["Name"];
 
-            Job load_job = Job(execute, load_finished_callback);
-            thread::add_job(load_job);
+            const fs::json textures = data["Textures"];
 
-            return state->materials[name];
-        }
+            if (!textures.contains("Albedo") || !textures.contains("Normal"))
+            {
+                LOG_ERROR("Material file '{0}' has missing textures", file_path);
+                delete material;
+                return nullptr;
+            }
 
-        ref<MaterialResource> get_default_material() { return state->materials[DEFAULT_MATERIAL_NAME]; }
+            // Set material data
+            material->name = file_path;
+            material->textures[TextureSlot::Albedo] = textures["Albedo"];
+            material->textures[TextureSlot::Normal] = textures["Normal"];
+            material->textures[TextureSlot::Roughness] = textures["Roughness"];
+            material->textures[TextureSlot::Metalness] = textures["Metalness"];
 
-        void set_on_material_loaded_callback(const ResourceLoadedCallbackFn& callback)
-        {
-            state->on_material_loaded = callback;
+            LOG_SUCCESS("Loaded material: {0}", file_path);
+            return material;
         }
     };  // namespace resource
 };      // namespace mag

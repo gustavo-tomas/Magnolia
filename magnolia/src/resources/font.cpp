@@ -1,90 +1,103 @@
 #include "resources/font.hpp"
 
-#include "resources/resource.hpp"
-#include "resources/resource_loader.hpp"
-#include "threads/job_system.hpp"
+#include "core/buffer.hpp"
+#include "core/logger.hpp"
+#include "platform/file_system.hpp"
+
+//
+#include "freetype/freetype.h"
+#include FT_FREETYPE_H
+//
 
 namespace mag
 {
     namespace resource
     {
-        struct State
-        {
-                std::map<str, ref<FontResource>> fonts;
-                ResourceLoadedCallbackFn on_resource_loaded;
-        };
+        FontLoader::FontLoader() = default;
 
-        static State* state = nullptr;
+        FontLoader::~FontLoader() = default;
 
-        b8 initialize_font_subsystem()
+        IResource *FontLoader::load(const str &file_path)
         {
-            state = new State();
-            return state != nullptr;
-        }
+            FontResource *font = new FontResource();
 
-        void shutdown_font_subsystem()
-        {
-            state->fonts.clear();
-            delete state;
-        }
-
-        ref<FontResource> get_font(const str& name)
-        {
-            auto it = state->fonts.find(name);
-            if (it != state->fonts.end())
+            if (!font)
             {
-                return it->second;
+                LOG_ERROR("Invalid font ptr");
+                delete font;
+                return nullptr;
             }
 
-            // Create a new font
-            FontResource* font = new FontResource();
-            font->loading_status = LoadingStatus::InProgress;
-            state->fonts[name] = ref<FontResource>(font);
-
-            // Temporary font to load data into
-            FontResource* transfer_font = new FontResource(*font);
-
-            // Load in another thread
-            auto execute = [name, transfer_font]
+            Buffer buffer;
+            if (!fs::read_binary_data(file_path, buffer))
             {
-                const b8 result = resource::load(name, transfer_font);
+                LOG_ERROR("Failed to load font file: {0}", file_path);
+                delete font;
+                return nullptr;
+            }
 
-                if (result)
+            FT_Library ft;
+            if (FT_Init_FreeType(&ft))
+            {
+                LOG_ERROR("Failed to initialize FreeType Library");
+                delete font;
+                return nullptr;
+            }
+
+            FT_Face face;
+            if (FT_New_Memory_Face(ft, buffer.data.data(), buffer.get_size(), 0, &face))
+            {
+                LOG_ERROR("Failed to load font face: {0}", file_path);
+                delete font;
+                return nullptr;
+            }
+
+            // @TODO: hardcoded pixel height
+            FT_Set_Pixel_Sizes(face, 0, 48);
+
+            // @TODO: hardcoded number of characters
+            // Load first 128 characters of ASCII set
+            for (u8 c = 0; c < 128; c++)
+            {
+                // Load character glyph
+                if (FT_Load_Char(face, c, FT_LOAD_RENDER))
                 {
-                    transfer_font->loading_status = LoadingStatus::Finished;
+                    LOG_ERROR("Failed to load glyph: {0}", c);
+                    continue;
                 }
 
+                Character &character = font->characters[c];
+                character.size = math::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+                character.bearing = math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
+                character.advance = math::ivec2(face->glyph->advance.x, face->glyph->advance.y);
+
+                // Some glyphs have no bitmpa data (i.e. space)
+                if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0 && face->glyph->bitmap.buffer)
+                {
+                    character.data = std::vector<u8>(
+                        face->glyph->bitmap.buffer,
+                        face->glyph->bitmap.buffer + (face->glyph->bitmap.width * face->glyph->bitmap.rows));
+
+                    character.texture.channels = 1;
+                    character.texture.width = character.size.x;
+                    character.texture.height = character.size.y;
+                    character.texture.pixels = character.data;
+                }
+
+                // Empty data for whitespace or non-visual characters
                 else
                 {
-                    transfer_font->loading_status = LoadingStatus::Error;
+                    character.data.clear();
                 }
+            }
 
-                return result;
-            };
+            // Update font data
+            font->name = file_path;
 
-            // Callback when finished loading
-            auto load_finished_callback = [font, transfer_font](const b8 result)
-            {
-                // Update the font data
-                if (result == true)
-                {
-                    *font = *transfer_font;
-                    state->on_resource_loaded(font);
-                }
+            FT_Done_Face(face);
+            FT_Done_FreeType(ft);
 
-                // We can dispose of the temporary font now
-                delete transfer_font;
-            };
-
-            Job load_job = Job(execute, load_finished_callback);
-            thread::add_job(load_job);
-
-            return state->fonts[name];
-        }
-
-        void set_on_font_loaded_callback(const ResourceLoadedCallbackFn& callback)
-        {
-            state->on_resource_loaded = callback;
+            return font;
         }
     };  // namespace resource
 };      // namespace mag

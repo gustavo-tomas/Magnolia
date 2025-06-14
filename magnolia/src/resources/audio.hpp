@@ -14,6 +14,13 @@ namespace mag
 
     namespace resource
     {
-        ref<AudioResource> MAG_API get_audio(const str& name);
+        class AudioLoader : public IResourceLoader
+        {
+            public:
+                AudioLoader();
+                ~AudioLoader();
+
+                virtual IResource* load(const str& file_path) override;
+        };
     };  // namespace resource
 };      // namespace mag

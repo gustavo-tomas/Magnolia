@@ -1,75 +1,60 @@
 #include "resources/resource.hpp"
 
+#include "resources/audio.hpp"
+#include "resources/font.hpp"
+#include "resources/material.hpp"
+#include "resources/model.hpp"
+#include "resources/shader.hpp"
+#include "resources/texture.hpp"
+
 namespace mag
 {
     namespace resource
     {
         struct ResourceSystemState
         {
+                ResourceManager rm;
         };
 
         static ResourceSystemState* state = nullptr;
 
-        // Forward declaration of private functions
-
-        b8 initialize_texture_subsystem();
-        void shutdown_texture_subsystem();
-        void set_on_texture_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
-        b8 initialize_font_subsystem();
-        void shutdown_font_subsystem();
-        void set_on_font_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
-        b8 initialize_material_subsystem();
-        void shutdown_material_subsystem();
-        void set_on_material_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
-        b8 initialize_model_subsystem();
-        void shutdown_model_subsystem();
-        void set_on_model_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
-        b8 initialize_shader_subsystem();
-        void shutdown_shader_subsystem();
-        void set_on_shader_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
-        b8 initialize_audio_subsystem();
-        void shutdown_audio_subsystem();
-        void set_on_audio_loaded_callback(const ResourceLoadedCallbackFn& callback);
-
         b8 initialize()
         {
             state = new ResourceSystemState();
-
-            b8 result = true;
-            result = result && initialize_texture_subsystem();
-            result = result && initialize_font_subsystem();
-            result = result && initialize_material_subsystem();
-            result = result && initialize_model_subsystem();
-            result = result && initialize_shader_subsystem();
-            result = result && initialize_audio_subsystem();
-
-            return result;
+            return state != nullptr;
         }
 
-        void shutdown()
+        void shutdown() { delete state; }
+
+        ref<TextureResource> get_texture(const str& file_path)
         {
-            shutdown_audio_subsystem();
-            shutdown_shader_subsystem();
-            shutdown_model_subsystem();
-            shutdown_material_subsystem();
-            shutdown_font_subsystem();
-            shutdown_texture_subsystem();
-            delete state;
+            return state->rm.get_sync<TextureResource>(file_path);
         }
 
-        void set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback)
+        ref<MaterialResource> get_material(const str& file_path)
         {
-            resource::set_on_texture_loaded_callback(callback);
-            resource::set_on_material_loaded_callback(callback);
-            resource::set_on_model_loaded_callback(callback);
-            resource::set_on_shader_loaded_callback(callback);
-            resource::set_on_font_loaded_callback(callback);
-            resource::set_on_audio_loaded_callback(callback);
+            return state->rm.get_sync<MaterialResource>(file_path);
         }
+
+        ref<ModelResource> get_model(const str& file_path) { return state->rm.get_sync<ModelResource>(file_path); }
+
+        ref<FontResource> get_font(const str& file_path) { return state->rm.get_sync<FontResource>(file_path); }
+
+        ref<AudioResource> get_audio(const str& file_path) { return state->rm.get_sync<AudioResource>(file_path); }
+
+        ref<ShaderResource> get_shader(const str& file_path) { return state->rm.get_sync<ShaderResource>(file_path); }
+
+        ResourceManager::ResourceManager()
+        {
+            // Register loaders
+            register_loader<TextureResource>(create_unique<TextureLoader>());
+            register_loader<MaterialResource>(create_unique<MaterialLoader>());
+            register_loader<ModelResource>(create_unique<ModelLoader>());
+            register_loader<FontResource>(create_unique<FontLoader>());
+            register_loader<ShaderResource>(create_unique<ShaderLoader>());
+            register_loader<AudioResource>(create_unique<AudioLoader>());
+        }
+
+        ResourceManager::~ResourceManager() = default;
     };  // namespace resource
 };      // namespace mag

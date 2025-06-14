@@ -5,7 +5,6 @@
 #include <resources/font.hpp>
 #include <resources/material.hpp>
 #include <resources/model.hpp>
-#include <resources/resource_loader.hpp>
 #include <resources/shader.hpp>
 #include <resources/texture.hpp>
 #include <scene/scene.hpp>
@@ -21,39 +20,33 @@ namespace game
     {
         // Load shaders
 
-        mag::ShaderResource shader_resource = {};
+        ref<mag::ShaderResource> shader_resource = nullptr;
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/sprite_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        sprite_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/sprite_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        sprite_shader = mag::gfx::create_shader(*shader_resource);
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/mesh_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        mesh_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/mesh_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        mesh_shader = mag::gfx::create_shader(*shader_resource);
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/text_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        text_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/text_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        text_shader = mag::gfx::create_shader(*shader_resource);
 
         // Debug
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/floor_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        floor_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/floor_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        floor_shader = mag::gfx::create_shader(*shader_resource);
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/line_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        line_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/line_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        line_shader = mag::gfx::create_shader(*shader_resource);
 
-        shader_resource = {};
-        MAG_ASSERT(mag::resource::load("test_game/assets/shaders/debug_text_shader.mag.json", &shader_resource),
-                   "Failed to load shader");
-        debug_text_shader = mag::gfx::create_shader(shader_resource);
+        shader_resource = mag::resource::get_shader("test_game/assets/shaders/debug_text_shader.mag.json");
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+        debug_text_shader = mag::gfx::create_shader(*shader_resource);
     }
 
     Renderer::~Renderer() = default;
@@ -175,8 +168,13 @@ namespace game
                     const str& material_name = model->materials[mesh.material_index];
                     if (!materials.contains(material_name))
                     {
-                        MaterialResource material = {};
-                        mag::resource::load(material_name, &material);
+                        mag::MaterialResource material = {};
+                        ref<mag::MaterialResource> loaded_material = mag::resource::get_material(material_name);
+
+                        if (loaded_material != nullptr)
+                        {
+                            material = *loaded_material;
+                        }
 
                         materials[material_name] = material;
 
@@ -184,8 +182,13 @@ namespace game
                         {
                             if (!textures.contains(name))
                             {
-                                TextureResource texture = {};
-                                mag::resource::load(name, &texture);
+                                mag::TextureResource texture = {};
+                                ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
+
+                                if (loaded_texture != nullptr)
+                                {
+                                    texture = *loaded_texture;
+                                }
 
                                 texture_handles[name] = mag::gfx::create_texture(
                                     texture.width, texture.height, texture.pixels.size(), texture.pixels.data());
@@ -276,7 +279,12 @@ namespace game
             if (!textures.contains(sprite->texture_file_path))
             {
                 mag::TextureResource texture = {};
-                mag::resource::load(name, &texture);
+                ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
+
+                if (loaded_texture != nullptr)
+                {
+                    texture = *loaded_texture;
+                }
 
                 textures[name] = texture;
 
@@ -360,8 +368,13 @@ namespace game
 
             if (!fonts.contains(name))
             {
-                FontResource font = {};
-                mag::resource::load(name, &font);
+                mag::FontResource font = {};
+                ref<mag::FontResource> loaded_font = mag::resource::get_font(name);
+
+                if (loaded_font != nullptr)
+                {
+                    font = *loaded_font;
+                }
 
                 _FontData font_data = {};
                 font_data.font = font;
@@ -623,8 +636,13 @@ namespace game
 
             if (!fonts.contains(font_name))
             {
-                FontResource font = {};
-                mag::resource::load(font_name, &font);
+                mag::FontResource font = {};
+                ref<mag::FontResource> loaded_font = mag::resource::get_font(font_name);
+
+                if (loaded_font != nullptr)
+                {
+                    font = *loaded_font;
+                }
 
                 FontData font_data = {};
                 font_data.font = font;

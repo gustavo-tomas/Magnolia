@@ -27,7 +27,15 @@ namespace mag
 
     namespace resource
     {
-        ref<MaterialResource> MAG_API get_material(const str& name);
+        class MaterialLoader : public IResourceLoader
+        {
+            public:
+                MaterialLoader();
+                ~MaterialLoader();
+
+                virtual IResource* load(const str& file_path) override;
+        };
+
         ref<MaterialResource> MAG_API get_default_material();
     };  // namespace resource
 };      // namespace mag

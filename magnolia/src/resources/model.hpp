@@ -42,6 +42,13 @@ namespace mag
 
     namespace resource
     {
-        MAG_API ref<ModelResource> get_model(const str& name);
+        class ModelLoader : public IResourceLoader
+        {
+            public:
+                ModelLoader();
+                ~ModelLoader();
+
+                virtual IResource* load(const str& file_path) override;
+        };
     };  // namespace resource
 };      // namespace mag

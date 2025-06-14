@@ -26,6 +26,13 @@ namespace mag
 
     namespace resource
     {
-        ref<FontResource> MAG_API get_font(const str& name);
+        class FontLoader : public IResourceLoader
+        {
+            public:
+                FontLoader();
+                ~FontLoader();
+
+                virtual IResource* load(const str& file_path) override;
+        };
     };  // namespace resource
 };      // namespace mag

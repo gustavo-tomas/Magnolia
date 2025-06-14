@@ -104,9 +104,6 @@ namespace mag
         {
             MAG_ASSERT(false, "Failed to initialize Application");
         }
-
-        // Set resource load callback
-        resource::set_on_resource_loaded_callback(BIND_FN(Application::on_resource_loaded));
     }
 
     Application::~Application()

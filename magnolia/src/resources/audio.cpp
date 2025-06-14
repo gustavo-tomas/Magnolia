@@ -1,74 +1,52 @@
 #include "resources/audio.hpp"
 
-#include <map>
-
-#include "resources/resource.hpp"
-#include "resources/resource_loader.hpp"
+#include "core/buffer.hpp"
+#include "core/logger.hpp"
+#include "platform/file_system.hpp"
 #include "soloud/include/soloud_wav.h"
-
-// @TODO: async loading
 
 namespace mag
 {
     namespace resource
     {
-        struct State
+        AudioLoader::AudioLoader() {}
+
+        AudioLoader::~AudioLoader() {}
+
+        IResource *AudioLoader::load(const str &file_path)
         {
-                std::map<str, ref<AudioResource>> audios;
-                ResourceLoadedCallbackFn on_audio_loaded;
-        };
+            AudioResource *audio = new AudioResource();
 
-        static State* state = nullptr;
-
-        b8 initialize_audio_subsystem()
-        {
-            state = new State();
-
-            return state != nullptr;
-        }
-
-        void shutdown_audio_subsystem()
-        {
-            for (auto& [name, audio] : state->audios)
+            if (!audio)
             {
-                delete static_cast<SoLoud::Wav*>(audio->source);
+                LOG_ERROR("Invalid audio ptr");
+                delete audio;
+                return nullptr;
             }
 
-            state->audios.clear();
-
-            delete state;
-        }
-
-        ref<AudioResource> get_audio(const str& name)
-        {
-            auto it = state->audios.find(name);
-            if (it != state->audios.end())
+            Buffer buffer;
+            if (!fs::read_binary_data(file_path, buffer))
             {
-                return it->second;
+                LOG_ERROR("Failed to load audio file: {0}", file_path);
+                delete audio;
+                return nullptr;
             }
 
-            // Create a new audio
-            AudioResource* audio = new AudioResource();
-            audio->loading_status = LoadingStatus::InProgress;
-            state->audios[name] = ref<AudioResource>(audio);
+            SoLoud::Wav *audio_source = new SoLoud::Wav();
 
-            if (resource::load(name, audio))
+            const SoLoud::result result = audio_source->loadMem(buffer.data.data(), buffer.get_size(), true);
+            if (result != SoLoud::SOLOUD_ERRORS::SO_NO_ERROR)
             {
-                audio->loading_status = LoadingStatus::Finished;
-                state->on_audio_loaded(audio);
+                LOG_ERROR("Failed to load audio: '{0}'", file_path);
+                delete audio;
+                return nullptr;
             }
 
-            else
-            {
-                audio->loading_status = LoadingStatus::Error;
-            }
+            // Update audio data
+            audio->name = file_path;
+            audio->source = audio_source;
 
-            return state->audios[name];
-        }
-
-        void set_on_audio_loaded_callback(const ResourceLoadedCallbackFn& callback)
-        {
-            state->on_audio_loaded = callback;
+            return audio;
         }
     };  // namespace resource
 };      // namespace mag

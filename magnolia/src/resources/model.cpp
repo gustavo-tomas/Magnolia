@@ -1,92 +1,88 @@
 #include "resources/model.hpp"
 
-#include <map>
-
-#include "resources/resource.hpp"
-#include "resources/resource_loader.hpp"
-#include "threads/job_system.hpp"
+#include "core/buffer.hpp"
+#include "core/logger.hpp"
+#include "platform/file_system.hpp"
 
 namespace mag
 {
     namespace resource
     {
-        struct State
-        {
-                std::map<str, ref<ModelResource>> models;
-                ResourceLoadedCallbackFn on_model_loaded;
-        };
+        ModelLoader::ModelLoader() = default;
 
-        static State* state = nullptr;
+        ModelLoader::~ModelLoader() = default;
 
-        b8 initialize_model_subsystem()
+        IResource* ModelLoader::load(const str& file_path)
         {
-            state = new State();
-            return state != nullptr;
-        }
+            ModelResource* model = new ModelResource();
 
-        void shutdown_model_subsystem()
-        {
-            state->models.clear();
-            delete state;
-        }
+            fs::json data;
 
-        ref<ModelResource> get_model(const str& name)
-        {
-            auto it = state->models.find(name);
-            if (it != state->models.end())
+            if (!fs::read_json_data(file_path, data))
             {
-                return it->second;
+                LOG_ERROR("Failed to load native model file: '{0}'", file_path);
+                delete model;
+                return nullptr;
             }
 
-            // Create a new model
-            ModelResource* model = new ModelResource();
-            model->loading_status = LoadingStatus::InProgress;
-            state->models[name] = ref<ModelResource>(model);
-
-            // Temporary model to load data into
-            ModelResource* transfer_model = new ModelResource(*model);
-
-            // Load in another thread
-            auto execute = [name, transfer_model]
+            if (!data.contains("Name") || !data.contains("File") || !data.contains("Materials"))
             {
-                const b8 result = resource::load(name, transfer_model);
+                LOG_ERROR("Model file '{0}' has incomplete fields", file_path);
+                delete model;
+                return nullptr;
+            }
 
-                if (result)
-                {
-                    transfer_model->loading_status = LoadingStatus::Finished;
-                }
+            const str model_name = data["Name"];
+            const str binary_file_path = data["File"];
+            const std::vector<str> materials = data["Materials"];
 
-                else
-                {
-                    transfer_model->loading_status = LoadingStatus::Error;
-                }
+            const u32 num_vertices = data["NumVertices"].get<u32>();
+            const u32 num_indices = data["NumIndices"].get<u32>();
+            const u32 num_meshes = data["NumMeshes"].get<u32>();
 
-                return result;
-            };
+            Buffer buffer;
+            const b8 result = fs::read_binary_data(binary_file_path, buffer);
 
-            // Callback when finished loading
-            auto load_finished_callback = [model, transfer_model](const b8 result)
+            if (!result)
             {
-                // Update the model data
-                if (result == true)
-                {
-                    *model = *transfer_model;
-                    state->on_model_loaded(model);
-                }
+                LOG_ERROR("Failed to load native model binary file: '{0}'", binary_file_path);
+                delete model;
+                return nullptr;
+            }
 
-                // We can dispose of the temporary model now
-                delete transfer_model;
-            };
+            // Extract juicy model data
+            model->name = model_name;
+            model->file_path = file_path;
+            model->materials = materials;
 
-            Job load_job = Job(execute, load_finished_callback);
-            thread::add_job(load_job);
+            c8* model_data = buffer.cast<c8>();
 
-            return state->models[name];
-        }
+            // Read vertices
+            if (num_vertices > 0)
+            {
+                model->vertices.resize(num_vertices);
+                memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
+                model_data += VEC_SIZE_BYTES(model->vertices);
+            }
 
-        void set_on_model_loaded_callback(const ResourceLoadedCallbackFn& callback)
-        {
-            state->on_model_loaded = callback;
+            // Read indices
+            if (num_indices > 0)
+            {
+                model->indices.resize(num_indices);
+                memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
+                model_data += VEC_SIZE_BYTES(model->indices);
+            }
+
+            // Read meshes
+            if (num_meshes > 0)
+            {
+                model->meshes.resize(num_meshes);
+                memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
+                model_data += VEC_SIZE_BYTES(model->meshes);
+            }
+
+            LOG_SUCCESS("Loaded model: {0}", file_path);
+            return model;
         }
     };  // namespace resource
 };      // namespace mag
