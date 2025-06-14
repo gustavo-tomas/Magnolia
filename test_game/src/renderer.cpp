@@ -122,8 +122,6 @@ namespace game
         static MeshData mesh_data = {};
         mesh_data.material_idx = Max_U32;
 
-        static std::map<str, MaterialResource> materials;
-        static std::map<str, TextureResource> textures;
         static std::map<str, mag::gfx::TextureHandle> texture_handles;
         static std::map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
         static std::map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
@@ -166,39 +164,30 @@ namespace game
                     mesh_data.material_idx = mesh.material_index;
 
                     const str& material_name = model->materials[mesh.material_index];
-                    if (!materials.contains(material_name))
+                    mag::MaterialResource material = {};
+                    ref<mag::MaterialResource> loaded_material = mag::resource::get_material(material_name);
+
+                    if (loaded_material != nullptr)
                     {
-                        mag::MaterialResource material = {};
-                        ref<mag::MaterialResource> loaded_material = mag::resource::get_material(material_name);
-
-                        if (loaded_material != nullptr)
-                        {
-                            material = *loaded_material;
-                        }
-
-                        materials[material_name] = material;
-
-                        for (auto& [slot, name] : material.textures)
-                        {
-                            if (!textures.contains(name))
-                            {
-                                mag::TextureResource texture = {};
-                                ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
-
-                                if (loaded_texture != nullptr)
-                                {
-                                    texture = *loaded_texture;
-                                }
-
-                                texture_handles[name] = mag::gfx::create_texture(
-                                    texture.width, texture.height, texture.pixels.size(), texture.pixels.data());
-
-                                textures[name] = texture;
-                            }
-                        }
+                        material = *loaded_material;
                     }
 
-                    const mag::MaterialResource& material = materials[material_name];
+                    for (auto& [slot, name] : material.textures)
+                    {
+                        if (!texture_handles.contains(name))
+                        {
+                            mag::TextureResource texture = {};
+                            ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
+
+                            if (loaded_texture != nullptr)
+                            {
+                                texture = *loaded_texture;
+                            }
+
+                            texture_handles[name] = mag::gfx::create_texture(
+                                texture.width, texture.height, texture.pixels.size(), texture.pixels.data());
+                        }
+                    }
 
                     // @TODO: hardcoded material parameters
                     static MaterialData material_data = {};
@@ -272,11 +261,10 @@ namespace game
 
             // @TODO: temp
             static std::map<str, mag::gfx::TextureHandle> texture_handles;
-            static std::map<str, mag::TextureResource> textures;
 
             const str& name = sprite->texture_file_path;
 
-            if (!textures.contains(sprite->texture_file_path))
+            if (!texture_handles.contains(sprite->texture_file_path))
             {
                 mag::TextureResource texture = {};
                 ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
@@ -285,8 +273,6 @@ namespace game
                 {
                     texture = *loaded_texture;
                 }
-
-                textures[name] = texture;
 
                 texture_handles[name] = mag::gfx::create_texture(texture.width, texture.height, texture.pixels.size(),
                                                                  texture.pixels.data());
@@ -334,15 +320,13 @@ namespace game
         mag::Camera& camera = scene.get_camera();
 
         // @TODO: temp
-        struct _FontData
+        struct FontData
         {
-                std::map<c8, TextureResource> char_textures;
                 std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
-                FontResource font;
                 u32 idx;
         };
 
-        static std::map<str, _FontData> fonts;
+        static std::map<str, FontData> fonts;
 
         struct GlobalData
         {
@@ -376,8 +360,7 @@ namespace game
                     font = *loaded_font;
                 }
 
-                _FontData font_data = {};
-                font_data.font = font;
+                FontData font_data = {};
                 font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
 
                 for (auto& [c, ch] : font.characters)
@@ -391,8 +374,6 @@ namespace game
                     font_data.char_texture_handles[c] =
                         mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
                                                  ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
-
-                    font_data.char_textures[c] = ch.texture;
                 }
 
                 fonts[name] = font_data;
@@ -574,7 +555,6 @@ namespace game
             // @TODO: temp
             struct FontData
             {
-                    std::map<c8, TextureResource> char_textures;
                     std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
                     FontResource font;
                     u32 idx;
@@ -659,8 +639,6 @@ namespace game
                     font_data.char_texture_handles[c] =
                         mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
                                                  ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
-
-                    font_data.char_textures[c] = ch.texture;
                 }
 
                 fonts[font_name] = font_data;
