@@ -2,6 +2,7 @@
 
 #include "platform/file_system.hpp"
 #include "resources/resource.hpp"
+#include "resources/texture.hpp"
 
 namespace mag
 {
@@ -64,6 +65,13 @@ namespace mag
             material->textures[TextureSlot::Normal] = textures["Normal"];
             material->textures[TextureSlot::Roughness] = textures["Roughness"];
             material->textures[TextureSlot::Metalness] = textures["Metalness"];
+
+            // Set dependencies
+            for (const auto& [slot, texture] : material->textures)
+            {
+                const ResourceDependency dep = ResourceDependency(std::type_index(typeid(TextureResource)), texture);
+                material->dependencies.push_back(dep);
+            }
 
             LOG_SUCCESS("Loaded material: {0}", file_path);
             return material;

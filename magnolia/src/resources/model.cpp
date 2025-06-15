@@ -3,6 +3,8 @@
 #include "core/buffer.hpp"
 #include "core/logger.hpp"
 #include "platform/file_system.hpp"
+#include "resources/material.hpp"
+#include "resources/resource.hpp"
 
 namespace mag
 {
@@ -79,6 +81,13 @@ namespace mag
                 model->meshes.resize(num_meshes);
                 memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
                 model_data += VEC_SIZE_BYTES(model->meshes);
+            }
+
+            // Set dependencies
+            for (const str& material : materials)
+            {
+                const ResourceDependency dep = ResourceDependency(std::type_index(typeid(MaterialResource)), material);
+                model->dependencies.push_back(dep);
             }
 
             LOG_SUCCESS("Loaded model: {0}", file_path);
