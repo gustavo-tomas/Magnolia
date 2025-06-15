@@ -44,6 +44,7 @@ namespace mag
 
             // Update audio data
             audio->name = file_path;
+            audio->file_path = file_path;
             audio->source = audio_source;
 
             return audio;

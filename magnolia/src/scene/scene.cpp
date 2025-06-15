@@ -46,7 +46,7 @@ namespace mag
         {
             if (audio_c->play_on_load)
             {
-                auto audio = resource::get_audio(audio_c->audio->name);
+                auto audio = resource::get_audio(audio_c->audio->file_path);
                 audio::play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
             }
         }

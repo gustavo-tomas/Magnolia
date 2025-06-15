@@ -31,9 +31,6 @@ namespace mag
 
     struct ModelResource : public IResource
     {
-            str name = "";
-            str file_path = "";
-
             std::vector<Mesh> meshes;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;

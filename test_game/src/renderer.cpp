@@ -136,7 +136,7 @@ namespace game
                 continue;
             }
 
-            const str& model_name = model->name;
+            const str& model_name = model->file_path;
             if (!vertex_buffer_handles.contains(model_name))
             {
                 const mag::gfx::VertexBufferHandle vertex_buffer =
@@ -348,7 +348,7 @@ namespace game
             const auto& transform = std::get<0>(text_entities[i]);
             const auto& text = std::get<1>(text_entities[i]);
 
-            const str& name = text->font->name;
+            const str& name = text->font->file_path;
 
             if (!fonts.contains(name))
             {

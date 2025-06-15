@@ -93,6 +93,7 @@ namespace mag
 
             // Update font data
             font->name = file_path;
+            font->file_path = file_path;
 
             FT_Done_Face(face);
             FT_Done_FreeType(ft);

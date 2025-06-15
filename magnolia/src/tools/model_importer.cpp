@@ -58,6 +58,7 @@ namespace mag
         }
 
         ModelResource model = {};
+        model.file_path = imported_model_path;
         model.name = scene->mRootNode->mName.C_Str();
         model.meshes.resize(scene->mNumMeshes);
 

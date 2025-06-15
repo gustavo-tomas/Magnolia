@@ -93,7 +93,6 @@ namespace mag
 
     struct ShaderResource : public IResource
     {
-            str name = "";
             str glsl_file_path = "";
             ShaderResourceTopology topology;
             ShaderResourceColorBlend color_blend;

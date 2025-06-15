@@ -88,14 +88,14 @@ namespace mag
 
                 if (auto component = ecs.get_component<TextComponent>(entity_id))
                 {
-                    entity["TextComponent"]["FilePath"] = component->font->name;
+                    entity["TextComponent"]["FilePath"] = component->font->file_path;
                     entity["TextComponent"]["Text"] = component->text;
                     entity["TextComponent"]["Color"] << component->color;
                 }
 
                 if (auto component = ecs.get_component<AudioComponent>(entity_id))
                 {
-                    entity["AudioComponent"]["FilePath"] = component->audio->name;
+                    entity["AudioComponent"]["FilePath"] = component->audio->file_path;
                     entity["AudioComponent"]["Volume"] = component->volume;
                     entity["AudioComponent"]["PlayOnLoad"] = component->play_on_load;
                     entity["AudioComponent"]["Position"] << component->position;

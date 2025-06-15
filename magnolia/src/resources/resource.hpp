@@ -19,11 +19,13 @@ namespace mag
         Error
     };
 
-    // Interface for a resource
+    // Resource base
     struct IResource
     {
             virtual ~IResource() = default;
             LoadingStatus loading_status = LoadingStatus::Pending;
+            str file_path = "";
+            str name = "";
     };
 
     typedef std::function<void(const IResource*)> ResourceLoadedCallbackFn;

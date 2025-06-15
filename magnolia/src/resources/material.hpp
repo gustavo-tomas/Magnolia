@@ -22,7 +22,6 @@ namespace mag
     struct MaterialResource : public IResource
     {
             std::map<TextureSlot, str> textures;
-            str name = "";
     };
 
     namespace resource

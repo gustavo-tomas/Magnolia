@@ -58,7 +58,8 @@ namespace mag
             }
 
             // Set material data
-            material->name = file_path;
+            material->name = material_name;
+            material->file_path = file_path;
             material->textures[TextureSlot::Albedo] = textures["Albedo"];
             material->textures[TextureSlot::Normal] = textures["Normal"];
             material->textures[TextureSlot::Roughness] = textures["Roughness"];

@@ -142,6 +142,7 @@ namespace mag
             }
 
             shader->name = name;
+            shader->file_path = file_path;
             shader->glsl_file_path = glsl_file_path;
             shader->topology = topology_map.at(topology);
 
