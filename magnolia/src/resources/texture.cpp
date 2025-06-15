@@ -43,6 +43,8 @@ namespace mag
             const u64 image_size = tex_width * tex_height * tex_channels;
 
             // Update image data
+            texture->name = file_path;
+            texture->file_path = file_path;
             texture->width = tex_width;
             texture->height = tex_height;
             texture->channels = tex_channels;
