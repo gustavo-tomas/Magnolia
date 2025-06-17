@@ -163,31 +163,16 @@ namespace game
                 {
                     mesh_data.material_idx = mesh.material_index;
 
-                    const str& material_name = model->materials[mesh.material_index]->file_path;
-                    mag::MaterialResource material = {};
-                    ref<mag::MaterialResource> loaded_material = mag::resource::get_material(material_name);
+                    const ref<mag::MaterialResource>& material = model->materials[mesh.material_index];
 
-                    if (loaded_material != nullptr)
-                    {
-                        material = *loaded_material;
-                    }
-
-                    for (auto& [slot, texture] : material.textures)
+                    for (const auto& [slot, texture] : material->textures)
                     {
                         const str& name = texture->file_path;
 
                         if (!texture_handles.contains(name))
                         {
-                            mag::TextureResource texture = {};
-                            ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
-
-                            if (loaded_texture != nullptr)
-                            {
-                                texture = *loaded_texture;
-                            }
-
                             texture_handles[name] = mag::gfx::create_texture(
-                                texture.width, texture.height, texture.pixels.size(), texture.pixels.data());
+                                texture->width, texture->height, texture->pixels.size(), texture->pixels.data());
                         }
                     }
 
@@ -204,19 +189,19 @@ namespace game
                     mag::gfx::set_uniform("u_material", &material_data, material_offset);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Albedo)->file_path],
+                                          texture_handles[material->textures.at(TextureSlot::Albedo)->file_path],
                                           texture_offset);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Normal)->file_path],
+                                          texture_handles[material->textures.at(TextureSlot::Normal)->file_path],
                                           texture_offset + 1);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Roughness)->file_path],
+                                          texture_handles[material->textures.at(TextureSlot::Roughness)->file_path],
                                           texture_offset + 2);  // ARM texture
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Metalness)->file_path],
+                                          texture_handles[material->textures.at(TextureSlot::Metalness)->file_path],
                                           texture_offset + 2);  // ARM texture
 
                     material_offset++;
@@ -262,6 +247,12 @@ namespace game
             const auto& transform = std::get<0>(sprite_entities[i]);
             const auto& sprite = std::get<1>(sprite_entities[i]);
 
+            // Skip sprites that are not loaded yet
+            if (sprite->texture->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
+
             // @TODO: temp
             static std::map<str, mag::gfx::TextureHandle> texture_handles;
 
@@ -269,22 +260,10 @@ namespace game
 
             if (!texture_handles.contains(sprite->texture_file_path))
             {
-                mag::TextureResource texture = {};
-                ref<mag::TextureResource> loaded_texture = mag::resource::get_texture(name);
+                const ref<mag::TextureResource>& texture = sprite->texture;
 
-                if (loaded_texture != nullptr)
-                {
-                    texture = *loaded_texture;
-                }
-
-                texture_handles[name] = mag::gfx::create_texture(texture.width, texture.height, texture.pixels.size(),
-                                                                 texture.pixels.data());
-            }
-
-            // Skip sprites that are not loaded yet
-            if (sprite->texture->loading_status != LoadingStatus::Finished)
-            {
-                continue;
+                texture_handles[name] = mag::gfx::create_texture(texture->width, texture->height,
+                                                                 texture->pixels.size(), texture->pixels.data());
             }
 
             // Remove rotation if sprite is aligned to the camera
@@ -351,22 +330,22 @@ namespace game
             const auto& transform = std::get<0>(text_entities[i]);
             const auto& text = std::get<1>(text_entities[i]);
 
+            // Skip fonts that are not loaded yet
+            if (text->font->loading_status != LoadingStatus::Finished)
+            {
+                continue;
+            }
+
             const str& name = text->font->file_path;
 
             if (!fonts.contains(name))
             {
-                mag::FontResource font = {};
-                ref<mag::FontResource> loaded_font = mag::resource::get_font(name);
-
-                if (loaded_font != nullptr)
-                {
-                    font = *loaded_font;
-                }
+                const ref<mag::FontResource>& font = text->font;
 
                 FontData font_data = {};
                 font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
 
-                for (auto& [c, ch] : font.characters)
+                for (const auto& [c, ch] : font->characters)
                 {
                     // Skip non visual characters
                     if (ch.texture.pixels.empty())
@@ -380,12 +359,6 @@ namespace game
                 }
 
                 fonts[name] = font_data;
-            }
-
-            // Skip fonts that are not loaded yet
-            if (text->font->loading_status != LoadingStatus::Finished)
-            {
-                continue;
             }
 
             const f32 scale = transform->scale.x;
