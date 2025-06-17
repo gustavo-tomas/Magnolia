@@ -12,6 +12,8 @@
 #include "platform/file_system.hpp"
 #include "resources/material.hpp"
 #include "resources/model.hpp"
+#include "resources/resource.hpp"
+#include "resources/texture.hpp"
 
 namespace mag
 {
@@ -100,11 +102,14 @@ namespace mag
         data["Type"] = "Model";
         data["Name"] = model.name;
         data["File"] = binary_file_path;
-        data["Materials"] = model.materials;
-
         data["NumVertices"] = model.vertices.size();
         data["NumIndices"] = model.indices.size();
         data["NumMeshes"] = model.meshes.size();
+
+        for (const ref<MaterialResource>& material_ref : model.materials)
+        {
+            data["Materials"].push_back(material_ref->file_path);
+        }
 
         // Write the data to the native file format
         if (!fs::write_json_data(native_model_file_path, data))
@@ -290,7 +295,7 @@ namespace mag
 
             const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
-            model.materials[i] = material_file_path;
+            model.materials[i] = resource::get_material(material_file_path);
 
             // Write material data to file
             fs::json data;
@@ -326,20 +331,20 @@ namespace mag
         switch (ai_type)
         {
             case aiTextureType_DIFFUSE:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Albedo];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Albedo]->file_path;
                 break;
 
             case aiTextureType_NORMALS:
             case aiTextureType_HEIGHT:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Normal];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Normal]->file_path;
                 break;
 
             case aiTextureType_DIFFUSE_ROUGHNESS:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Roughness];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Roughness]->file_path;
                 break;
 
             case aiTextureType_METALNESS:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Metalness];
+                texture_name = resource::get_default_material()->textures[TextureSlot::Metalness]->file_path;
                 break;
 
             default:

@@ -21,7 +21,7 @@ namespace mag
 
     struct MaterialResource : public IResource
     {
-            std::map<TextureSlot, str> textures;
+            std::map<TextureSlot, ref<TextureResource>> textures;
     };
 
     namespace resource
@@ -29,10 +29,13 @@ namespace mag
         class MaterialLoader : public IResourceLoader
         {
             public:
-                MaterialLoader();
+                MaterialLoader(ResourceManager& resource_manager);
                 ~MaterialLoader();
 
                 virtual IResource* load(const str& file_path) override;
+
+            private:
+                ResourceManager& resource_manager;
         };
 
         ref<MaterialResource> MAG_API get_default_material();

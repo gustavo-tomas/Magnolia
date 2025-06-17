@@ -19,14 +19,6 @@ namespace mag
         Error
     };
 
-    struct ResourceDependency
-    {
-            ResourceDependency(const std::type_index& type, const str& file_path) : type(type), file_path(file_path) {}
-
-            std::type_index type;
-            str file_path;
-    };
-
     // Resource base
     struct IResource
     {
@@ -34,7 +26,6 @@ namespace mag
             LoadingStatus loading_status = LoadingStatus::Pending;
             str file_path = "";
             str name = "";
-            std::vector<ResourceDependency> dependencies;
     };
 
     typedef std::function<void(const IResource*)> ResourceLoadedCallbackFn;
@@ -102,12 +93,6 @@ namespace mag
                         resource = new T();
                     }
 
-                    // Load resource dependencies
-                    for (const ResourceDependency& dep : resource->dependencies)
-                    {
-                        load_dependencies(dep);
-                    }
-
                     if (resource == nullptr)
                     {
                         resource->loading_status = LoadingStatus::Error;
@@ -132,14 +117,11 @@ namespace mag
             private:
                 // Shorthand to load a resource
                 template <typename T>
-                T* load_resource(const str& file_path)
+                T* load_resource(const str& file_path) const
                 {
-                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load(file_path));
+                    T* resource = reinterpret_cast<T*>(loaders.at(std::type_index(typeid(T)))->load(file_path));
                     return resource;
                 }
-
-                // Load resource dependencies recursively
-                void load_dependencies(const ResourceDependency& dep);
 
                 std::map<str, ref<IResource>> resources;
                 std::map<std::type_index, unique<IResourceLoader>> loaders;

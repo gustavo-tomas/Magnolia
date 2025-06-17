@@ -34,7 +34,7 @@ namespace mag
             std::vector<Mesh> meshes;
             std::vector<Vertex> vertices;
             std::vector<u32> indices;
-            std::vector<str> materials;
+            std::vector<ref<MaterialResource>> materials;
     };
 
     namespace resource
@@ -42,10 +42,13 @@ namespace mag
         class ModelLoader : public IResourceLoader
         {
             public:
-                ModelLoader();
+                ModelLoader(ResourceManager& resource_manager);
                 ~ModelLoader();
 
                 virtual IResource* load(const str& file_path) override;
+
+            private:
+                ResourceManager& resource_manager;
         };
     };  // namespace resource
 };      // namespace mag

@@ -8,7 +8,7 @@ namespace mag
 {
     namespace resource
     {
-        MaterialLoader::MaterialLoader()
+        MaterialLoader::MaterialLoader(ResourceManager& resource_manager) : resource_manager(resource_manager)
         {
             // materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
             // materials[DEFAULT_MATERIAL_NAME]->name = "Default";
@@ -61,16 +61,18 @@ namespace mag
             // Set material data
             material->name = material_name;
             material->file_path = file_path;
-            material->textures[TextureSlot::Albedo] = textures["Albedo"];
-            material->textures[TextureSlot::Normal] = textures["Normal"];
-            material->textures[TextureSlot::Roughness] = textures["Roughness"];
-            material->textures[TextureSlot::Metalness] = textures["Metalness"];
 
-            // Set dependencies
-            for (const auto& [slot, texture] : material->textures)
+            std::map<TextureSlot, str> textures_map;
+
+            textures_map[TextureSlot::Albedo] = textures["Albedo"];
+            textures_map[TextureSlot::Normal] = textures["Normal"];
+            textures_map[TextureSlot::Roughness] = textures["Roughness"];
+            textures_map[TextureSlot::Metalness] = textures["Metalness"];
+
+            // Get dependencies
+            for (const auto& [slot, texture] : textures_map)
             {
-                const ResourceDependency dep = ResourceDependency(std::type_index(typeid(TextureResource)), texture);
-                material->dependencies.push_back(dep);
+                material->textures[slot] = resource_manager.get_sync<TextureResource>(texture);
             }
 
             LOG_SUCCESS("Loaded material: {0}", file_path);

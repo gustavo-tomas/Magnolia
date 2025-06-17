@@ -10,7 +10,7 @@ namespace mag
 {
     namespace resource
     {
-        ModelLoader::ModelLoader() = default;
+        ModelLoader::ModelLoader(ResourceManager& resource_manager) : resource_manager(resource_manager) {}
 
         ModelLoader::~ModelLoader() = default;
 
@@ -55,7 +55,6 @@ namespace mag
             // Extract juicy model data
             model->name = model_name;
             model->file_path = file_path;
-            model->materials = materials;
 
             c8* model_data = buffer.cast<c8>();
 
@@ -83,11 +82,11 @@ namespace mag
                 model_data += VEC_SIZE_BYTES(model->meshes);
             }
 
-            // Set dependencies
+            // Get dependencies
             for (const str& material : materials)
             {
-                const ResourceDependency dep = ResourceDependency(std::type_index(typeid(MaterialResource)), material);
-                model->dependencies.push_back(dep);
+                const ref<MaterialResource>& material_ref = resource_manager.get_sync<MaterialResource>(material);
+                model->materials.push_back(material_ref);
             }
 
             LOG_SUCCESS("Loaded model: {0}", file_path);

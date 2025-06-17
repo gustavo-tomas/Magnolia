@@ -163,7 +163,7 @@ namespace game
                 {
                     mesh_data.material_idx = mesh.material_index;
 
-                    const str& material_name = model->materials[mesh.material_index];
+                    const str& material_name = model->materials[mesh.material_index]->file_path;
                     mag::MaterialResource material = {};
                     ref<mag::MaterialResource> loaded_material = mag::resource::get_material(material_name);
 
@@ -172,8 +172,10 @@ namespace game
                         material = *loaded_material;
                     }
 
-                    for (auto& [slot, name] : material.textures)
+                    for (auto& [slot, texture] : material.textures)
                     {
+                        const str& name = texture->file_path;
+
                         if (!texture_handles.contains(name))
                         {
                             mag::TextureResource texture = {};
@@ -202,18 +204,19 @@ namespace game
                     mag::gfx::set_uniform("u_material", &material_data, material_offset);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Albedo)], texture_offset);
+                                          texture_handles[material.textures.at(TextureSlot::Albedo)->file_path],
+                                          texture_offset);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Normal)],
+                                          texture_handles[material.textures.at(TextureSlot::Normal)->file_path],
                                           texture_offset + 1);
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Roughness)],
+                                          texture_handles[material.textures.at(TextureSlot::Roughness)->file_path],
                                           texture_offset + 2);  // ARM texture
 
                     mag::gfx::set_uniform("u_material_textures",
-                                          texture_handles[material.textures.at(TextureSlot::Metalness)],
+                                          texture_handles[material.textures.at(TextureSlot::Metalness)->file_path],
                                           texture_offset + 2);  // ARM texture
 
                     material_offset++;
