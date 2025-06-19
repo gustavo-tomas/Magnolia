@@ -13,9 +13,6 @@
 [submodule "libs/vma"]
 	path = libs/vma
 	url = https://github.com/gustavo-tomas/VulkanMemoryAllocator.git
-[submodule "libs/imgui"]
-	path = libs/imgui
-	url = https://github.com/gustavo-tomas/imgui.git
 [submodule "libs/spirv_reflect"]
 	path = libs/spirv_reflect
 	url = https://github.com/gustavo-tomas/SPIRV-Reflect.git
@@ -25,27 +22,15 @@
 [submodule "libs/assimp"]
 	path = libs/assimp
 	url = https://github.com/gustavo-tomas/assimp.git
-[submodule "libs/imguizmo"]
-	path = libs/imguizmo
-	url = https://github.com/gustavo-tomas/ImGuizmo.git
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/gustavo-tomas/json.git
 [submodule "libs/meshoptimizer"]
 	path = libs/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
-[submodule "libs/icon_font_cpp"]
-	path = libs/icon_font_cpp
-	url = https://github.com/juliettef/IconFontCppHeaders.git
 [submodule "libs/bullet"]
 	path = libs/bullet
 	url = https://github.com/bulletphysics/bullet3.git
-[submodule "libs/implot"]
-	path = libs/implot
-	url = https://github.com/epezent/implot.git
-[submodule "libs/portable-file-dialogs"]
-	path = libs/portable-file-dialogs
-	url = https://github.com/samhocevar/portable-file-dialogs.git
 [submodule "libs/freetype"]
 	path = libs/freetype
 	url = https://github.com/gustavo-tomas/freetype.git

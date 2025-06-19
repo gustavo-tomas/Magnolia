@@ -31,13 +31,6 @@ workspace "magnolia"
         target_libdir .. "/soloud"
     }
 
-    editor_libdir =
-    {
-        target_libdir .. "/imgui",
-        target_libdir .. "/implot",
-        target_libdir .. "/imguizmo"
-    }
-
     engine_lib_includes =
     {
         "libs",
@@ -60,13 +53,6 @@ workspace "magnolia"
         obj_libdir .. "/assimp/include"
     }
 
-    editor_lib_includes = 
-    {
-        "libs/imgui",
-        "libs/imguizmo",
-        "libs/implot",
-    }
-
     engine_lib_links = 
     {
         "vulkan",
@@ -76,11 +62,6 @@ workspace "magnolia"
         "LinearMath",
         "freetype",
         "soloud"
-    }
-
-    editor_lib_links = 
-    {
-        "imgui", "imguizmo", "implot"
     }
 
     -- @NOTE: don't use LTO on debug, it might interfere with ClangBuildAnalyzer
@@ -189,74 +170,6 @@ project "magnolia"
 
     filter "configurations:release"
         buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
-        defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
-        symbols "off"
-        optimize "full" -- '-O3'
-        runtime "release"
-
--- Editor --------------------------------------------------------------------------------------------------------------
-project "sprout_editor"
-    targetname ("%{prj.name}")
-    kind "consoleapp"
-
-    files
-    {
-        "%{prj.name}/src/**.hpp",
-        "%{prj.name}/src/**.cpp"
-    }
-
-    includedirs 
-    { 
-        "%{prj.name}/src",
-        "magnolia/src",
-
-        engine_lib_includes, editor_lib_includes
-    }
-
-    libdirs
-    { 
-        engine_libdir, editor_libdir
-    }
-
-    links
-    {
-        "magnolia", engine_lib_links, editor_lib_links
-    }
-
-    dependson
-    {
-        "magnolia"
-    }
-
-    filter "system:linux"
-        pic "on"
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines
-        {
-            "_CRT_SECURE_NO_WARNINGS"
-        }
-        
-    filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
-        defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
-        symbols "on" -- '-g'
-        optimize "off" -- '-O0'
-        runtime "debug"
-
-    filter "configurations:profile"
-        buildoptions { "-fno-exceptions" }
-        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
-        symbols "off"
-        optimize "on" -- '-O2'
-        runtime "release"
-
-    filter "configurations:release"
-        buildoptions { "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
         flags { build_flags }
         symbols "off"
@@ -468,82 +381,6 @@ project "freetype"
     build_cmake_project("freetype", {
         {name = "libfreetype.a", dir = ""}
     })
-
--- imgui ---------------------------------------------------------------------------------------------------------------
-project "imgui"
-	kind "staticlib"
-	language "c++"
-	cppdialect "c++20"
-
-	includedirs { ".", "libs/imgui", "libs/sdl/include", "libs/vulkan/include"}
-
-	files
-	{
-		"libs/imgui/imgui.h",
-		"libs/imgui/imconfig.h",
-		"libs/imgui/imgui_internal.h",
-		"libs/imgui/imstb_rectpack.h",
-		"libs/imgui/imstb_textedit.h",
-		"libs/imgui/imstb_truetype.h",
-		"libs/imgui/misc/cpp/imgui_stdlib.h",
-		"libs/imgui/misc/cpp/imgui_stdlib.cpp",
-		"libs/imgui/imgui.cpp",
-		"libs/imgui/imgui_draw.cpp",
-		"libs/imgui/imgui_tables.cpp",
-		"libs/imgui/imgui_widgets.cpp",
-		"libs/imgui/imgui_demo.cpp",
-
-		"libs/imgui/backends/imgui_impl_sdl2.h",
-		"libs/imgui/backends/imgui_impl_vulkan.h",
-		"libs/imgui/backends/imgui_impl_sdl2.cpp",
-		"libs/imgui/backends/imgui_impl_vulkan.cpp"
-	}
-
-	filter "system:linux"
-		pic "on"
-		systemversion "latest"
-		staticruntime "on"
-
--- imguizmo ------------------------------------------------------------------------------------------------------------
-project "imguizmo"
-	kind "staticlib"
-	language "c++"
-	cppdialect "c++20"
-
-	includedirs { ".", "libs/imguizmo", "libs/imgui" }
-
-	files
-	{
-		"libs/imguizmo/ImGuizmo.h",
-		"libs/imguizmo/ImGuizmo.cpp"
-	}
-
-	filter "system:linux"
-		pic "on"
-		systemversion "latest"
-		staticruntime "on"
-
--- implot --------------------------------------------------------------------------------------------------------------
-project "implot"
-    kind "staticlib"
-    language "c++"
-    cppdialect "c++20"
-
-    includedirs { ".", "libs/implot", "libs/imgui" }
-
-    files
-    {
-        "libs/implot/implot.h",
-        "libs/implot/implot_internal.h",
-        "libs/implot/implot.cpp",
-        "libs/implot/implot_items.cpp",
-        "libs/implot/implot_demo.cpp"
-    }
-
-    filter "system:linux"
-        pic "on"
-        systemversion "latest"
-        staticruntime "on"
 
 -- soloud --------------------------------------------------------------------------------------------------------------
 project "soloud"
