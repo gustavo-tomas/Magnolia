@@ -1,18 +1,18 @@
 #include "application.hpp"
 
-#include <core/application.hpp>
-#include <core/entry_point.hpp>
-#include <core/event.hpp>
-#include <project/project.hpp>
-#include <resources/audio.hpp>
-#include <resources/font.hpp>
-#include <resources/material.hpp>
-#include <resources/model.hpp>
-#include <resources/resource.hpp>
-#include <resources/shader.hpp>
-#include <resources/texture.hpp>
-#include <scene/scene.hpp>
-#include <scene/scene_serializer.hpp>
+#include <magnolia/core/application.hpp>
+#include <magnolia/core/entry_point.hpp>
+#include <magnolia/core/event.hpp>
+#include <magnolia/project/project.hpp>
+#include <magnolia/resources/audio.hpp>
+#include <magnolia/resources/font.hpp>
+#include <magnolia/resources/material.hpp>
+#include <magnolia/resources/model.hpp>
+#include <magnolia/resources/resource.hpp>
+#include <magnolia/resources/shader.hpp>
+#include <magnolia/resources/texture.hpp>
+#include <magnolia/scene/scene.hpp>
+#include <magnolia/scene/scene_serializer.hpp>
 
 #include "renderer.hpp"
 

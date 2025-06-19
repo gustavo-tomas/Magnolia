@@ -96,6 +96,7 @@ project "magnolia"
     {
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.cpp",
+        "%{prj.name}/include/**.hpp",
         "libs/spirv_reflect/spirv_reflect.h",
         "libs/spirv_reflect/spirv_reflect.cpp",
         "libs/json/single_include/nlohmann/json.hpp",
@@ -107,6 +108,7 @@ project "magnolia"
     includedirs
     {
         "%{prj.name}/src",
+        "%{prj.name}/include",
 
         engine_lib_includes
     }
@@ -187,7 +189,7 @@ project "test_game"
     includedirs 
     { 
         "%{prj.name}/src",
-        "magnolia/src",
+        "magnolia/include",
 
         engine_lib_includes -- @TODO: remove when fmt is removed
     }

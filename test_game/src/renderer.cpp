@@ -1,13 +1,16 @@
 #include "renderer.hpp"
 
-#include <gfx/types.hpp>
-#include <magnolia.hpp>
-#include <resources/font.hpp>
-#include <resources/material.hpp>
-#include <resources/model.hpp>
-#include <resources/shader.hpp>
-#include <resources/texture.hpp>
-#include <scene/scene.hpp>
+#include <magnolia/ecs/components.hpp>
+#include <magnolia/ecs/ecs.hpp>
+#include <magnolia/gfx/gfx.hpp>
+#include <magnolia/physics/physics.hpp>
+#include <magnolia/platform/window.hpp>
+#include <magnolia/resources/font.hpp>
+#include <magnolia/resources/material.hpp>
+#include <magnolia/resources/model.hpp>
+#include <magnolia/resources/shader.hpp>
+#include <magnolia/resources/texture.hpp>
+#include <magnolia/scene/scene.hpp>
 
 // @TODO: temp
 #include "../assets/shaders/include/common.h"

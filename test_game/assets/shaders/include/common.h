@@ -1,8 +1,8 @@
 #if defined(__cplusplus)
     #pragma once
 
-    #include "core/types.hpp"
-    #include "math/types.hpp"
+    #include "magnolia/core/types.hpp"
+    #include "magnolia/math/types.hpp"
 
 using namespace mag;
 using namespace mag::math;

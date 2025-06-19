@@ -1,6 +1,7 @@
 #pragma once
 
-#include <magnolia.hpp>
+#include <magnolia/core/application.hpp>
+#include <magnolia/scene/scene.hpp>
 
 namespace game
 {

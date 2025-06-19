@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gfx/types.hpp>
-#include <magnolia.hpp>
-#include <scene/scene.hpp>
+#include <magnolia/core/event.hpp>
+#include <magnolia/gfx/types.hpp>
+#include <magnolia/scene/scene.hpp>
 
 // This is the game renderer. It sits one layer above the gfx frontend and manages shaders, buffers and textures.
 
