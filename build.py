@@ -44,11 +44,6 @@ def build(system, configuration):
 
   return
 
-# ----- Run -----
-def run(system, configuration):
-  assert os.system(f"build{bar}{system}{bar}sprout_editor{bar}sprout_editor_{configuration}") == 0
-  return
-
 # ----- Clean -----
 def clean(configuration):
   assert os.system(f"cd build && make clean config={configuration}") == 0
@@ -57,7 +52,6 @@ def clean(configuration):
 # ----- Format -----
 def format():
   os.system(f"find magnolia/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
-  os.system(f"find sprout_editor/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
   return
 
 # ----- Lint -----
@@ -76,7 +70,6 @@ def main():
     configuration = str(sys.argv[1])
     lint()
     build(system, configuration)
-    run(system, configuration)
   
   elif len(sys.argv) < 3:
     print("Usage: <command> <configuration>")
@@ -87,9 +80,6 @@ def main():
 
     if command == "build":
       build(system, configuration)
-    
-    elif command == "run":
-      run(system, configuration)
     
     elif command == "clean":
       clean(configuration)

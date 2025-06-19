@@ -1,12 +1,15 @@
 # Magnolia
 
 ![screenshot](sprout_editor/assets/screenshots/magnolia_v0.6.0.png)
+
 > Current state of the engine
 
 > Windows build is still in development (for now is linux only)!
 
 ## Requirements
+
 <!-- Add links -->
+
 - C++20
 - Gcc 11.4.0
 - Clang 15
@@ -16,13 +19,17 @@
 - [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `linkoptions` field in the [`premake5.lua`](premake5.lua) file)
 
 ## Build
-To build and run the program use
+
+To build the program use
 
 ```
-python3 build.py debug
+python3 build.py build debug
 ```
+
+The executables for your system can be found in the `build` folder
 
 ## References
+
 - [[VulkanAbstractionLayer](https://github.com/asc-community/VulkanAbstractionLayer)] Renderer architecture and core structures
 - [[Godot](https://github.com/godotengine/godot)] Lib management
 - [[VulkanTutorial](https://github.com/Overv/VulkanTutorial)] Vulkan foundations

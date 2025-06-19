@@ -135,9 +135,6 @@ project "magnolia"
         "assimp",
         "meshoptimizer",
         "bullet",
-        "imgui",
-        "implot",
-        "imguizmo",
         "freetype",
         "soloud"
     }
