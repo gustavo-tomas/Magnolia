@@ -4,7 +4,7 @@ workspace "magnolia"
     language "c++"
     cppdialect "c++20"
     toolset "clang"
-    configurations {"debug", "profile", "release"}
+    configurations { "debug", "release" }
     location "build"
     staticruntime "on"
     
@@ -159,14 +159,6 @@ project "magnolia"
         optimize "off" -- '-O0'
         runtime "debug"
 
-    filter "configurations:profile"
-        buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
-        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
-        symbols "off"
-        optimize "on" -- '-O2'
-        runtime "release"
-
     filter "configurations:release"
         buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
@@ -227,14 +219,6 @@ project "test_game"
         symbols "on" -- '-g'
         optimize "off" -- '-O0'
         runtime "debug"
-
-    filter "configurations:profile"
-        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
-        defines { "NDEBUG", "MAG_CONFIG_PROFILE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
-        symbols "off"
-        optimize "on" -- '-O2'
-        runtime "release"
 
     filter "configurations:release"
         buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
