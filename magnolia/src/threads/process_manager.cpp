@@ -1,7 +1,7 @@
-#include "threads/process_manager.hpp"
+#include "magnolia/threads/process_manager.hpp"
 
-#include "core/logger.hpp"
-#include "platform/file_system.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
 
 #if MAG_PLATFORM_LINUX
     #include <signal.h>

@@ -1,6 +1,6 @@
-#include "ecs/components.hpp"
+#include "magnolia/ecs/components.hpp"
 
-#include "math/types.hpp"
+#include "magnolia/math/types.hpp"
 
 namespace mag
 {

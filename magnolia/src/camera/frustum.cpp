@@ -1,6 +1,6 @@
-#include "camera/frustum.hpp"
+#include "magnolia/camera/frustum.hpp"
 
-#include "math/types.hpp"
+#include "magnolia/math/types.hpp"
 
 namespace mag
 {

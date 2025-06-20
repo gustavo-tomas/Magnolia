@@ -1,6 +1,6 @@
-#include "core/event.hpp"
+#include "magnolia/core/event.hpp"
 
-#include "core/keys.hpp"
+#include "magnolia/core/keys.hpp"
 
 namespace mag
 {

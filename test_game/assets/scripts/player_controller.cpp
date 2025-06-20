@@ -1,7 +1,5 @@
-#include <ecs/components.hpp>
-#include <magnolia.hpp>
-#include <physics/physics.hpp>
-#include <resources/model.hpp>
+#include <magnolia/physics/physics.hpp>
+#include <magnolia/resources/model.hpp>
 
 #include "common.hpp"
 

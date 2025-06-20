@@ -1,4 +1,4 @@
-#include "core/logger.hpp"
+#include "magnolia/core/logger.hpp"
 
 #include <chrono>
 #include <iomanip>

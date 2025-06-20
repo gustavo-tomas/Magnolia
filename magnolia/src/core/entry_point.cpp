@@ -1,4 +1,4 @@
-#include "core/entry_point.hpp"
+#include "magnolia/core/entry_point.hpp"
 
 #if MAG_PLATFORM_WINDOWS
     #define _main_ WinMain

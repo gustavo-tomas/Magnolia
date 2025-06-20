@@ -1,11 +1,11 @@
-#include "platform/file_system.hpp"
+#include "magnolia/platform/file_system.hpp"
 
 #include <fstream>
 #include <mutex>
 #include <thread>
 
-#include "core/buffer.hpp"
-#include "core/logger.hpp"
+#include "magnolia/core/buffer.hpp"
+#include "magnolia/core/logger.hpp"
 
 namespace mag
 {

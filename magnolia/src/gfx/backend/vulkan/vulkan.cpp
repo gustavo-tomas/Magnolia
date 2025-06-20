@@ -1,4 +1,4 @@
-#include "gfx/backend/backend.hpp"
+#include "../backend.hpp"
 
 #define MAG_CONFIG_GFX_VULKAN 1
 
@@ -11,10 +11,10 @@
 
     #include "VkBootstrap.h"
     #include "VkBootstrapDispatch.h"
-    #include "core/assert.hpp"
-    #include "core/debug.hpp"
-    #include "gfx/backend/vulkan/conversions.hpp"
-    #include "platform/window.hpp"
+    #include "conversions.hpp"
+    #include "magnolia/core/assert.hpp"
+    #include "magnolia/core/debug.hpp"
+    #include "magnolia/platform/window.hpp"
 
     // Use to trace VMA allocations
     #if MAG_CONFIG_DEBUG_TRACE

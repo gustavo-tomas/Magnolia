@@ -2,9 +2,9 @@
 
 #include <functional>
 
-#include "core/types.hpp"
-#include "gfx/types.hpp"
-#include "math/types.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/gfx/types.hpp"
+#include "magnolia/math/types.hpp"
 
 namespace mag
 {

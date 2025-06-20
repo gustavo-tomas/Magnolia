@@ -1,6 +1,6 @@
-#include "project.hpp"
+#include "magnolia/project/project.hpp"
 
-#include "core/logger.hpp"
+#include "magnolia/core/logger.hpp"
 
 namespace mag
 {

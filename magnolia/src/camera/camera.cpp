@@ -1,7 +1,7 @@
-#include "camera/camera.hpp"
+#include "magnolia/camera/camera.hpp"
 
-#include "camera/frustum.hpp"
-#include "math/types.hpp"
+#include "magnolia/camera/frustum.hpp"
+#include "magnolia/math/types.hpp"
 
 namespace mag
 {

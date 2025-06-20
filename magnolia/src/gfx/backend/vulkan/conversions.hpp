@@ -3,10 +3,10 @@
 #include <vulkan/vulkan_core.h>
 
 #include "VkBootstrap.h"
-#include "core/assert.hpp"
-#include "core/types.hpp"
-#include "gfx/types.hpp"
-#include "math/types.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/gfx/types.hpp"
+#include "magnolia/math/types.hpp"
 #include "vk_mem_alloc.h"
 
 namespace mag

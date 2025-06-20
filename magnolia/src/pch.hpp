@@ -4,11 +4,11 @@
 // Don't include this anywhere besides the corresponding .cpp file
 
 // First party headers
-#include "core/assert.hpp"
-#include "core/keys.hpp"
-#include "core/logger.hpp"
-#include "core/types.hpp"
-#include "math/types.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/core/keys.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/math/types.hpp"
 
 // Third party headers
 #include <vulkan/vulkan.h>

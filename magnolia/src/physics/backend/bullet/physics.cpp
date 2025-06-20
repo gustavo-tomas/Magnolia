@@ -1,12 +1,12 @@
-#include "physics/physics.hpp"
+#include "magnolia/physics/physics.hpp"
 
 #include "btBulletDynamicsCommon.h"
-#include "core/logger.hpp"
-#include "core/types.hpp"
-#include "ecs/components.hpp"
-#include "math/types.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/ecs/components.hpp"
+#include "magnolia/math/types.hpp"
+#include "magnolia/scene/scene.hpp"
 #include "physics/backend/bullet/conversions.hpp"
-#include "scene/scene.hpp"
 
 namespace mag
 {

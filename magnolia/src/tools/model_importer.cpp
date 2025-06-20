@@ -1,4 +1,4 @@
-#include "tools/model_importer.hpp"
+#include "magnolia/tools/model_importer.hpp"
 
 #include <vector>
 
@@ -6,14 +6,14 @@
 #include "assimp/material.h"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-#include "core/buffer.hpp"
-#include "core/logger.hpp"
+#include "magnolia/core/buffer.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
+#include "magnolia/resources/material.hpp"
+#include "magnolia/resources/model.hpp"
+#include "magnolia/resources/resource.hpp"
+#include "magnolia/resources/texture.hpp"
 #include "meshoptimizer.h"
-#include "platform/file_system.hpp"
-#include "resources/material.hpp"
-#include "resources/model.hpp"
-#include "resources/resource.hpp"
-#include "resources/texture.hpp"
 
 namespace mag
 {

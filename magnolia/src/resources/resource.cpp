@@ -1,11 +1,11 @@
-#include "resources/resource.hpp"
+#include "magnolia/resources/resource.hpp"
 
-#include "resources/audio.hpp"
-#include "resources/font.hpp"
-#include "resources/material.hpp"
-#include "resources/model.hpp"
-#include "resources/shader.hpp"
-#include "resources/texture.hpp"
+#include "magnolia/resources/audio.hpp"
+#include "magnolia/resources/font.hpp"
+#include "magnolia/resources/material.hpp"
+#include "magnolia/resources/model.hpp"
+#include "magnolia/resources/shader.hpp"
+#include "magnolia/resources/texture.hpp"
 
 namespace mag
 {

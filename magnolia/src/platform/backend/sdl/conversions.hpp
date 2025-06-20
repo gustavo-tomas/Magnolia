@@ -2,8 +2,8 @@
 
 #include "SDL_keycode.h"
 #include "SDL_mouse.h"
-#include "core/keys.hpp"
-#include "core/types.hpp"
+#include "magnolia/core/keys.hpp"
+#include "magnolia/core/types.hpp"
 
 namespace mag
 {

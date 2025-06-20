@@ -1,7 +1,7 @@
-#include "scene/scriptable_entity.hpp"
+#include "magnolia/scene/scriptable_entity.hpp"
 
-#include "core/event.hpp"
-#include "scene/scene.hpp"
+#include "magnolia/core/event.hpp"
+#include "magnolia/scene/scene.hpp"
 
 namespace mag
 {

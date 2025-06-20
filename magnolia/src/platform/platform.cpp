@@ -1,4 +1,4 @@
-#include "platform/platform.hpp"
+#include "magnolia/platform/platform.hpp"
 
 #include <chrono>
 

@@ -1,7 +1,7 @@
-#include "ecs/ecs.hpp"
+#include "magnolia/ecs/ecs.hpp"
 
-#include "core/assert.hpp"
-#include "ecs/components.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/ecs/components.hpp"
 
 namespace mag
 {

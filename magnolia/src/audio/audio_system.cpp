@@ -1,6 +1,6 @@
-#include "audio/audio_system.hpp"
+#include "magnolia/audio/audio_system.hpp"
 
-#include "resources/audio.hpp"
+#include "magnolia/resources/audio.hpp"
 #include "soloud/include/soloud.h"
 #include "soloud/include/soloud_wav.h"
 

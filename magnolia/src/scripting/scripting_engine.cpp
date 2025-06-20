@@ -1,4 +1,4 @@
-#include "scripting/scripting_engine.hpp"
+#include "magnolia/scripting/scripting_engine.hpp"
 
 // @TODO: this is unix only, create an interface for the windows build
 #if MAG_PLATFORM_LINUX
@@ -7,8 +7,8 @@
     #error "Unsupported platform"
 #endif
 
-#include "core/logger.hpp"
-#include "platform/file_system.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
 
 namespace mag
 {
@@ -71,7 +71,7 @@ namespace mag
                 return true;
             }
 
-            const std::vector<str> include_paths = {"magnolia/src", "libs/fmt/include"};
+            const std::vector<str> include_paths = {"magnolia/include", "libs/fmt/include"};
             const std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "fmt", MAG_BUILD_DIR_BIN "magnolia"};
             const std::vector<str> link_libs = {"magnolia", "fmt"};
             const std::vector<str> defines = {"MAG_CONFIG_DEBUG", "FMT_HEADER_ONLY=0", "MAG_ASSERTIONS_ENABLED=1",

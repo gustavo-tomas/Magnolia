@@ -1,10 +1,10 @@
-#include "resources/model.hpp"
+#include "magnolia/resources/model.hpp"
 
-#include "core/buffer.hpp"
-#include "core/logger.hpp"
-#include "platform/file_system.hpp"
-#include "resources/material.hpp"
-#include "resources/resource.hpp"
+#include "magnolia/core/buffer.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
+#include "magnolia/resources/material.hpp"
+#include "magnolia/resources/resource.hpp"
 
 namespace mag
 {

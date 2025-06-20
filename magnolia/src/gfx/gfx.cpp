@@ -1,13 +1,13 @@
-#include "gfx/gfx.hpp"
+#include "magnolia/gfx/gfx.hpp"
 
 #include <map>
 
-#include "core/assert.hpp"
-#include "core/event.hpp"
-#include "core/types.hpp"
-#include "gfx/backend/backend.hpp"
-#include "gfx/types.hpp"
-#include "resources/shader.hpp"
+#include "backend/backend.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/core/event.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/gfx/types.hpp"
+#include "magnolia/resources/shader.hpp"
 
 namespace mag
 {

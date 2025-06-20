@@ -1,6 +1,6 @@
-#include "tools/profiler.hpp"
+#include "magnolia/tools/profiler.hpp"
 
-#include "platform/platform.hpp"
+#include "magnolia/platform/platform.hpp"
 
 namespace mag
 {

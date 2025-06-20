@@ -1,8 +1,8 @@
-#include "resources/font.hpp"
+#include "magnolia/resources/font.hpp"
 
-#include "core/buffer.hpp"
-#include "core/logger.hpp"
-#include "platform/file_system.hpp"
+#include "magnolia/core/buffer.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
 
 //
 #include "freetype/freetype.h"

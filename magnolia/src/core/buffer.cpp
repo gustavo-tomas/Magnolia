@@ -1,4 +1,4 @@
-#include "core/buffer.hpp"
+#include "magnolia/core/buffer.hpp"
 
 namespace mag
 {

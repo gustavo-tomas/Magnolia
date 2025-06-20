@@ -1,4 +1,4 @@
-#include "threads/thread.hpp"
+#include "magnolia/threads/thread.hpp"
 
 #include <chrono>
 #include <ratio>

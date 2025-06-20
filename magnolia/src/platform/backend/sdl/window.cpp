@@ -1,16 +1,16 @@
-#include "platform/window.hpp"
+#include "magnolia/platform/window.hpp"
 
 #include <vulkan/vulkan.h>
 
 #include "SDL.h"
 #include "SDL_vulkan.h"
-#include "core/application.hpp"
-#include "core/assert.hpp"
-#include "core/buffer.hpp"
-#include "core/event.hpp"
-#include "core/logger.hpp"
-#include "platform/backend/sdl/conversions.hpp"
-#include "platform/file_system.hpp"
+#include "conversions.hpp"
+#include "magnolia/core/application.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/core/buffer.hpp"
+#include "magnolia/core/event.hpp"
+#include "magnolia/core/logger.hpp"
+#include "magnolia/platform/file_system.hpp"
 
 namespace mag
 {

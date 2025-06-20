@@ -1,6 +1,6 @@
-#include <ecs/components.hpp>
-#include <magnolia.hpp>
-#include <resources/model.hpp>
+#include <magnolia/resources/model.hpp>
+
+#include "common.hpp"
 
 using namespace mag;
 

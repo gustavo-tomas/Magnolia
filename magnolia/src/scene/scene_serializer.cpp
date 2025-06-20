@@ -1,15 +1,15 @@
-#include "scene/scene_serializer.hpp"
+#include "magnolia/scene/scene_serializer.hpp"
 
-#include "camera/camera.hpp"
-#include "ecs/components.hpp"
-#include "ecs/ecs.hpp"
-#include "platform/file_system.hpp"
-#include "platform/window.hpp"
-#include "resources/audio.hpp"
-#include "resources/font.hpp"
-#include "resources/model.hpp"
-#include "resources/texture.hpp"
-#include "scene/scene.hpp"
+#include "magnolia/camera/camera.hpp"
+#include "magnolia/ecs/components.hpp"
+#include "magnolia/ecs/ecs.hpp"
+#include "magnolia/platform/file_system.hpp"
+#include "magnolia/platform/window.hpp"
+#include "magnolia/resources/audio.hpp"
+#include "magnolia/resources/font.hpp"
+#include "magnolia/resources/model.hpp"
+#include "magnolia/resources/texture.hpp"
+#include "magnolia/scene/scene.hpp"
 
 namespace mag
 {
