@@ -589,7 +589,7 @@ namespace game
                 color = math::vec4(0.98f, 0.02f, 0.02f, 1.0f);
             }
 
-            const str text = "fps: " + std::to_string(fps) + "\ntime: " + std::to_string(dt) + " ms/frame";
+            const str text = "fps: " + std::to_string(fps) + "\ntime: " + std::to_string(dt * 1000.0) + " ms/frame";
 
             u32 char_offset = 0;
 
