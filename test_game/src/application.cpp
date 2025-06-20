@@ -38,7 +38,7 @@ namespace game
 
         // Then load starting scene
 
-        scene = create_unique<mag::Scene>();
+        scene = mag::create_unique<mag::Scene>();
 
         const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
         if (!mag::scene::load(start_scene_file_path, *scene))

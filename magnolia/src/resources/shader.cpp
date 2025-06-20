@@ -313,9 +313,8 @@ namespace mag
                     const str& submodule_file_path =
                         fs::path(input_file_path).parent_path() / shader_resource.glsl_file_path;
 
-                    result =
-                        result && compile_shader_submodule(submodule_file_path, binary_file_path,
-                                                           {MAG_ASSET_DIR "/shaders"}, {data.define}, data.stage_str);
+                    result = result && compile_shader_submodule(submodule_file_path, binary_file_path, {},
+                                                                {data.define}, data.stage_str);
                 }
             }
 

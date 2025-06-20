@@ -21,7 +21,7 @@ namespace game
         private:
             void on_resource_loaded(const mag::IResource* resource);
 
-            unique<Renderer> renderer = nullptr;
-            unique<mag::Scene> scene = nullptr;
+            mag::unique<Renderer> renderer = nullptr;
+            mag::unique<mag::Scene> scene = nullptr;
     };
 };  // namespace game

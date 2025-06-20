@@ -48,100 +48,103 @@ static_assert(sizeof(uc8) == 1, "Expected uc8 to be 1 bytes.");
 
 static_assert(sizeof(b8) == 1, "Expected b8 to be 1 byte.");
 
-// Shorthands for smart pointers
-// (see Hazel: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Base.h)
-template <typename T>
-using unique = std::unique_ptr<T>;
-
-template <typename T>
-using ref = std::shared_ptr<T>;
-
-template <typename T, typename... Args>
-constexpr unique<T> create_unique(Args&&... args)
+namespace mag
 {
-    return std::make_unique<T>(std::forward<Args>(args)...);
-}
+    // Constants
+    constexpr u32 Max_U32 = UINT_MAX;
+    constexpr i32 Max_I32 = INT_MAX;
+    constexpr u32 Invalid_ID = UINT_MAX;
+    constexpr u64 Timeout = ULONG_LONG_MAX;
 
-template <typename T, typename... Args>
-constexpr ref<T> create_ref(Args&&... args)
-{
-    return std::make_shared<T>(std::forward<Args>(args)...);
-}
+    // Shorthands for smart pointers
+    // (see Hazel: https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Hazel/Core/Base.h)
+    template <typename T>
+    using unique = std::unique_ptr<T>;
 
-// Constants
-const u32 Invalid_ID = 1e9;
-const u64 Timeout = 1'000'000'000; /* 1 second in nanoseconds */
-const u32 Max_U32 = 0xFFFFFFFF;
-const i32 Max_I32 = 0xFFFFFFFF / 2;
+    template <typename T>
+    using ref = std::shared_ptr<T>;
+
+    template <typename T, typename... Args>
+    constexpr unique<T> create_unique(Args&&... args)
+    {
+        return std::make_unique<T>(std::forward<Args>(args)...);
+    }
+
+    template <typename T, typename... Args>
+    constexpr ref<T> create_ref(Args&&... args)
+    {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+
+    // Bitwise operations
+
+    // Define a template for enabling bit operations on enum classes
+    template <typename Enum>
+    struct EnableBitMaskOperators
+    {
+            static constexpr b8 enable = false;
+    };
+
+    // Bitwise operators that work with any enum class marked with EnableBitMaskOperators
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator|(Enum lhs, Enum rhs)
+    {
+        using underlying = std::underlying_type_t<Enum>;
+        return static_cast<Enum>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator&(Enum lhs, Enum rhs)
+    {
+        using underlying = std::underlying_type_t<Enum>;
+        return static_cast<Enum>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator^(Enum lhs, Enum rhs)
+    {
+        using underlying = std::underlying_type_t<Enum>;
+        return static_cast<Enum>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator~(Enum e)
+    {
+        using underlying = std::underlying_type_t<Enum>;
+        return static_cast<Enum>(~static_cast<underlying>(e));
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator|=(Enum& lhs, Enum rhs)
+    {
+        lhs = lhs | rhs;
+        return lhs;
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator&=(Enum& lhs, Enum rhs)
+    {
+        lhs = lhs & rhs;
+        return lhs;
+    }
+
+    template <typename Enum>
+    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator^=(Enum& lhs, Enum rhs)
+    {
+        lhs = lhs ^ rhs;
+        return lhs;
+    }
+};  // namespace mag
 
 // Common macros
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0]))           /* Vector size in bytes */
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)                         /* Shortcut to bind methods */
 #define BIND_FN2(x) std::bind(&x, this, std::placeholders::_1, std::placeholders::_2) /* Shortcut to bind methods */
 
-// Bitwise operations
-
-// Define a template for enabling bit operations on enum classes
-template <typename Enum>
-struct EnableBitMaskOperators
-{
-        static constexpr b8 enable = false;
-};
-
-// Bitwise operators that work with any enum class marked with EnableBitMaskOperators
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator|(Enum lhs, Enum rhs)
-{
-    using underlying = std::underlying_type_t<Enum>;
-    return static_cast<Enum>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator&(Enum lhs, Enum rhs)
-{
-    using underlying = std::underlying_type_t<Enum>;
-    return static_cast<Enum>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator^(Enum lhs, Enum rhs)
-{
-    using underlying = std::underlying_type_t<Enum>;
-    return static_cast<Enum>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator~(Enum e)
-{
-    using underlying = std::underlying_type_t<Enum>;
-    return static_cast<Enum>(~static_cast<underlying>(e));
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator|=(Enum& lhs, Enum rhs)
-{
-    lhs = lhs | rhs;
-    return lhs;
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator&=(Enum& lhs, Enum rhs)
-{
-    lhs = lhs & rhs;
-    return lhs;
-}
-
-template <typename Enum>
-typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator^=(Enum& lhs, Enum rhs)
-{
-    lhs = lhs ^ rhs;
-    return lhs;
-}
-
 // Define a macro to make enum bitmask-ready
 #define ENABLE_BITMASK_OPERATORS(x)            \
     template <>                                \
-    struct EnableBitMaskOperators<x>           \
+    struct mag::EnableBitMaskOperators<x>      \
     {                                          \
             static constexpr b8 enable = true; \
     };
@@ -210,10 +213,6 @@ typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type opera
 #elif MAG_PLATFORM_WINDOWS
     #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS + str(name) + ".dll")
 #endif
-
-// Asset paths
-
-#define MAG_ASSET_DIR "magnolia/assets/"
 
 // Ext paths
 
