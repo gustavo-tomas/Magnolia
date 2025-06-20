@@ -190,13 +190,13 @@ project "test_game"
     { 
         "%{prj.name}/src",
         "magnolia/include",
-
-        engine_lib_includes -- @TODO: remove when fmt is removed
+        "libs/fmt/include", -- @TODO: remove when fmt is removed
+        "libs/json/single_include"
     }
 
     libdirs
     { 
-        engine_libdir -- @TODO: remove when fmt is removed
+        target_libdir .. "/fmt" -- @TODO: remove when fmt is removed
     }
 
     links
