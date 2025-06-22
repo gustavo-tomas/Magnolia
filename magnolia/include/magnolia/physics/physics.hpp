@@ -10,6 +10,11 @@ namespace mag::math
 
 namespace mag
 {
+    enum class ActivationState
+    {
+        DisableDeactivation = 1
+    };
+
     class MAG_API IPhysicsWorld
     {
         public:
@@ -37,6 +42,18 @@ namespace mag
 
             // Applies an instantaneous change in torque
             virtual void apply_torque_impulse(void* collision_object, const math::vec3& force) = 0;
+
+            // Set body linear velocity
+            virtual void set_linear_velocity(void* collision_object, const math::vec3& velocity) = 0;
+
+            // Set body angular factor
+            virtual void set_angular_factor(void* collision_object, const math::vec3& axes) = 0;
+
+            // Set body activation state
+            virtual void set_activation_state(void* collision_object, const ActivationState activation_state) = 0;
+
+            // Get linear velocity of a body
+            virtual math::vec3 get_linear_velocity(void* collision_object) const = 0;
 
             // Get current transform of a collision object
             virtual void get_collision_object_transform(void* collision_object, math::vec3& position,

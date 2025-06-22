@@ -1,9 +1,12 @@
 #pragma once
 
+#include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
+#include "magnolia/core/assert.hpp"
 #include "magnolia/ecs/components.hpp"
 #include "magnolia/math/types.hpp"
+#include "magnolia/physics/physics.hpp"
 
 namespace mag
 {
@@ -58,5 +61,35 @@ namespace mag
         transform.rotation = vec3(pitch, yaw, roll);
 
         return transform;
+    }
+
+    inline i32 mag_to_bt(const ActivationState state)
+    {
+        switch (state)
+        {
+            case ActivationState::DisableDeactivation:
+                return DISABLE_DEACTIVATION;
+                break;
+
+            default:
+                MAG_ASSERT(false, "Unhandled activation state");
+                return 0;
+                break;
+        }
+    }
+
+    inline ActivationState bt_to_mag(const i32 state)
+    {
+        switch (state)
+        {
+            case DISABLE_DEACTIVATION:
+                return ActivationState::DisableDeactivation;
+                break;
+
+            default:
+                MAG_ASSERT(false, "Unhandled activation state");
+                return ActivationState::DisableDeactivation;
+                break;
+        }
     }
 };  // namespace mag

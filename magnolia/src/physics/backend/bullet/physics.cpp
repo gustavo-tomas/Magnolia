@@ -238,6 +238,42 @@ namespace mag
                 body->applyTorqueImpulse(mag_to_bt(torque));
             }
 
+            virtual void set_linear_velocity(void* collision_object, const math::vec3& velocity) override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                // Don't forget to activate the body if it's sleeping
+                body->activate(true);
+
+                body->setLinearVelocity(mag_to_bt(velocity));
+            }
+
+            virtual void set_angular_factor(void* collision_object, const math::vec3& axes) override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                body->setAngularFactor(mag_to_bt(axes));
+            }
+
+            virtual void set_activation_state(void* collision_object, const ActivationState activation_state) override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                body->setActivationState(mag_to_bt(activation_state));
+            }
+
+            virtual math::vec3 get_linear_velocity(void* collision_object) const override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                math::vec3 velocity = bt_to_mag(body->getLinearVelocity());
+                return velocity;
+            }
+
             virtual void get_collision_object_transform(void* collision_object, math::vec3& position,
                                                         math::vec3& rotation) const override
             {
