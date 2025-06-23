@@ -7,10 +7,7 @@
 #include "magnolia/ecs/components.hpp"
 #include "magnolia/math/types.hpp"
 #include "magnolia/physics/physics.hpp"
-#include "magnolia/platform/file_system.hpp"
 #include "magnolia/resources/audio.hpp"
-#include "magnolia/resources/model.hpp"
-#include "magnolia/resources/texture.hpp"
 #include "magnolia/scene/scriptable_entity.hpp"
 #include "magnolia/scripting/scripting_engine.hpp"
 
@@ -42,11 +39,11 @@ namespace mag
         }
 
         // Play audios
-        for (const auto* audio_c : ecs->get_all_components_of_type<AudioComponent>())
+        for (const AudioComponent* audio_c : ecs->get_all_components_of_type<AudioComponent>())
         {
             if (audio_c->play_on_load)
             {
-                auto audio = resource::get_audio(audio_c->audio->file_path);
+                ref<AudioResource> audio = resource::get_audio(audio_c->audio->file_path);
                 audio::play(audio, audio_c->volume, audio_c->position, audio_c->velocity);
             }
         }
@@ -253,24 +250,6 @@ namespace mag
         }
     }
 
-    void Scene::add_model(const str& path)
-    {
-        const auto model = resource::get_model(path);
-
-        const auto entity = ecs->create_entity();
-        ecs->add_component(entity, new TransformComponent());
-        ecs->add_component(entity, new ModelComponent(model));
-    }
-
-    void Scene::add_sprite(const str& path)
-    {
-        const auto sprite = resource::get_texture(path);
-
-        const auto entity = ecs->create_entity();
-        ecs->add_component(entity, new SpriteComponent(sprite, path));
-        ecs->add_component(entity, new TransformComponent());
-    }
-
     void Scene::remove_entity(const u32 id)
     {
         if (!ecs->entity_exists(id))
@@ -318,15 +297,4 @@ namespace mag
         (void)id;
         (void)component;
     }
-
-    // @TODO
-    // void Scene::set_render_scale(const f32 new_render_scale)
-    // {
-    //     (void)
-    //     // render_scale = std::clamp(new_render_scale, 0.01f, 1.0f);
-
-    //     // auto e = WindowResizeEvent(draw_size.x, draw_size.y);
-    //     // on_resize(e);
-    //     // // build_render_graph(draw_size);
-    // }
 };  // namespace mag

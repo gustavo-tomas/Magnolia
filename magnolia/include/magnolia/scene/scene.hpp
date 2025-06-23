@@ -24,11 +24,6 @@ namespace mag
             void on_event(const Event& e);
             void on_update(const f32 dt);
 
-            // @TODO: this should extend to all components (and maybe be a bit more generic). This way if we ever need
-            // to, we can do any extra necessary work after adding the entity/component to the ecs.
-            void add_model(const str& path);
-            void add_sprite(const str& path);
-
             void remove_entity(const u32 id);
 
             void set_name(const str& name);
