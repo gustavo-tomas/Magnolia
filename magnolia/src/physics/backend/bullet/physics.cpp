@@ -249,6 +249,17 @@ namespace mag
                 body->setLinearVelocity(mag_to_bt(velocity));
             }
 
+            virtual void set_angular_velocity(void* collision_object, const math::vec3& velocity) override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                // Don't forget to activate the body if it's sleeping
+                body->activate(true);
+
+                body->setAngularVelocity(mag_to_bt(velocity));
+            }
+
             virtual void set_angular_factor(void* collision_object, const math::vec3& axes) override
             {
                 btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
@@ -271,6 +282,15 @@ namespace mag
                 btRigidBody* body = static_cast<btRigidBody*>(bt_object);
 
                 math::vec3 velocity = bt_to_mag(body->getLinearVelocity());
+                return velocity;
+            }
+
+            virtual math::vec3 get_angular_velocity(void* collision_object) const override
+            {
+                btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
+                btRigidBody* body = static_cast<btRigidBody*>(bt_object);
+
+                math::vec3 velocity = bt_to_mag(body->getAngularVelocity());
                 return velocity;
             }
 

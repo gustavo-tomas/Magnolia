@@ -46,6 +46,9 @@ namespace mag
             // Set body linear velocity
             virtual void set_linear_velocity(void* collision_object, const math::vec3& velocity) = 0;
 
+            // Set body angular velocity
+            virtual void set_angular_velocity(void* collision_object, const math::vec3& velocity) = 0;
+
             // Set body angular factor
             virtual void set_angular_factor(void* collision_object, const math::vec3& axes) = 0;
 
@@ -54,6 +57,9 @@ namespace mag
 
             // Get linear velocity of a body
             virtual math::vec3 get_linear_velocity(void* collision_object) const = 0;
+
+            // Get angular velocity of a body
+            virtual math::vec3 get_angular_velocity(void* collision_object) const = 0;
 
             // Get current transform of a collision object
             virtual void get_collision_object_transform(void* collision_object, math::vec3& position,
