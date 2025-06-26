@@ -23,12 +23,9 @@ namespace mag
         return translate(mat4(1.0f), translation) * rotation_mat * math::scale(mat4(1.0f), scale);
     }
 
-    SpriteComponent::SpriteComponent(const ref<TextureResource>& texture, const str& texture_file_path,
-                                     const b8 constant_size, const b8 always_face_camera)
-        : texture(texture),
-          texture_file_path(texture_file_path),
-          constant_size(constant_size),
-          always_face_camera(always_face_camera)
+    SpriteComponent::SpriteComponent(const ref<TextureResource>& texture, const b8 constant_size,
+                                     const b8 always_face_camera)
+        : texture(texture), constant_size(constant_size), always_face_camera(always_face_camera)
     {
     }
 

@@ -259,9 +259,9 @@ namespace game
             // @TODO: temp
             static std::map<str, mag::gfx::TextureHandle> texture_handles;
 
-            const str& name = sprite->texture_file_path;
+            const str& name = sprite->texture->file_path;
 
-            if (!texture_handles.contains(sprite->texture_file_path))
+            if (!texture_handles.contains(sprite->texture->file_path))
             {
                 const ref<mag::TextureResource>& texture = sprite->texture;
 

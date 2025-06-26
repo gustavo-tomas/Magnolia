@@ -44,19 +44,16 @@ namespace mag
     struct TextureResource;
     struct MAG_API SpriteComponent : public Component
     {
-            SpriteComponent(const ref<TextureResource>& texture, const str& texture_file_path,
-                            const b8 constant_size = false, const b8 always_face_camera = false);
+            SpriteComponent(const ref<TextureResource>& texture, const b8 constant_size = false,
+                            const b8 always_face_camera = false);
 
             CLONE_DECLARATION(SpriteComponent);
 
             ref<TextureResource> texture;
-            str texture_file_path;  // @TODO: this is not ideal
             b8 constant_size;
             b8 always_face_camera;
     };
 
-    // @NOTE: i didnt turn Model into a component because then the ModelLoader would be loading components directly
-    // and i find that a bit weird
     struct ModelResource;
     struct MAG_API ModelComponent : public Component
     {

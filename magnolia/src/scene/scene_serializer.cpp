@@ -73,14 +73,14 @@ namespace mag
 
                 if (auto component = ecs.get_component<SpriteComponent>(entity_id))
                 {
-                    if (component->texture_file_path.empty())
+                    if (component->texture->file_path.empty())
                     {
                         LOG_WARNING("Sprite has no file path and will not be serialized");
                     }
 
                     else
                     {
-                        entity["SpriteComponent"]["FilePath"] = component->texture_file_path;
+                        entity["SpriteComponent"]["FilePath"] = component->texture->file_path;
                         entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
                         entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
                     }
@@ -212,8 +212,7 @@ namespace mag
 
                     const auto& sprite = resource::get_texture(file_path);
 
-                    ecs.add_component(entity_id,
-                                      new SpriteComponent(sprite, file_path, constant_size, always_face_camera));
+                    ecs.add_component(entity_id, new SpriteComponent(sprite, constant_size, always_face_camera));
                 }
 
                 if (entity.contains("TextComponent"))
