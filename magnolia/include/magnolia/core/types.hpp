@@ -134,7 +134,6 @@ namespace mag
         lhs = lhs ^ rhs;
         return lhs;
     }
-};  // namespace mag
 
 // Common macros
 #define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0]))           /* Vector size in bytes */
@@ -169,7 +168,7 @@ namespace mag
     #error "Unknown platform"
 #endif
 
-// DLL imports and exports
+    // DLL imports and exports
 
 #ifdef MAG_BUILD_SHARED
     #if MAG_PLATFORM_LINUX
@@ -214,7 +213,7 @@ namespace mag
     #define MAG_BUILD_SCRIPT_NAME(name) (MAG_BUILD_DIR_SCRIPTS + str(name) + ".dll")
 #endif
 
-// Ext paths
+    // Ext paths
 
 #define MAG_EXT_DIR "ext/" MAG_BUILD_DIR_PLATFORM
 
@@ -223,3 +222,4 @@ namespace mag
 #else
     #error "Unsupported glslc"
 #endif
+};  // namespace mag
