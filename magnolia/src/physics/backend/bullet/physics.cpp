@@ -1,5 +1,7 @@
 #include "magnolia/physics/physics.hpp"
 
+#include "BulletCollision/CollisionShapes/btCapsuleShape.h"
+#include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "btBulletDynamicsCommon.h"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
@@ -99,11 +101,10 @@ namespace mag
                 delete collision_configuration;
             }
 
-            virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                         const math::vec3& collider_dimensions, const f32 mass) const override
+            // Base method to add generic body
+            btRigidBody* add_rigid_body_base(const math::vec3& position, const math::quat& rotation, const f32 mass,
+                                             btCollisionShape* shape) const
             {
-                btBoxShape* shape = new btBoxShape(mag_to_bt(collider_dimensions));
-
                 // Rigidbody is dynamic if and only if mass is non zero, otherwise static
                 btVector3 local_inertia(0, 0, 0);
                 if (mass > 0.0f)
@@ -118,6 +119,24 @@ namespace mag
                 btRigidBody* bt_rigid_body = new btRigidBody(rb_info);
 
                 dynamics_world->addRigidBody(bt_rigid_body);
+
+                return bt_rigid_body;
+            }
+
+            virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation,
+                                         const math::vec3& collider_dimensions, const f32 mass) const override
+            {
+                btBoxShape* shape = new btBoxShape(mag_to_bt(collider_dimensions));
+                btRigidBody* bt_rigid_body = add_rigid_body_base(position, rotation, mass, shape);
+
+                return bt_rigid_body;
+            }
+
+            virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation, const f32 radius,
+                                         const f32 height, const f32 mass) const override
+            {
+                btCapsuleShape* shape = new btCapsuleShape(radius, height);
+                btRigidBody* bt_rigid_body = add_rigid_body_base(position, rotation, mass, shape);
 
                 return bt_rigid_body;
             }

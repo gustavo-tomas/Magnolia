@@ -22,8 +22,13 @@ namespace mag
 
             virtual void on_update(const f32 dt) = 0;
 
+            // Add a rigid body with a box collider
             virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation,
                                          const math::vec3& collider_dimensions, const f32 mass) const = 0;
+
+            // Add a rigid body with a capsule collider
+            virtual void* add_rigid_body(const math::vec3& position, const math::quat& rotation, const f32 radius,
+                                         const f32 height, const f32 mass) const = 0;
 
             virtual void remove_rigid_body(void* collision_object) = 0;
 
