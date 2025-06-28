@@ -96,6 +96,16 @@
             },
             "ScriptComponent": {
                 "FilePath": "test_game/assets/scripts/player_controller.cpp"
+            },
+            "BoxColliderComponent": {
+                "Dimensions": [
+                    10.0,
+                    10.0,
+                    5.0
+                ]
+            },
+            "RigidBodyComponent": {
+                "Mass": 1.0
             }
         }
     ]

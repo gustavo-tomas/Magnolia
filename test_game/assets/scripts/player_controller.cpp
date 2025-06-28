@@ -9,9 +9,33 @@ class PlayerController : public ScriptableEntity
 {
     private:
         f32 hp = 100.0f;
+        f32 walk_speed = 1650.0f;
+        f32 mouse_sensitivity = 0.002f;
+        vec3 camera_offset = vec3(50.0f);
+        vec3 bullet_offset = vec3(50.0f);
+
+        // We can use the camera params instead of these
+        f32 pitch = 0.0f;
+        f32 yaw = 0.0f;
 
     public:
-        virtual void on_create() override { LOG_SUCCESS("Created PlayerController"); }
+        virtual void on_create() override
+        {
+            const RigidBodyComponent* rigid_body_c = get_component<RigidBodyComponent>();
+
+            if (!rigid_body_c)
+            {
+                LOG_WARNING("Missing rigidbody");
+                return;
+            }
+
+            IPhysicsWorld& physics = get_physics_world();
+
+            // Prevent player from sleeping
+            physics.set_activation_state(rigid_body_c->collision_object, ActivationState::DisableDeactivation);
+
+            LOG_SUCCESS("Created PlayerController");
+        }
 
         virtual void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
 
@@ -50,52 +74,70 @@ class PlayerController : public ScriptableEntity
 
         void handle_movement(const f32 dt)
         {
-            auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
-            if (!transform)
+            auto [transform, camera_c, rigid_body_c] =
+                get_components<TransformComponent, CameraComponent, RigidBodyComponent>();
+
+            if (!transform || !camera_c || !rigid_body_c)
             {
-                LOG_WARNING("Missing transform/camera");
+                LOG_WARNING("Missing components");
                 return;
             }
 
-            const mat4 rotation_mat = calculate_rotation_mat(transform->rotation);
-            const vec3 side = rotation_mat[0];
-            const vec3 up = rotation_mat[1];
-            const vec3 forward = rotation_mat[2];
+            IPhysicsWorld& physics = get_physics_world();
 
-            vec3 direction(0.0f);
-            const f32 speed = 50.0f;
+            void* collision_object = rigid_body_c->collision_object;
 
-            if (window::is_key_down(Key::a)) direction -= side;
-            if (window::is_key_down(Key::d)) direction += side;
-            if (window::is_key_down(Key::w)) direction -= forward;
-            if (window::is_key_down(Key::s)) direction += forward;
-            if (window::is_key_down(Key::Space)) direction += up;
-            if (window::is_key_down(Key::Lctrl)) direction -= up;
+            physics.set_linear_velocity(collision_object, vec3(0.0f));
+
+            // Get current velocity
+            const vec3& velocity = physics.get_linear_velocity(collision_object);
+
+            // Calculate desired movement direction
+            const vec3& forward = get_forward_dir();
+            const vec3& right = get_right_dir();
+
+            vec3 input_direction(0.0f);
+
+            if (window::is_key_down(Key::w)) input_direction -= forward;
+            if (window::is_key_down(Key::s)) input_direction += forward;
+            if (window::is_key_down(Key::a)) input_direction -= right;
+            if (window::is_key_down(Key::d)) input_direction += right;
 
             // Prevent nan values
-            if (length(direction) > 0.0f)
+            if (length(input_direction) > 0.0f)
             {
-                direction = normalize(direction) * dt;
-                transform->translation += direction * speed;
+                input_direction = normalize(input_direction);
+
+                // Set horizontal velocity directly
+                vec3 new_velocity = input_direction * walk_speed * dt;
+                new_velocity.y = (velocity.y);  // Preserve vertical velocity
+
+                physics.set_linear_velocity(collision_object, new_velocity);
             }
 
             // Update the camera transform
-            const mat4 cam_rotation_mat = calculate_rotation_mat(transform->rotation);
-            const vec3 cam_forward = math::normalize(cam_rotation_mat[2]);
+            vec3 new_rot = vec3(0.0f);
+            vec3 new_pos = vec3(0.0f);
+            physics.get_collision_object_transform(collision_object, new_pos, new_rot);
+            new_rot = vec3(pitch, yaw, 0.0f);
 
-            camera_c->camera.set_rotation(transform->rotation);
-            camera_c->camera.set_position(transform->translation + cam_forward * vec3(50));
+            camera_c->camera.set_rotation(new_rot);
+            camera_c->camera.set_position(new_pos + forward * camera_offset);
         }
 
         void fire_bullet(const TransformComponent& transform)
         {
             IPhysicsWorld& physics = get_physics_world();
 
+            const vec3& forward_dir = get_forward_dir();
+
             // Create a bullet
             const u32 bullet_id = create_entity();
 
+            // Apply small offset to avoid collisions with the player
             TransformComponent* bullet_transform = new TransformComponent(transform);
             bullet_transform->scale = vec3(100.0f);
+            bullet_transform->translation -= forward_dir * bullet_offset;
 
             const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
@@ -109,7 +151,6 @@ class PlayerController : public ScriptableEntity
             add_component_to_entity(bullet_id, rigid_body);
             add_component_to_entity(bullet_id, collider);
 
-            const vec3& forward_dir = get_forward_dir(*bullet_transform);
             physics.apply_impulse(rigid_body->collision_object, -forward_dir * 1000.0f);
         }
 
@@ -144,32 +185,35 @@ class PlayerController : public ScriptableEntity
             auto [transform] = get_components<TransformComponent>();
             if (!transform)
             {
-                LOG_WARNING("Missing transform/camera");
+                LOG_WARNING("Missing transform");
                 return;
             }
 
             const ivec2 mouse_dir = {e.x_direction, e.y_direction};
 
             // Rotate
-            transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f;
+            pitch += -mouse_dir.y * mouse_sensitivity;
+            yaw += -mouse_dir.x * mouse_sensitivity;
         }
 
-        vec3 get_side_dir(const TransformComponent& transform) const
+        vec3 get_right_dir() const
         {
-            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
-            return rotation_mat[0];
+            vec3 right = vec3(0.0f);
+            right.x = cos(yaw);
+            right.y = 0;
+            right.z = -sin(yaw);
+
+            return right;
         }
 
-        vec3 get_up_dir(const TransformComponent& transform) const
+        vec3 get_forward_dir() const
         {
-            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
-            return rotation_mat[1];
-        }
+            vec3 forward = vec3(0.0f);
+            forward.x = cos(-pitch) * sin(yaw);
+            forward.y = sin(-pitch);
+            forward.z = cos(-pitch) * cos(yaw);
 
-        vec3 get_forward_dir(const TransformComponent& transform) const
-        {
-            const mat4 rotation_mat = calculate_rotation_mat(transform.rotation);
-            return rotation_mat[2];
+            return forward;
         }
 };
 
