@@ -130,7 +130,7 @@ namespace mag
             dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
             last_time = curr_time;
 
-            SCOPED_PROFILE("Application");
+            MAG_SCOPED_PROFILE("Application");
 
             window::on_update();
 

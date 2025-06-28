@@ -40,11 +40,11 @@ namespace mag
             const str name;
             f64 start, time_interval_ms;
     };
-};  // namespace mag
 
-// Don't use this macro twice in the same scope
+// @NOTE: Don't use this macro with the same name twice in the same scope
 #if MAG_PROFILE_ENABLED
-    #define SCOPED_PROFILE(name, ...) mag::ScopedProfiler scoped_profiler(name, ##__VA_ARGS__)
+    #define MAG_SCOPED_PROFILE(name, ...) ScopedProfiler scoped_profiler(name, ##__VA_ARGS__)
 #else
-    #define SCOPED_PROFILE(name, ...)
+    #define MAG_SCOPED_PROFILE(name, ...)
 #endif
+};  // namespace mag
