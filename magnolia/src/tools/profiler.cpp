@@ -29,7 +29,17 @@ namespace mag
 
     void ProfilerManager::clear_results() { results.clear(); }
 
-    const std::map<str, ProfileResult>& ProfilerManager::get_results() const { return results; }
+    ProfileResult ProfilerManager::get_result(const str& name) const
+    {
+        auto it = results.find(name);
+
+        if (it != results.end())
+        {
+            return it->second;
+        }
+
+        return {};
+    }
 
     ProfilerManager& ProfilerManager::get()
     {

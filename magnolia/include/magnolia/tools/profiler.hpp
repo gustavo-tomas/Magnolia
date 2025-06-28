@@ -6,7 +6,7 @@
 
 namespace mag
 {
-    struct ProfileResult
+    struct MAG_API ProfileResult
     {
             f64 duration;
             f64 accumulated;
@@ -15,13 +15,13 @@ namespace mag
             f64 frame_start;
     };
 
-    class ProfilerManager
+    class MAG_API ProfilerManager
     {
         public:
             void update_profile_result(const str& name, const f64 duration, const f64 time_interval_ms);
             void clear_results();
 
-            const std::map<str, ProfileResult>& get_results() const;
+            ProfileResult get_result(const str& name) const;
 
             static ProfilerManager& get();
 
@@ -30,7 +30,7 @@ namespace mag
             std::map<str, ProfileResult> results = {};
     };
 
-    class ScopedProfiler
+    class MAG_API ScopedProfiler
     {
         public:
             ScopedProfiler(const str& name, const f64 time_interval_ms = 100);
