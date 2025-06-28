@@ -42,7 +42,10 @@ namespace mag
     {
     }
 
-    BoxColliderComponent::BoxColliderComponent(const vec3& dimensions) : dimensions(dimensions) {}
+    ColliderComponent::ColliderComponent(const ColliderType collider_type, const Collider collider)
+        : collider_type(collider_type), collider(collider)
+    {
+    }
 
     RigidBodyComponent::RigidBodyComponent(const f32 mass) : mass(mass) {}
 
@@ -62,7 +65,7 @@ namespace mag
     CLONE_DEFINITION(ModelComponent)
     CLONE_DEFINITION(TextComponent)
     CLONE_DEFINITION(AudioComponent)
-    CLONE_DEFINITION(BoxColliderComponent)
+    CLONE_DEFINITION(ColliderComponent)
     CLONE_DEFINITION(RigidBodyComponent)
     CLONE_DEFINITION(LightComponent)
     CLONE_DEFINITION(CameraComponent)

@@ -91,13 +91,34 @@ namespace mag
             b8 play_on_load;
     };
 
-    struct MAG_API BoxColliderComponent : public Component
+    struct MAG_API ColliderComponent : public Component
     {
-            BoxColliderComponent(const vec3& dimensions = vec3(1));
+            enum class ColliderType
+            {
+                Box,
+                Capsule
+            } collider_type;
 
-            CLONE_DECLARATION(BoxColliderComponent);
+            struct BoxCollider
+            {
+                    vec3 dimensions = vec3(1.0f);
+            };
 
-            vec3 dimensions;
+            struct CapsuleCollider
+            {
+                    f32 radius = 1.0f;
+                    f32 height = 1.0f;
+            };
+
+            union Collider
+            {
+                    struct BoxCollider box = {};
+                    struct CapsuleCollider capsule;
+            } collider;
+
+            ColliderComponent(const ColliderType collider_type, const Collider collider);
+
+            CLONE_DECLARATION(ColliderComponent);
     };
 
     struct MAG_API RigidBodyComponent : public Component

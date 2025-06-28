@@ -142,14 +142,18 @@ class PlayerController : public ScriptableEntity
             const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
-            auto* model_c = new ModelComponent(model);
-            auto* rigid_body = new RigidBodyComponent(10.0f);
-            auto* collider = new BoxColliderComponent(vec3(10.0f));
+            ColliderComponent::Collider collider = {};
+            collider.capsule.radius = 5.0f;
+            collider.capsule.height = 10.0f;
+
+            ModelComponent* model_c = new ModelComponent(model);
+            RigidBodyComponent* rigid_body = new RigidBodyComponent(10.0f);
+            ColliderComponent* collider_c = new ColliderComponent(ColliderComponent::ColliderType::Capsule, collider);
 
             add_component_to_entity(bullet_id, bullet_transform);
             add_component_to_entity(bullet_id, model_c);
             add_component_to_entity(bullet_id, rigid_body);
-            add_component_to_entity(bullet_id, collider);
+            add_component_to_entity(bullet_id, collider_c);
 
             physics.apply_impulse(rigid_body->collision_object, -forward_dir * 1000.0f);
         }

@@ -143,7 +143,7 @@ namespace mag
 
             // Remove physics object from physics world if entity has physics properties
             auto [rigid_body, collider, transform] =
-                ecs->get_components<RigidBodyComponent, BoxColliderComponent, TransformComponent>(entity_id);
+                ecs->get_components<RigidBodyComponent, ColliderComponent, TransformComponent>(entity_id);
 
             if (rigid_body && collider && transform)
             {
@@ -201,16 +201,37 @@ namespace mag
     {
         // Add rigidbody to physics world if component is a rigidbody or collider
         const b8 is_rigid_body_component = dynamic_cast<RigidBodyComponent*>(component) != nullptr;
-        const b8 is_collider_component = dynamic_cast<BoxColliderComponent*>(component) != nullptr;
+        const b8 is_collider_component = dynamic_cast<ColliderComponent*>(component) != nullptr;
         if (is_rigid_body_component || is_collider_component)
         {
             auto* transform = ecs->get_component<TransformComponent>(id);
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
-            auto* collider = ecs->get_component<BoxColliderComponent>(id);
+            auto* collider = ecs->get_component<ColliderComponent>(id);
             if (transform && rigid_body && collider)
             {
-                rigid_body->collision_object = physics_world->add_rigid_body(
-                    transform->translation, quat(transform->rotation), collider->dimensions, rigid_body->mass);
+                switch (collider->collider_type)
+                {
+                    case ColliderComponent::ColliderType::Box:
+                    {
+                        const vec3 dimensions = collider->collider.box.dimensions;
+                        rigid_body->collision_object = physics_world->add_rigid_body(
+                            transform->translation, quat(transform->rotation), dimensions, rigid_body->mass);
+                    }
+                    break;
+
+                    case ColliderComponent::ColliderType::Capsule:
+                    {
+                        const f32 radius = collider->collider.capsule.radius;
+                        const f32 height = collider->collider.capsule.height;
+                        rigid_body->collision_object = physics_world->add_rigid_body(
+                            transform->translation, quat(transform->rotation), radius, height, rigid_body->mass);
+                    }
+                    break;
+
+                    default:
+                        MAG_ASSERT(false, "Unhandled collider type");
+                        break;
+                }
             }
         }
 
