@@ -1,24 +1,15 @@
 #include "magnolia/ecs/ecs.hpp"
 
-#include "magnolia/core/assert.hpp"
 #include "magnolia/ecs/components.hpp"
 
 namespace mag
 {
     using namespace mag::math;
 
-    ECS::ECS(const u32 max_entity_id, ComponentAddedCallbackFn on_component_added)
-        : on_component_added(on_component_added)
-    {
-        for (u32 id = 0; id <= max_entity_id; id++)
-        {
-            available_ids.insert(id);
-        }
-    }
+    ECS::ECS(ComponentAddedCallbackFn on_component_added) : on_component_added(on_component_added) {}
 
     ECS::ECS(const ECS& other)
     {
-        available_ids = other.available_ids;
         entities = copy_entities(other.entities);
         component_map = other.component_map;
         on_component_added = other.on_component_added;
@@ -29,10 +20,7 @@ namespace mag
     // Return a new id (create a new entity)
     u32 ECS::create_entity(const str& name)
     {
-        MAG_ASSERT(!available_ids.empty(), "No available IDs left");
-
-        const u32 id = *available_ids.begin();
-        available_ids.erase(id);
+        const u32 id = id_counter++;
 
         entities[id] = Entity();
 
@@ -65,9 +53,6 @@ namespace mag
         {
             entity_set.erase(entity_id);
         }
-
-        // Free the ID for future use
-        available_ids.insert(entity_id);
     }
 
     // Get all ids in use

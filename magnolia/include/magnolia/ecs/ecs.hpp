@@ -23,7 +23,7 @@ namespace mag
     static_assert((std::is_base_of<Component, Ts>::value && ...), "All types must be derived from Component")
 
         public:
-            ECS(const u32 max_entity_id = 10'000, ComponentAddedCallbackFn on_component_added = nullptr);
+            ECS(ComponentAddedCallbackFn on_component_added = nullptr);
             ECS(const ECS& other);
             ~ECS();
 
@@ -174,7 +174,7 @@ namespace mag
             std::map<u32, Entity> copy_entities(const std::map<u32, Entity>& source);
 
             // Entities IDs
-            std::set<u32> available_ids;
+            u32 id_counter = 0;
 
             // Table of entities
             std::map<u32, Entity> entities;
