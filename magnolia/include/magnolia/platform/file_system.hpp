@@ -17,20 +17,20 @@ namespace mag
         b8 initialize();
         void shutdown();
 
-        b8 read_binary_data(const fs::path& file_path, Buffer& buffer);
-        b8 write_binary_data(const fs::path& file_path, Buffer& buffer);
+        MAG_API b8 read_binary_data(const fs::path& file_path, Buffer& buffer);
+        MAG_API b8 write_binary_data(const fs::path& file_path, Buffer& buffer);
 
-        b8 read_json_data(const fs::path& file_path, fs::json& data);
-        b8 write_json_data(const fs::path& file_path, fs::json& data);
+        MAG_API b8 read_json_data(const fs::path& file_path, fs::json& data);
+        MAG_API b8 write_json_data(const fs::path& file_path, fs::json& data);
 
-        b8 create_directories(const fs::path& path);
+        MAG_API b8 create_directories(const fs::path& path);
 
-        str get_file_extension(const fs::path& file_path);
-        str get_file_name(const fs::path& file_path);
-        fs::path get_fixed_path(const fs::path& file_path);
+        MAG_API str get_file_extension(const fs::path& file_path);
+        MAG_API str get_file_name(const fs::path& file_path);
+        MAG_API fs::path get_fixed_path(const fs::path& file_path);
 
-        b8 exists(const fs::path& path);
-        b8 is_directory(const fs::path& path);
+        MAG_API b8 exists(const fs::path& path);
+        MAG_API b8 is_directory(const fs::path& path);
 
         // File watcher stuff
         void watch_file(const fs::path& file_path);

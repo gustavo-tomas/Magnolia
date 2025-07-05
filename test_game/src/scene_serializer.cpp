@@ -1,31 +1,31 @@
-#include "magnolia/scene/scene_serializer.hpp"
+#include "scene_serializer.hpp"
 
-#include "magnolia/camera/camera.hpp"
-#include "magnolia/ecs/components.hpp"
-#include "magnolia/ecs/ecs.hpp"
-#include "magnolia/platform/file_system.hpp"
-#include "magnolia/platform/window.hpp"
-#include "magnolia/resources/audio.hpp"
-#include "magnolia/resources/font.hpp"
-#include "magnolia/resources/model.hpp"
-#include "magnolia/resources/texture.hpp"
-#include "magnolia/scene/scene.hpp"
+#include <magnolia/camera/camera.hpp>
+#include <magnolia/ecs/components.hpp>
+#include <magnolia/ecs/ecs.hpp>
+#include <magnolia/platform/file_system.hpp>
+#include <magnolia/platform/window.hpp>
+#include <magnolia/resources/audio.hpp>
+#include <magnolia/resources/font.hpp>
+#include <magnolia/resources/model.hpp>
+#include <magnolia/resources/texture.hpp>
+#include <magnolia/scene/scene.hpp>
 
-namespace mag
+namespace game
 {
-    fs::json& operator<<(fs::json& out, const vec2& v)
+    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec2& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
     }
 
-    fs::json& operator<<(fs::json& out, const vec3& v)
+    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec3& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
     }
 
-    fs::json& operator<<(fs::json& out, const vec4& v)
+    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec4& v)
     {
         for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
         return out;
@@ -33,31 +33,31 @@ namespace mag
 
     namespace scene
     {
-        b8 save(const str& file_path, Scene& scene)
+        b8 save(const str& file_path, mag::Scene& scene)
         {
             // Serialize scene data to file
-            fs::json data;
+            mag::fs::json data;
             data["Type"] = "Scene";
             data["Name"] = scene.get_name();
 
             auto& ecs = scene.get_ecs();
             for (const auto entity_id : ecs.get_entities_ids())
             {
-                fs::json entity;
+                mag::fs::json entity;
 
-                if (auto component = ecs.get_component<NameComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::NameComponent>(entity_id))
                 {
                     entity["NameComponent"]["Name"] = component->name;
                 }
 
-                if (auto component = ecs.get_component<TransformComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::TransformComponent>(entity_id))
                 {
                     entity["TransformComponent"]["Translation"] << component->translation;
                     entity["TransformComponent"]["Rotation"] << component->rotation;
                     entity["TransformComponent"]["Scale"] << component->scale;
                 }
 
-                if (auto component = ecs.get_component<ModelComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::ModelComponent>(entity_id))
                 {
                     if (component->model->file_path.empty())
                     {
@@ -71,7 +71,7 @@ namespace mag
                     }
                 }
 
-                if (auto component = ecs.get_component<SpriteComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::SpriteComponent>(entity_id))
                 {
                     if (component->texture->file_path.empty())
                     {
@@ -86,14 +86,14 @@ namespace mag
                     }
                 }
 
-                if (auto component = ecs.get_component<TextComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::TextComponent>(entity_id))
                 {
                     entity["TextComponent"]["FilePath"] = component->font->file_path;
                     entity["TextComponent"]["Text"] = component->text;
                     entity["TextComponent"]["Color"] << component->color;
                 }
 
-                if (auto component = ecs.get_component<AudioComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::AudioComponent>(entity_id))
                 {
                     entity["AudioComponent"]["FilePath"] = component->audio->file_path;
                     entity["AudioComponent"]["Volume"] = component->volume;
@@ -102,15 +102,15 @@ namespace mag
                     entity["AudioComponent"]["Velocity"] << component->velocity;
                 }
 
-                if (auto component = ecs.get_component<ColliderComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::ColliderComponent>(entity_id))
                 {
                     switch (component->collider_type)
                     {
-                        case ColliderComponent::ColliderType::Box:
+                        case mag::ColliderComponent::ColliderType::Box:
                             entity["BoxColliderComponent"]["Dimensions"] << component->collider.box.dimensions;
                             break;
 
-                        case ColliderComponent::ColliderType::Capsule:
+                        case mag::ColliderComponent::ColliderType::Capsule:
                             entity["CapsuleColliderComponent"]["Radius"] = component->collider.capsule.radius;
                             entity["CapsuleColliderComponent"]["Height"] = component->collider.capsule.height;
                             break;
@@ -121,25 +121,25 @@ namespace mag
                     }
                 }
 
-                if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::RigidBodyComponent>(entity_id))
                 {
                     entity["RigidBodyComponent"]["Mass"] = component->mass;
                 }
 
-                if (auto component = ecs.get_component<LightComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::LightComponent>(entity_id))
                 {
                     entity["LightComponent"]["Color"] << component->color;
                     entity["LightComponent"]["Intensity"] = component->intensity;
                 }
 
-                if (auto component = ecs.get_component<CameraComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::CameraComponent>(entity_id))
                 {
                     entity["CameraComponent"]["Fov"] = component->camera.get_fov();
                     entity["CameraComponent"]["Near"] = component->camera.get_near();
                     entity["CameraComponent"]["Far"] = component->camera.get_far();
                 }
 
-                if (auto component = ecs.get_component<ScriptComponent>(entity_id))
+                if (auto component = ecs.get_component<mag::ScriptComponent>(entity_id))
                 {
                     entity["ScriptComponent"]["FilePath"] = component->file_path;
                 }
@@ -147,7 +147,7 @@ namespace mag
                 data["Entities"].push_back(entity);
             }
 
-            if (!fs::write_json_data(file_path, data))
+            if (!mag::fs::write_json_data(file_path, data))
             {
                 LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
                 return false;
@@ -156,11 +156,11 @@ namespace mag
             return true;
         }
 
-        b8 load(const str& file_path, Scene& scene)
+        b8 load(const str& file_path, mag::Scene& scene)
         {
-            fs::json data;
+            mag::fs::json data;
 
-            if (!fs::read_json_data(file_path, data))
+            if (!mag::fs::read_json_data(file_path, data))
             {
                 LOG_ERROR("Failed to deserialize scene: '{0}'", file_path);
                 return false;
@@ -185,16 +185,16 @@ namespace mag
                 if (entity.contains("NameComponent"))
                 {
                     const str entity_name = entity["NameComponent"]["Name"];
-                    ecs.get_component<NameComponent>(entity_id)->name = entity_name;
+                    ecs.get_component<mag::NameComponent>(entity_id)->name = entity_name;
                 }
 
                 if (entity.contains("TransformComponent"))
                 {
                     const auto& component = entity["TransformComponent"];
 
-                    vec3 translation = vec3(0);
-                    vec3 rotation = vec3(0);
-                    vec3 scale = vec3(0);
+                    mag::vec3 translation = mag::vec3(0);
+                    mag::vec3 rotation = mag::vec3(0);
+                    mag::vec3 scale = mag::vec3(0);
 
                     // @TODO: dry this
                     for (i32 i = 0; i < translation.length(); i++)
@@ -204,7 +204,7 @@ namespace mag
 
                     for (i32 i = 0; i < scale.length(); i++) scale[i] = component["Scale"][i].get<f32>();
 
-                    ecs.add_component(entity_id, new TransformComponent(translation, rotation, scale));
+                    ecs.add_component(entity_id, new mag::TransformComponent(translation, rotation, scale));
                 }
 
                 if (entity.contains("ModelComponent"))
@@ -212,9 +212,9 @@ namespace mag
                     const auto& component = entity["ModelComponent"];
                     const str file_path = component["FilePath"];
 
-                    const auto& model = resource::get_model(file_path);
+                    const auto& model = mag::resource::get_model(file_path);
 
-                    ecs.add_component(entity_id, new ModelComponent(model));
+                    ecs.add_component(entity_id, new mag::ModelComponent(model));
                 }
 
                 if (entity.contains("SpriteComponent"))
@@ -224,9 +224,9 @@ namespace mag
                     const b8 constant_size = component["ConstantSize"].get<b8>();
                     const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
-                    const auto& sprite = resource::get_texture(file_path);
+                    const auto& sprite = mag::resource::get_texture(file_path);
 
-                    ecs.add_component(entity_id, new SpriteComponent(sprite, constant_size, always_face_camera));
+                    ecs.add_component(entity_id, new mag::SpriteComponent(sprite, constant_size, always_face_camera));
                 }
 
                 if (entity.contains("TextComponent"))
@@ -234,13 +234,13 @@ namespace mag
                     const auto& component = entity["TextComponent"];
                     const str file_path = component["FilePath"];
                     const str text = component["Text"];
-                    vec4 color = vec4(0.0f);
+                    mag::vec4 color = mag::vec4(0.0f);
 
                     for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
 
-                    const auto& font = resource::get_font(file_path);
+                    const auto& font = mag::resource::get_font(file_path);
 
-                    ecs.add_component(entity_id, new TextComponent(font, color, text));
+                    ecs.add_component(entity_id, new mag::TextComponent(font, color, text));
                 }
 
                 if (entity.contains("AudioComponent"))
@@ -250,41 +250,43 @@ namespace mag
 
                     const f32 volume = component["Volume"].get<f32>();
                     const b8 play_on_load = component["PlayOnLoad"].get<f32>();
-                    vec3 position = vec3(0.0f);
-                    vec3 velocity = vec3(0.0f);
+                    mag::vec3 position = mag::vec3(0.0f);
+                    mag::vec3 velocity = mag::vec3(0.0f);
 
                     for (i32 i = 0; i < position.length(); i++) position[i] = component["Position"][i].get<f32>();
                     for (i32 i = 0; i < velocity.length(); i++) velocity[i] = component["Velocity"][i].get<f32>();
 
-                    const auto& audio = resource::get_audio(file_path);
+                    const auto& audio = mag::resource::get_audio(file_path);
 
-                    ecs.add_component(entity_id, new AudioComponent(audio, volume, play_on_load, position, velocity));
+                    ecs.add_component(entity_id,
+                                      new mag::AudioComponent(audio, volume, play_on_load, position, velocity));
                 }
 
                 if (entity.contains("BoxColliderComponent"))
                 {
                     const auto& component = entity["BoxColliderComponent"];
 
-                    vec3 dimensions = vec3(0);
+                    mag::vec3 dimensions = mag::vec3(0);
 
                     for (i32 i = 0; i < dimensions.length(); i++) dimensions[i] = component["Dimensions"][i].get<f32>();
 
-                    ColliderComponent::Collider collider = {};
+                    mag::ColliderComponent::Collider collider = {};
                     collider.box.dimensions = dimensions;
 
-                    ecs.add_component(entity_id, new ColliderComponent(ColliderComponent::ColliderType::Box, collider));
+                    ecs.add_component(entity_id,
+                                      new mag::ColliderComponent(mag::ColliderComponent::ColliderType::Box, collider));
                 }
 
                 if (entity.contains("CapsuleColliderComponent"))
                 {
                     const auto& component = entity["CapsuleColliderComponent"];
 
-                    ColliderComponent::Collider collider = {};
+                    mag::ColliderComponent::Collider collider = {};
                     collider.capsule.radius = component["Radius"].get<f32>();
                     collider.capsule.height = component["Height"].get<f32>();
 
-                    ecs.add_component(entity_id,
-                                      new ColliderComponent(ColliderComponent::ColliderType::Capsule, collider));
+                    ecs.add_component(
+                        entity_id, new mag::ColliderComponent(mag::ColliderComponent::ColliderType::Capsule, collider));
                 }
 
                 if (entity.contains("RigidBodyComponent"))
@@ -293,20 +295,20 @@ namespace mag
 
                     f32 mass = component["Mass"].get<f32>();
 
-                    ecs.add_component(entity_id, new RigidBodyComponent(mass));
+                    ecs.add_component(entity_id, new mag::RigidBodyComponent(mass));
                 }
 
                 if (entity.contains("LightComponent"))
                 {
                     const auto& component = entity["LightComponent"];
 
-                    vec3 color = vec3(0);
+                    mag::vec3 color = mag::vec3(0);
                     f32 intensity = 0;
 
                     for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
                     intensity = component["Intensity"].get<f32>();
 
-                    ecs.add_component(entity_id, new LightComponent(color, intensity));
+                    ecs.add_component(entity_id, new mag::LightComponent(color, intensity));
                 }
 
                 if (entity.contains("CameraComponent"))
@@ -317,17 +319,17 @@ namespace mag
                     const f32 near = component["Near"].get<f32>();
                     const f32 far = component["Far"].get<f32>();
 
-                    PerspectiveCameraDesc camera_desc = {};
+                    mag::PerspectiveCameraDesc camera_desc = {};
                     camera_desc.near = near;
                     camera_desc.far = far;
                     camera_desc.fov = fov;
-                    camera_desc.viewport_size = window::get_size();
-                    camera_desc.position = vec3(0.0f);
-                    camera_desc.rotation = vec3(0.0f);
+                    camera_desc.viewport_size = mag::window::get_size();
+                    camera_desc.position = mag::vec3(0.0f);
+                    camera_desc.rotation = mag::vec3(0.0f);
 
-                    PerspectiveCamera camera = PerspectiveCamera(camera_desc);
+                    mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
 
-                    ecs.add_component(entity_id, new CameraComponent(camera));
+                    ecs.add_component(entity_id, new mag::CameraComponent(camera));
                 }
 
                 if (entity.contains("ScriptComponent"))
@@ -336,11 +338,11 @@ namespace mag
 
                     const str file_path = component["FilePath"];
 
-                    ecs.add_component(entity_id, new ScriptComponent(file_path));
+                    ecs.add_component(entity_id, new mag::ScriptComponent(file_path));
                 }
             }
 
             return true;
         }
     };  // namespace scene
-};      // namespace mag
+};      // namespace game
