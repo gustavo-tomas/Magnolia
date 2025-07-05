@@ -39,11 +39,6 @@ namespace mag
 
         protected:
             // The user can override these if they want
-            virtual void on_start_internal();
-            virtual void on_stop_internal();
-            virtual void on_event_internal(const Event& e);
-            virtual void on_update_internal(const f32 dt);
-            virtual void on_component_added_internal(const u32 id, Component* component);
             virtual void on_resize(const WindowResizeEvent& e);
 
             str name;

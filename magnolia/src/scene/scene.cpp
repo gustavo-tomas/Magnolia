@@ -28,8 +28,6 @@ namespace mag
 
     void Scene::on_start()
     {
-        on_start_internal();
-
         // Instantiate scripts
         for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
         {
@@ -127,8 +125,6 @@ namespace mag
             mag::audio::stop(audio->audio);
         }
 
-        on_stop_internal();
-
         running = false;
     }
 
@@ -191,8 +187,6 @@ namespace mag
             // Update physics world without advancing the simulation
             physics_world->on_update(0);
         }
-
-        on_update_internal(dt);
     }
 
     void Scene::on_component_added(const u32 id, Component* component)
@@ -239,8 +233,6 @@ namespace mag
         {
             create_script(id);
         }
-
-        on_component_added_internal(id, component);
     }
 
     void Scene::on_event(const Event& e)
@@ -255,8 +247,6 @@ namespace mag
                 script->entity->on_event(e);
             }
         }
-
-        on_event_internal(e);
     }
 
     void Scene::on_resize(const WindowResizeEvent& e)
@@ -305,15 +295,5 @@ namespace mag
 
         MAG_ASSERT(false, "No runtime camera!");
         return std::get<0>(components[0])->camera;
-    }
-
-    void Scene::on_start_internal() {}
-    void Scene::on_stop_internal() {}
-    void Scene::on_event_internal(const Event& e) { (void)e; }
-    void Scene::on_update_internal(const f32 dt) { (void)dt; }
-    void Scene::on_component_added_internal(const u32 id, Component* component)
-    {
-        (void)id;
-        (void)component;
     }
 };  // namespace mag
