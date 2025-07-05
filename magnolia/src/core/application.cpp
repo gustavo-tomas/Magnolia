@@ -17,14 +17,10 @@ namespace mag
 {
     static Application* application = nullptr;
 
-    Application& get_application()
-    {
-        MAG_ASSERT(application != nullptr, "Application is null");
-        return *application;
-    }
-
     Application::Application(const str& config_file_path)
     {
+        MAG_ASSERT(application == nullptr, "Application was already initialized");
+
         application = this;
 
         b8 initialized = true;

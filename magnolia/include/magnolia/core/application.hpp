@@ -44,9 +44,6 @@ namespace mag
             ResourceLoadedCallbackFn on_resource_loaded_user_callback = nullptr;
     };
 
-    // Access to the application
-    Application& get_application();
-
     // Defined by the client
     MAG_API Application* create_application();
 };  // namespace mag
