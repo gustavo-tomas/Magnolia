@@ -12,9 +12,9 @@ namespace mag
         b8 initialize();
         void shutdown();
 
-        void play(ref<AudioResource>& audio, const f32 volume = 1.0f, const math::vec3& position = math::vec3(0.0f),
-                  const math::vec3& velocity = math::vec3(0.0f));
+        MAG_API void play(ref<AudioResource>& audio, const f32 volume = 1.0f,
+                          const math::vec3& position = math::vec3(0.0f), const math::vec3& velocity = math::vec3(0.0f));
 
-        void stop(const ref<AudioResource>& audio);
+        MAG_API void stop(const ref<AudioResource>& audio);
     };  // namespace audio
 };      // namespace mag

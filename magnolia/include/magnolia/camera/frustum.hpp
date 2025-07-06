@@ -10,7 +10,7 @@ namespace mag
     using namespace mag::math;
 
     // Taken from: https://gist.github.com/podgorskiy/e698d18879588ada9014768e3e82a644
-    class Frustum
+    class MAG_API Frustum
     {
         public:
             Frustum();

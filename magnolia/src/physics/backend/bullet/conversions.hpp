@@ -4,33 +4,32 @@
 #include "LinearMath/btTransform.h"
 #include "LinearMath/btVector3.h"
 #include "magnolia/core/assert.hpp"
-#include "magnolia/ecs/components.hpp"
 #include "magnolia/math/types.hpp"
 #include "magnolia/physics/physics.hpp"
 
 namespace mag
 {
-    inline btVector3 const mag_to_bt(const vec3& v)
+    inline btVector3 const mag_to_bt(const math::vec3& v)
     {
         const btVector3 bt_vec(v.x, v.y, v.z);
 
         return bt_vec;
     }
 
-    inline vec3 const bt_to_mag(const btVector3& bt_vec)
+    inline math::vec3 const bt_to_mag(const btVector3& bt_vec)
     {
-        const vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
+        const math::vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
 
         return v;
     }
 
-    inline btTransform const mag_to_bt(const TransformComponent& t)
+    inline btTransform const mag_to_bt(const math::vec3& translation, const math::vec3& rotation)
     {
         btTransform bt_transform;
         bt_transform.setIdentity();
-        bt_transform.setOrigin(btVector3(t.translation.x, t.translation.y, t.translation.z));
+        bt_transform.setOrigin(btVector3(translation.x, translation.y, translation.z));
 
-        const quat mag_q(t.rotation);
+        const math::quat mag_q(rotation);
         const btQuaternion q(mag_q.x, mag_q.y, mag_q.z, mag_q.w);
 
         bt_transform.setRotation(q);
@@ -51,16 +50,13 @@ namespace mag
         return bt_transform;
     }
 
-    inline TransformComponent const bt_to_mag(const btTransform& t)
+    inline void bt_to_mag(const btTransform& t, math::vec3& translation, math::vec3& rotation)
     {
-        TransformComponent transform;
-        transform.translation = math::vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
+        translation = math::vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
 
         btScalar pitch, yaw, roll;
         t.getRotation().getEulerZYX(roll, yaw, pitch);
-        transform.rotation = vec3(pitch, yaw, roll);
-
-        return transform;
+        rotation = math::vec3(pitch, yaw, roll);
     }
 
     inline i32 mag_to_bt(const ActivationState state)

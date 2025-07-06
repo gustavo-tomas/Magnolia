@@ -2,12 +2,11 @@
 
 #include "BulletCollision/CollisionShapes/btCapsuleShape.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
+#include "LinearMath/btTransform.h"
 #include "btBulletDynamicsCommon.h"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
-#include "magnolia/ecs/components.hpp"
 #include "magnolia/math/types.hpp"
-#include "magnolia/scene/scene.hpp"
 #include "physics/backend/bullet/conversions.hpp"
 
 namespace mag
@@ -43,7 +42,7 @@ namespace mag
             {
                 // We dont actually draw in this method, only keep a record of the lines.
 
-                Line line = {};
+                math::Line line = {};
                 line.start = bt_to_mag(from);
                 line.end = bt_to_mag(to);
                 line.color = bt_to_mag(color);
@@ -58,10 +57,10 @@ namespace mag
 
             void reset_lines() { line_list.lines.clear(); }
 
-            const LineList& get_line_list() const { return line_list; }
+            const math::LineList& get_line_list() const { return line_list; }
 
         private:
-            LineList line_list;
+            math::LineList line_list;
     };
 
     class BulletPhysicsWorld : public IPhysicsWorld
@@ -193,10 +192,11 @@ namespace mag
                 bt_rigid_body->setCollisionShape(shape);
 
                 // Update collider properties
-                TransformComponent transform = TransformComponent(position, rotation);
 
-                bt_rigid_body->getMotionState()->setWorldTransform(mag_to_bt(transform));
-                bt_rigid_body->setWorldTransform(mag_to_bt(transform));
+                const btTransform transform = mag_to_bt(position, rotation);
+
+                bt_rigid_body->getMotionState()->setWorldTransform(transform);
+                bt_rigid_body->setWorldTransform(transform);
                 bt_rigid_body->setLinearVelocity(btVector3(0, 0, 0));
                 bt_rigid_body->setAngularVelocity(btVector3(0, 0, 0));
                 bt_rigid_body->setMassProps(new_mass, local_inertia);
@@ -331,13 +331,13 @@ namespace mag
                     bt_transform = bt_body->getWorldTransform();
                 }
 
-                TransformComponent transform = bt_to_mag(bt_transform);
-
-                position = transform.translation;
-                rotation = transform.rotation;
+                bt_to_mag(bt_transform, position, rotation);
             }
 
-            virtual const LineList& get_debug_line_list() const override { return physics_debug_draw->get_line_list(); }
+            virtual const math::LineList& get_debug_line_list() const override
+            {
+                return physics_debug_draw->get_line_list();
+            }
 
         private:
             virtual void render_debug_lines() override

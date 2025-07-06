@@ -77,5 +77,5 @@ namespace mag
             virtual void render_debug_lines() = 0;
     };
 
-    unique<IPhysicsWorld> create_physics_world();
+    MAG_API unique<IPhysicsWorld> create_physics_world();
 };  // namespace mag
