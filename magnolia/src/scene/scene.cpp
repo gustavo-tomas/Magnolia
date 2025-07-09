@@ -57,14 +57,17 @@ namespace mag
             return;
         }
 
+        script::RecompileScriptParams script_params = {};
+        script_params.file_path = script->file_path;
+
         // Recompile if necessary
-        if (!script::recompile_script(script->file_path))
+        if (!script::compile_script(script_params))
         {
             return;
         }
 
         // Now we can safely load
-        void* handle = script::load_script(script->file_path);
+        void* handle = script::load_script(script_params.file_path);
         if (!handle)
         {
             return;

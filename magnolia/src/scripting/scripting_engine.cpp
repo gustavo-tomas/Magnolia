@@ -14,10 +14,6 @@ namespace mag
 {
     namespace script
     {
-        static b8 compile_script(const str& input_file_path, const str& output_file_path,
-                                 const std::vector<str>& include_paths, const std::vector<str>& lib_paths,
-                                 const std::vector<str>& link_libs, const std::vector<str>& defines);
-
         void* load_script(const str& file_path)
         {
             const str script_name = fs::path(file_path).stem();
@@ -61,8 +57,11 @@ namespace mag
             return symbol;
         }
 
-        b8 recompile_script(const str& file_path, const b8 force_recompilation)
+        b8 compile_script(const RecompileScriptParams& params)
         {
+            const str& file_path = params.file_path;
+            const b8 force_recompilation = params.force_recompilation;
+
             const str script_name = fs::path(file_path).stem();
             const str bin_script_file_path = MAG_BUILD_SCRIPT_NAME(script_name);
 
@@ -71,37 +70,16 @@ namespace mag
                 return true;
             }
 
-            const std::vector<str> include_paths = {"magnolia/include", "libs/fmt/include"};
-            const std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "fmt", MAG_BUILD_DIR_BIN "magnolia"};
-            const std::vector<str> link_libs = {"magnolia", "fmt"};
-            const std::vector<str> defines = {"MAG_CONFIG_DEBUG", "FMT_HEADER_ONLY=0", "MAG_ASSERTIONS_ENABLED=1",
-                                              "MAG_PROFILE_ENABLED=1"};
-
-            if (!compile_script(file_path, bin_script_file_path, include_paths, lib_paths, link_libs, defines))
-            {
-                LOG_ERROR("Failed to compile script: '{0}'", file_path);
-                return false;
-            }
-
-            else
-            {
-                LOG_SUCCESS("Finished compiling script: '{0}'", file_path);
-            }
-
-            return true;
-        }
-
-        static b8 compile_script(const str& input_file_path, const str& output_file_path,
-                                 const std::vector<str>& include_paths, const std::vector<str>& lib_paths,
-                                 const std::vector<str>& link_libs, const std::vector<str>& defines)
-        {
-            LOG_INFO("Compiling script '{0}'...", input_file_path);
+            const str compilation_flags = params.compilation_flags;
+            const std::vector<str> include_paths = params.include_paths;
+            const std::vector<str> lib_paths = params.lib_paths;
+            const std::vector<str> link_libs = params.link_libs;
+            const std::vector<str> defines = params.defines;
 
             // Create directories if they dont exist
-            fs::create_directories(fs::path(output_file_path).parent_path());
+            fs::create_directories(fs::path(bin_script_file_path).parent_path());
 
-            // @TODO: for now no optimizations
-            str compile_script_cmd = "clang++ -std=c++20 -fPIC -shared -O0";
+            str compile_script_cmd = "clang++ " + compilation_flags;
 
             // Include paths
             for (const str& path : include_paths)
@@ -127,10 +105,22 @@ namespace mag
                 compile_script_cmd += " -l" + lib;
             }
 
-            compile_script_cmd += " " + input_file_path + " -o " + output_file_path;
+            compile_script_cmd += " " + file_path + " -o " + bin_script_file_path;
+
+            LOG_INFO("Compiling script '{0}'...", file_path);
 
             // Execute clang
-            return system(compile_script_cmd.c_str()) == 0;
+            const b8 result = system(compile_script_cmd.c_str()) == 0;
+
+            if (!result)
+            {
+                LOG_ERROR("Failed to compile script: '{0}'", file_path);
+                return false;
+            }
+
+            LOG_SUCCESS("Finished compiling script: '{0}'", file_path);
+
+            return true;
         }
     };  // namespace script
 };      // namespace mag

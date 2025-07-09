@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "magnolia/core/types.hpp"
 
 namespace mag
@@ -11,8 +13,20 @@ namespace mag
 
         MAG_API void unload_script(void* handle);
 
+        struct RecompileScriptParams
+        {
+                str file_path;
+                b8 force_recompilation = false;
+                str compilation_flags = "-std=c++20 -fPIC -shared -O0";
+                std::vector<str> include_paths = {"magnolia/include", "libs/fmt/include"};
+                std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "fmt", MAG_BUILD_DIR_BIN "magnolia"};
+                std::vector<str> link_libs = {"magnolia", "fmt"};
+                std::vector<str> defines = {"MAG_CONFIG_DEBUG", "FMT_HEADER_ONLY=0", "MAG_ASSERTIONS_ENABLED=1",
+                                            "MAG_PROFILE_ENABLED=1"};
+        };
+
         // Skips compilation if scripts exists, or recompile if force recompilation is true
-        MAG_API b8 recompile_script(const str& file_path, const b8 force_recompilation = false);
+        MAG_API b8 compile_script(const RecompileScriptParams& params);
 
         // returns nullptr on error
         MAG_API void* get_symbol(void* handle, const str& name);
