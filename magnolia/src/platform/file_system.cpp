@@ -20,7 +20,7 @@ namespace mag
         struct FileWatcher
         {
                 std::thread watcher_thread;
-                std::map<str, FileStatus> files_on_watch;
+                std::unordered_map<str, FileStatus> files_on_watch;
                 std::mutex files_mutex;
                 b8 running = false;
         };

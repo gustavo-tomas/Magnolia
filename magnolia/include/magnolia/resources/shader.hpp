@@ -97,7 +97,7 @@ namespace mag
             ShaderResourceTopology topology;
             ShaderResourceColorBlend color_blend;
             std::vector<ShaderResourceVertexInputData> vertex_inputs;
-            std::map<ShaderResourceStage, ShaderResourceModuleData> stages;
+            std::unordered_map<ShaderResourceStage, ShaderResourceModuleData> stages;
     };
 
     namespace resource

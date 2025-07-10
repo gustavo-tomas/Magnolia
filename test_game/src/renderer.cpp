@@ -125,9 +125,9 @@ namespace game
         static MeshData mesh_data = {};
         mesh_data.material_idx = Max_U32;
 
-        static std::map<str, mag::gfx::TextureHandle> texture_handles;
-        static std::map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
-        static std::map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
+        static std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
+        static std::unordered_map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
+        static std::unordered_map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
 
         for (u32 i = 0; i < model_entities.size(); i++)
         {
@@ -257,7 +257,7 @@ namespace game
             }
 
             // @TODO: temp
-            static std::map<str, mag::gfx::TextureHandle> texture_handles;
+            static std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
 
             const str& name = sprite->texture->file_path;
 
@@ -307,11 +307,11 @@ namespace game
         // @TODO: temp
         struct FontData
         {
-                std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
+                std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
                 u32 idx;
         };
 
-        static std::map<str, FontData> fonts;
+        static std::unordered_map<str, FontData> fonts;
 
         struct GlobalData
         {
@@ -534,12 +534,12 @@ namespace game
             // @TODO: temp
             struct FontData
             {
-                    std::map<c8, mag::gfx::TextureHandle> char_texture_handles;
+                    std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
                     FontResource font;
                     u32 idx;
             };
 
-            static std::map<str, FontData> fonts;
+            static std::unordered_map<str, FontData> fonts;
 
             struct GlobalData
             {

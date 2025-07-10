@@ -27,7 +27,7 @@ namespace mag
         struct DescriptorData
         {
                 unique<IDescriptorSet> descriptor_set;
-                std::map<str, BindingData> bindings_map;
+                std::unordered_map<str, BindingData> bindings_map;
                 BufferHandle last_bound_buffer = Invalid_ID;
                 TextureHandle last_bound_texture = Invalid_ID;
         };
@@ -54,7 +54,7 @@ namespace mag
                 unique<ITexture> render_target_color;
                 unique<ITexture> render_target_depth;
                 unique<IDescriptorPool> descriptor_pool;
-                std::map<ShaderHandle, DescriptorData> descriptor_set_map;
+                std::unordered_map<ShaderHandle, DescriptorData> descriptor_set_map;
         };
 
         struct GfxState
@@ -64,9 +64,9 @@ namespace mag
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
                 std::vector<FrameData> frames;
-                std::map<ShaderHandle, ShaderData> shaders;
-                std::map<BufferHandle, unique<IBuffer>> buffers;
-                std::map<TextureHandle, TextureData> textures;
+                std::unordered_map<ShaderHandle, ShaderData> shaders;
+                std::unordered_map<BufferHandle, unique<IBuffer>> buffers;
+                std::unordered_map<TextureHandle, TextureData> textures;
                 u32 current_frame = 0;
                 ShaderHandle current_bound_shader = Invalid_ID;
         };
@@ -285,24 +285,24 @@ namespace mag
             return true;
         }
 
-        static const std::map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
+        static const std::unordered_map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
             {ShaderResourceStage::Vertex, gfx::ShaderStage::Vertex},
             {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment},
         };
 
-        static const std::map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
+        static const std::unordered_map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
             {ShaderResourceTopology::TriangleList, gfx::PrimitiveTopology::TriangleList},
             {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip},
             {ShaderResourceTopology::LineList, gfx::PrimitiveTopology::LineList},
         };
 
-        static const std::map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
+        static const std::unordered_map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
             {ShaderResourceDescriptorType::Uniform, gfx::DescriptorType::Uniform},
             {ShaderResourceDescriptorType::Storage, gfx::DescriptorType::Storage},
             {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler},
         };
 
-        static const std::map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
+        static const std::unordered_map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
             {ShaderResourceFormat::Undefined, gfx::Format::Undefined},
             {ShaderResourceFormat::R32_UINT, gfx::Format::R32_UINT},
             {ShaderResourceFormat::R32G32_SFLOAT, gfx::Format::R32G32_SFLOAT},
@@ -310,11 +310,11 @@ namespace mag
             {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
         };
 
-        static const std::map<ShaderResourceBlendOp, gfx::BlendOp> convert_blend_op = {
+        static const std::unordered_map<ShaderResourceBlendOp, gfx::BlendOp> convert_blend_op = {
             {ShaderResourceBlendOp::Add, gfx::BlendOp::Add},
         };
 
-        static const std::map<ShaderResourceBlendFactor, gfx::BlendFactor> convert_blend_factor = {
+        static const std::unordered_map<ShaderResourceBlendFactor, gfx::BlendFactor> convert_blend_factor = {
             {ShaderResourceBlendFactor::One, gfx::BlendFactor::One},
             {ShaderResourceBlendFactor::SrcAlpha, gfx::BlendFactor::SrcAlpha},
             {ShaderResourceBlendFactor::OneMinusSrcAlpha, gfx::BlendFactor::OneMinusSrcAlpha},
@@ -382,7 +382,7 @@ namespace mag
 
             DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
 
-            std::map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
+            std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             BindingData& binding = bindings_map[uniform_name];
 
@@ -410,7 +410,7 @@ namespace mag
 
             DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
 
-            std::map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
+            std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             BindingData& binding = bindings_map[uniform_name];
 
@@ -469,7 +469,7 @@ namespace mag
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
 
             u32 max_variable_descriptor_count = 1;
-            std::map<str, BindingData> bindings_map;
+            std::unordered_map<str, BindingData> bindings_map;
 
             // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
             // the vertex and fragment shaders.

@@ -69,9 +69,9 @@ namespace mag
 
     b8 ECS::entity_exists(const u32 id) const { return entities.contains(id); }
 
-    std::map<u32, Entity> ECS::copy_entities(const std::map<u32, Entity>& source)
+    std::unordered_map<u32, Entity> ECS::copy_entities(const std::unordered_map<u32, Entity>& source)
     {
-        std::map<u32, Entity> new_entities;
+        std::unordered_map<u32, Entity> new_entities;
         for (const auto& [id, entity] : source)
         {
             Entity new_entity;

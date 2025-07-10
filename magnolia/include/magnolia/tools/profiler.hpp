@@ -27,7 +27,7 @@ namespace mag
 
         private:
             // Keep the results ordered
-            std::map<str, ProfileResult> results = {};
+            std::unordered_map<str, ProfileResult> results = {};
     };
 
     class MAG_API ScopedProfiler

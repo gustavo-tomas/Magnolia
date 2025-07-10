@@ -21,7 +21,7 @@ namespace mag
 
     struct MaterialResource : public IResource
     {
-            std::map<TextureSlot, ref<TextureResource>> textures;
+            std::unordered_map<TextureSlot, ref<TextureResource>> textures;
     };
 
     namespace resource

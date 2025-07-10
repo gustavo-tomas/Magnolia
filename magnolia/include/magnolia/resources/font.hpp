@@ -20,7 +20,7 @@ namespace mag
 
     struct FontResource : public IResource
     {
-            std::map<c8, Character> characters;
+            std::unordered_map<c8, Character> characters;
     };
 
     namespace resource

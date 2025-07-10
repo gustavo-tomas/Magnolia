@@ -62,7 +62,7 @@ namespace mag
             material->name = material_name;
             material->file_path = file_path;
 
-            std::map<TextureSlot, str> textures_map;
+            std::unordered_map<TextureSlot, str> textures_map;
 
             textures_map[TextureSlot::Albedo] = textures["Albedo"];
             textures_map[TextureSlot::Normal] = textures["Normal"];

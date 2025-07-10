@@ -22,7 +22,7 @@ namespace mag
                 ShaderResourceStage stage;
         };
 
-        static const std::map<str, ShaderStageData> shader_stage_map = {
+        static const std::unordered_map<str, ShaderStageData> shader_stage_map = {
             {"Vertex",
              {.extension = ".vert",
               .define = "VERTEX_SHADER",
@@ -35,27 +35,27 @@ namespace mag
               .stage = ShaderResourceStage::Fragment}},
         };
 
-        static const std::map<str, ShaderResourceTopology> topology_map = {
+        static const std::unordered_map<str, ShaderResourceTopology> topology_map = {
             {"TriangleList", ShaderResourceTopology::TriangleList},
             {"TriangleStrip", ShaderResourceTopology::TriangleStrip},
             {"LineList", ShaderResourceTopology::LineList},
         };
 
-        static const std::map<SpvReflectDescriptorType, ShaderResourceDescriptorType> descriptor_type_map = {
+        static const std::unordered_map<SpvReflectDescriptorType, ShaderResourceDescriptorType> descriptor_type_map = {
             {SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ShaderResourceDescriptorType::Uniform},
             {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, ShaderResourceDescriptorType::Storage},
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
         };
 
-        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_array_size_map = {
+        static const std::unordered_map<SpvReflectDescriptorType, u64> descriptor_type_array_size_map = {
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Descriptor_Array_Size},
         };
 
-        static const std::map<SpvReflectDescriptorType, u64> descriptor_type_size_bytes_map = {
+        static const std::unordered_map<SpvReflectDescriptorType, u64> descriptor_type_size_bytes_map = {
             {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Size_Byte},
         };
 
-        static const std::map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
+        static const std::unordered_map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
             {SPV_REFLECT_FORMAT_UNDEFINED, ShaderResourceFormat::Undefined},
             {SPV_REFLECT_FORMAT_R32_UINT, ShaderResourceFormat::R32_UINT},
             {SPV_REFLECT_FORMAT_R32G32_SFLOAT, ShaderResourceFormat::R32G32_SFLOAT},
@@ -63,11 +63,11 @@ namespace mag
             {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},
         };
 
-        static const std::map<str, ShaderResourceBlendOp> blend_op_map = {
+        static const std::unordered_map<str, ShaderResourceBlendOp> blend_op_map = {
             {"Add", ShaderResourceBlendOp::Add},
         };
 
-        static const std::map<str, ShaderResourceBlendFactor> blend_factor_map = {
+        static const std::unordered_map<str, ShaderResourceBlendFactor> blend_factor_map = {
             {"One", ShaderResourceBlendFactor::One},
             {"SrcAlpha", ShaderResourceBlendFactor::SrcAlpha},
             {"OneMinusSrcAlpha", ShaderResourceBlendFactor::OneMinusSrcAlpha},

@@ -123,8 +123,8 @@ namespace mag
                     return resource;
                 }
 
-                std::map<str, ref<IResource>> resources;
-                std::map<std::type_index, unique<IResourceLoader>> loaders;
+                std::unordered_map<str, ref<IResource>> resources;
+                std::unordered_map<std::type_index, unique<IResourceLoader>> loaders;
         };
     };  // namespace resource
 };      // namespace mag

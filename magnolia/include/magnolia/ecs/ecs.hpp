@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <set>
 #include <typeindex>
+#include <unordered_map>
 
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
@@ -171,16 +171,16 @@ namespace mag
             b8 entity_exists(const u32 id) const;
 
         private:
-            std::map<u32, Entity> copy_entities(const std::map<u32, Entity>& source);
+            std::unordered_map<u32, Entity> copy_entities(const std::unordered_map<u32, Entity>& source);
 
             // Entities IDs
             u32 id_counter = 0;
 
             // Table of entities
-            std::map<u32, Entity> entities;
+            std::unordered_map<u32, Entity> entities;
 
             // Map from component type to entities that have it
-            std::map<std::type_index, std::set<u32>> component_map;
+            std::unordered_map<std::type_index, std::set<u32>> component_map;
 
             // Callback to signal when a component is added to an entity
             ComponentAddedCallbackFn on_component_added;
