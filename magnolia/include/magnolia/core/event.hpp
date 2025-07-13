@@ -72,13 +72,6 @@ namespace mag
             Buttons button;
     };
 
-    struct NativeEvent : public Event
-    {
-            explicit NativeEvent(const void* e);
-
-            const void* e;
-    };
-
     struct QuitEvent : public Event
     {
             // Empty

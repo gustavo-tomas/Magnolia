@@ -22,7 +22,10 @@ namespace mag
 
                 SDL_Window* handle = nullptr;
                 u32 update_counter = 0;
-                b8 ignore_mouse_motion_events = false;
+                b8 mouse_moved = false;
+                b8 window_resized = false;
+                SDL_Event last_window_resize_event = {};
+                SDL_Event last_mouse_move_event = {};
                 std::vector<const c8*> extensions;
 
                 std::unordered_map<SDL_Keycode, b8> key_state;
@@ -137,14 +140,8 @@ namespace mag
 
                     case SDL_MOUSEMOTION:
                     {
-                        // Ignore first mouse move after capturing cursor
-                        if (!state->ignore_mouse_motion_events)
-                        {
-                            auto event = MouseMoveEvent(e.motion.xrel, e.motion.yrel);
-                            state->event_callback(event);
-                        }
-
-                        state->ignore_mouse_motion_events = false;
+                        state->last_mouse_move_event = e;
+                        state->mouse_moved = true;
                     }
                     break;
 
@@ -166,15 +163,18 @@ namespace mag
                     break;
 
                     case SDL_MOUSEBUTTONUP:
+                    {
                         state->button_state[button] = false;
                         state->button_update[button] = state->update_counter;
-                        break;
+                    }
+                    break;
 
                     case SDL_WINDOWEVENT:
+                    {
                         if (e.window.event == SDL_WINDOWEVENT_RESIZED || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
                         {
-                            auto event = WindowResizeEvent(e.window.data1, e.window.data2);
-                            state->event_callback(event);
+                            state->last_window_resize_event = e;
+                            state->window_resized = true;
                         }
 
                         else if (e.window.event == SDL_WINDOWEVENT_CLOSE)
@@ -182,11 +182,30 @@ namespace mag
                             auto event = WindowCloseEvent();
                             state->event_callback(event);
                         }
-                        break;
+                    }
+                    break;
                 }
+            }
 
-                auto event = NativeEvent(&e);
+            // Emit window resize event (the last one) only once per frame
+            if (state->window_resized)
+            {
+                auto event = WindowResizeEvent(state->last_window_resize_event.window.data1,
+                                               state->last_window_resize_event.window.data2);
+
                 state->event_callback(event);
+                state->window_resized = false;
+            }
+
+            // The mouse motion event is emitted many times in a single frame and lags a lot. To fix this we
+            // restrict this event to happen only once per frame
+            if (state->mouse_moved)
+            {
+                auto event =
+                    MouseMoveEvent(state->last_mouse_move_event.motion.xrel, state->last_mouse_move_event.motion.yrel);
+
+                state->event_callback(event);
+                state->mouse_moved = false;
             }
         }
 
@@ -269,8 +288,6 @@ namespace mag
             {
                 LOG_ERROR("Failed to set mouse mode: {0}", SDL_GetError());
             }
-
-            state->ignore_mouse_motion_events = true;
         }
 
         void set_title(const str& title) { SDL_SetWindowTitle(state->handle, title.c_str()); }

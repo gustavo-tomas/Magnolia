@@ -22,6 +22,4 @@ namespace mag
     }
 
     MousePressEvent::MousePressEvent(const Button button) : button(button) {}
-
-    NativeEvent::NativeEvent(const void* e) : e(e) {}
 };  // namespace mag
