@@ -4,11 +4,6 @@
 
 namespace mag
 {
-#define CLONE_DEFINITION(type) \
-    Component* type::clone() const { return new type(*this); }
-
-    Component::~Component() = default;
-
     NameComponent::NameComponent(const str& name) : name(name) {}
 
     TransformComponent::TransformComponent(const vec3& translation, const vec3& rotation, const vec3& scale)
@@ -58,16 +53,4 @@ namespace mag
         : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
     {
     }
-
-    CLONE_DEFINITION(NameComponent)
-    CLONE_DEFINITION(TransformComponent)
-    CLONE_DEFINITION(SpriteComponent)
-    CLONE_DEFINITION(ModelComponent)
-    CLONE_DEFINITION(TextComponent)
-    CLONE_DEFINITION(AudioComponent)
-    CLONE_DEFINITION(ColliderComponent)
-    CLONE_DEFINITION(RigidBodyComponent)
-    CLONE_DEFINITION(LightComponent)
-    CLONE_DEFINITION(CameraComponent)
-    CLONE_DEFINITION(ScriptComponent)
 };  // namespace mag

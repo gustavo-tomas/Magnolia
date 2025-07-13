@@ -188,12 +188,12 @@ namespace game
 
                     for (auto& entity : data["Entities"])
                     {
-                        const u32 entity_id = ecs.create_entity();
+                        const mag::EntityID entity_id = ecs.create_entity();
 
                         if (entity.contains("NameComponent"))
                         {
                             const str entity_name = entity["NameComponent"]["Name"];
-                            ecs.get_component<mag::NameComponent>(entity_id)->name = entity_name;
+                            ecs.add_component<mag::NameComponent>(entity_id, entity_name);
                         }
 
                         if (entity.contains("TransformComponent"))
@@ -213,7 +213,7 @@ namespace game
 
                             for (i32 i = 0; i < scale.length(); i++) scale[i] = component["Scale"][i].get<f32>();
 
-                            ecs.add_component(entity_id, new mag::TransformComponent(translation, rotation, scale));
+                            ecs.add_component<mag::TransformComponent>(entity_id, translation, rotation, scale);
                         }
 
                         if (entity.contains("ModelComponent"))
@@ -223,7 +223,7 @@ namespace game
 
                             const auto& model = mag::resource::get_model(file_path);
 
-                            ecs.add_component(entity_id, new mag::ModelComponent(model));
+                            ecs.add_component<mag::ModelComponent>(entity_id, model);
                         }
 
                         if (entity.contains("SpriteComponent"))
@@ -235,8 +235,8 @@ namespace game
 
                             const auto& sprite = mag::resource::get_texture(file_path);
 
-                            ecs.add_component(entity_id,
-                                              new mag::SpriteComponent(sprite, constant_size, always_face_camera));
+                            ecs.add_component<mag::SpriteComponent>(entity_id, sprite, constant_size,
+                                                                    always_face_camera);
                         }
 
                         if (entity.contains("TextComponent"))
@@ -250,7 +250,7 @@ namespace game
 
                             const auto& font = mag::resource::get_font(file_path);
 
-                            ecs.add_component(entity_id, new mag::TextComponent(font, color, text));
+                            ecs.add_component<mag::TextComponent>(entity_id, font, color, text);
                         }
 
                         if (entity.contains("AudioComponent"))
@@ -270,8 +270,8 @@ namespace game
 
                             const auto& audio = mag::resource::get_audio(file_path);
 
-                            ecs.add_component(entity_id,
-                                              new mag::AudioComponent(audio, volume, play_on_load, position, velocity));
+                            ecs.add_component<mag::AudioComponent>(entity_id, audio, volume, play_on_load, position,
+                                                                   velocity);
                         }
 
                         if (entity.contains("BoxColliderComponent"))
@@ -286,8 +286,8 @@ namespace game
                             mag::ColliderComponent::Collider collider = {};
                             collider.box.dimensions = dimensions;
 
-                            ecs.add_component(entity_id, new mag::ColliderComponent(
-                                                             mag::ColliderComponent::ColliderType::Box, collider));
+                            ecs.add_component<mag::ColliderComponent>(
+                                entity_id, mag::ColliderComponent::ColliderType::Box, collider);
                         }
 
                         if (entity.contains("CapsuleColliderComponent"))
@@ -298,8 +298,8 @@ namespace game
                             collider.capsule.radius = component["Radius"].get<f32>();
                             collider.capsule.height = component["Height"].get<f32>();
 
-                            ecs.add_component(entity_id, new mag::ColliderComponent(
-                                                             mag::ColliderComponent::ColliderType::Capsule, collider));
+                            ecs.add_component<mag::ColliderComponent>(
+                                entity_id, mag::ColliderComponent::ColliderType::Capsule, collider);
                         }
 
                         if (entity.contains("RigidBodyComponent"))
@@ -308,7 +308,7 @@ namespace game
 
                             f32 mass = component["Mass"].get<f32>();
 
-                            ecs.add_component(entity_id, new mag::RigidBodyComponent(mass));
+                            ecs.add_component<mag::RigidBodyComponent>(entity_id, mass);
                         }
 
                         if (entity.contains("LightComponent"))
@@ -321,7 +321,7 @@ namespace game
                             for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
                             intensity = component["Intensity"].get<f32>();
 
-                            ecs.add_component(entity_id, new mag::LightComponent(color, intensity));
+                            ecs.add_component<mag::LightComponent>(entity_id, color, intensity);
                         }
 
                         if (entity.contains("CameraComponent"))
@@ -342,7 +342,7 @@ namespace game
 
                             mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
 
-                            ecs.add_component(entity_id, new mag::CameraComponent(camera));
+                            ecs.add_component<mag::CameraComponent>(entity_id, camera);
                         }
 
                         if (entity.contains("ScriptComponent"))
@@ -351,7 +351,7 @@ namespace game
 
                             const str file_path = component["FilePath"];
 
-                            ecs.add_component(entity_id, new mag::ScriptComponent(file_path));
+                            ecs.add_component<mag::ScriptComponent>(entity_id, file_path);
                         }
                     }
                 });

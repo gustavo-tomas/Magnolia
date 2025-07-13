@@ -135,9 +135,9 @@ class PlayerController : public ScriptableEntity
             const u32 bullet_id = create_entity();
 
             // Apply small offset to avoid collisions with the player
-            TransformComponent* bullet_transform = new TransformComponent(transform);
-            bullet_transform->scale = vec3(100.0f);
-            bullet_transform->translation -= forward_dir * bullet_offset;
+            TransformComponent bullet_transform = TransformComponent(transform);
+            bullet_transform.scale = vec3(100.0f);
+            bullet_transform.translation -= forward_dir * bullet_offset;
 
             const ref<ModelResource> model =
                 resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
@@ -146,16 +146,16 @@ class PlayerController : public ScriptableEntity
             collider.capsule.radius = 5.0f;
             collider.capsule.height = 10.0f;
 
-            ModelComponent* model_c = new ModelComponent(model);
-            RigidBodyComponent* rigid_body = new RigidBodyComponent(10.0f);
-            ColliderComponent* collider_c = new ColliderComponent(ColliderComponent::ColliderType::Capsule, collider);
+            const f32 mass = 10.0f;
 
-            add_component_to_entity(bullet_id, bullet_transform);
-            add_component_to_entity(bullet_id, model_c);
-            add_component_to_entity(bullet_id, rigid_body);
-            add_component_to_entity(bullet_id, collider_c);
+            add_component_to_entity<TransformComponent>(bullet_id, bullet_transform);
+            add_component_to_entity<ModelComponent>(bullet_id, model);
+            add_component_to_entity<RigidBodyComponent>(bullet_id, mass);
+            add_component_to_entity<ColliderComponent>(bullet_id, ColliderComponent::ColliderType::Capsule, collider);
 
-            physics.apply_impulse(rigid_body->collision_object, -forward_dir * 1000.0f);
+            auto [bullet_rigid_body] = get_external_entity_components<RigidBodyComponent>(bullet_id);
+
+            physics.apply_impulse(bullet_rigid_body->collision_object, -forward_dir * 1000.0f);
         }
 
         virtual void on_event(const Event& e) override

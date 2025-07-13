@@ -1,15 +1,16 @@
 #pragma once
 
+#include <any>
 #include <vector>
 
 #include "magnolia/core/event.hpp"
+#include "magnolia/ecs/ecs.hpp"
 
 namespace mag
 {
     class ECS;
     class Camera;
     class IPhysicsWorld;
-    struct Component;
     struct ScriptComponent;
 
     class MAG_API Scene
@@ -24,7 +25,7 @@ namespace mag
             void on_event(const Event& e);
             void on_update(const f32 dt);
 
-            void remove_entity(const u32 id);
+            void remove_entity(const EntityID id);
 
             void set_name(const str& name);
             void set_next_scene(const str& scene_file_path);
@@ -46,11 +47,11 @@ namespace mag
             unique<IPhysicsWorld> physics_world;
 
         private:
-            void on_component_added(const u32 id, Component* component);
-            void create_script(const u32 id);
+            void on_component_added(const EntityID id, std::any component);
+            void create_script(const EntityID id);
             void destroy_script(ScriptComponent* script);
 
-            std::vector<u32> entity_deletion_queue;
+            std::vector<EntityID> entity_deletion_queue;
             str next_scene = "";
             b8 running = false;
     };

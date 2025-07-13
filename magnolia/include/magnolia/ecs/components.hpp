@@ -10,31 +10,17 @@ namespace mag
 {
     using namespace mag::math;
 
-    // @NOTE: beware of pointers! Deep copy also copies them over!
-
-#define CLONE_DECLARATION(type) virtual Component* clone() const override;
-
-    struct MAG_API Component
-    {
-            virtual ~Component();
-            virtual Component* clone() const = 0;
-    };
-
-    struct MAG_API NameComponent : public Component
+    struct MAG_API NameComponent
     {
             NameComponent(const str& name);
-
-            CLONE_DECLARATION(NameComponent);
 
             str name;
     };
 
-    struct MAG_API TransformComponent : public Component
+    struct MAG_API TransformComponent
     {
             TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),
                                const vec3& scale = vec3(1));
-
-            CLONE_DECLARATION(TransformComponent);
 
             vec3 translation, rotation, scale;
 
@@ -42,12 +28,10 @@ namespace mag
     };
 
     struct TextureResource;
-    struct MAG_API SpriteComponent : public Component
+    struct MAG_API SpriteComponent
     {
             SpriteComponent(const ref<TextureResource>& texture, const b8 constant_size = false,
                             const b8 always_face_camera = false);
-
-            CLONE_DECLARATION(SpriteComponent);
 
             ref<TextureResource> texture;
             b8 constant_size;
@@ -55,21 +39,17 @@ namespace mag
     };
 
     struct ModelResource;
-    struct MAG_API ModelComponent : public Component
+    struct MAG_API ModelComponent
     {
             ModelComponent(const ref<ModelResource>& model);
-
-            CLONE_DECLARATION(ModelComponent);
 
             ref<ModelResource> model;
     };
 
     struct FontResource;
-    struct MAG_API TextComponent : public Component
+    struct MAG_API TextComponent
     {
             TextComponent(const ref<FontResource>& font, const vec4& color, const str& text);
-
-            CLONE_DECLARATION(TextComponent);
 
             ref<FontResource> font;
             vec4 color;
@@ -77,12 +57,10 @@ namespace mag
     };
 
     struct AudioResource;
-    struct MAG_API AudioComponent : public Component
+    struct MAG_API AudioComponent
     {
             AudioComponent(const ref<AudioResource>& audio, const f32 volume = 1.0f, const b8 play_on_load = false,
                            const vec3& position = vec3(0), const vec3& velocity = vec3(0));
-
-            CLONE_DECLARATION(AudioComponent);
 
             ref<AudioResource> audio;
             f32 volume;
@@ -91,7 +69,7 @@ namespace mag
             b8 play_on_load;
     };
 
-    struct MAG_API ColliderComponent : public Component
+    struct MAG_API ColliderComponent
     {
             enum class ColliderType
             {
@@ -117,15 +95,11 @@ namespace mag
             } collider;
 
             ColliderComponent(const ColliderType collider_type, const Collider collider);
-
-            CLONE_DECLARATION(ColliderComponent);
     };
 
-    struct MAG_API RigidBodyComponent : public Component
+    struct MAG_API RigidBodyComponent
     {
             RigidBodyComponent(const f32 mass = 0.0f);
-
-            CLONE_DECLARATION(RigidBodyComponent);
 
             f32 mass;
 
@@ -133,22 +107,18 @@ namespace mag
             void* collision_object = nullptr;
     };
 
-    struct MAG_API LightComponent : public Component
+    struct MAG_API LightComponent
     {
             LightComponent(const vec3& color = vec3(1), const f32 intensity = 1);
-
-            CLONE_DECLARATION(LightComponent);
 
             vec3 color;
             f32 intensity;
     };
 
     class PerspectiveCamera;
-    struct MAG_API CameraComponent : public Component
+    struct MAG_API CameraComponent
     {
             CameraComponent(const PerspectiveCamera& camera);
-
-            CLONE_DECLARATION(CameraComponent);
 
             PerspectiveCamera camera;
     };
@@ -157,12 +127,10 @@ namespace mag
     typedef std::function<ScriptableEntity*()> CreateScriptFn;
     typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
 
-    struct MAG_API ScriptComponent : public Component
+    struct MAG_API ScriptComponent
     {
             ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
                             DestroyScriptFn destroy_entity = nullptr);
-
-            CLONE_DECLARATION(ScriptComponent);
 
             CreateScriptFn create_entity;
             DestroyScriptFn destroy_entity;

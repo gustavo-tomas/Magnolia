@@ -14,7 +14,9 @@
 namespace mag
 {
     Scene::Scene()
-        : name("Untitled"), ecs(new ECS(BIND_FN2(Scene::on_component_added))), physics_world(create_physics_world())
+        : name("Untitled"),
+          ecs(create_unique<ECS>(BIND_FN2(Scene::on_component_added))),
+          physics_world(create_physics_world())
     {
     }
 
@@ -29,7 +31,7 @@ namespace mag
     void Scene::on_start()
     {
         // Instantiate scripts
-        for (const u32 id : ecs->get_entities_with_components_of_type<ScriptComponent>())
+        for (const EntityID id : ecs->query<ScriptComponent>())
         {
             create_script(id);
         }
@@ -47,7 +49,7 @@ namespace mag
         running = true;
     }
 
-    void Scene::create_script(const u32 id)
+    void Scene::create_script(const EntityID id)
     {
         ScriptComponent* script = ecs->get_component<ScriptComponent>(id);
 
@@ -136,7 +138,7 @@ namespace mag
         // Delete enqueued entities
         for (i32 i = entity_deletion_queue.size() - 1; i >= 0; i--)
         {
-            const u32 entity_id = entity_deletion_queue[i];
+            const EntityID entity_id = entity_deletion_queue[i];
 
             // Remove physics object from physics world if entity has physics properties
             auto [rigid_body, collider, transform] =
@@ -192,11 +194,13 @@ namespace mag
         }
     }
 
-    void Scene::on_component_added(const u32 id, Component* component)
+    void Scene::on_component_added(const EntityID id, std::any component)
     {
+        const b8 is_rigid_body_component = component.type() == typeid(RigidBodyComponent);
+        const b8 is_collider_component = component.type() == typeid(ColliderComponent);
+        const b8 is_script_component = component.type() == typeid(ScriptComponent);
+
         // Add rigidbody to physics world if component is a rigidbody or collider
-        const b8 is_rigid_body_component = dynamic_cast<RigidBodyComponent*>(component) != nullptr;
-        const b8 is_collider_component = dynamic_cast<ColliderComponent*>(component) != nullptr;
         if (is_rigid_body_component || is_collider_component)
         {
             auto* transform = ecs->get_component<TransformComponent>(id);
@@ -231,7 +235,6 @@ namespace mag
         }
 
         // Instantiate scripts during runtime
-        const b8 is_script_component = dynamic_cast<ScriptComponent*>(component) != nullptr;
         if (is_running() && is_script_component)
         {
             create_script(id);
@@ -262,7 +265,7 @@ namespace mag
         }
     }
 
-    void Scene::remove_entity(const u32 id)
+    void Scene::remove_entity(const EntityID id)
     {
         if (!ecs->entity_exists(id))
         {

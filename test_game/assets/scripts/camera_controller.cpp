@@ -1,4 +1,5 @@
 #include "common.hpp"
+#include "magnolia/core/logger.hpp"
 
 using namespace mag;
 
