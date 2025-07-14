@@ -37,7 +37,7 @@ namespace mag
         void set_resizable(const b8 resizable);
         void set_fullscreen(const b8 fullscreen);
 
-        MAG_API void set_capture_mouse(b8 capture);
+        MAG_API void set_capture_mouse(const b8 capture);
 
         MAG_API b8 is_key_pressed(const Key key);
         MAG_API b8 is_key_down(const Key key);
@@ -48,6 +48,7 @@ namespace mag
         MAG_API b8 is_fullscreen();
 
         MAG_API math::ivec2 get_mouse_position();
+        MAG_API math::uvec2 get_window_center();
         MAG_API math::uvec2 get_size();
 
         const std::vector<const c8*>& get_instance_extensions();

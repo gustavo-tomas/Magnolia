@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include "SDL.h"
+#include "SDL_mouse.h"
 #include "SDL_vulkan.h"
 #include "conversions.hpp"
 #include "magnolia/core/application.hpp"
@@ -281,12 +282,13 @@ namespace mag
             return true;
         }
 
-        void set_capture_mouse(b8 capture)
+        void set_capture_mouse(const b8 capture)
         {
             // Oh SDL...
             if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) != 0)
             {
                 LOG_ERROR("Failed to set mouse mode: {0}", SDL_GetError());
+                return;
             }
         }
 
@@ -311,6 +313,14 @@ namespace mag
             math::ivec2 mouse_pos;
             SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
             return mouse_pos;
+        }
+
+        math::uvec2 get_window_center()
+        {
+            const math::uvec2 window_size = get_size();
+            const math::uvec2 window_center = window_size / 2u;
+
+            return window_center;
         }
 
         math::uvec2 get_size()
