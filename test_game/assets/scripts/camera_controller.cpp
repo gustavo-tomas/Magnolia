@@ -19,6 +19,24 @@ class CameraController : public ScriptableEntity
                 return;
             }
 
+            // Handle mouse inputs first
+            if (window::is_mouse_captured())
+            {
+                const math::ivec2 mouse_position = window::get_mouse_position();
+                const math::ivec2 window_center = window::get_window_center();
+                math::vec2 mouse_delta = window_center - mouse_position;
+
+                // Rotate
+
+                const f32 mouse_sensitivity = 0.002f;
+                mouse_delta.x *= mouse_sensitivity;
+                mouse_delta.y *= mouse_sensitivity;
+
+                transform->rotation += vec3(mouse_delta.y, mouse_delta.x, 0.0f);
+
+                window::set_mouse_position(window_center.x, window_center.y);
+            }
+
             const mat4 rotation_mat = calculate_rotation_mat(transform->rotation);
             const vec3 side = rotation_mat[0];
             const vec3 up = rotation_mat[1];
@@ -48,7 +66,6 @@ class CameraController : public ScriptableEntity
 
         virtual void on_event(const Event& e) override
         {
-            dispatch_event<MouseMoveEvent>(e, BIND_FN(CameraController::on_mouse_move));
             dispatch_event<MousePressEvent>(e, BIND_FN(CameraController::on_mouse_click));
             dispatch_event<KeyPressEvent>(e, BIND_FN(CameraController::on_key_press));
         }
@@ -67,24 +84,17 @@ class CameraController : public ScriptableEntity
             // Capture/Release the cursor
             if (e.button == Button::Right)
             {
-                window::set_capture_mouse(!window::is_mouse_captured());
+                const b8 capture = !window::is_mouse_captured();
+
+                window::set_capture_mouse(capture);
+
+                // Keep mouse button centered
+                if (capture)
+                {
+                    const math::ivec2 window_center = window::get_window_center();
+                    window::set_mouse_position(window_center.x, window_center.y);
+                }
             }
-        }
-
-        void on_mouse_move(const MouseMoveEvent& e)
-        {
-            // This is not as good as updating on the loop with dt, but its a nice example
-            auto [transform] = get_components<TransformComponent>();
-            if (!transform)
-            {
-                LOG_WARNING("Missing transform/camera");
-                return;
-            }
-
-            const ivec2 mouse_dir = {e.x_direction, e.y_direction};
-
-            // Rotate
-            transform->rotation += vec3(-mouse_dir.y, -mouse_dir.x, 0.0f) / 250.0f;
         }
 };
 

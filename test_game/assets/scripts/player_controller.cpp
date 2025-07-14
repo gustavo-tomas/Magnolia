@@ -1,4 +1,5 @@
 #include <magnolia/physics/physics.hpp>
+#include <magnolia/platform/window.hpp>
 #include <magnolia/resources/model.hpp>
 
 #include "common.hpp"
@@ -83,6 +84,23 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
+            // @TODO: this might return incorrect values if the user turns too fast (hit the edge of the window). A more
+            // precise solution might be needed to correctly calculate the mouse delta.
+
+            // Handle mouse inputs first
+            if (window::is_mouse_captured())
+            {
+                const math::ivec2 mouse_position = window::get_mouse_position();
+                const math::ivec2 window_center = window::get_window_center();
+                const math::vec2 mouse_delta = window_center - mouse_position;
+
+                // Rotate
+                pitch += mouse_delta.y * mouse_sensitivity;
+                yaw += mouse_delta.x * mouse_sensitivity;
+
+                window::set_mouse_position(window_center.x, window_center.y);
+            }
+
             IPhysicsWorld& physics = get_physics_world();
 
             void* collision_object = rigid_body_c->collision_object;
@@ -160,7 +178,6 @@ class PlayerController : public ScriptableEntity
 
         virtual void on_event(const Event& e) override
         {
-            dispatch_event<MouseMoveEvent>(e, BIND_FN(PlayerController::on_mouse_move));
             dispatch_event<MousePressEvent>(e, BIND_FN(PlayerController::on_mouse_click));
             dispatch_event<KeyPressEvent>(e, BIND_FN(PlayerController::on_key_press));
         }
@@ -179,25 +196,17 @@ class PlayerController : public ScriptableEntity
             // Capture/Release the cursor
             if (e.button == Button::Right)
             {
-                window::set_capture_mouse(!window::is_mouse_captured());
+                const b8 capture = !window::is_mouse_captured();
+
+                window::set_capture_mouse(capture);
+
+                // Keep mouse button centered
+                if (capture)
+                {
+                    const math::ivec2 window_center = window::get_window_center();
+                    window::set_mouse_position(window_center.x, window_center.y);
+                }
             }
-        }
-
-        void on_mouse_move(const MouseMoveEvent& e)
-        {
-            // This is not as good as updating on the loop with dt, but its a nice example
-            auto [transform] = get_components<TransformComponent>();
-            if (!transform)
-            {
-                LOG_WARNING("Missing transform");
-                return;
-            }
-
-            const ivec2 mouse_dir = {e.x_direction, e.y_direction};
-
-            // Rotate
-            pitch += -mouse_dir.y * mouse_sensitivity;
-            yaw += -mouse_dir.x * mouse_sensitivity;
         }
 
         vec3 get_right_dir() const
