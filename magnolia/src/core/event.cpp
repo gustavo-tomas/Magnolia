@@ -12,8 +12,8 @@ namespace mag
 
     KeyReleaseEvent::KeyReleaseEvent(const Key key) : key(key) {}
 
-    MouseMoveEvent::MouseMoveEvent(const i32 x_direction, const i32 y_direction)
-        : x_direction(x_direction), y_direction(y_direction)
+    MouseMoveEvent::MouseMoveEvent(const i32 x_direction, const i32 y_direction, const i32 x, const i32 y)
+        : x_direction(x_direction), y_direction(y_direction), x(x), y(y)
     {
     }
 

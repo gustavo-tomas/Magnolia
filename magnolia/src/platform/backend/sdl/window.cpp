@@ -202,8 +202,12 @@ namespace mag
             // restrict this event to happen only once per frame
             if (state->mouse_moved)
             {
-                auto event =
-                    MouseMoveEvent(state->last_mouse_move_event.motion.xrel, state->last_mouse_move_event.motion.yrel);
+                const i32 x_direction = state->last_mouse_move_event.motion.xrel;
+                const i32 y_direction = state->last_mouse_move_event.motion.yrel;
+                const i32 x = state->last_mouse_move_event.motion.x;
+                const i32 y = state->last_mouse_move_event.motion.y;
+
+                auto event = MouseMoveEvent(x_direction, y_direction, x, y);
 
                 state->event_callback(event);
                 state->mouse_moved = false;
@@ -291,6 +295,8 @@ namespace mag
                 return;
             }
         }
+
+        void set_mouse_position(const i32 x, const i32 y) { SDL_WarpMouseInWindow(state->handle, x, y); }
 
         void set_title(const str& title) { SDL_SetWindowTitle(state->handle, title.c_str()); }
 

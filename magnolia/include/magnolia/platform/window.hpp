@@ -38,6 +38,7 @@ namespace mag
         void set_fullscreen(const b8 fullscreen);
 
         MAG_API void set_capture_mouse(const b8 capture);
+        MAG_API void set_mouse_position(const i32 x, const i32 y);
 
         MAG_API b8 is_key_pressed(const Key key);
         MAG_API b8 is_key_down(const Key key);

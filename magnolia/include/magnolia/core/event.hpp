@@ -51,10 +51,12 @@ namespace mag
 
     struct MouseMoveEvent : public Event
     {
-            MouseMoveEvent(const i32 x_direction, const i32 y_direction);
+            MouseMoveEvent(const i32 x_direction, const i32 y_direction, const i32 x, const i32 y);
 
             i32 x_direction;
             i32 y_direction;
+            i32 x;
+            i32 y;
     };
 
     struct MouseScrollEvent : public Event
