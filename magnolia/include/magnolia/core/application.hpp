@@ -1,6 +1,8 @@
 #pragma once
 
 #include "magnolia/core/types.hpp"
+#include "magnolia/gfx/types.hpp"
+#include "magnolia/platform/window.hpp"
 #include "magnolia/resources/resource.hpp"
 
 namespace mag
@@ -11,10 +13,18 @@ namespace mag
     struct WindowResizeEvent;
     struct IResource;
 
+    struct ApplicationOptions
+    {
+            window::WindowOptions window_options = {};
+            gfx::GfxOptions gfx_options = {};
+
+            f32 target_frame_rate = -1;
+    };
+
     class MAG_API Application
     {
         public:
-            explicit Application(const str& config_file_path);
+            explicit Application(const ApplicationOptions& options);
             virtual ~Application();
 
             // The main function will call this, not the user
@@ -27,14 +37,11 @@ namespace mag
             void set_target_frame_rate(const f32 frame_rate);
 
         protected:
-            // Process events from the user application
-            void process_user_application_event(const Event& e);
+            void process_event(const Event& e);
 
-            // Sets a callback that is called when a resource is finished loading
             void set_on_resource_loaded_callback(const ResourceLoadedCallbackFn& callback);
 
         private:
-            void process_event(const Event& e);
             void on_window_close(const WindowCloseEvent& e);
             void on_quit(const QuitEvent& e);
             void on_resource_loaded(const IResource* resource);

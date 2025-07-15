@@ -9,22 +9,22 @@
 
 namespace mag
 {
-    using EventCallback = std::function<void(const Event&)>;
-
-    struct WindowOptions
-    {
-            static constexpr math::uvec2 MaxSize = math::uvec2(Max_U32);
-            static constexpr math::ivec2 CenterPos = math::ivec2(Max_I32);
-
-            const EventCallback& event_callback;
-            math::uvec2 size = MaxSize;
-            math::ivec2 position = CenterPos;
-            str title = "Magnolia";
-            str window_icon = "";
-    };
 
     namespace window
     {
+        using EventCallback = std::function<void(const Event&)>;
+
+        struct WindowOptions
+        {
+                static constexpr math::uvec2 MaxSize = math::uvec2(Max_U32);
+                static constexpr math::ivec2 CenterPos = math::ivec2(Max_I32);
+
+                math::uvec2 size = MaxSize;
+                math::ivec2 position = CenterPos;
+                str title = "Magnolia";
+                str window_icon = "";
+        };
+
         b8 initialize(const WindowOptions& options);
         void shutdown();
 
@@ -32,10 +32,11 @@ namespace mag
 
         void create_surface(const void* instance, void* surface);
 
-        b8 set_window_icon(const str& bmp_file);
-        void set_title(const str& title);
-        void set_resizable(const b8 resizable);
-        void set_fullscreen(const b8 fullscreen);
+        MAG_API b8 set_window_icon(const str& bmp_file);
+        MAG_API void set_title(const str& title);
+        MAG_API void set_resizable(const b8 resizable);
+        MAG_API void set_fullscreen(const b8 fullscreen);
+        MAG_API void set_event_callback(const EventCallback& callback);
 
         MAG_API void set_capture_mouse(const b8 capture);
         MAG_API void set_mouse_position(const i32 x, const i32 y);

@@ -3,6 +3,8 @@
 #include <magnolia/core/application.hpp>
 #include <magnolia/core/entry_point.hpp>
 #include <magnolia/core/event.hpp>
+#include <magnolia/gfx/types.hpp>
+#include <magnolia/platform/window.hpp>
 #include <magnolia/project/project.hpp>
 #include <magnolia/resources/audio.hpp>
 #include <magnolia/resources/font.hpp>
@@ -12,16 +14,63 @@
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
 #include <magnolia/scene/scene.hpp>
+#include <magnolia/scripting/scripting_engine.hpp>
 
 #include "renderer.hpp"
 #include "scene_serializer.hpp"
 
-mag::Application* mag::create_application() { return new game::TestGame("test_game/config.json"); }
+mag::Application* mag::create_application()
+{
+    mag::ApplicationOptions app_options = {};
+
+    // Read config file
+
+    const str config_file_path = "test_game/config.json";
+
+    fs::json config;
+
+    if (fs::read_json_data(config_file_path, config))
+    {
+        window::WindowOptions& window_options = app_options.window_options;
+        gfx::GfxOptions& gfx_options = app_options.gfx_options;
+
+        u32 count = 0;
+        for (const auto& num : config["WindowSize"])
+        {
+            if (count >= window_options.size.length()) break;
+            window_options.size[count++] = num;
+        }
+
+        count = 0;
+        for (const auto& num : config["WindowPosition"])
+        {
+            if (count >= window_options.position.length()) break;
+            window_options.position[count++] = num;
+        }
+
+        count = 0;
+        for (const auto& num : config["ScreenResolution"])
+        {
+            if (count >= gfx_options.resolution.length()) break;
+            gfx_options.resolution[count++] = num;
+        }
+
+        window_options.title = config["WindowTitle"].get<str>();
+        window_options.window_icon = config["WindowIcon"].get<str>();
+
+        app_options.target_frame_rate = config["TargetFrameRate"].get<f32>();
+    }
+
+    return new game::TestGame(app_options);
+}
 
 namespace game
 {
-    TestGame::TestGame(const str& config_file_path) : Application(config_file_path), renderer(new Renderer())
+    TestGame::TestGame(const mag::ApplicationOptions& options) : Application(options), renderer(new Renderer())
     {
+        // Set a callback for window events
+        mag::window::set_event_callback(BIND_FN(TestGame::process_event));
+
         // Set a callback to manage resources
         set_on_resource_loaded_callback(BIND_FN(TestGame::on_resource_loaded));
 

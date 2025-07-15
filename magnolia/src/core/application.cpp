@@ -17,7 +17,7 @@ namespace mag
 {
     static Application* application = nullptr;
 
-    Application::Application(const str& config_file_path)
+    Application::Application(const ApplicationOptions& options)
     {
         MAG_ASSERT(application == nullptr, "Application was already initialized");
 
@@ -25,81 +25,22 @@ namespace mag
 
         b8 initialized = true;
 
-        // Initialize the platform subsystem
         initialized = initialized && plat::initialize();
-
-        // Initialize the filesystem subsystem
         initialized = initialized && fs::initialize();
-
-        // Initialize the threading subsystem
         initialized = initialized && thread::initialize();
-
-        // Initialize the audio subsystem
         initialized = initialized && audio::initialize();
-
-        // Read config file
-
-        fs::json config;
-
-        math::uvec2 window_size = WindowOptions::MaxSize;
-        math::ivec2 window_position = WindowOptions::CenterPos;
-        math::uvec2 screen_resolution = {1280, 720};
-        str window_title = "Magnolia";
-        str window_icon = "";
-
-        if (fs::read_json_data(config_file_path, config))
-        {
-            u32 count = 0;
-            for (const auto& num : config["WindowSize"])
-            {
-                if (count >= window_size.length()) break;
-                window_size[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["WindowPosition"])
-            {
-                if (count >= window_position.length()) break;
-                window_position[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["ScreenResolution"])
-            {
-                if (count >= screen_resolution.length()) break;
-                screen_resolution[count++] = num;
-            }
-
-            window_title = config["WindowTitle"].get<str>();
-            window_icon = config["WindowIcon"].get<str>();
-        }
-
-        // Set target frame rate
-        set_target_frame_rate(config["TargetFrameRate"].get<f32>());
-
-        const WindowOptions window_options = {BIND_FN(Application::process_event), window_size, window_position,
-                                              window_title, window_icon};
-
-        // Initialize the window
-        initialized = initialized && window::initialize(window_options);
-
-        // Initialize graphics subsystem
-        gfx::GfxOptions gfx_options = {};
-        gfx_options.resolution = screen_resolution;
-        initialized = initialized && gfx::initialize(gfx_options);
-
-        // Initialize the resource subsystem
+        initialized = initialized && window::initialize(options.window_options);
+        initialized = initialized && gfx::initialize(options.gfx_options);
         initialized = initialized && resource::initialize();
+
+        MAG_ASSERT(initialized, "Failed to initialize Application");
 
         if (initialized)
         {
             LOG_SUCCESS("Application initialized");
         }
 
-        else
-        {
-            MAG_ASSERT(false, "Failed to initialize Application");
-        }
+        set_target_frame_rate(options.target_frame_rate);
     }
 
     Application::~Application()
@@ -169,8 +110,6 @@ namespace mag
         // Send event to be processed by the user application
         on_event(e);
     }
-
-    void Application::process_user_application_event(const Event& e) { process_event(e); }
 
     void Application::on_quit(const QuitEvent& e)
     {

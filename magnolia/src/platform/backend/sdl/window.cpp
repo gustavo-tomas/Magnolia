@@ -19,7 +19,7 @@ namespace mag
     {
         struct State
         {
-                EventCallback event_callback;
+                EventCallback event_callback = [](const Event&) {};
 
                 SDL_Window* handle = nullptr;
                 u32 update_counter = 0;
@@ -40,7 +40,6 @@ namespace mag
         b8 initialize(const WindowOptions& options)
         {
             state = new State;
-            state->event_callback = options.event_callback;
 
             MAG_ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0, "Failed to initialize SDL: " + str(SDL_GetError()));
 
@@ -313,6 +312,8 @@ namespace mag
                 LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
             }
         }
+
+        void set_event_callback(const EventCallback& callback) { state->event_callback = callback; }
 
         math::ivec2 get_mouse_position()
         {

@@ -12,7 +12,7 @@ namespace game
     class TestGame : public mag::Application
     {
         public:
-            TestGame(const str& config_file_path);
+            TestGame(const mag::ApplicationOptions& options);
             ~TestGame();
 
             virtual void on_update(const f32 dt) override;
