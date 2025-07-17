@@ -28,13 +28,13 @@ namespace mag
         using namespace glm;
 
         // Simpler version of glm::decompose
-        b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation);
+        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation);
 
         // Calculate a rotation mat from XYZ rotation
-        mat4 calculate_rotation_mat(const vec3& rotation);
+        MAG_API mat4 calculate_rotation_mat(const vec3& rotation);
 
         // A structure that represents a line that goes from start to end.
-        struct Line
+        struct MAG_API Line
         {
                 vec3 start;
                 vec3 end;
@@ -42,7 +42,7 @@ namespace mag
         };
 
         // Sequence of lines. Starts, ends and colors size must match.
-        struct LineList
+        struct MAG_API LineList
         {
                 std::vector<Line> lines;
 
@@ -50,7 +50,7 @@ namespace mag
         };
 
         // Axis Aligned Bounding Box
-        struct BoundingBox
+        struct MAG_API BoundingBox
         {
                 vec3 min;
                 vec3 max;

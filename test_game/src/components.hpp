@@ -40,7 +40,9 @@ namespace game
                 return translate(mat4(1.0f), translation) * rotation_mat * mag::math::scale(mat4(1.0f), scale);
             }
 
-            vec3 translation, rotation, scale;
+            vec3 translation;
+            vec3 rotation;
+            vec3 scale;
     };
 
     struct SpriteComponent
