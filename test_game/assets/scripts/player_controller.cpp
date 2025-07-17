@@ -134,12 +134,12 @@ class PlayerController : public ScriptableEntity
             }
 
             // Update the camera transform
-            mag::vec3 new_rot = mag::vec3(0.0f);
+            mag::quat new_rot = mag::quat();
             mag::vec3 new_pos = mag::vec3(0.0f);
             physics.get_collision_object_transform(collision_object, new_pos, new_rot);
             new_rot = mag::vec3(pitch, yaw, 0.0f);
 
-            camera_c->camera.set_rotation(new_rot);
+            camera_c->camera.set_rotation(mag::math::eulerAngles(new_rot));
             camera_c->camera.set_position(new_pos + forward * camera_offset);
         }
 

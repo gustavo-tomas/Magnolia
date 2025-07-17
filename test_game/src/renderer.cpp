@@ -271,13 +271,13 @@ namespace game
             }
 
             // Remove rotation if sprite is aligned to the camera
-            const vec3 model_rotation = transform->rotation;
+            const quat model_rotation = transform->rotation;
             if (sprite->always_face_camera)
             {
-                transform->rotation = vec3(0);
+                transform->rotation = quat();
             }
 
-            const auto model_matrix = transform->get_transformation_matrix();
+            const mat4 model_matrix = transform->get_transformation_matrix();
             SpriteData sprite_data = {};
 
             sprite_data.model = model_matrix;

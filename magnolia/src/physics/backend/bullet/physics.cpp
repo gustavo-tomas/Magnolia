@@ -161,7 +161,7 @@ namespace mag
             }
 
             virtual void reset_rigid_body(void* collision_object, const math::vec3& position,
-                                          const math::vec3& rotation, const math::vec3& collider_dimensions,
+                                          const math::quat& rotation, const math::vec3& collider_dimensions,
                                           const f32 mass) const override
             {
                 btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
@@ -314,7 +314,7 @@ namespace mag
             }
 
             virtual void get_collision_object_transform(void* collision_object, math::vec3& position,
-                                                        math::vec3& rotation) const override
+                                                        math::quat& rotation) const override
             {
                 btCollisionObject* bt_object = static_cast<btCollisionObject*>(collision_object);
                 btRigidBody* bt_body = static_cast<btRigidBody*>(bt_object);

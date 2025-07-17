@@ -215,7 +215,7 @@ namespace game
                     {
                         const vec3 dimensions = collider->collider.box.dimensions;
                         rigid_body->collision_object = physics_world->add_rigid_body(
-                            transform->translation, quat(transform->rotation), dimensions, rigid_body->mass);
+                            transform->translation, transform->rotation, dimensions, rigid_body->mass);
                     }
                     break;
 
@@ -224,7 +224,7 @@ namespace game
                         const f32 radius = collider->collider.capsule.radius;
                         const f32 height = collider->collider.capsule.height;
                         rigid_body->collision_object = physics_world->add_rigid_body(
-                            transform->translation, quat(transform->rotation), radius, height, rigid_body->mass);
+                            transform->translation, transform->rotation, radius, height, rigid_body->mass);
                     }
                     break;
 

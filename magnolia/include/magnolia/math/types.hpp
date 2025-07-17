@@ -28,7 +28,7 @@ namespace mag
         using namespace glm;
 
         // Simpler version of glm::decompose
-        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation);
+        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation);
 
         // Calculate a rotation mat from XYZ rotation
         MAG_API mat4 calculate_rotation_mat(const vec3& rotation);

@@ -18,23 +18,23 @@ namespace mag
 
     inline math::vec3 const bt_to_mag(const btVector3& bt_vec)
     {
-        const math::vec3 v(bt_vec.getX(), bt_vec.getY(), bt_vec.getZ());
+        const math::vec3 v(bt_vec.x(), bt_vec.y(), bt_vec.z());
 
         return v;
     }
 
-    inline btTransform const mag_to_bt(const math::vec3& translation, const math::vec3& rotation)
+    inline btQuaternion const mag_to_bt(const math::quat& q)
     {
-        btTransform bt_transform;
-        bt_transform.setIdentity();
-        bt_transform.setOrigin(btVector3(translation.x, translation.y, translation.z));
+        const btQuaternion bt_quat(q.x, q.y, q.z, q.w);
 
-        const math::quat mag_q(rotation);
-        const btQuaternion q(mag_q.x, mag_q.y, mag_q.z, mag_q.w);
+        return bt_quat;
+    }
 
-        bt_transform.setRotation(q);
+    inline math::quat const bt_to_mag(const btQuaternion& bt_quat)
+    {
+        const math::quat q(bt_quat.w(), bt_quat.x(), bt_quat.y(), bt_quat.z());
 
-        return bt_transform;
+        return q;
     }
 
     inline btTransform const mag_to_bt(const math::vec3& position, const math::quat& rotation)
@@ -42,21 +42,19 @@ namespace mag
         btTransform bt_transform;
         bt_transform.setIdentity();
         bt_transform.setOrigin(mag_to_bt(position));
-
-        const btQuaternion q(rotation.x, rotation.y, rotation.z, rotation.w);
-
-        bt_transform.setRotation(q);
+        bt_transform.setRotation(mag_to_bt(rotation));
 
         return bt_transform;
     }
 
-    inline void bt_to_mag(const btTransform& t, math::vec3& translation, math::vec3& rotation)
+    inline void bt_to_mag(const btTransform& t, math::vec3& translation, math::quat& rotation)
     {
-        translation = math::vec3(t.getOrigin().getX(), t.getOrigin().getY(), t.getOrigin().getZ());
+        math::mat4 mag_transform = math::mat4(1.0f);
 
-        btScalar pitch, yaw, roll;
-        t.getRotation().getEulerZYX(roll, yaw, pitch);
-        rotation = math::vec3(pitch, yaw, roll);
+        t.getOpenGLMatrix(math::value_ptr(mag_transform));
+
+        math::vec3 scale;
+        math::decompose_simple(mag_transform, scale, rotation, translation);
     }
 
     inline i32 mag_to_bt(const ActivationState state)

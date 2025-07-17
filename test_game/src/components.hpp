@@ -27,21 +27,21 @@ namespace game
 
     struct TransformComponent
     {
-            TransformComponent(const vec3& translation = vec3(0), const vec3& rotation = vec3(0),
+            TransformComponent(const vec3& translation = vec3(0), const quat& rotation = quat(),
                                const vec3& scale = vec3(1))
-                : translation(translation), rotation(rotation), scale(scale)
+                : rotation(rotation), translation(translation), scale(scale)
             {
             }
 
             mat4 get_transformation_matrix() const
             {
-                const mat4 rotation_mat = mag::math::toMat4(quat(rotation));
+                const mat4 rotation_mat = mag::math::toMat4(rotation);
 
                 return translate(mat4(1.0f), translation) * rotation_mat * mag::math::scale(mat4(1.0f), scale);
             }
 
+            quat rotation;
             vec3 translation;
-            vec3 rotation;
             vec3 scale;
     };
 

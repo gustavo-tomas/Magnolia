@@ -61,7 +61,7 @@ namespace game
                         if (auto component = ecs.get_component<TransformComponent>(entity_id))
                         {
                             entity["TransformComponent"]["Translation"] << component->translation;
-                            entity["TransformComponent"]["Rotation"] << component->rotation;
+                            entity["TransformComponent"]["Rotation"] << mag::math::eulerAngles(component->rotation);
                             entity["TransformComponent"]["Scale"] << component->scale;
                         }
 

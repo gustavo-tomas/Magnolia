@@ -4,14 +4,14 @@ namespace mag
 {
     namespace math
     {
-        b8 decompose_simple(const mat4& model_matrix, vec3& scale, vec3& rotation, vec3& translation)
+        b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation)
         {
             quat orientation;
             vec3 skew;
             vec4 perspective;
 
             const b8 result = glm::decompose(model_matrix, scale, orientation, translation, skew, perspective);
-            rotation = glm::eulerAngles(orientation);
+            rotation = orientation;
 
             return result;
         }

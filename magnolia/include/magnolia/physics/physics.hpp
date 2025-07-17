@@ -33,7 +33,7 @@ namespace mag
             virtual void remove_rigid_body(void* collision_object) = 0;
 
             virtual void reset_rigid_body(void* collision_object, const math::vec3& position,
-                                          const math::vec3& rotation, const math::vec3& collider_dimensions,
+                                          const math::quat& rotation, const math::vec3& collider_dimensions,
                                           const f32 mass = -1.0f) const = 0;
 
             // Applies continuous force over time
@@ -68,7 +68,7 @@ namespace mag
 
             // Get current transform of a collision object
             virtual void get_collision_object_transform(void* collision_object, math::vec3& position,
-                                                        math::vec3& rotation) const = 0;
+                                                        math::quat& rotation) const = 0;
 
             // Debug lines for visualization
             virtual const math::LineList& get_debug_line_list() const = 0;
