@@ -13,10 +13,10 @@
 #include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
-#include <magnolia/scene/scene.hpp>
 #include <magnolia/scripting/scripting_engine.hpp>
 
 #include "renderer.hpp"
+#include "scene.hpp"
 #include "scene_serializer.hpp"
 
 mag::Application* mag::create_application()
@@ -87,7 +87,7 @@ namespace game
 
         // Then load starting scene
 
-        scene = mag::create_unique<mag::Scene>();
+        scene = mag::create_unique<Scene>();
 
         const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
@@ -107,7 +107,7 @@ namespace game
         const str& next_scene_file_path = scene->get_next_scene();
         if (!next_scene_file_path.empty())
         {
-            mag::Scene* next_scene = new mag::Scene();
+            Scene* next_scene = new Scene();
             if (!scene::load(next_scene_file_path, *next_scene))
             {
                 LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);

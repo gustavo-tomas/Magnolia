@@ -4,7 +4,7 @@
 
 #include "common.hpp"
 
-using namespace mag;
+using namespace game;
 
 class PlayerController : public ScriptableEntity
 {
@@ -12,8 +12,8 @@ class PlayerController : public ScriptableEntity
         f32 hp = 100.0f;
         f32 walk_speed = 1650.0f;
         f32 mouse_sensitivity = 0.002f;
-        vec3 camera_offset = vec3(50.0f);
-        vec3 bullet_offset = vec3(50.0f);
+        mag::vec3 camera_offset = mag::vec3(50.0f);
+        mag::vec3 bullet_offset = mag::vec3(50.0f);
 
         // We can use the camera params instead of these
         f32 pitch = 0.0f;
@@ -30,10 +30,10 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            IPhysicsWorld& physics = get_physics_world();
+            mag::IPhysicsWorld& physics = get_physics_world();
 
             // Prevent player from sleeping
-            physics.set_activation_state(rigid_body_c->collision_object, ActivationState::DisableDeactivation);
+            physics.set_activation_state(rigid_body_c->collision_object, mag::ActivationState::DisableDeactivation);
 
             LOG_SUCCESS("Created PlayerController");
         }
@@ -67,7 +67,7 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            if (window::is_button_pressed(Button::Left))
+            if (mag::window::is_button_pressed(mag::Button::Left))
             {
                 fire_bullet(*transform);
             }
@@ -88,38 +88,38 @@ class PlayerController : public ScriptableEntity
             // precise solution might be needed to correctly calculate the mouse delta.
 
             // Handle mouse inputs first
-            if (window::is_mouse_captured())
+            if (mag::window::is_mouse_captured())
             {
-                const math::ivec2 mouse_position = window::get_mouse_position();
-                const math::ivec2 window_center = window::get_window_center();
-                const math::vec2 mouse_delta = window_center - mouse_position;
+                const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
+                const mag::math::ivec2 window_center = mag::window::get_window_center();
+                const mag::math::vec2 mouse_delta = window_center - mouse_position;
 
                 // Rotate
                 pitch += mouse_delta.y * mouse_sensitivity;
                 yaw += mouse_delta.x * mouse_sensitivity;
 
-                window::set_mouse_position(window_center.x, window_center.y);
+                mag::window::set_mouse_position(window_center.x, window_center.y);
             }
 
-            IPhysicsWorld& physics = get_physics_world();
+            mag::IPhysicsWorld& physics = get_physics_world();
 
             void* collision_object = rigid_body_c->collision_object;
 
-            physics.set_linear_velocity(collision_object, vec3(0.0f));
+            physics.set_linear_velocity(collision_object, mag::vec3(0.0f));
 
             // Get current velocity
-            const vec3& velocity = physics.get_linear_velocity(collision_object);
+            const mag::vec3& velocity = physics.get_linear_velocity(collision_object);
 
             // Calculate desired movement direction
-            const vec3& forward = get_forward_dir();
-            const vec3& right = get_right_dir();
+            const mag::vec3& forward = get_forward_dir();
+            const mag::vec3& right = get_right_dir();
 
-            vec3 input_direction(0.0f);
+            mag::vec3 input_direction(0.0f);
 
-            if (window::is_key_down(Key::w)) input_direction -= forward;
-            if (window::is_key_down(Key::s)) input_direction += forward;
-            if (window::is_key_down(Key::a)) input_direction -= right;
-            if (window::is_key_down(Key::d)) input_direction += right;
+            if (mag::window::is_key_down(mag::Key::w)) input_direction -= forward;
+            if (mag::window::is_key_down(mag::Key::s)) input_direction += forward;
+            if (mag::window::is_key_down(mag::Key::a)) input_direction -= right;
+            if (mag::window::is_key_down(mag::Key::d)) input_direction += right;
 
             // Prevent nan values
             if (length(input_direction) > 0.0f)
@@ -127,17 +127,17 @@ class PlayerController : public ScriptableEntity
                 input_direction = normalize(input_direction);
 
                 // Set horizontal velocity directly
-                vec3 new_velocity = input_direction * walk_speed * dt;
+                mag::vec3 new_velocity = input_direction * walk_speed * dt;
                 new_velocity.y = (velocity.y);  // Preserve vertical velocity
 
                 physics.set_linear_velocity(collision_object, new_velocity);
             }
 
             // Update the camera transform
-            vec3 new_rot = vec3(0.0f);
-            vec3 new_pos = vec3(0.0f);
+            mag::vec3 new_rot = mag::vec3(0.0f);
+            mag::vec3 new_pos = mag::vec3(0.0f);
             physics.get_collision_object_transform(collision_object, new_pos, new_rot);
-            new_rot = vec3(pitch, yaw, 0.0f);
+            new_rot = mag::vec3(pitch, yaw, 0.0f);
 
             camera_c->camera.set_rotation(new_rot);
             camera_c->camera.set_position(new_pos + forward * camera_offset);
@@ -145,20 +145,21 @@ class PlayerController : public ScriptableEntity
 
         void fire_bullet(const TransformComponent& transform)
         {
-            IPhysicsWorld& physics = get_physics_world();
+            mag::IPhysicsWorld& physics = get_physics_world();
 
-            const vec3& forward_dir = get_forward_dir();
+            const mag::vec3& forward_dir = get_forward_dir();
 
             // Create a bullet
-            const u32 bullet_id = create_entity();
+            static u32 counter = 0;
+            const u32 bullet_id = create_entity("Bullet_" + std::to_string(counter++));
 
             // Apply small offset to avoid collisions with the player
             TransformComponent bullet_transform = TransformComponent(transform);
-            bullet_transform.scale = vec3(100.0f);
+            bullet_transform.scale = mag::vec3(100.0f);
             bullet_transform.translation -= forward_dir * bullet_offset;
 
-            const ref<ModelResource> model =
-                resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
+            const mag::ref<mag::ModelResource> model =
+                mag::resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
 
             ColliderComponent::Collider collider = {};
             collider.capsule.radius = 5.0f;
@@ -176,42 +177,42 @@ class PlayerController : public ScriptableEntity
             physics.apply_impulse(bullet_rigid_body->collision_object, -forward_dir * 1000.0f);
         }
 
-        virtual void on_event(const Event& e) override
+        virtual void on_event(const mag::Event& e) override
         {
-            dispatch_event<MousePressEvent>(e, BIND_FN(PlayerController::on_mouse_click));
-            dispatch_event<KeyPressEvent>(e, BIND_FN(PlayerController::on_key_press));
+            dispatch_event<mag::MousePressEvent>(e, BIND_FN(PlayerController::on_mouse_click));
+            dispatch_event<mag::KeyPressEvent>(e, BIND_FN(PlayerController::on_key_press));
         }
 
-        void on_key_press(const KeyPressEvent& e)
+        void on_key_press(const mag::KeyPressEvent& e)
         {
             // Swap scenes
-            if (e.key == Key::Tab)
+            if (e.key == mag::Key::Tab)
             {
                 set_active_scene("test_game/assets/scenes/Sponza.mag.json");
             }
         }
 
-        void on_mouse_click(const MousePressEvent& e)
+        void on_mouse_click(const mag::MousePressEvent& e)
         {
             // Capture/Release the cursor
-            if (e.button == Button::Right)
+            if (e.button == mag::Button::Right)
             {
-                const b8 capture = !window::is_mouse_captured();
+                const b8 capture = !mag::window::is_mouse_captured();
 
-                window::set_capture_mouse(capture);
+                mag::window::set_capture_mouse(capture);
 
                 // Keep mouse button centered
                 if (capture)
                 {
-                    const math::ivec2 window_center = window::get_window_center();
-                    window::set_mouse_position(window_center.x, window_center.y);
+                    const mag::math::ivec2 window_center = mag::window::get_window_center();
+                    mag::window::set_mouse_position(window_center.x, window_center.y);
                 }
             }
         }
 
-        vec3 get_right_dir() const
+        mag::vec3 get_right_dir() const
         {
-            vec3 right = vec3(0.0f);
+            mag::vec3 right = mag::vec3(0.0f);
             right.x = cos(yaw);
             right.y = 0;
             right.z = -sin(yaw);
@@ -219,9 +220,9 @@ class PlayerController : public ScriptableEntity
             return right;
         }
 
-        vec3 get_forward_dir() const
+        mag::vec3 get_forward_dir() const
         {
-            vec3 forward = vec3(0.0f);
+            mag::vec3 forward = mag::vec3(0.0f);
             forward.x = cos(-pitch) * sin(yaw);
             forward.y = sin(-pitch);
             forward.z = cos(-pitch) * cos(yaw);

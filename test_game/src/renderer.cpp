@@ -1,6 +1,5 @@
 #include "renderer.hpp"
 
-#include <magnolia/ecs/components.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/gfx/gfx.hpp>
 #include <magnolia/physics/physics.hpp>
@@ -10,7 +9,9 @@
 #include <magnolia/resources/model.hpp>
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
-#include <magnolia/scene/scene.hpp>
+
+#include "components.hpp"
+#include "scene.hpp"
 
 // @TODO: temp
 #include "../assets/shaders/include/common.h"
@@ -54,7 +55,7 @@ namespace game
 
     Renderer::~Renderer() = default;
 
-    void Renderer::render_scene(mag::Scene& scene, const f32 dt)
+    void Renderer::render_scene(Scene& scene, const f32 dt)
     {
         if (!mag::gfx::begin_frame())
         {
@@ -74,7 +75,7 @@ namespace game
 
     void Renderer::on_event(const mag::Event& e) { mag::gfx::on_event(e); }
 
-    void Renderer::render_models(mag::Scene& scene)
+    void Renderer::render_models(Scene& scene)
     {
         auto& ecs = scene.get_ecs();
         const auto& camera = scene.get_camera();
@@ -221,7 +222,7 @@ namespace game
         }
     }
 
-    void Renderer::render_sprites(mag::Scene& scene)
+    void Renderer::render_sprites(Scene& scene)
     {
         mag::Camera& camera = scene.get_camera();
 
@@ -298,7 +299,7 @@ namespace game
         mag::gfx::draw(4, texture_offset);
     }
 
-    void Renderer::render_text(mag::Scene& scene)
+    void Renderer::render_text(Scene& scene)
     {
         mag::gfx::use_shader(text_shader);
 
@@ -424,7 +425,7 @@ namespace game
         mag::gfx::draw(4, char_offset);
     }
 
-    void Renderer::render_debug(mag::Scene& scene, const f32 dt)
+    void Renderer::render_debug(Scene& scene, const f32 dt)
     {
         mag::Camera& camera = scene.get_camera();
 

@@ -1,7 +1,6 @@
 #include "scene_serializer.hpp"
 
 #include <magnolia/camera/camera.hpp>
-#include <magnolia/ecs/components.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/serializer.hpp>
@@ -10,7 +9,9 @@
 #include <magnolia/resources/font.hpp>
 #include <magnolia/resources/model.hpp>
 #include <magnolia/resources/texture.hpp>
-#include <magnolia/scene/scene.hpp>
+
+#include "components.hpp"
+#include "scene.hpp"
 
 namespace game
 {
@@ -34,12 +35,12 @@ namespace game
 
     namespace scene
     {
-        b8 save(const str& file_path, mag::Scene& scene)
+        b8 save(const str& file_path, Scene& scene)
         {
             mag::fs::Serializer serializer;
 
-            serializer.register_on_save_handler<mag::Scene>(
-                [](mag::Scene& scene, mag::fs::Serializer& s)
+            serializer.register_on_save_handler<Scene>(
+                [](Scene& scene, mag::fs::Serializer& s)
                 {
                     mag::fs::json& data = s.json;
 
@@ -52,19 +53,19 @@ namespace game
                     {
                         mag::fs::json entity;
 
-                        if (auto component = ecs.get_component<mag::NameComponent>(entity_id))
+                        if (auto component = ecs.get_component<NameComponent>(entity_id))
                         {
                             entity["NameComponent"]["Name"] = component->name;
                         }
 
-                        if (auto component = ecs.get_component<mag::TransformComponent>(entity_id))
+                        if (auto component = ecs.get_component<TransformComponent>(entity_id))
                         {
                             entity["TransformComponent"]["Translation"] << component->translation;
                             entity["TransformComponent"]["Rotation"] << component->rotation;
                             entity["TransformComponent"]["Scale"] << component->scale;
                         }
 
-                        if (auto component = ecs.get_component<mag::ModelComponent>(entity_id))
+                        if (auto component = ecs.get_component<ModelComponent>(entity_id))
                         {
                             if (component->model->file_path.empty())
                             {
@@ -79,7 +80,7 @@ namespace game
                             }
                         }
 
-                        if (auto component = ecs.get_component<mag::SpriteComponent>(entity_id))
+                        if (auto component = ecs.get_component<SpriteComponent>(entity_id))
                         {
                             if (component->texture->file_path.empty())
                             {
@@ -94,14 +95,14 @@ namespace game
                             }
                         }
 
-                        if (auto component = ecs.get_component<mag::TextComponent>(entity_id))
+                        if (auto component = ecs.get_component<TextComponent>(entity_id))
                         {
                             entity["TextComponent"]["FilePath"] = component->font->file_path;
                             entity["TextComponent"]["Text"] = component->text;
                             entity["TextComponent"]["Color"] << component->color;
                         }
 
-                        if (auto component = ecs.get_component<mag::AudioComponent>(entity_id))
+                        if (auto component = ecs.get_component<AudioComponent>(entity_id))
                         {
                             entity["AudioComponent"]["FilePath"] = component->audio->file_path;
                             entity["AudioComponent"]["Volume"] = component->volume;
@@ -110,15 +111,15 @@ namespace game
                             entity["AudioComponent"]["Velocity"] << component->velocity;
                         }
 
-                        if (auto component = ecs.get_component<mag::ColliderComponent>(entity_id))
+                        if (auto component = ecs.get_component<ColliderComponent>(entity_id))
                         {
                             switch (component->collider_type)
                             {
-                                case mag::ColliderComponent::ColliderType::Box:
+                                case ColliderComponent::ColliderType::Box:
                                     entity["BoxColliderComponent"]["Dimensions"] << component->collider.box.dimensions;
                                     break;
 
-                                case mag::ColliderComponent::ColliderType::Capsule:
+                                case ColliderComponent::ColliderType::Capsule:
                                     entity["CapsuleColliderComponent"]["Radius"] = component->collider.capsule.radius;
                                     entity["CapsuleColliderComponent"]["Height"] = component->collider.capsule.height;
                                     break;
@@ -129,25 +130,25 @@ namespace game
                             }
                         }
 
-                        if (auto component = ecs.get_component<mag::RigidBodyComponent>(entity_id))
+                        if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
                         {
                             entity["RigidBodyComponent"]["Mass"] = component->mass;
                         }
 
-                        if (auto component = ecs.get_component<mag::LightComponent>(entity_id))
+                        if (auto component = ecs.get_component<LightComponent>(entity_id))
                         {
                             entity["LightComponent"]["Color"] << component->color;
                             entity["LightComponent"]["Intensity"] = component->intensity;
                         }
 
-                        if (auto component = ecs.get_component<mag::CameraComponent>(entity_id))
+                        if (auto component = ecs.get_component<CameraComponent>(entity_id))
                         {
                             entity["CameraComponent"]["Fov"] = component->camera.get_fov();
                             entity["CameraComponent"]["Near"] = component->camera.get_near();
                             entity["CameraComponent"]["Far"] = component->camera.get_far();
                         }
 
-                        if (auto component = ecs.get_component<mag::ScriptComponent>(entity_id))
+                        if (auto component = ecs.get_component<ScriptComponent>(entity_id))
                         {
                             entity["ScriptComponent"]["FilePath"] = component->file_path;
                         }
@@ -165,12 +166,12 @@ namespace game
             return true;
         }
 
-        b8 load(const str& file_path, mag::Scene& scene)
+        b8 load(const str& file_path, Scene& scene)
         {
             mag::fs::Serializer serializer;
 
-            serializer.register_on_load_handler<mag::Scene>(
-                [](mag::Scene& scene, mag::fs::Serializer& s)
+            serializer.register_on_load_handler<Scene>(
+                [](Scene& scene, mag::fs::Serializer& s)
                 {
                     mag::fs::json& data = s.json;
 
@@ -193,7 +194,7 @@ namespace game
                         if (entity.contains("NameComponent"))
                         {
                             const str entity_name = entity["NameComponent"]["Name"];
-                            ecs.add_component<mag::NameComponent>(entity_id, entity_name);
+                            ecs.add_component<NameComponent>(entity_id, entity_name);
                         }
 
                         if (entity.contains("TransformComponent"))
@@ -213,7 +214,7 @@ namespace game
 
                             for (i32 i = 0; i < scale.length(); i++) scale[i] = component["Scale"][i].get<f32>();
 
-                            ecs.add_component<mag::TransformComponent>(entity_id, translation, rotation, scale);
+                            ecs.add_component<TransformComponent>(entity_id, translation, rotation, scale);
                         }
 
                         if (entity.contains("ModelComponent"))
@@ -223,7 +224,7 @@ namespace game
 
                             const auto& model = mag::resource::get_model(file_path);
 
-                            ecs.add_component<mag::ModelComponent>(entity_id, model);
+                            ecs.add_component<ModelComponent>(entity_id, model);
                         }
 
                         if (entity.contains("SpriteComponent"))
@@ -235,8 +236,7 @@ namespace game
 
                             const auto& sprite = mag::resource::get_texture(file_path);
 
-                            ecs.add_component<mag::SpriteComponent>(entity_id, sprite, constant_size,
-                                                                    always_face_camera);
+                            ecs.add_component<SpriteComponent>(entity_id, sprite, constant_size, always_face_camera);
                         }
 
                         if (entity.contains("TextComponent"))
@@ -250,7 +250,7 @@ namespace game
 
                             const auto& font = mag::resource::get_font(file_path);
 
-                            ecs.add_component<mag::TextComponent>(entity_id, font, color, text);
+                            ecs.add_component<TextComponent>(entity_id, font, color, text);
                         }
 
                         if (entity.contains("AudioComponent"))
@@ -270,8 +270,8 @@ namespace game
 
                             const auto& audio = mag::resource::get_audio(file_path);
 
-                            ecs.add_component<mag::AudioComponent>(entity_id, audio, volume, play_on_load, position,
-                                                                   velocity);
+                            ecs.add_component<AudioComponent>(entity_id, audio, volume, play_on_load, position,
+                                                              velocity);
                         }
 
                         if (entity.contains("BoxColliderComponent"))
@@ -283,23 +283,23 @@ namespace game
                             for (i32 i = 0; i < dimensions.length(); i++)
                                 dimensions[i] = component["Dimensions"][i].get<f32>();
 
-                            mag::ColliderComponent::Collider collider = {};
+                            ColliderComponent::Collider collider = {};
                             collider.box.dimensions = dimensions;
 
-                            ecs.add_component<mag::ColliderComponent>(
-                                entity_id, mag::ColliderComponent::ColliderType::Box, collider);
+                            ecs.add_component<ColliderComponent>(entity_id, ColliderComponent::ColliderType::Box,
+                                                                 collider);
                         }
 
                         if (entity.contains("CapsuleColliderComponent"))
                         {
                             const auto& component = entity["CapsuleColliderComponent"];
 
-                            mag::ColliderComponent::Collider collider = {};
+                            ColliderComponent::Collider collider = {};
                             collider.capsule.radius = component["Radius"].get<f32>();
                             collider.capsule.height = component["Height"].get<f32>();
 
-                            ecs.add_component<mag::ColliderComponent>(
-                                entity_id, mag::ColliderComponent::ColliderType::Capsule, collider);
+                            ecs.add_component<ColliderComponent>(entity_id, ColliderComponent::ColliderType::Capsule,
+                                                                 collider);
                         }
 
                         if (entity.contains("RigidBodyComponent"))
@@ -308,7 +308,7 @@ namespace game
 
                             f32 mass = component["Mass"].get<f32>();
 
-                            ecs.add_component<mag::RigidBodyComponent>(entity_id, mass);
+                            ecs.add_component<RigidBodyComponent>(entity_id, mass);
                         }
 
                         if (entity.contains("LightComponent"))
@@ -321,7 +321,7 @@ namespace game
                             for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
                             intensity = component["Intensity"].get<f32>();
 
-                            ecs.add_component<mag::LightComponent>(entity_id, color, intensity);
+                            ecs.add_component<LightComponent>(entity_id, color, intensity);
                         }
 
                         if (entity.contains("CameraComponent"))
@@ -342,7 +342,7 @@ namespace game
 
                             mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
 
-                            ecs.add_component<mag::CameraComponent>(entity_id, camera);
+                            ecs.add_component<CameraComponent>(entity_id, camera);
                         }
 
                         if (entity.contains("ScriptComponent"))
@@ -351,7 +351,7 @@ namespace game
 
                             const str file_path = component["FilePath"];
 
-                            ecs.add_component<mag::ScriptComponent>(entity_id, file_path);
+                            ecs.add_component<ScriptComponent>(entity_id, file_path);
                         }
                     }
                 });

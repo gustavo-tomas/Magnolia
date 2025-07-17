@@ -1,7 +1,8 @@
 #pragma once
 
 #include <magnolia/core/application.hpp>
-#include <magnolia/scene/scene.hpp>
+
+#include "scene.hpp"
 
 namespace game
 {
@@ -22,6 +23,6 @@ namespace game
             void on_resource_loaded(const mag::IResource* resource);
 
             mag::unique<Renderer> renderer = nullptr;
-            mag::unique<mag::Scene> scene = nullptr;
+            mag::unique<Scene> scene = nullptr;
     };
 };  // namespace game
