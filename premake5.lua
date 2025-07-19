@@ -72,7 +72,8 @@ workspace "magnolia"
 
     defines
     {
-        "VULKAN_HPP_NAMESPACE=vk"
+        "VULKAN_HPP_NAMESPACE=vk",
+        "GLM_FORCE_QUAT_DATA_WXYZ"
     }
 
     linkoptions
