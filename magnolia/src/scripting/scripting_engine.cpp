@@ -19,7 +19,6 @@ namespace mag
             const str script_name = fs::path(file_path).stem();
             const str bin_script_file_path = MAG_BUILD_SCRIPT_NAME(script_name);
 
-            // @TODO: see if we can load this from memory
             void* handle = dlopen(bin_script_file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
             if (!handle)
             {

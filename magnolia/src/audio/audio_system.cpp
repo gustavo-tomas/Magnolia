@@ -4,9 +4,6 @@
 #include "soloud/include/soloud.h"
 #include "soloud/include/soloud_wav.h"
 
-// @TODO: i like this type of system. Its simple, avoids pimping and its kinda nice to use when coupled with namespaces.
-// Maybe ill refactor the other systems in the future to be more consistent and follow this approach.
-
 namespace mag
 {
     namespace audio

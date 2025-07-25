@@ -63,9 +63,6 @@ namespace mag
             const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width),
                                         reinterpret_cast<i32*>(height), reinterpret_cast<i32*>(channels));
 
-            // @TODO: hardcoded channels
-            *channels = 4;
-
             *mip_levels = static_cast<u32>(std::floor(std::log2(std::max(*width, *height)))) + 1;
 
             return result;

@@ -17,8 +17,6 @@
 #include "glm/vec4.hpp"
 #include "magnolia/core/types.hpp"
 
-// @TODO: ideally the math types should be in the mag namespace and the math functions in the math namespace
-
 // Math definitions
 namespace mag
 {

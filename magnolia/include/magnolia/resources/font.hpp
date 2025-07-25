@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
@@ -11,7 +11,7 @@ namespace mag
 {
     struct Character
     {
-            TextureResource texture;  // @TODO: temporary - texture with glyph bitmap data
+            TextureResource texture;  // Texture with glyph bitmap data
             math::ivec2 size;         // Size of glyph
             math::ivec2 bearing;      // Offset from baseline to left/top of glyph
             math::uvec2 advance;      // Offset to advance to next glyph
