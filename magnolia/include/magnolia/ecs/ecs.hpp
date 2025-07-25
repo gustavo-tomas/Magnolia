@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <any>
 #include <functional>
 #include <typeindex>
@@ -168,16 +169,9 @@ namespace mag
 
             b8 entity_exists(const EntityID entity_id) const
             {
-                // @TODO: we can do better than linear search
-                for (const EntityID target_entity_id : entities_ids)
-                {
-                    if (entity_id == target_entity_id)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                // @NOTE: Because a new entity id is always greater than the current id, the array is sorted and we can
+                // use binary search. If this changes for whatever reason, the search also needs to be updated.
+                return std::binary_search(entities_ids.begin(), entities_ids.end(), entity_id);
             }
 
             const std::vector<EntityID>& get_entities_ids() const { return entities_ids; }
