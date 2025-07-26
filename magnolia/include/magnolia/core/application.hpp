@@ -46,8 +46,8 @@ namespace mag
             void on_quit(const QuitEvent& e);
             void on_resource_loaded(const IResource* resource);
 
-            b8 running;
-            f32 target_frame_rate;
+            b8 running = false;
+            f32 target_frame_rate = -1;
             ResourceLoadedCallbackFn on_resource_loaded_user_callback = nullptr;
     };
 

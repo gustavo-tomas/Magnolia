@@ -53,7 +53,8 @@ namespace mag
     class MAG_API ECS
     {
         public:
-            ECS(ComponentAddedCallbackFn on_component_added = nullptr) : on_component_added(on_component_added) {}
+            ECS() = default;
+            ECS(ComponentAddedCallbackFn on_component_added) : on_component_added(on_component_added) {}
             ~ECS() = default;
 
             EntityID create_entity()
@@ -198,6 +199,6 @@ namespace mag
             EntityID next_entity_id = 0;
             std::vector<EntityID> entities_ids;
             std::unordered_map<std::type_index, unique<IComponentStorage>> component_storages;
-            ComponentAddedCallbackFn on_component_added;
+            ComponentAddedCallbackFn on_component_added = nullptr;
     };
 };  // namespace mag
