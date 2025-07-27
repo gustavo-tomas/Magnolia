@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <typeindex>
+#include <unordered_map>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
@@ -91,13 +91,7 @@ namespace mag
                     if (resource == nullptr)
                     {
                         resource = new T();
-                    }
-
-                    if (resource == nullptr)
-                    {
-                        resource->loading_status = LoadingStatus::Error;
                         LOG_ERROR("Failed to load resource: '{0}'", name);
-                        return nullptr;
                     }
 
                     resource->loading_status = LoadingStatus::Finished;
