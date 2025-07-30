@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-#include <magnolia/core/application.hpp>
+#include <magnolia/core/engine.hpp>
 #include <magnolia/core/event.hpp>
 #include <magnolia/gfx/types.hpp>
 #include <magnolia/platform/file_system.hpp>

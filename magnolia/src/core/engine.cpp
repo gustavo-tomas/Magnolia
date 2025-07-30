@@ -1,4 +1,4 @@
-#include "magnolia/core/application.hpp"
+#include "magnolia/core/engine.hpp"
 
 #include "magnolia/audio/audio_system.hpp"
 #include "magnolia/core/assert.hpp"

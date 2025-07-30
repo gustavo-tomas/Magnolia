@@ -6,7 +6,6 @@
 #include "SDL_mouse.h"
 #include "SDL_vulkan.h"
 #include "conversions.hpp"
-#include "magnolia/core/application.hpp"
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/event.hpp"
