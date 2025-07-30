@@ -1,4 +1,4 @@
-#include "magnolia/core/entry_point.hpp"
+#include "application.hpp"
 
 #if MAG_PLATFORM_WINDOWS
     #define _main_ WinMain
@@ -8,17 +8,16 @@
     #error "Undefined entry point"
 #endif
 
-MAG_API int _main_(int argc, char* argv[])
+int _main_(int argc, char* argv[])
 {
     // Ignore unused parameter warning
     (void)argc;
     (void)argv;
 
-    mag::Application* app = mag::create_application();
+    // We can use a unique ptr now
+    mag::unique<game::TestGame> test_game = mag::create_unique<game::TestGame>();
 
-    app->run();
-
-    delete app;
+    test_game->run();
 
     return 0;
 }

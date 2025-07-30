@@ -1,6 +1,8 @@
 #pragma once
 
-#include <magnolia/core/application.hpp>
+#include <magnolia/core/event.hpp>
+#include <magnolia/core/types.hpp>
+#include <magnolia/resources/resource.hpp>
 
 #include "scene.hpp"
 
@@ -10,19 +12,28 @@ namespace game
 
     class Renderer;
 
-    class TestGame : public mag::Application
+    class TestGame
     {
         public:
-            TestGame(const mag::ApplicationOptions& options);
+            TestGame();
             ~TestGame();
 
-            virtual void on_update(const f32 dt) override;
-            virtual void on_event(const mag::Event& e) override;
+            void run();
 
         private:
-            void on_resource_loaded(const mag::IResource* resource);
+            void on_update(const f32 dt);
+            void on_event(const mag::Event& e);
 
-            mag::unique<Renderer> renderer = nullptr;
+            // -1 is no limits
+            void set_target_frame_rate(const f32 frame_rate);
+
+            void on_window_close(const mag::WindowCloseEvent& e);
+            void on_quit(const mag::QuitEvent& e);
+
+            b8 running = false;
+            f32 target_frame_rate = -1;
+
+            mag::unique<Renderer> renderer;
             mag::unique<Scene> scene = nullptr;
     };
 };  // namespace game

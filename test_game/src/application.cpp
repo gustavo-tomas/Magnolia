@@ -1,9 +1,10 @@
 #include "application.hpp"
 
 #include <magnolia/core/application.hpp>
-#include <magnolia/core/entry_point.hpp>
 #include <magnolia/core/event.hpp>
 #include <magnolia/gfx/types.hpp>
+#include <magnolia/platform/file_system.hpp>
+#include <magnolia/platform/platform.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/project/project.hpp>
 #include <magnolia/resources/audio.hpp>
@@ -14,65 +15,76 @@
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
 #include <magnolia/scripting/scripting_engine.hpp>
+#include <magnolia/threads/job_system.hpp>
+#include <magnolia/threads/thread.hpp>
 
 #include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_serializer.hpp"
 
-mag::Application* mag::create_application()
-{
-    mag::ApplicationOptions app_options = {};
-
-    // Read config file
-
-    const str config_file_path = "test_game/config.json";
-
-    fs::json config;
-
-    if (fs::read_json_data(config_file_path, config))
-    {
-        window::WindowOptions& window_options = app_options.window_options;
-        gfx::GfxOptions& gfx_options = app_options.gfx_options;
-
-        u32 count = 0;
-        for (const auto& num : config["WindowSize"])
-        {
-            if (count >= window_options.size.length()) break;
-            window_options.size[count++] = num;
-        }
-
-        count = 0;
-        for (const auto& num : config["WindowPosition"])
-        {
-            if (count >= window_options.position.length()) break;
-            window_options.position[count++] = num;
-        }
-
-        count = 0;
-        for (const auto& num : config["ScreenResolution"])
-        {
-            if (count >= gfx_options.resolution.length()) break;
-            gfx_options.resolution[count++] = num;
-        }
-
-        window_options.title = config["WindowTitle"].get<str>();
-        window_options.window_icon = config["WindowIcon"].get<str>();
-
-        app_options.target_frame_rate = config["TargetFrameRate"].get<f32>();
-    }
-
-    return new game::TestGame(app_options);
-}
-
 namespace game
 {
-    TestGame::TestGame(const mag::ApplicationOptions& options) : Application(options), renderer(new Renderer())
+    struct GameInitializeOptions
     {
-        // Set a callback for window events
-        mag::window::set_event_callback(BIND_FN(TestGame::process_event));
+            mag::EngineInitializeOptions engine_options = {};
+            f32 target_frame_rate = -1;
+    };
 
-        // Set a callback to manage resources
-        set_on_resource_loaded_callback(BIND_FN(TestGame::on_resource_loaded));
+    GameInitializeOptions read_application_options(const str& config_file_path)
+    {
+        GameInitializeOptions app_options = {};
+
+        // Read config file
+
+        mag::fs::json config;
+
+        if (mag::fs::read_json_data(config_file_path, config))
+        {
+            mag::window::WindowOptions& window_options = app_options.engine_options.window_options;
+            mag::gfx::GfxOptions& gfx_options = app_options.engine_options.gfx_options;
+
+            u32 count = 0;
+            for (const auto& num : config["WindowSize"])
+            {
+                if (count >= window_options.size.length()) break;
+                window_options.size[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["WindowPosition"])
+            {
+                if (count >= window_options.position.length()) break;
+                window_options.position[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["ScreenResolution"])
+            {
+                if (count >= gfx_options.resolution.length()) break;
+                gfx_options.resolution[count++] = num;
+            }
+
+            window_options.title = config["WindowTitle"].get<str>();
+            window_options.window_icon = config["WindowIcon"].get<str>();
+
+            app_options.target_frame_rate = config["TargetFrameRate"].get<f32>();
+        }
+
+        return app_options;
+    }
+
+    TestGame::TestGame()
+    {
+        const GameInitializeOptions options = read_application_options("test_game/config.json");
+
+        MAG_ASSERT(mag::initialize(options.engine_options), "Failed to initialize mag");
+
+        renderer = mag::create_unique<Renderer>();
+
+        // Set a callback for window events
+        mag::window::set_event_callback(BIND_FN(TestGame::on_event));
+
+        set_target_frame_rate(options.target_frame_rate);
 
         // Load the project
 
@@ -99,7 +111,45 @@ namespace game
         scene->on_start();
     }
 
-    TestGame::~TestGame() = default;
+    TestGame::~TestGame() { mag::shutdown(); }
+
+    void TestGame::run()
+    {
+        f64 curr_time = 0;
+        f64 last_time = 0;
+        f64 dt = 0;
+
+        running = true;
+
+        while (running)
+        {
+            // Calculate dt
+            curr_time = mag::plat::get_time();
+            dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
+            last_time = curr_time;
+
+            mag::window::on_update();
+
+            // Skip rendering if minimized or resizing
+            if (mag::window::is_minimized())
+            {
+                mag::thread::sleep(50);
+                continue;
+            }
+
+            mag::thread::process_callbacks();
+
+            // Update the application
+            on_update(dt);
+
+            // Delay if needed
+            const f64 delay = (1000.0 / target_frame_rate) - (mag::plat::get_time() - last_time);
+            if (delay > 0.0 && target_frame_rate > 0.0)
+            {
+                mag::thread::sleep(delay);
+            }
+        }
+    }
 
     void TestGame::on_update(const f32 dt)
     {
@@ -129,37 +179,24 @@ namespace game
 
     void TestGame::on_event(const mag::Event& e)
     {
+        dispatch_event<mag::WindowCloseEvent>(e, BIND_FN(TestGame::on_window_close));
+        dispatch_event<mag::QuitEvent>(e, BIND_FN(TestGame::on_quit));
+
         scene->on_event(e);
         renderer->on_event(e);
     }
 
-    void TestGame::on_resource_loaded(const mag::IResource* resource)
+    void TestGame::on_quit(const mag::QuitEvent& e)
     {
-        // Upload texture data to the GPU
-        if (const mag::TextureResource* texture = dynamic_cast<const mag::TextureResource*>(resource))
-        {
-        }
-
-        // Upload model data to the GPU
-        else if (const mag::ModelResource* model = dynamic_cast<const mag::ModelResource*>(resource))
-        {
-        }
-
-        // Upload font data to the GPU
-        else if (const mag::FontResource* font = dynamic_cast<const mag::FontResource*>(resource))
-        {
-        }
-
-        else if (const mag::MaterialResource* material = dynamic_cast<const mag::MaterialResource*>(resource))
-        {
-        }
-
-        else if (const mag::ShaderResource* shader = dynamic_cast<const mag::ShaderResource*>(resource))
-        {
-        }
-
-        else if (const mag::AudioResource* audio = dynamic_cast<const mag::AudioResource*>(resource))
-        {
-        }
+        (void)e;
+        running = false;
     }
+
+    void TestGame::on_window_close(const mag::WindowCloseEvent& e)
+    {
+        (void)e;
+        running = false;
+    }
+
+    void TestGame::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }
 };  // namespace game
