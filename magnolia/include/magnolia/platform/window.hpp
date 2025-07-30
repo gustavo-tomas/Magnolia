@@ -28,7 +28,7 @@ namespace mag
         b8 initialize(const WindowOptions& options);
         void shutdown();
 
-        void on_update();
+        MAG_API void on_update();
 
         void create_surface(const void* instance, void* surface);
 

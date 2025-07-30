@@ -10,6 +10,6 @@ namespace mag
         void shutdown();
 
         // Ms since start
-        f64 get_time();
+        MAG_API f64 get_time();
     };  // namespace plat
 };      // namespace mag
