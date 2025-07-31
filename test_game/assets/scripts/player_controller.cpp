@@ -33,7 +33,7 @@ class PlayerController : public ScriptableEntity
             mag::IPhysicsWorld& physics = get_physics_world();
 
             // Prevent player from sleeping
-            physics.set_activation_state(rigid_body_c->collision_object, mag::ActivationState::DisableDeactivation);
+            physics.set_activation_state(rigid_body_c->rigid_body_handle, mag::ActivationState::DisableDeactivation);
 
             LOG_SUCCESS("Created PlayerController");
         }
@@ -103,12 +103,12 @@ class PlayerController : public ScriptableEntity
 
             mag::IPhysicsWorld& physics = get_physics_world();
 
-            void* collision_object = rigid_body_c->collision_object;
+            const mag::RigidBodyHandle rigid_body_handle = rigid_body_c->rigid_body_handle;
 
-            physics.set_linear_velocity(collision_object, mag::vec3(0.0f));
+            physics.set_linear_velocity(rigid_body_handle, mag::vec3(0.0f));
 
             // Get current velocity
-            const mag::vec3& velocity = physics.get_linear_velocity(collision_object);
+            const mag::vec3& velocity = physics.get_linear_velocity(rigid_body_handle);
 
             // Calculate desired movement direction
             const mag::vec3& forward = get_forward_dir();
@@ -130,13 +130,13 @@ class PlayerController : public ScriptableEntity
                 mag::vec3 new_velocity = input_direction * walk_speed * dt;
                 new_velocity.y = (velocity.y);  // Preserve vertical velocity
 
-                physics.set_linear_velocity(collision_object, new_velocity);
+                physics.set_linear_velocity(rigid_body_handle, new_velocity);
             }
 
             // Update the camera transform
             mag::quat new_rot = mag::quat();
             mag::vec3 new_pos = mag::vec3(0.0f);
-            physics.get_collision_object_transform(collision_object, new_pos, new_rot);
+            physics.get_collision_object_transform(rigid_body_handle, new_pos, new_rot);
             new_rot = mag::vec3(pitch, yaw, 0.0f);
 
             camera_c->camera.set_rotation(mag::math::eulerAngles(new_rot));
@@ -174,7 +174,7 @@ class PlayerController : public ScriptableEntity
 
             auto [bullet_rigid_body] = get_external_entity_components<RigidBodyComponent>(bullet_id);
 
-            physics.apply_impulse(bullet_rigid_body->collision_object, -forward_dir * 1000.0f);
+            physics.apply_impulse(bullet_rigid_body->rigid_body_handle, -forward_dir * 1000.0f);
         }
 
         virtual void on_event(const mag::Event& e) override

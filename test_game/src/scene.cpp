@@ -147,7 +147,7 @@ namespace game
 
             if (rigid_body && collider && transform)
             {
-                physics_world->remove_rigid_body(rigid_body->collision_object);
+                physics_world->remove_rigid_body(rigid_body->rigid_body_handle);
             }
 
             // Delete script instance if entity has a script component
@@ -174,7 +174,7 @@ namespace game
             for (auto [transform, rigid_body] : objects)
             {
                 // Object has default scale, so we don't copy it
-                physics_world->get_collision_object_transform(rigid_body->collision_object, transform->translation,
+                physics_world->get_collision_object_transform(rigid_body->rigid_body_handle, transform->translation,
                                                               transform->rotation);
             }
 
@@ -214,7 +214,7 @@ namespace game
                     case ColliderComponent::ColliderType::Box:
                     {
                         const vec3 dimensions = collider->collider.box.dimensions;
-                        rigid_body->collision_object = physics_world->add_rigid_body(
+                        rigid_body->rigid_body_handle = physics_world->add_rigid_body(
                             transform->translation, transform->rotation, dimensions, rigid_body->mass);
                     }
                     break;
@@ -223,7 +223,7 @@ namespace game
                     {
                         const f32 radius = collider->collider.capsule.radius;
                         const f32 height = collider->collider.capsule.height;
-                        rigid_body->collision_object = physics_world->add_rigid_body(
+                        rigid_body->rigid_body_handle = physics_world->add_rigid_body(
                             transform->translation, transform->rotation, radius, height, rigid_body->mass);
                     }
                     break;

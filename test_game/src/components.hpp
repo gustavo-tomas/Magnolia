@@ -4,6 +4,7 @@
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
+#include <magnolia/physics/physics.hpp>
 
 namespace mag
 {
@@ -130,8 +131,7 @@ namespace game
 
             f32 mass;
 
-            // Storage for physics engine use
-            void* collision_object = nullptr;
+            mag::RigidBodyHandle rigid_body_handle;
     };
 
     struct LightComponent
