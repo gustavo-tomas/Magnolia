@@ -74,7 +74,8 @@ workspace "magnolia"
     {
         "VULKAN_HPP_NAMESPACE=vk",
         "GLM_FORCE_QUAT_DATA_WXYZ",
-        "GLM_ENABLE_EXPERIMENTAL"
+        "GLM_ENABLE_EXPERIMENTAL",
+        "FMT_USE_CONSTEVAL=0" -- @TODO: remove when fmt is removed
     }
 
     linkoptions

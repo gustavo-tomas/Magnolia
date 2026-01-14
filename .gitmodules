@@ -1,9 +1,6 @@
 [submodule "libs/sdl"]
 	path = libs/sdl
 	url = https://github.com/gustavo-tomas/sdl.git
-[submodule "libs/fmt"]
-	path = libs/fmt
-	url = https://github.com/gustavo-tomas/fmt.git
 [submodule "libs/glm"]
 	path = libs/glm
 	url = https://github.com/g-truc/glm.git
@@ -40,3 +37,6 @@
 [submodule "libs/stb"]
 	path = libs/stb
 	url = https://github.com/nothings/stb.git
+[submodule "libs/fmt"]
+	path = libs/fmt
+	url = https://github.com/fmtlib/fmt.git
