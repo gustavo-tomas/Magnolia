@@ -13,9 +13,6 @@
 [submodule "libs/spirv_reflect"]
 	path = libs/spirv_reflect
 	url = https://github.com/gustavo-tomas/SPIRV-Reflect.git
-[submodule "libs/json"]
-	path = libs/json
-	url = https://github.com/gustavo-tomas/json.git
 [submodule "libs/meshoptimizer"]
 	path = libs/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
@@ -40,3 +37,6 @@
 [submodule "libs/fmt"]
 	path = libs/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/nlohmann/json.git
