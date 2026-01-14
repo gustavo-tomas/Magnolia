@@ -16,9 +16,6 @@
 [submodule "libs/spirv_reflect"]
 	path = libs/spirv_reflect
 	url = https://github.com/gustavo-tomas/SPIRV-Reflect.git
-[submodule "libs/stb"]
-	path = libs/stb
-	url = https://github.com/gustavo-tomas/stb.git
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/gustavo-tomas/json.git
@@ -40,3 +37,6 @@
 [submodule "libs/assimp"]
 	path = libs/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "libs/stb"]
+	path = libs/stb
+	url = https://github.com/nothings/stb.git
