@@ -1,7 +1,9 @@
-#include "common.hpp"
-#include "magnolia/core/logger.hpp"
+#include <magnolia/platform/window.hpp>
+#include <magnolia/resources/model.hpp>
 
-using namespace mag;
+#include "common.hpp"
+
+using namespace game;
 
 class CameraController : public ScriptableEntity
 {
@@ -12,19 +14,22 @@ class CameraController : public ScriptableEntity
 
         virtual void on_update(const f32 dt) override
         {
-            auto [transform, camera_c] = get_components<TransformComponent, CameraComponent>();
-            if (!transform)
+            auto [camera_c] = get_components<CameraComponent>();
+            if (!camera_c)
             {
                 LOG_WARNING("Missing transform/camera");
                 return;
             }
 
+            vec3 translation = camera_c->camera.get_position();
+            vec3 rotation = camera_c->camera.get_rotation();
+
             // Handle mouse inputs first
-            if (window::is_mouse_captured())
+            if (mag::window::is_mouse_captured())
             {
-                const math::ivec2 mouse_position = window::get_mouse_position();
-                const math::ivec2 window_center = window::get_window_center();
-                math::vec2 mouse_delta = window_center - mouse_position;
+                const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
+                const mag::math::ivec2 window_center = mag::window::get_window_center();
+                mag::math::vec2 mouse_delta = window_center - mouse_position;
 
                 // Rotate
 
@@ -32,12 +37,12 @@ class CameraController : public ScriptableEntity
                 mouse_delta.x *= mouse_sensitivity;
                 mouse_delta.y *= mouse_sensitivity;
 
-                transform->rotation += vec3(mouse_delta.y, mouse_delta.x, 0.0f);
+                rotation += vec3(mouse_delta.y, mouse_delta.x, 0.0f);
 
-                window::set_mouse_position(window_center.x, window_center.y);
+                mag::window::set_mouse_position(window_center.x, window_center.y);
             }
 
-            const mat4 rotation_mat = calculate_rotation_mat(transform->rotation);
+            const mat4 rotation_mat = mag::calculate_rotation_mat(rotation);
             const vec3 side = rotation_mat[0];
             const vec3 up = rotation_mat[1];
             const vec3 forward = rotation_mat[2];
@@ -45,54 +50,54 @@ class CameraController : public ScriptableEntity
             vec3 direction(0.0f);
             const f32 speed = 50.0f;
 
-            if (window::is_key_down(Key::a)) direction -= side;
-            if (window::is_key_down(Key::d)) direction += side;
-            if (window::is_key_down(Key::w)) direction -= forward;
-            if (window::is_key_down(Key::s)) direction += forward;
-            if (window::is_key_down(Key::Space)) direction += up;
-            if (window::is_key_down(Key::Lctrl)) direction -= up;
+            if (mag::window::is_key_down(mag::Key::a)) direction -= side;
+            if (mag::window::is_key_down(mag::Key::d)) direction += side;
+            if (mag::window::is_key_down(mag::Key::w)) direction -= forward;
+            if (mag::window::is_key_down(mag::Key::s)) direction += forward;
+            if (mag::window::is_key_down(mag::Key::Space)) direction += up;
+            if (mag::window::is_key_down(mag::Key::Lctrl)) direction -= up;
 
             // Prevent nan values
             if (length(direction) > 0.0f)
             {
                 direction = normalize(direction) * dt;
-                transform->translation += direction * speed;
+                translation += direction * speed;
             }
 
             // Update the camera transform
-            camera_c->camera.set_rotation(transform->rotation);
-            camera_c->camera.set_position(transform->translation);
+            camera_c->camera.set_rotation(rotation);
+            camera_c->camera.set_position(translation);
         }
 
-        virtual void on_event(const Event& e) override
+        virtual void on_event(const mag::Event& e) override
         {
-            dispatch_event<MousePressEvent>(e, BIND_FN(CameraController::on_mouse_click));
-            dispatch_event<KeyPressEvent>(e, BIND_FN(CameraController::on_key_press));
+            dispatch_event<mag::MousePressEvent>(e, BIND_FN(CameraController::on_mouse_click));
+            dispatch_event<mag::KeyPressEvent>(e, BIND_FN(CameraController::on_key_press));
         }
 
-        void on_key_press(const KeyPressEvent& e)
+        void on_key_press(const mag::KeyPressEvent& e)
         {
             // Swap scenes
-            if (e.key == Key::Tab)
+            if (e.key == mag::Key::Tab)
             {
                 set_active_scene("test_game/assets/scenes/Main.mag.json");
             }
         }
 
-        void on_mouse_click(const MousePressEvent& e)
+        void on_mouse_click(const mag::MousePressEvent& e)
         {
             // Capture/Release the cursor
-            if (e.button == Button::Right)
+            if (e.button == mag::Button::Right)
             {
-                const b8 capture = !window::is_mouse_captured();
+                const b8 capture = !mag::window::is_mouse_captured();
 
-                window::set_capture_mouse(capture);
+                mag::window::set_capture_mouse(capture);
 
                 // Keep mouse button centered
                 if (capture)
                 {
-                    const math::ivec2 window_center = window::get_window_center();
-                    window::set_mouse_position(window_center.x, window_center.y);
+                    const mag::math::ivec2 window_center = mag::window::get_window_center();
+                    mag::window::set_mouse_position(window_center.x, window_center.y);
                 }
             }
         }
