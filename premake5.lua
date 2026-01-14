@@ -334,8 +334,8 @@ project "assimp"
     kind "none"
     build_cmake_project("assimp", {
         {name = "libassimp.so", dir = "bin"},
-        {name = "libassimp.so.5", dir = "bin"},
-        {name = "libassimp.so.5.4.3", dir = "bin"}
+        {name = "libassimp.so.6", dir = "bin"},
+        {name = "libassimp.so.6.0.2", dir = "bin"}
     })
     
 -- meshoptimizer -------------------------------------------------------------------------------------------------------

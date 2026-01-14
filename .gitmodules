@@ -19,9 +19,6 @@
 [submodule "libs/stb"]
 	path = libs/stb
 	url = https://github.com/gustavo-tomas/stb.git
-[submodule "libs/assimp"]
-	path = libs/assimp
-	url = https://github.com/gustavo-tomas/assimp.git
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/gustavo-tomas/json.git
@@ -40,3 +37,6 @@
 [submodule "libs/vkbootstrap"]
 	path = libs/vkbootstrap
 	url = https://github.com/charles-lunarg/vk-bootstrap.git
+[submodule "libs/assimp"]
+	path = libs/assimp
+	url = https://github.com/assimp/assimp.git
