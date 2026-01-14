@@ -19,9 +19,6 @@
 [submodule "libs/bullet"]
 	path = libs/bullet
 	url = https://github.com/bulletphysics/bullet3.git
-[submodule "libs/freetype"]
-	path = libs/freetype
-	url = https://github.com/gustavo-tomas/freetype.git
 [submodule "libs/soloud"]
 	path = libs/soloud
 	url = https://github.com/jarikomppa/soloud.git
@@ -40,3 +37,6 @@
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/nlohmann/json.git
+[submodule "libs/freetype"]
+	path = libs/freetype
+	url = https://github.com/freetype/freetype.git
