@@ -111,7 +111,11 @@ namespace game
         scene->on_start();
     }
 
-    TestGame::~TestGame() { mag::shutdown(); }
+    TestGame::~TestGame()
+    {
+        scene.reset();
+        mag::shutdown();
+    }
 
     void TestGame::run()
     {

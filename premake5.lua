@@ -392,14 +392,14 @@ project "soloud"
         "libs/soloud/src/audiosource/wav/**.h",
         "libs/soloud/src/audiosource/wav/**.c",
         "libs/soloud/src/audiosource/wav/**.cpp",
-        "libs/soloud/src/backend/sdl/soloud_sdl2.cpp",
-        "libs/soloud/src/backend/sdl/soloud_sdl2_dll.c"
+        "libs/soloud/src/backend/miniaudio/miniaudio.h",
+        "libs/soloud/src/backend/miniaudio/soloud_miniaudio.cpp"
     }
 
     defines
     {
         -- Choose audio backend
-        "WITH_SDL2"
+        "WITH_MINIAUDIO"
     }
 
     filter "system:linux"
