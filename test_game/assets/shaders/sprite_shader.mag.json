@@ -1,9 +1,0 @@
-{
-    "Name": "Sprite",
-    "File": "sprite.glsl",
-    "Stages": [
-        "Vertex",
-        "Fragment"
-    ],
-    "Topology": "TriangleStrip"
-}

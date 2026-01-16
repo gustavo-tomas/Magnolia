@@ -1,9 +1,0 @@
-{
-  "Name": "Floor",
-  "File": "floor.glsl",
-  "Stages": [
-    "Vertex",
-    "Fragment"
-  ],
-  "Topology": "TriangleStrip"
-}

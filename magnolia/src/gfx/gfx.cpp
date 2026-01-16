@@ -194,7 +194,7 @@ namespace mag
 
             IRenderingAttachmentDesc color_attachment_desc = {};
             color_attachment_desc.type = RenderingAttachmentType::Color;
-            color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
+            color_attachment_desc.clear_color = {0.2f, 0.2f, 0.2f, 1.0f};
             color_attachment_desc.texture = render_target_color.get();
             color_attachment = state->device->create_render_attachment(color_attachment_desc);
 

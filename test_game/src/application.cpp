@@ -2,111 +2,49 @@
 
 #include <magnolia/core/engine.hpp>
 #include <magnolia/core/event.hpp>
-#include <magnolia/gfx/types.hpp>
-#include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/platform.hpp>
 #include <magnolia/platform/window.hpp>
-#include <magnolia/project/project.hpp>
-#include <magnolia/resources/audio.hpp>
-#include <magnolia/resources/font.hpp>
-#include <magnolia/resources/material.hpp>
-#include <magnolia/resources/model.hpp>
-#include <magnolia/resources/resource.hpp>
-#include <magnolia/resources/shader.hpp>
-#include <magnolia/resources/texture.hpp>
-#include <magnolia/scripting/scripting_engine.hpp>
 #include <magnolia/threads/job_system.hpp>
 #include <magnolia/threads/thread.hpp>
 
+#include "components.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
-#include "scene_serializer.hpp"
 
 namespace game
 {
-    struct GameInitializeOptions
-    {
-            mag::EngineInitializeOptions engine_options = {};
-            f32 target_frame_rate = -1;
-    };
-
-    GameInitializeOptions read_application_options(const str& config_file_path)
-    {
-        GameInitializeOptions app_options = {};
-
-        // Read config file
-
-        mag::fs::json config;
-
-        if (mag::fs::read_json_data(config_file_path, config))
-        {
-            mag::window::WindowOptions& window_options = app_options.engine_options.window_options;
-            mag::gfx::GfxOptions& gfx_options = app_options.engine_options.gfx_options;
-
-            u32 count = 0;
-            for (const auto& num : config["WindowSize"])
-            {
-                if (count >= window_options.size.length()) break;
-                window_options.size[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["WindowPosition"])
-            {
-                if (count >= window_options.position.length()) break;
-                window_options.position[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["ScreenResolution"])
-            {
-                if (count >= gfx_options.resolution.length()) break;
-                gfx_options.resolution[count++] = num;
-            }
-
-            window_options.title = config["WindowTitle"].get<str>();
-            window_options.window_icon = config["WindowIcon"].get<str>();
-
-            app_options.target_frame_rate = config["TargetFrameRate"].get<f32>();
-        }
-
-        return app_options;
-    }
-
     TestGame::TestGame()
     {
-        const GameInitializeOptions options = read_application_options("test_game/config.json");
+        mag::EngineInitializeOptions options = {};
+        options.window_options.size = {1280, 720};
 
-        MAG_ASSERT(mag::initialize(options.engine_options), "Failed to initialize mag");
+        MAG_ASSERT(mag::initialize(options), "Failed to initialize mag");
 
         renderer = mag::create_unique<Renderer>();
 
         // Set a callback for window events
         mag::window::set_event_callback(BIND_FN(TestGame::on_event));
 
-        set_target_frame_rate(options.target_frame_rate);
-
-        // Load the project
-
-        mag::Project project;
-
-        const str project_file_path = "test_game/TestGame.proj.json";
-        if (!mag::project::load(project_file_path, project))
-        {
-            LOG_ERROR("Failed to load project: '{0}'", project_file_path);
-            return;
-        }
-
-        // Then load starting scene
+        set_target_frame_rate(60);
 
         scene = mag::create_unique<Scene>();
 
-        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
-        if (!scene::load(start_scene_file_path, *scene))
-        {
-            LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
-            return;
-        }
+        auto entity_id = scene->get_ecs().create_entity();
+
+        mag::PerspectiveCameraDesc camera_desc = {};
+        camera_desc.near = 0.1f;
+        camera_desc.far = 100.0f;
+        camera_desc.fov = 60.0f;
+        camera_desc.viewport_size = mag::window::get_size();
+        camera_desc.position = mag::vec3(0.0f);
+        camera_desc.rotation = mag::vec3(0.0f);
+
+        mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
+
+        TransformComponent transform = {};
+
+        scene->get_ecs().add_component<CameraComponent>(entity_id, camera);
+        scene->get_ecs().add_component<TransformComponent>(entity_id, transform);
 
         scene->on_start();
     }
@@ -153,26 +91,6 @@ namespace game
 
     void TestGame::on_update(const f32 dt)
     {
-        // Check for scene swaps
-        const str& next_scene_file_path = scene->get_next_scene();
-        if (!next_scene_file_path.empty())
-        {
-            Scene* next_scene = new Scene();
-            if (!scene::load(next_scene_file_path, *next_scene))
-            {
-                LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);
-                delete next_scene;
-            }
-
-            else
-            {
-                scene.reset(next_scene);
-                scene->on_start();
-            }
-
-            scene->set_next_scene("");
-        }
-
         scene->on_update(dt);
         renderer->render_scene(*scene, dt);
     }

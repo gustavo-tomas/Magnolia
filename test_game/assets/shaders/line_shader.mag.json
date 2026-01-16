@@ -1,9 +1,0 @@
-{
-    "Name": "Line",
-    "File": "line.glsl",
-    "Stages": [
-        "Vertex",
-        "Fragment"
-    ],
-    "Topology": "LineList"
-}
