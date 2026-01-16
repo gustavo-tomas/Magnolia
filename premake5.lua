@@ -376,8 +376,7 @@ project "soloud"
 
     includedirs
     {
-        "libs/soloud/include",
-        engine_lib_includes -- SDL2
+        "libs/soloud/include"
     }
 
     files
