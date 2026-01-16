@@ -6,7 +6,7 @@
 	url = https://github.com/g-truc/glm.git
 [submodule "libs/vulkan"]
 	path = libs/vulkan
-	url = https://github.com/gustavo-tomas/Vulkan-Headers.git
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git
 [submodule "libs/vma"]
 	path = libs/vma
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
