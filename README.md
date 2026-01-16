@@ -1,6 +1,6 @@
 # Magnolia
 
-![screenshot](sprout_editor/assets/screenshots/magnolia_v0.6.0.png)
+![screenshot](screenshots/magnolia_v0.7.0.png)
 
 > Current state of the engine
 
