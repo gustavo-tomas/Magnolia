@@ -330,7 +330,7 @@ namespace mag
                                            const std::vector<str>& include_paths, const std::vector<str>& defines,
                                            const str& shader_stage)
         {
-            LOG_INFO("Compiling shader '{0}'...", input_file_path);
+            LOG_INFO("Compiling shader submodule '{0}' to '{1}'", input_file_path, output_file_path);
 
             // Create directories if they dont exist
             fs::create_directories(fs::path(output_file_path).parent_path());
