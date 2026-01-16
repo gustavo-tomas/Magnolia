@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SDL_keycode.h"
-#include "SDL_mouse.h"
+#include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_mouse.h>
+
 #include "magnolia/core/keys.hpp"
 #include "magnolia/core/types.hpp"
 
@@ -48,12 +49,12 @@ namespace mag
                 case Key::Tab: return SDLK_TAB;
                 case Key::Space: return SDLK_SPACE;
                 case Key::Exclaim: return SDLK_EXCLAIM;
-                case Key::Quotedbl: return SDLK_QUOTEDBL;
+                case Key::Quotedbl: return SDLK_DBLAPOSTROPHE;
                 case Key::Hash: return SDLK_HASH;
                 case Key::Percent: return SDLK_PERCENT;
                 case Key::Dollar: return SDLK_DOLLAR;
                 case Key::Ampersand: return SDLK_AMPERSAND;
-                case Key::Quote: return SDLK_QUOTE;
+                case Key::Quote: return SDLK_APOSTROPHE;
                 case Key::Leftparen: return SDLK_LEFTPAREN;
                 case Key::Rightparen: return SDLK_RIGHTPAREN;
                 case Key::Asterisk: return SDLK_ASTERISK;
@@ -79,43 +80,38 @@ namespace mag
                 case Key::Greater: return SDLK_GREATER;
                 case Key::Question: return SDLK_QUESTION;
                 case Key::At: return SDLK_AT;
-
-                /*
-                    Skip uppercase letters
-                */
-
                 case Key::Leftbracket: return SDLK_LEFTBRACKET;
                 case Key::Backslash: return SDLK_BACKSLASH;
                 case Key::Rightbracket: return SDLK_RIGHTBRACKET;
                 case Key::Caret: return SDLK_CARET;
                 case Key::Underscore: return SDLK_UNDERSCORE;
-                case Key::Backquote: return SDLK_BACKQUOTE;
-                case Key::a: return SDLK_a;
-                case Key::b: return SDLK_b;
-                case Key::c: return SDLK_c;
-                case Key::d: return SDLK_d;
-                case Key::e: return SDLK_e;
-                case Key::f: return SDLK_f;
-                case Key::g: return SDLK_g;
-                case Key::h: return SDLK_h;
-                case Key::i: return SDLK_i;
-                case Key::j: return SDLK_j;
-                case Key::k: return SDLK_k;
-                case Key::l: return SDLK_l;
-                case Key::m: return SDLK_m;
-                case Key::n: return SDLK_n;
-                case Key::o: return SDLK_o;
-                case Key::p: return SDLK_p;
-                case Key::q: return SDLK_q;
-                case Key::r: return SDLK_r;
-                case Key::s: return SDLK_s;
-                case Key::t: return SDLK_t;
-                case Key::u: return SDLK_u;
-                case Key::v: return SDLK_v;
-                case Key::w: return SDLK_w;
-                case Key::x: return SDLK_x;
-                case Key::y: return SDLK_y;
-                case Key::z: return SDLK_z;
+                case Key::Backquote: return SDLK_GRAVE;
+                case Key::a: return SDLK_A;
+                case Key::b: return SDLK_B;
+                case Key::c: return SDLK_C;
+                case Key::d: return SDLK_D;
+                case Key::e: return SDLK_E;
+                case Key::f: return SDLK_F;
+                case Key::g: return SDLK_G;
+                case Key::h: return SDLK_H;
+                case Key::i: return SDLK_I;
+                case Key::j: return SDLK_J;
+                case Key::k: return SDLK_K;
+                case Key::l: return SDLK_L;
+                case Key::m: return SDLK_M;
+                case Key::n: return SDLK_N;
+                case Key::o: return SDLK_O;
+                case Key::p: return SDLK_P;
+                case Key::q: return SDLK_Q;
+                case Key::r: return SDLK_R;
+                case Key::s: return SDLK_S;
+                case Key::t: return SDLK_T;
+                case Key::u: return SDLK_U;
+                case Key::v: return SDLK_V;
+                case Key::w: return SDLK_W;
+                case Key::x: return SDLK_X;
+                case Key::y: return SDLK_Y;
+                case Key::z: return SDLK_Z;
 
                 case Key::Capslock: return SDLK_CAPSLOCK;
 
@@ -267,16 +263,11 @@ namespace mag
 
                 case Key::Mode: return SDLK_MODE;
 
-                case Key::Audionext: return SDLK_AUDIONEXT;
-                case Key::Audioprev: return SDLK_AUDIOPREV;
-                case Key::Audiostop: return SDLK_AUDIOSTOP;
-                case Key::Audioplay: return SDLK_AUDIOPLAY;
-                case Key::Audiomute: return SDLK_AUDIOMUTE;
-                case Key::Mediaselect: return SDLK_MEDIASELECT;
-                case Key::Www: return SDLK_WWW;
-                case Key::Mail: return SDLK_MAIL;
-                case Key::Calculator: return SDLK_CALCULATOR;
-                case Key::Computer: return SDLK_COMPUTER;
+                case Key::Audionext: return SDLK_MEDIA_NEXT_TRACK;
+                case Key::Audioprev: return SDLK_MEDIA_PREVIOUS_TRACK;
+                case Key::Audiostop: return SDLK_MEDIA_STOP;
+                case Key::Audioplay: return SDLK_MEDIA_PLAY;
+                case Key::Mediaselect: return SDLK_MEDIA_SELECT;
                 case Key::Ac_search: return SDLK_AC_SEARCH;
                 case Key::Ac_home: return SDLK_AC_HOME;
                 case Key::Ac_back: return SDLK_AC_BACK;
@@ -285,15 +276,8 @@ namespace mag
                 case Key::Ac_refresh: return SDLK_AC_REFRESH;
                 case Key::Ac_bookmarks: return SDLK_AC_BOOKMARKS;
 
-                case Key::Brightnessdown: return SDLK_BRIGHTNESSDOWN;
-                case Key::Brightnessup: return SDLK_BRIGHTNESSUP;
-                case Key::Displayswitch: return SDLK_DISPLAYSWITCH;
-                case Key::Kbdillumtoggle: return SDLK_KBDILLUMTOGGLE;
-                case Key::Kbdillumdown: return SDLK_KBDILLUMDOWN;
-                case Key::Kbdillumup: return SDLK_KBDILLUMUP;
-                case Key::Eject: return SDLK_EJECT;
+                case Key::Eject: return SDLK_MEDIA_EJECT;
                 case Key::Sleep: return SDLK_SLEEP;
-                case Key::App1: return SDLK_APP1;
                 case Key::Unknown: 
                 default: return SDLK_UNKNOWN;
             }
@@ -309,12 +293,12 @@ namespace mag
                 case SDLK_TAB: return Key::Tab;
                 case SDLK_SPACE: return Key::Space;
                 case SDLK_EXCLAIM: return Key::Exclaim;
-                case SDLK_QUOTEDBL: return Key::Quotedbl;
+                case SDLK_DBLAPOSTROPHE: return Key::Quotedbl;
                 case SDLK_HASH: return Key::Hash;
                 case SDLK_PERCENT: return Key::Percent;
                 case SDLK_DOLLAR: return Key::Dollar;
                 case SDLK_AMPERSAND: return Key::Ampersand;
-                case SDLK_QUOTE: return Key::Quote;
+                case SDLK_APOSTROPHE: return Key::Quote;
                 case SDLK_LEFTPAREN: return Key::Leftparen;
                 case SDLK_RIGHTPAREN: return Key::Rightparen;
                 case SDLK_ASTERISK: return Key::Asterisk;
@@ -340,43 +324,38 @@ namespace mag
                 case SDLK_GREATER: return Key::Greater;
                 case SDLK_QUESTION: return Key::Question;
                 case SDLK_AT: return Key::At;
-
-                /*
-                    Skip uppercase letters
-                */
-
                 case SDLK_LEFTBRACKET: return Key::Leftbracket;
                 case SDLK_BACKSLASH: return Key::Backslash;
                 case SDLK_RIGHTBRACKET: return Key::Rightbracket;
                 case SDLK_CARET: return Key::Caret;
                 case SDLK_UNDERSCORE: return Key::Underscore;
-                case SDLK_BACKQUOTE: return Key::Backquote;
-                case SDLK_a: return Key::a;
-                case SDLK_b: return Key::b;
-                case SDLK_c: return Key::c;
-                case SDLK_d: return Key::d;
-                case SDLK_e: return Key::e;
-                case SDLK_f: return Key::f;
-                case SDLK_g: return Key::g;
-                case SDLK_h: return Key::h;
-                case SDLK_i: return Key::i;
-                case SDLK_j: return Key::j;
-                case SDLK_k: return Key::k;
-                case SDLK_l: return Key::l;
-                case SDLK_m: return Key::m;
-                case SDLK_n: return Key::n;
-                case SDLK_o: return Key::o;
-                case SDLK_p: return Key::p;
-                case SDLK_q: return Key::q;
-                case SDLK_r: return Key::r;
-                case SDLK_s: return Key::s;
-                case SDLK_t: return Key::t;
-                case SDLK_u: return Key::u;
-                case SDLK_v: return Key::v;
-                case SDLK_w: return Key::w;
-                case SDLK_x: return Key::x;
-                case SDLK_y: return Key::y;
-                case SDLK_z: return Key::z;
+                case SDLK_GRAVE: return Key::Backquote;
+                case SDLK_A: return Key::a;
+                case SDLK_B: return Key::b;
+                case SDLK_C: return Key::c;
+                case SDLK_D: return Key::d;
+                case SDLK_E: return Key::e;
+                case SDLK_F: return Key::f;
+                case SDLK_G: return Key::g;
+                case SDLK_H: return Key::h;
+                case SDLK_I: return Key::i;
+                case SDLK_J: return Key::j;
+                case SDLK_K: return Key::k;
+                case SDLK_L: return Key::l;
+                case SDLK_M: return Key::m;
+                case SDLK_N: return Key::n;
+                case SDLK_O: return Key::o;
+                case SDLK_P: return Key::p;
+                case SDLK_Q: return Key::q;
+                case SDLK_R: return Key::r;
+                case SDLK_S: return Key::s;
+                case SDLK_T: return Key::t;
+                case SDLK_U: return Key::u;
+                case SDLK_V: return Key::v;
+                case SDLK_W: return Key::w;
+                case SDLK_X: return Key::x;
+                case SDLK_Y: return Key::y;
+                case SDLK_Z: return Key::z;
 
                 case SDLK_CAPSLOCK: return Key::Capslock;
 
@@ -528,16 +507,11 @@ namespace mag
 
                 case SDLK_MODE: return Key::Mode;
 
-                case SDLK_AUDIONEXT: return Key::Audionext;
-                case SDLK_AUDIOPREV: return Key::Audioprev;
-                case SDLK_AUDIOSTOP: return Key::Audiostop;
-                case SDLK_AUDIOPLAY: return Key::Audioplay;
-                case SDLK_AUDIOMUTE: return Key::Audiomute;
-                case SDLK_MEDIASELECT: return Key::Mediaselect;
-                case SDLK_WWW: return Key::Www;
-                case SDLK_MAIL: return Key::Mail;
-                case SDLK_CALCULATOR: return Key::Calculator;
-                case SDLK_COMPUTER: return Key::Computer;
+                case SDLK_MEDIA_NEXT_TRACK: return Key::Audionext;
+                case SDLK_MEDIA_PREVIOUS_TRACK: return Key::Audioprev;
+                case SDLK_MEDIA_STOP: return Key::Audiostop;
+                case SDLK_MEDIA_PLAY: return Key::Audioplay;
+                case SDLK_MEDIA_SELECT: return Key::Mediaselect;
                 case SDLK_AC_SEARCH: return Key::Ac_search;
                 case SDLK_AC_HOME: return Key::Ac_home;
                 case SDLK_AC_BACK: return Key::Ac_back;
@@ -546,15 +520,8 @@ namespace mag
                 case SDLK_AC_REFRESH: return Key::Ac_refresh;
                 case SDLK_AC_BOOKMARKS: return Key::Ac_bookmarks;
 
-                case SDLK_BRIGHTNESSDOWN: return Key::Brightnessdown;
-                case SDLK_BRIGHTNESSUP: return Key::Brightnessup;
-                case SDLK_DISPLAYSWITCH: return Key::Displayswitch;
-                case SDLK_KBDILLUMTOGGLE: return Key::Kbdillumtoggle;
-                case SDLK_KBDILLUMDOWN: return Key::Kbdillumdown;
-                case SDLK_KBDILLUMUP: return Key::Kbdillumup;
-                case SDLK_EJECT: return Key::Eject;
+                case SDLK_MEDIA_EJECT: return Key::Eject;
                 case SDLK_SLEEP: return Key::Sleep;
-                case SDLK_APP1: return Key::App1;
                 case SDLK_UNKNOWN:
                 default: return Key::Unknown;
             }

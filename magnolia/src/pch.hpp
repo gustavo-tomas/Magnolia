@@ -11,10 +11,9 @@
 #include "magnolia/math/types.hpp"
 
 // Third party headers
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
-
-#include "SDL.h"
-#include "SDL_vulkan.h"
 
 // STL headers
 #include <algorithm>

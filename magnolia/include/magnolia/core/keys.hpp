@@ -251,12 +251,7 @@ namespace mag
         Audioprev,
         Audiostop,
         Audioplay,
-        Audiomute,
         Mediaselect,
-        Www,
-        Mail,
-        Calculator,
-        Computer,
         Ac_search,
         Ac_home,
         Ac_back,
@@ -265,14 +260,7 @@ namespace mag
         Ac_refresh,
         Ac_bookmarks,
 
-        Brightnessdown,
-        Brightnessup,
-        Displayswitch,
-        Kbdillumtoggle,
-        Kbdillumdown,
-        Kbdillumup,
         Eject,
-        Sleep,
-        App1
+        Sleep
     } Key;
 };  // namespace mag

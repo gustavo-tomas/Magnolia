@@ -56,7 +56,7 @@ workspace "magnolia"
     engine_lib_links = 
     {
         "vulkan",
-        "fmt", "SDL2", "SDL2main", "assimp", "meshoptimizer",
+        "fmt", "SDL3", "assimp", "meshoptimizer",
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "LinearMath",
@@ -81,10 +81,7 @@ workspace "magnolia"
     linkoptions
     {
         -- Change your preferred linker here (or comment this line to use the system default)
-        "-fuse-ld=mold -Wl,-v",
-
-        -- For some reason, premake is having trouble finding assimp
-        "-Wl,-R" .. target_libdir .. "/assimp"
+        "-fuse-ld=mold -Wl,-v"
     }
 
 -- Engine --------------------------------------------------------------------------------------------------------------
@@ -259,7 +256,7 @@ function number_of_cores()
 end
 
 -- Build a cmake project
-function build_cmake_project(project_name, libs_info)
+function build_cmake_project(project_name, libs_info, flags)
     project_bin_dir = target_libdir .. "/" .. project_name
     project_obj_dir = obj_libdir .. "/" .. project_name
     
@@ -285,7 +282,7 @@ function build_cmake_project(project_name, libs_info)
 
     os.execute("mkdir -p " .. project_bin_dir)
     os.execute("mkdir -p " .. project_obj_dir)
-    os.execute("cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -S libs/" .. project_name .. " -B " .. project_obj_dir)
+    os.execute("cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON " .. flags .. " -S libs/" .. project_name .. " -B " .. project_obj_dir)
     os.execute("cd " .. project_obj_dir .. " && make -j " .. number_of_cores())
     
     -- Copy all libraries to the bin directory
@@ -321,31 +318,32 @@ project "fmt"
     kind "none"
     build_cmake_project("fmt", {
         {name = "libfmt.a", dir = ""}
-    })
+    },
+    "")
         
 -- sdl -----------------------------------------------------------------------------------------------------------------
 project "sdl"
     kind "none"
     build_cmake_project("sdl", {
-        {name = "libSDL2.a", dir = ""},
-        {name = "libSDL2main.a", dir = ""}
-    })
+        {name = "libSDL3.a", dir = ""}
+    }, 
+    "-DSDL_SHARED=OFF -DSDL_STATIC=ON")
 
 -- assimp --------------------------------------------------------------------------------------------------------------
 project "assimp"
     kind "none"
     build_cmake_project("assimp", {
-        {name = "libassimp.so", dir = "bin"},
-        {name = "libassimp.so.6", dir = "bin"},
-        {name = "libassimp.so.6.0.2", dir = "bin"}
-    })
+        {name = "libassimp.a", dir = "lib"}
+    },
+    "-DBUILD_SHARED_LIBS=OFF")
     
 -- meshoptimizer -------------------------------------------------------------------------------------------------------
 project "meshoptimizer"
     kind "none"
     build_cmake_project("meshoptimizer", {
         {name = "libmeshoptimizer.a", dir = ""}
-    })
+    },
+    "")
     
 -- bullet --------------------------------------------------------------------------------------------------------------
 project "bullet"
@@ -359,14 +357,16 @@ project "bullet"
         {name = "libBullet3Collision.a", dir = "src/Bullet3Collision"},
         {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
         {name = "libLinearMath.a", dir = "src/LinearMath"}
-    })
+    },
+    "")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
     kind "none"
     build_cmake_project("freetype", {
         {name = "libfreetype.a", dir = ""}
-    })
+    },
+    "")
 
 -- soloud --------------------------------------------------------------------------------------------------------------
 project "soloud"
