@@ -269,7 +269,7 @@ namespace mag
                     // @TODO: use KTX to generate mip maps: https://www.khronos.org/ktx/
 
                     device->submit_commands_immediate(
-                        [&](ICommandBuffer& cmd)
+                        [&](const ICommandBuffer& cmd)
                         {
                             // Transition image layout to transfer dst
                             cmd.pipeline_barrier(this, TextureLayout::TransferDst, AccessMask::None,
@@ -515,10 +515,10 @@ namespace mag
         class VulkanDescriptorSet : public IDescriptorSet
         {
             public:
-                VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable& disp) : disp(disp)
+                VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable& disp)
+                    : disp(disp),
+                      parent_pool(static_cast<const VulkanDescriptorPool* const>(desc.descriptor_pool)->get_pool())
                 {
-                    parent_pool = static_cast<const VulkanDescriptorPool* const>(desc.descriptor_pool)->get_pool();
-
                     const VkDescriptorSetLayout descriptor_layout =
                         static_cast<const VulkanDescriptorSetLayout* const>(desc.descriptor_layout)->get_layout();
 
@@ -897,9 +897,9 @@ namespace mag
 
                 ~VulkanRenderPass() {}
 
-                virtual math::ivec2 get_offset() const { return vk_to_mag(render_info.renderArea.offset); }
+                virtual math::ivec2 get_offset() const override { return vk_to_mag(render_info.renderArea.offset); }
 
-                virtual math::uvec2 get_extent() const { return vk_to_mag(render_info.renderArea.extent); }
+                virtual math::uvec2 get_extent() const override { return vk_to_mag(render_info.renderArea.extent); }
 
                 const VkRenderingInfoKHR& get_rendering_info() const { return render_info; }
 

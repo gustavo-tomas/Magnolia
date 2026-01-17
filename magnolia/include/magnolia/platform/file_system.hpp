@@ -21,7 +21,7 @@ namespace mag
         MAG_API b8 write_binary_data(const fs::path& file_path, Buffer& buffer);
 
         MAG_API b8 read_json_data(const fs::path& file_path, fs::json& data);
-        MAG_API b8 write_json_data(const fs::path& file_path, fs::json& data);
+        MAG_API b8 write_json_data(const fs::path& file_path, const fs::json& data);
 
         MAG_API b8 create_directories(const fs::path& path);
 

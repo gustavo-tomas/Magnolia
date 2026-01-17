@@ -410,9 +410,9 @@ namespace mag
 
             DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
 
-            std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
+            const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
-            BindingData& binding = bindings_map[uniform_name];
+            const BindingData& binding = bindings_map.at(uniform_name);
 
             const unique<ITexture>& texture = state->textures[texture_handle].texture;
             const unique<ISampler>& sampler = state->textures[texture_handle].sampler;

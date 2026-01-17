@@ -168,7 +168,7 @@ namespace mag
             return true;
         }
 
-        b8 write_json_data(const fs::path& raw_file_path, fs::json& data)
+        b8 write_json_data(const fs::path& raw_file_path, const fs::json& data)
         {
             const auto file_path = get_fixed_path(raw_file_path);
 
