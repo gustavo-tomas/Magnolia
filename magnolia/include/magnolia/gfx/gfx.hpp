@@ -29,6 +29,8 @@ namespace mag
 
         MAG_API ShaderHandle create_shader(const ShaderResource& shader);
 
+        MAG_API void destroy_shader(const ShaderHandle shader_handle);
+
         // Bind the shader before setting the uniforms
         MAG_API void use_shader(const ShaderHandle& handle);
 

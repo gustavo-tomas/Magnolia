@@ -605,6 +605,17 @@ namespace mag
             return handle;
         }
 
+        void destroy_shader(const ShaderHandle shader_handle)
+        {
+            state->device->wait_idle();
+            state->shaders.erase(shader_handle);
+
+            for (FrameData& frame : state->frames)
+            {
+                frame.descriptor_set_map.erase(shader_handle);
+            }
+        }
+
         void use_shader(const ShaderHandle& handle)
         {
             FrameData& current_frame = state->frames[state->current_frame];
