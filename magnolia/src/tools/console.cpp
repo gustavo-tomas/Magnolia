@@ -10,8 +10,7 @@ namespace mag
     {
         struct ConsoleState
         {
-                CommandID current_id = 0;
-                std::unordered_map<CommandID, std::function<void(const str&)>> commands;
+                std::unordered_map<str, std::function<void(const str&)>> commands;
         };
 
         static ConsoleState* state = nullptr;
@@ -25,27 +24,27 @@ namespace mag
 
         void shutdown() { delete state; }
 
-        CommandID register_command(const std::function<void(const str args)>& func)
+        void register_command(const str& command, const std::function<void(const str args)>& func)
         {
-            const CommandID command_id = state->current_id;
-            state->commands[command_id] = std::move(func);
-            state->current_id++;
+            if (!state->commands.contains(command))
+            {
+                state->commands[command] = std::move(func);
+                return;
+            }
 
-            return command_id;
+            LOG_WARNING("Command '{0}' is already registered", command);
         }
 
-        void execute_command(const CommandID command_id, const str& args)
+        void execute_command(const str& command, const str& args)
         {
-            auto it = state->commands.find(command_id);
+            auto it = state->commands.find(command);
             if (it != state->commands.end())
             {
                 it->second(args);
+                return;
             }
 
-            else
-            {
-                LOG_ERROR("Command '{0}' is not registered", command_id);
-            }
+            LOG_ERROR("Command '{0}' is not registered", command);
         }
     };  // namespace console
 };      // namespace mag
