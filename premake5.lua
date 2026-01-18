@@ -358,7 +358,7 @@ project "bullet"
         {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
         {name = "libLinearMath.a", dir = "src/LinearMath"}
     },
-    "")
+    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF -DINSTALL_EXTRA_LIBS=OFF")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
