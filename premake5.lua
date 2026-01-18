@@ -319,7 +319,7 @@ project "fmt"
     build_cmake_project("fmt", {
         {name = "libfmt.a", dir = ""}
     },
-    "")
+    "-DFMT_DOC=OFF -DFMT_TEST=OFF -DFMT_INSTALL=OFF")
         
 -- sdl -----------------------------------------------------------------------------------------------------------------
 project "sdl"
@@ -327,7 +327,7 @@ project "sdl"
     build_cmake_project("sdl", {
         {name = "libSDL3.a", dir = ""}
     }, 
-    "-DSDL_SHARED=OFF -DSDL_STATIC=ON")
+    "-DSDL_SHARED=OFF -DSDL_STATIC=ON -DSDL_EXAMPLES=OFF -DSDL_TESTS=OFF -DSDL_TEST_LIBRARY=OFF -DSDL_INSTALL=OFF -DSDL_DISABLE_INSTALL_DOCS=OFF -DSDL_INSTALL_TESTS=OFF")
 
 -- assimp --------------------------------------------------------------------------------------------------------------
 project "assimp"
@@ -335,7 +335,7 @@ project "assimp"
     build_cmake_project("assimp", {
         {name = "libassimp.a", dir = "lib"}
     },
-    "-DBUILD_SHARED_LIBS=OFF")
+    "-DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF -DASSIMP_INSTALL=OFF")
     
 -- meshoptimizer -------------------------------------------------------------------------------------------------------
 project "meshoptimizer"
@@ -358,7 +358,7 @@ project "bullet"
         {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
         {name = "libLinearMath.a", dir = "src/LinearMath"}
     },
-    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF -DINSTALL_EXTRA_LIBS=OFF")
+    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
