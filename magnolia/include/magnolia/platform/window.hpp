@@ -9,7 +9,6 @@
 
 namespace mag
 {
-
     namespace window
     {
         using EventCallback = std::function<void(const Event&)>;

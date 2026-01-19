@@ -15,6 +15,7 @@
 #include "magnolia/core/event.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/tools/console.hpp"
 
 namespace mag
 {
@@ -110,8 +111,9 @@ namespace mag
             {
                 const SDL_WindowID window_id = e.window.windowID;
 
-                if (window_id != SDL_GetWindowID(state->handle))
+                if (window_id == console::get_window_id())
                 {
+                    console::on_event(&e);
                     continue;
                 }
 
@@ -216,6 +218,8 @@ namespace mag
                 state->event_callback(event);
                 state->mouse_moved = false;
             }
+
+            mag::console::on_update();
         }
 
         void create_surface(const void* instance, void* surface)
@@ -242,9 +246,9 @@ namespace mag
 
         b8 is_mouse_captured() { return SDL_GetWindowRelativeMouseMode(state->handle); }
 
-        b8 is_flag_set(const u32 flag)
+        b8 is_flag_set(const SDL_WindowFlags flag)
         {
-            const u32 flags = SDL_GetWindowFlags(state->handle);
+            const SDL_WindowFlags flags = SDL_GetWindowFlags(state->handle);
             return (flag & flags);
         }
 
