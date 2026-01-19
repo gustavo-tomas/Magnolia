@@ -1,13 +1,14 @@
 #include "magnolia/platform/window.hpp"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_video.h>
 #include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
 #include <algorithm>
 
-#include "SDL3/SDL_events.h"
 #include "conversions.hpp"
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/buffer.hpp"
@@ -41,40 +42,37 @@ namespace mag
 
         b8 initialize(const WindowOptions& options)
         {
-            state = new State;
+            state = new State();
 
             MAG_ASSERT(SDL_Init(SDL_INIT_VIDEO), "Failed to initialize SDL: " + str(SDL_GetError()));
 
-            i32 width = 800, height = 600;
+            SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
-            // Determines window size automatically
-            if (options.size.x == WindowOptions::MaxSize.x || options.size.y == WindowOptions::MaxSize.y)
+            i32 width = options.size.x;
+            i32 height = options.size.y;
+            i32 position_x = options.position.x;
+            i32 position_y = options.position.y;
+
+            if (options.size.x == WindowOptions::MaxSize || options.size.y == WindowOptions::MaxSize)
             {
-                const SDL_DisplayMode* display_mode = SDL_GetDesktopDisplayMode(0);
-                if (!display_mode)
-                {
-                    LOG_ERROR("Failed to retrieve display mode: {0}", SDL_GetError());
-                }
-
-                else
-                {
-                    width = display_mode->w;
-                    height = display_mode->h;
-                }
+                flags |= SDL_WINDOW_MAXIMIZED;
             }
 
-            // User provided window size
-            else
+            if (options.position.x == WindowOptions::CenterPos)
             {
-                width = options.size.x;
-                height = options.size.y;
+                position_x = SDL_WINDOWPOS_CENTERED;
             }
 
-            const u32 flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
+            if (options.position.y == WindowOptions::CenterPos)
+            {
+                position_y = SDL_WINDOWPOS_CENTERED;
+            }
 
             state->handle = SDL_CreateWindow(options.title.c_str(), width, height, flags);
 
             MAG_ASSERT(state->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
+
+            SDL_SetWindowPosition(state->handle, position_x, position_y);
 
             u32 count = 0;
             auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
@@ -88,6 +86,8 @@ namespace mag
             {
                 set_window_icon(options.window_icon);
             }
+
+            SDL_ShowWindow(state->handle);
 
             return state != nullptr;
         }
@@ -108,6 +108,13 @@ namespace mag
 
             while (SDL_PollEvent(&e))
             {
+                const SDL_WindowID window_id = e.window.windowID;
+
+                if (window_id != SDL_GetWindowID(state->handle))
+                {
+                    continue;
+                }
+
                 const SDL_Keycode key = e.key.key;
                 const u8 button = e.button.button;
 
