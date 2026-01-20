@@ -9,18 +9,17 @@
 
 namespace mag
 {
-
     namespace window
     {
         using EventCallback = std::function<void(const Event&)>;
 
         struct WindowOptions
         {
-                static constexpr math::uvec2 MaxSize = math::uvec2(Max_U32);
-                static constexpr math::ivec2 CenterPos = math::ivec2(Max_I32);
+                static constexpr u32 MaxSize = Max_U32;
+                static constexpr i32 CenterPos = Max_I32;
 
-                math::uvec2 size = MaxSize;
-                math::ivec2 position = CenterPos;
+                math::uvec2 size = math::uvec2(MaxSize);
+                math::ivec2 position = math::ivec2(CenterPos);
                 str title = "Magnolia";
                 str window_icon = "";
         };

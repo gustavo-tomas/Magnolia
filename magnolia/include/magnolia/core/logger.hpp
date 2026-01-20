@@ -29,6 +29,14 @@ namespace mag
 
             fmt::print(fmt::emphasis::bold | fg(log_data.color), message + "\n", args...);
         }
+
+        template <typename... Args>
+        MAG_API str get_formatted_log(const str& message, const Args&... args)
+        {
+            const str formatted_str = fmt::format(message + "\n", args...);
+
+            return formatted_str;
+        }
     };  // namespace log
 };      // namespace mag
 

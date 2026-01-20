@@ -10,6 +10,7 @@
 #include "magnolia/platform/window.hpp"
 #include "magnolia/resources/resource.hpp"
 #include "magnolia/threads/thread.hpp"
+#include "magnolia/tools/console.hpp"
 
 namespace mag
 {
@@ -28,6 +29,7 @@ namespace mag
         initialized = initialized && window::initialize(options.window_options);
         initialized = initialized && gfx::initialize(options.gfx_options);
         initialized = initialized && resource::initialize();
+        initialized = initialized && console::initialize();
 
         MAG_ASSERT(initialized, "Failed to initialize Engine");
 
@@ -51,6 +53,7 @@ namespace mag
             return;
         }
 
+        console::shutdown();
         resource::shutdown();
         gfx::shutdown();
         window::shutdown();

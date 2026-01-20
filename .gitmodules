@@ -40,3 +40,6 @@
 [submodule "libs/spirv_reflect"]
 	path = libs/spirv_reflect
 	url = https://github.com/KhronosGroup/SPIRV-Reflect.git
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/ocornut/imgui.git
