@@ -12,7 +12,7 @@
 #include <imgui/backends/imgui_impl_sdlrenderer3.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 
-#include <unordered_map>
+#include <map>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/logger.hpp"
@@ -44,7 +44,8 @@ namespace mag
                 SDL_Window* window = nullptr;
                 SDL_Renderer* renderer = nullptr;
 
-                std::unordered_map<str, std::function<void(const std::vector<str>&)>> commands;
+                // We want this to be ordered
+                std::map<str, std::function<void(const std::vector<str>&)>> commands;
 
                 std::vector<LogData> items;
                 std::vector<str> history;

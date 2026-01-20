@@ -26,23 +26,35 @@ namespace mag
 
         void shutdown() { delete state; }
 
-        ref<TextureResource> get_texture(const str& file_path)
+        ref<TextureResource> get_texture(const str& file_path, const b8 reload)
         {
-            return state->rm.get_sync<TextureResource>(file_path);
+            return state->rm.get_sync<TextureResource>(file_path, reload);
         }
 
-        ref<MaterialResource> get_material(const str& file_path)
+        ref<MaterialResource> get_material(const str& file_path, const b8 reload)
         {
-            return state->rm.get_sync<MaterialResource>(file_path);
+            return state->rm.get_sync<MaterialResource>(file_path, reload);
         }
 
-        ref<ModelResource> get_model(const str& file_path) { return state->rm.get_sync<ModelResource>(file_path); }
+        ref<ModelResource> get_model(const str& file_path, const b8 reload)
+        {
+            return state->rm.get_sync<ModelResource>(file_path, reload);
+        }
 
-        ref<FontResource> get_font(const str& file_path) { return state->rm.get_sync<FontResource>(file_path); }
+        ref<FontResource> get_font(const str& file_path, const b8 reload)
+        {
+            return state->rm.get_sync<FontResource>(file_path, reload);
+        }
 
-        ref<AudioResource> get_audio(const str& file_path) { return state->rm.get_sync<AudioResource>(file_path); }
+        ref<AudioResource> get_audio(const str& file_path, const b8 reload)
+        {
+            return state->rm.get_sync<AudioResource>(file_path, reload);
+        }
 
-        ref<ShaderResource> get_shader(const str& file_path) { return state->rm.get_sync<ShaderResource>(file_path); }
+        ref<ShaderResource> get_shader(const str& file_path, const b8 reload)
+        {
+            return state->rm.get_sync<ShaderResource>(file_path, reload);
+        }
 
         ResourceManager::ResourceManager()
         {

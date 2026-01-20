@@ -1,7 +1,9 @@
 #pragma once
 
 #include <magnolia/core/event.hpp>
+#include <magnolia/core/types.hpp>
 #include <magnolia/gfx/types.hpp>
+#include <unordered_map>
 
 #include "scene.hpp"
 
@@ -19,17 +21,14 @@ namespace game
 
             void render_scene(Scene& scene, const f32 dt);
 
+            void build_shader(const str& file_path, const b8 recompile = false);
+
         private:
             void render_models(Scene& scene);
             void render_sprites(Scene& scene);
             void render_text(Scene& scene);
             void render_debug(Scene& scene, const f32 dt);
 
-            mag::gfx::ShaderHandle sprite_shader;
-            mag::gfx::ShaderHandle mesh_shader;
-            mag::gfx::ShaderHandle text_shader;
-            mag::gfx::ShaderHandle floor_shader;
-            mag::gfx::ShaderHandle line_shader;
-            mag::gfx::ShaderHandle debug_text_shader;
+            std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
     };
 };  // namespace game

@@ -45,12 +45,12 @@ namespace mag
         // Shutdown all resource subsystems
         void shutdown();
 
-        MAG_API ref<TextureResource> get_texture(const str& file_path);
-        MAG_API ref<MaterialResource> get_material(const str& file_path);
-        MAG_API ref<ModelResource> get_model(const str& file_path);
-        MAG_API ref<FontResource> get_font(const str& file_path);
-        MAG_API ref<AudioResource> get_audio(const str& file_path);
-        MAG_API ref<ShaderResource> get_shader(const str& file_path);
+        MAG_API ref<TextureResource> get_texture(const str& file_path, const b8 reload = false);
+        MAG_API ref<MaterialResource> get_material(const str& file_path, const b8 reload = false);
+        MAG_API ref<ModelResource> get_model(const str& file_path, const b8 reload = false);
+        MAG_API ref<FontResource> get_font(const str& file_path, const b8 reload = false);
+        MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
+        MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
 
         // Interface for a resource loader
         class IResourceLoader
@@ -68,7 +68,7 @@ namespace mag
 
                 // Synchronous loading. Returns nullptr on error.
                 template <typename T>
-                ref<T> get_sync(const str& name)
+                ref<T> get_sync(const str& name, const b8 reload = false)
                 {
                     static_assert(std::is_base_of_v<IResource, T>, "T must derive from IResource");
 
@@ -78,7 +78,7 @@ namespace mag
 
                     // Check if resource is already loaded
                     auto it = resources.find(name);
-                    if (it != resources.end())
+                    if (!reload && it != resources.end())
                     {
                         return std::dynamic_pointer_cast<T>(it->second);
                     }

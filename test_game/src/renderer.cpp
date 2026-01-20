@@ -1,8 +1,10 @@
 #include "renderer.hpp"
 
+#include <magnolia/core/types.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/gfx/gfx.hpp>
 #include <magnolia/physics/physics.hpp>
+#include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/font.hpp>
 #include <magnolia/resources/material.hpp>
@@ -20,37 +22,26 @@
 
 namespace game
 {
+#define MESH_SHADER "test_game/assets/shaders/mesh_shader.mag.json"
+#define SPRITE_SHADER "test_game/assets/shaders/sprite_shader.mag.json"
+#define TEXT_SHADER "test_game/assets/shaders/text_shader.mag.json"
+#define FLOOR_SHADER "test_game/assets/shaders/floor_shader.mag.json"
+#define LINE_SHADER "test_game/assets/shaders/line_shader.mag.json"
+#define DEBUG_TEXT_SHADER "test_game/assets/shaders/debug_text_shader.mag.json"
+
     Renderer::Renderer()
     {
         // Load shaders
 
-        ref<mag::ShaderResource> shader_resource = nullptr;
-
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/sprite_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        sprite_shader = mag::gfx::create_shader(*shader_resource);
-
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/mesh_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        mesh_shader = mag::gfx::create_shader(*shader_resource);
-
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/text_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        text_shader = mag::gfx::create_shader(*shader_resource);
+        build_shader(MESH_SHADER, false);
+        build_shader(SPRITE_SHADER, false);
+        build_shader(TEXT_SHADER, false);
 
         // Debug
 
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/floor_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        floor_shader = mag::gfx::create_shader(*shader_resource);
-
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/line_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        line_shader = mag::gfx::create_shader(*shader_resource);
-
-        shader_resource = mag::resource::get_shader("test_game/assets/shaders/debug_text_shader.mag.json");
-        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
-        debug_text_shader = mag::gfx::create_shader(*shader_resource);
+        build_shader(FLOOR_SHADER, false);
+        build_shader(LINE_SHADER, false);
+        build_shader(DEBUG_TEXT_SHADER, false);
     }
 
     Renderer::~Renderer() = default;
@@ -86,7 +77,7 @@ namespace game
 
         // Render models
 
-        mag::gfx::use_shader(mesh_shader);
+        mag::gfx::use_shader(shaders[MESH_SHADER]);
 
         // Global buffer
         {
@@ -226,7 +217,7 @@ namespace game
     {
         mag::Camera& camera = scene.get_camera();
 
-        mag::gfx::use_shader(sprite_shader);
+        mag::gfx::use_shader(shaders[SPRITE_SHADER]);
 
         // Global buffer
         {
@@ -301,7 +292,7 @@ namespace game
 
     void Renderer::render_text(Scene& scene)
     {
-        mag::gfx::use_shader(text_shader);
+        mag::gfx::use_shader(shaders[TEXT_SHADER]);
 
         mag::Camera& camera = scene.get_camera();
 
@@ -443,7 +434,7 @@ namespace game
 
         // Draw physics colliders
         {
-            mag::gfx::use_shader(line_shader);
+            mag::gfx::use_shader(shaders[LINE_SHADER]);
 
             struct GlobalData
             {
@@ -497,7 +488,7 @@ namespace game
 
         // Draw the floor
         {
-            mag::gfx::use_shader(floor_shader);
+            mag::gfx::use_shader(shaders[FLOOR_SHADER]);
 
             struct GlobalData
             {
@@ -530,7 +521,7 @@ namespace game
 
         // Draw the debug text
         {
-            mag::gfx::use_shader(debug_text_shader);
+            mag::gfx::use_shader(shaders[DEBUG_TEXT_SHADER]);
 
             // @TODO: temp
             struct FontData
@@ -682,5 +673,26 @@ namespace game
 
             mag::gfx::draw(4, char_offset);
         }
+    }
+
+    void Renderer::build_shader(const str& file_path, const b8 recompile)
+    {
+        if (recompile && !mag::resource::compile_shader(file_path))
+        {
+            LOG_ERROR("Failed to recompile shader: '{0}'", file_path);
+            return;
+        }
+
+        ref<mag::ShaderResource> shader_resource = mag::resource::get_shader(file_path, recompile);
+        MAG_ASSERT(shader_resource != nullptr, "Failed to load shader");
+
+        // Destroy existing shader
+
+        if (shaders.contains(file_path))
+        {
+            mag::gfx::destroy_shader(shaders[file_path]);
+        }
+
+        shaders[file_path] = mag::gfx::create_shader(*shader_resource);
     }
 };  // namespace game

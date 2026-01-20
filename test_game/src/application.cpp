@@ -220,11 +220,25 @@ namespace game
                                                // easier
                                                params.file_path = project->get_asset_dir() / arg;
 
-                                               mag::script::compile_script(params);
+                                               if (mag::script::compile_script(params))
+                                               {
+                                                   // @TODO: Reload the scene. Ideally we don't want to reload the whole
+                                                   // thing but this way avoids handling old state.
+                                                   scene->set_next_scene(scene->get_file_path());
+                                               }
+                                           }
+                                       });
 
-                                               // @TODO: Reload the scene. Ideally we don't want to reload the whole
-                                               // thing but this way avoids handling old state.
-                                               scene->set_next_scene(scene->get_file_path());
+        mag::console::register_command("recompile_shader",
+                                       [this](const std::vector<str>& args)
+                                       {
+                                           for (const str& arg : args)
+                                           {
+                                               // We reuse the asset dir retrieved from the project to make things
+                                               // easier
+                                               const str file_path = project->get_asset_dir() / arg;
+
+                                               renderer->build_shader(file_path, true);
                                            }
                                        });
     }
