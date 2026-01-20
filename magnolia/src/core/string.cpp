@@ -1,6 +1,10 @@
 #include "magnolia/core/string.hpp"
 
 #include <algorithm>
+#include <regex>
+#include <vector>
+
+#include "magnolia/core/logger.hpp"
 
 namespace mag
 {
@@ -23,6 +27,33 @@ namespace mag
             str_b = str_b.substr(0, n);
 
             return str_a == str_b;
+        }
+
+        void split(const str& s, const str del, std::vector<str>& output)
+        {
+            std::regex delimiter = std::regex(del);
+
+            std::sregex_token_iterator it(s.begin(), s.end(), delimiter, -1);
+
+            std::sregex_token_iterator end;
+
+            while (it != end)
+            {
+                str substr = *it;
+
+                if (!substr.empty())
+                {
+                    output.push_back(substr);
+                }
+
+                ++it;
+            }
+        }
+
+        void trim(str& s)
+        {
+            triml(s);
+            trimr(s);
         }
 
         void triml(str& s)

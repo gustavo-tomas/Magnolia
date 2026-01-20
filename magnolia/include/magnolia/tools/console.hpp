@@ -12,9 +12,9 @@ namespace mag
 
         void shutdown();
 
-        MAG_API void register_command(const str& command, const std::function<void(const str args)>& func);
+        MAG_API void register_command(const str& command, const std::function<void(const std::vector<str>&)>&& func);
 
-        MAG_API void execute_command(const str& command, const str& args);
+        MAG_API void execute_command(const str& command, const std::vector<str>& args);
 
         void on_update();
 

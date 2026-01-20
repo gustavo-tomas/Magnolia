@@ -44,7 +44,7 @@ namespace mag
                 SDL_Window* window = nullptr;
                 SDL_Renderer* renderer = nullptr;
 
-                std::unordered_map<str, std::function<void(const str&)>> commands;
+                std::unordered_map<str, std::function<void(const std::vector<str>&)>> commands;
 
                 std::vector<LogData> items;
                 std::vector<str> history;
@@ -129,7 +129,7 @@ namespace mag
             // Mag commands are blue to distinguish from user commands
 
             register_command("HELP",
-                             [](const str)
+                             [](const std::vector<str>&)
                              {
                                  add_log({.color = COLOR_BLUE, .text = "Commands:"});
                                  for (const auto& [command, function] : state->commands)
@@ -138,10 +138,10 @@ namespace mag
                                  }
                              });
 
-            register_command("CLEAR", [](const str) { clear_log(); });
+            register_command("CLEAR", [](const std::vector<str>&) { clear_log(); });
 
             register_command("HISTORY",
-                             [](const str)
+                             [](const std::vector<str>&)
                              {
                                  const i32 first = state->history.size() - state->history_display_size;
                                  for (u64 i = first > 0 ? first : 0; i < state->history.size(); i++)
@@ -170,7 +170,7 @@ namespace mag
             SDL_DestroyWindow(state->window);
         }
 
-        void register_command(const str& command, const std::function<void(const str args)>& func)
+        void register_command(const str& command, const std::function<void(const std::vector<str>&)>&& func)
         {
             if (!state->commands.contains(command))
             {
@@ -181,13 +181,19 @@ namespace mag
             LOG_WARNING("Command '{0}' is already registered", command);
         }
 
-        void execute_command(const str& command, const str& args)
+        void execute_command(const str& command, const std::vector<str>& args)
         {
-            add_log({.color = COLOR_BROWN, .text = "# {0}"}, command);
+            str full_command = command;
+            for (const str& arg : args)
+            {
+                full_command += " " + arg;
+            }
+
+            add_log({.color = COLOR_BROWN, .text = "# {0}"}, full_command);
 
             // Insert into state->history
             state->history_pos = -1;
-            state->history.push_back(command);
+            state->history.push_back(full_command);
 
             // Process command
             auto it = state->commands.find(command);
@@ -346,19 +352,31 @@ namespace mag
                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
                 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
 
-            str command = "";
+            str command_line = "";
 
             ImGui::PushItemWidth(-1);
 
-            if (ImGui::InputText("##Input", &command, input_text_flags,
+            if (ImGui::InputText("##Input", &command_line, input_text_flags,
                                  [](ImGuiInputTextCallbackData* data) -> i32 { return text_edit_callback(data); }))
             {
-                string::trimr(command);
+                string::trim(command_line);
 
-                if (!command.empty())
+                std::vector<str> substrings;
+
+                // Separate command from args
+                string::split(command_line, " ", substrings);
+
+                if (!substrings.empty())
                 {
-                    // @TODO: take in command args
-                    execute_command(command, "");
+                    const str command = substrings[0];
+                    std::vector<str> args;
+
+                    for (u64 i = 1; i < substrings.size(); i++)
+                    {
+                        args.push_back(substrings[i]);
+                    }
+
+                    execute_command(command, args);
                 }
 
                 reclaim_focus = true;
