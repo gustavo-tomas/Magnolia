@@ -222,7 +222,6 @@ namespace mag
 
             if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
             {
-                SDL_Delay(10);
                 return;
             }
 
