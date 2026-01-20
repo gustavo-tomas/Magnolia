@@ -17,6 +17,7 @@
 #include <magnolia/scripting/scripting_engine.hpp>
 #include <magnolia/threads/job_system.hpp>
 #include <magnolia/threads/thread.hpp>
+#include <magnolia/tools/console.hpp>
 
 #include "renderer.hpp"
 #include "scene.hpp"
@@ -88,20 +89,22 @@ namespace game
 
         // Load the project
 
-        mag::Project project;
+        project = mag::create_unique<mag::Project>();
 
         const str project_file_path = "test_game/TestGame.proj.json";
-        if (!mag::project::load(project_file_path, project))
+        if (!mag::project::load(project_file_path, *project))
         {
             LOG_ERROR("Failed to load project: '{0}'", project_file_path);
             return;
         }
 
+        register_commands();
+
         // Then load starting scene
 
         scene = mag::create_unique<Scene>();
 
-        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
+        const str start_scene_file_path = project->get_asset_dir() / project->get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
         {
             LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
@@ -114,6 +117,7 @@ namespace game
     TestGame::~TestGame()
     {
         scene.reset();
+        project.reset();
         mag::shutdown();
     }
 
@@ -200,6 +204,29 @@ namespace game
     {
         (void)e;
         running = false;
+    }
+
+    void TestGame::register_commands()
+    {
+        mag::console::register_command("recompile_script",
+                                       [this](const std::vector<str>& args)
+                                       {
+                                           for (const str& arg : args)
+                                           {
+                                               mag::script::RecompileScriptParams params = {};
+                                               params.force_recompilation = true;
+
+                                               // We reuse the asset dir retrieved from the project to make things
+                                               // easier
+                                               params.file_path = project->get_asset_dir() / arg;
+
+                                               mag::script::compile_script(params);
+
+                                               // @TODO: Reload the scene. Ideally we don't want to reload the whole
+                                               // thing but this way avoids handling old state.
+                                               scene->set_next_scene(scene->get_file_path());
+                                           }
+                                       });
     }
 
     void TestGame::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }

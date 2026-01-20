@@ -15,8 +15,7 @@
 namespace game
 {
     Scene::Scene()
-        : name("Untitled"),
-          ecs(mag::create_unique<mag::ECS>(BIND_FN2(Scene::on_component_added))),
+        : ecs(mag::create_unique<mag::ECS>(BIND_FN2(Scene::on_component_added))),
           physics_world(mag::create_physics_world())
     {
     }
@@ -277,11 +276,15 @@ namespace game
         entity_deletion_queue.push_back(id);
     }
 
+    void Scene::set_file_path(const str& file_path) { this->file_path = file_path; }
+
     void Scene::set_name(const str& name) { this->name = name; }
 
     b8 Scene::is_running() const { return running; }
 
     const str& Scene::get_name() const { return name; }
+
+    const str& Scene::get_file_path() const { return file_path; }
 
     const str& Scene::get_next_scene() const { return next_scene; }
 

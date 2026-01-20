@@ -2,6 +2,7 @@
 
 #include <magnolia/core/event.hpp>
 #include <magnolia/core/types.hpp>
+#include <magnolia/project/project.hpp>
 #include <magnolia/resources/resource.hpp>
 
 #include "scene.hpp"
@@ -24,6 +25,8 @@ namespace game
             void on_update(const f32 dt);
             void on_event(const mag::Event& e);
 
+            void register_commands();
+
             // -1 is no limits
             void set_target_frame_rate(const f32 frame_rate);
 
@@ -35,5 +38,6 @@ namespace game
 
             mag::unique<Renderer> renderer;
             mag::unique<Scene> scene = nullptr;
+            mag::unique<mag::Project> project = nullptr;
     };
 };  // namespace game

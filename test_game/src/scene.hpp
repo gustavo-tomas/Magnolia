@@ -31,11 +31,13 @@ namespace game
             void remove_entity(const mag::EntityID id);
 
             void set_name(const str& name);
+            void set_file_path(const str& file_path);
             void set_next_scene(const str& scene_file_path) { next_scene = scene_file_path; }
 
             b8 is_running() const;
 
             const str& get_name() const;
+            const str& get_file_path() const;
             const str& get_next_scene() const;
             const mag::IPhysicsWorld* get_physics_world() const;
             mag::ECS& get_ecs();
@@ -45,7 +47,8 @@ namespace game
             // The user can override these if they want
             virtual void on_resize(const mag::WindowResizeEvent& e);
 
-            str name;
+            str name = "Untitled";
+            str file_path = "";
             mag::unique<mag::ECS> ecs;
             mag::unique<mag::IPhysicsWorld> physics_world;
 

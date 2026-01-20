@@ -171,12 +171,13 @@ namespace game
             mag::fs::Serializer serializer;
 
             serializer.register_on_load_handler<Scene>(
-                [](Scene& scene, mag::fs::Serializer& s)
+                [file_path](Scene& scene, mag::fs::Serializer& s)
                 {
                     mag::fs::json& data = s.json;
 
                     const str scene_name = data["Name"];
                     scene.set_name(scene_name);
+                    scene.set_file_path(file_path);
 
                     LOG_INFO("Deserializing scene '{0}'", scene_name);
 
