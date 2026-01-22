@@ -1,4 +1,5 @@
 #include "../backend.hpp"
+#include "magnolia/core/memory.hpp"
 
 #define MAG_CONFIG_GFX_VULKAN 1
 
@@ -135,7 +136,7 @@ namespace mag
                 virtual void set_data(const void* const data, const u64 data_size, const u64 offset = 0) const override
                 {
                     MAG_ASSERT(offset + data_size <= size, "Size limit exceeded");
-                    memcpy(static_cast<c8*>(mapped_region) + offset, data, data_size);
+                    mem::copy(static_cast<c8*>(mapped_region) + offset, size, data, data_size, data_size);
                 }
 
                 virtual u64 get_size() const override { return size; }

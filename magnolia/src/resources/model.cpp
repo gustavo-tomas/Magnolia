@@ -2,6 +2,7 @@
 
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
+#include "magnolia/core/memory.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/resources/material.hpp"
 #include "magnolia/resources/resource.hpp"
@@ -62,15 +63,17 @@ namespace mag
             if (num_vertices > 0)
             {
                 model->vertices.resize(num_vertices);
-                memcpy(model->vertices.data(), model_data, VEC_SIZE_BYTES(model->vertices));
-                model_data += VEC_SIZE_BYTES(model->vertices);
+                const u64 data_size = VEC_SIZE_BYTES(model->vertices);
+                mem::copy(model->vertices.data(), data_size, model_data, data_size, data_size);
+                model_data += data_size;
             }
 
             // Read indices
             if (num_indices > 0)
             {
                 model->indices.resize(num_indices);
-                memcpy(model->indices.data(), model_data, VEC_SIZE_BYTES(model->indices));
+                const u64 data_size = VEC_SIZE_BYTES(model->indices);
+                mem::copy(model->indices.data(), data_size, model_data, data_size, data_size);
                 model_data += VEC_SIZE_BYTES(model->indices);
             }
 
@@ -78,7 +81,8 @@ namespace mag
             if (num_meshes > 0)
             {
                 model->meshes.resize(num_meshes);
-                memcpy(model->meshes.data(), model_data, VEC_SIZE_BYTES(model->meshes));
+                const u64 data_size = VEC_SIZE_BYTES(model->meshes);
+                mem::copy(model->meshes.data(), data_size, model_data, data_size, data_size);
                 model_data += VEC_SIZE_BYTES(model->meshes);
             }
 

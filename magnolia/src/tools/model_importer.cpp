@@ -8,6 +8,7 @@
 #include "assimp/scene.h"
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
+#include "magnolia/core/memory.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/resources/material.hpp"
 #include "magnolia/resources/model.hpp"
@@ -132,22 +133,25 @@ namespace mag
         // Write vertices
         if (num_vertices > 0)
         {
-            memcpy(ptr, model.vertices.data(), VEC_SIZE_BYTES(model.vertices));
-            ptr += VEC_SIZE_BYTES(model.vertices);
+            const u64 data_size = VEC_SIZE_BYTES(model.vertices);
+            mem::copy(ptr, data_size, model.vertices.data(), data_size, data_size);
+            ptr += data_size;
         }
 
         // Write indices
         if (num_indices > 0)
         {
-            memcpy(ptr, model.indices.data(), VEC_SIZE_BYTES(model.indices));
-            ptr += VEC_SIZE_BYTES(model.indices);
+            const u64 data_size = VEC_SIZE_BYTES(model.indices);
+            mem::copy(ptr, data_size, model.indices.data(), data_size, data_size);
+            ptr += data_size;
         }
 
         // Write meshes
         if (num_meshes > 0)
         {
-            memcpy(ptr, model.meshes.data(), VEC_SIZE_BYTES(model.meshes));
-            ptr += VEC_SIZE_BYTES(model.meshes);
+            const u64 data_size = VEC_SIZE_BYTES(model.meshes);
+            mem::copy(ptr, data_size, model.meshes.data(), data_size, data_size);
+            ptr += data_size;
         }
 
         // Write binary model data to file

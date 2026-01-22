@@ -7,6 +7,8 @@
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/keys.hpp"
 #include "magnolia/core/logger.hpp"
+#include "magnolia/core/memory.hpp"
+#include "magnolia/core/string.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
 
