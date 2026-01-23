@@ -72,8 +72,13 @@ namespace game
         const auto& camera = scene.get_camera();
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
+
+        if (model_entities.empty())
+        {
+            return;
+        }
+
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
-        auto sprite_entities = ecs.get_all_components_of_types<TransformComponent, SpriteComponent>();
 
         // Render models
 
@@ -215,6 +220,13 @@ namespace game
 
     void Renderer::render_sprites(Scene& scene)
     {
+        auto sprite_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, SpriteComponent>();
+
+        if (sprite_entities.empty())
+        {
+            return;
+        }
+
         mag::Camera& camera = scene.get_camera();
 
         mag::gfx::use_shader(shaders[SPRITE_SHADER]);
@@ -233,8 +245,6 @@ namespace game
 
             mag::gfx::set_uniform("u_global", &global_data);
         }
-
-        auto sprite_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, SpriteComponent>();
 
         u32 texture_offset = 0;
         for (u32 i = 0; i < sprite_entities.size(); i++)
@@ -292,6 +302,13 @@ namespace game
 
     void Renderer::render_text(Scene& scene)
     {
+        auto text_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, TextComponent>();
+
+        if (text_entities.empty())
+        {
+            return;
+        }
+
         mag::gfx::use_shader(shaders[TEXT_SHADER]);
 
         mag::Camera& camera = scene.get_camera();
@@ -316,8 +333,6 @@ namespace game
         global_data.projection = camera.get_projection();
 
         mag::gfx::set_uniform("u_global", &global_data);
-
-        auto text_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, TextComponent>();
 
         u32 char_offset = 0;
         for (u32 i = 0; i < text_entities.size(); i++)
@@ -434,20 +449,6 @@ namespace game
 
         // Draw physics colliders
         {
-            mag::gfx::use_shader(shaders[LINE_SHADER]);
-
-            struct GlobalData
-            {
-                    mat4 view;
-                    mat4 projection;
-            };
-
-            static GlobalData global_data = {};
-            global_data.view = camera.get_view();
-            global_data.projection = camera.get_projection();
-
-            mag::gfx::set_uniform("u_global", &global_data);
-
             struct Line
             {
                     vec3 position;
@@ -464,6 +465,20 @@ namespace game
             {
                 goto no_colliders;
             }
+
+            mag::gfx::use_shader(shaders[LINE_SHADER]);
+
+            struct GlobalData
+            {
+                    mat4 view;
+                    mat4 projection;
+            };
+
+            static GlobalData global_data = {};
+            global_data.view = camera.get_view();
+            global_data.projection = camera.get_projection();
+
+            mag::gfx::set_uniform("u_global", &global_data);
 
             for (const mag::Line& line : line_list.lines)
             {

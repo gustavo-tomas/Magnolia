@@ -419,7 +419,8 @@ namespace mag
 
             // If we change the texture, we need to update the descriptor sets (for each frame)
 
-            if (descriptor_data.last_bound_texture != texture_handle)
+            // @TODO: this is bugged
+            // if (descriptor_data.last_bound_texture != texture_handle)
             {
                 descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
                                                        binding.descriptor_type);
