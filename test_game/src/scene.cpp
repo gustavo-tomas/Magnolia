@@ -118,16 +118,33 @@ namespace game
 
     void Scene::on_stop()
     {
-        // Destroy instantiated scripts
-        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            destroy_script(script);
-        }
+        // @TODO @NOTE: virtual functions may become inaccessible after a dlclose. This causes the ECS to crash during
+        // deletion. To prevent this, we have to delay the dll unloading until the ECS is destroyed. This has to be done
+        // for every component added and/or data allocated. A better solution must be found to fix this issue.
+
+        // See: https://stackoverflow.com/questions/36524043/accessing-memory-allocated-by-shared-library-after-dlclose
 
         // Stop audios
         for (auto audio : ecs->get_all_components_of_type<AudioComponent>())
         {
             mag::audio::stop(audio->audio);
+        }
+
+        std::vector<ScriptComponent> scripts;
+
+        // Copy script data before ECS deletion
+        for (auto script : ecs->get_all_components_of_type<ScriptComponent>())
+        {
+            scripts.push_back(*script);
+        }
+
+        // Destroy the ECS
+        ecs.reset();
+
+        // Destroy instantiated scripts and unload dlls
+        for (auto& script : scripts)
+        {
+            destroy_script(&script);
         }
 
         running = false;
