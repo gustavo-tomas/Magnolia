@@ -74,7 +74,6 @@ namespace mag
             const std::vector<str> lib_paths = params.lib_paths;
             const std::vector<str> link_libs = params.link_libs;
             std::vector<str> defines = params.defines;
-            defines.push_back("FMT_USE_CONSTEVAL=0");  // @TODO: remove when fmt is removed
 
             // Create directories if they dont exist
             fs::create_directories(fs::path(bin_script_file_path).parent_path());

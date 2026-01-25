@@ -21,7 +21,6 @@ workspace "magnolia"
     
     engine_libdir =
     {
-        target_libdir .. "/fmt",
         target_libdir .. "/sdl",
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
@@ -36,7 +35,6 @@ workspace "magnolia"
     {
         "libs",
         "libs/sdl/include",
-        "libs/fmt/include",
         "libs/vulkan/include",
         "libs/vkbootstrap/src",
         "libs/vma/include",
@@ -58,7 +56,7 @@ workspace "magnolia"
     engine_lib_links = 
     {
         "vulkan",
-        "fmt", "SDL3", "assimp", "meshoptimizer",
+        "SDL3", "assimp", "meshoptimizer",
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "LinearMath",
@@ -71,8 +69,7 @@ workspace "magnolia"
     {
         "VULKAN_HPP_NAMESPACE=vk",
         "GLM_FORCE_QUAT_DATA_WXYZ",
-        "GLM_ENABLE_EXPERIMENTAL",
-        "FMT_USE_CONSTEVAL=0" -- @TODO: remove when fmt is removed
+        "GLM_ENABLE_EXPERIMENTAL"
     }
 
     linkoptions
@@ -128,7 +125,6 @@ project "magnolia"
 
     dependson
     {
-        "fmt",
         "sdl",
         "vulkan",
         "assimp",
@@ -180,20 +176,13 @@ project "test_game"
     { 
         "%{prj.name}/src",
         "magnolia/include",
-        "libs/fmt/include", -- @TODO: remove when fmt is removed
         "libs/json/single_include",
         "libs/glm"
     }
 
-    libdirs
-    { 
-        target_libdir .. "/fmt" -- @TODO: remove when fmt is removed
-    }
-
     links
     {
-        "magnolia", 
-        "fmt" -- @TODO: remove when fmt is removed
+        "magnolia"
     }
 
     dependson
@@ -311,15 +300,7 @@ project "vulkan"
         local vulkan_bin_path = vulkan_dir .. "/" .. vulkan_lib
         os.execute("cp -u ext/linux/" .. vulkan_lib .. " " .. vulkan_bin_path)
     end
-
--- fmt -----------------------------------------------------------------------------------------------------------------
-project "fmt"
-    kind "none"
-    build_cmake_project("fmt", {
-        {name = "libfmt.a", dir = ""}
-    },
-    "-DFMT_DOC=OFF -DFMT_TEST=OFF -DFMT_INSTALL=OFF")
-        
+    
 -- sdl -----------------------------------------------------------------------------------------------------------------
 project "sdl"
     kind "none"

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <fmt/color.h>
-#include <fmt/core.h>
-
+#include <format>
+#include <print>
 #include <source_location>
 
 #include "magnolia/core/types.hpp"
@@ -11,49 +10,50 @@ namespace mag
 {
     namespace log
     {
-        struct LogData
+        namespace color
         {
-                fmt::color color;
-        };
-
-        MAG_API str timestamp();
+            constexpr str Red = "\e[1;91m";
+            constexpr str Green = "\e[1;92m";
+            constexpr str Yellow = "\e[1;93m";
+            constexpr str Blue = "\e[1;94m";
+            constexpr str Purple = "\e[1;95m";
+            constexpr str White = "\e[1;97m";
+            constexpr str Reset = "\033[0m";
+        };  // namespace color
 
         template <typename... Args>
-        MAG_API void log_message(const std::source_location& location, const LogData log_data, const str& message,
-                                 const Args&... args)
+        MAG_API void log_message(const str& level, const str& color, const std::source_location& loc,
+                                 const std::format_string<Args...> fmt, Args&&... args)
         {
-            fmt::print(fmt::emphasis::bold | fg(fmt::color::violet), "[{0}]", timestamp());
-
-            fmt::print(fmt::emphasis::bold | fg(fmt::color::royal_blue), "[{0}:{1}]: ", location.file_name(),
-                       location.line());
-
-            fmt::print(fmt::emphasis::bold | fg(log_data.color), message + "\n", args...);
+            std::print("{}[{}:{}]\n{}", color::Blue, loc.file_name(), loc.line(), color::Reset);
+            std::print("{}[{}] ", color, level);
+            std::print(fmt, std::forward<Args>(args)...);
+            std::print("\n{}", color::Reset);
         }
 
         template <typename... Args>
-        MAG_API str get_formatted_log(const str& message, const Args&... args)
+        MAG_API str get_formatted_log(const std::string_view fmt, Args&&... args)
         {
-            const str formatted_str = fmt::format(message + "\n", args...);
+            const str formatted_str = std::vformat(fmt, std::make_format_args(args...)) + "\n";
 
             return formatted_str;
         }
     };  // namespace log
-};      // namespace mag
+};  // namespace mag
 
 #if MAG_CONFIG_DEBUG
-    #define LOG_ERROR(message, ...)                                                      \
-        mag::log::log_message(std::source_location::current(), {fmt::color::orange_red}, \
-                              message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_ERROR(...) \
+        mag::log::log_message("ERROR", mag::log::color::Red, std::source_location::current(), __VA_ARGS__)
 
-    #define LOG_WARNING(message, ...) \
-        mag::log::log_message(std::source_location::current(), {fmt::color::yellow}, message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_WARNING(...) \
+        mag::log::log_message("WARNING", mag::log::color::Yellow, std::source_location::current(), __VA_ARGS__)
 
-    #define LOG_INFO(message, ...) \
-        mag::log::log_message(std::source_location::current(), {fmt::color::white}, message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_INFO(...) \
+        mag::log::log_message("INFO", mag::log::color::White, std::source_location::current(), __VA_ARGS__)
 
-    #define LOG_SUCCESS(message, ...)                                                      \
-        mag::log::log_message(std::source_location::current(), {fmt::color::spring_green}, \
-                              message __VA_OPT__(, ) __VA_ARGS__)
+    #define LOG_SUCCESS(...) \
+        mag::log::log_message("SUCCESS", mag::log::color::Green, std::source_location::current(), __VA_ARGS__)
+
 #else
     #define LOG_ERROR(message, ...)
     #define LOG_WARNING(message, ...)

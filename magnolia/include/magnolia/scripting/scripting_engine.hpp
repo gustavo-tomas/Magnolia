@@ -17,12 +17,12 @@ namespace mag
         {
                 str file_path;
                 b8 force_recompilation = false;
-                str compilation_flags = "-std=c++20 -fPIC -shared -O0";
-                std::vector<str> include_paths = {"magnolia/include", "libs/fmt/include"};
-                std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "fmt", MAG_BUILD_DIR_BIN "magnolia"};
-                std::vector<str> link_libs = {"magnolia", "fmt"};
-                std::vector<str> defines = {"MAG_CONFIG_DEBUG", "FMT_HEADER_ONLY=0", "MAG_ASSERTIONS_ENABLED=1",
-                                            "MAG_PROFILE_ENABLED=1"};
+                str compilation_flags = "-std=c++23 -fPIC -shared -O0";
+                std::vector<str> include_paths = {"magnolia/include", "libs/glm"};
+                std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "magnolia"};
+                std::vector<str> link_libs = {"magnolia"};
+                std::vector<str> defines = {"MAG_CONFIG_DEBUG", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1",
+                                            "GLM_ENABLE_EXPERIMENTAL"};
         };
 
         // Skips compilation if scripts exists, or recompile if force recompilation is true
@@ -31,4 +31,4 @@ namespace mag
         // returns nullptr on error
         MAG_API void* get_symbol(void* handle, const str& name);
     };  // namespace script
-};      // namespace mag
+};  // namespace mag
