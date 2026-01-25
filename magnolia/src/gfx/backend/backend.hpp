@@ -35,6 +35,7 @@ namespace mag
         struct ISwapchainDesc
         {
                 PresentMode desired_present_mode = PresentMode::Mailbox;
+                math::uvec2 desired_extent = math::uvec2(256, 256);
         };
 
         struct IQueueDesc
@@ -282,7 +283,7 @@ namespace mag
                 virtual Result acquire_next_image(const ISemaphore* const signal_semaphore,
                                                   const IFence* const fence = nullptr) = 0;
 
-                virtual void resize() = 0;
+                virtual void resize(const math::uvec2& extent) = 0;
         };
 
         class IDescriptorPool

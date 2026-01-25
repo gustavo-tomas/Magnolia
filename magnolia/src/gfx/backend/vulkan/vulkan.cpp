@@ -337,7 +337,7 @@ namespace mag
                 VulkanSwapchain(const ISwapchainDesc& desc, const vkb::DispatchTable& disp, const vkb::Device& device)
                     : disp(disp), device(device), present_mode(desc.desired_present_mode)
                 {
-                    recreate_swapchain();
+                    recreate_swapchain(desc.desired_extent);
                 }
 
                 ~VulkanSwapchain()
@@ -377,15 +377,16 @@ namespace mag
                     return vk_to_mag(result);
                 }
 
-                virtual void resize() override { recreate_swapchain(); }
+                virtual void resize(const math::uvec2& extent) override { recreate_swapchain(extent); }
 
                 const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
 
             private:
-                void recreate_swapchain()
+                void recreate_swapchain(const math::uvec2& extent)
                 {
                     vkb::SwapchainBuilder swapchain_builder{device};
                     const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
+                                              .set_desired_extent(extent.x, extent.y)
                                               .set_desired_present_mode(mag_to_vk(present_mode))
                                               .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
                                               .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
