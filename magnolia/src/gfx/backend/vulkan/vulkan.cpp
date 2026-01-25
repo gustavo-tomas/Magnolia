@@ -1257,6 +1257,10 @@ namespace mag
             public:
                 VulkanDevice()
                 {
+                    const u32 vulkan_major_version = 1;
+                    const u32 vulkan_minor_version = 3;
+                    const u32 vulkan_patch_version = 0;
+
                     // Device
                     // -------------------------------------------------------------------------------------------------
                     vkb::InstanceBuilder instance_builder;
@@ -1293,7 +1297,7 @@ namespace mag
                                 })
                             .request_validation_layers()
     #endif
-                            .require_api_version(1, 3, 0)
+                            .require_api_version(vulkan_major_version, vulkan_minor_version, vulkan_patch_version)
                             .build();
 
                     MAG_ASSERT(instance_ret, instance_ret.error().message());
@@ -1321,7 +1325,7 @@ namespace mag
 
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
                     const vkb::Result<vkb::PhysicalDevice> phys_device_ret =
-                        phys_device_selector.set_minimum_version(1, 3)
+                        phys_device_selector.set_minimum_version(vulkan_major_version, vulkan_minor_version)
                             .set_surface(surface)
                             .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
                             .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
