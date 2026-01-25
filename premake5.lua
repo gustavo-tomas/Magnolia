@@ -2,7 +2,7 @@
 workspace "magnolia"
     architecture "x86_64"
     language "c++"
-    cppdialect "c++20"
+    cppdialect "c++23"
     toolset "clang"
     configurations { "debug", "release" }
     location "build"
@@ -65,12 +65,6 @@ workspace "magnolia"
         "freetype",
         "soloud",
         "imgui"
-    }
-
-    -- @NOTE: don't use LTO on debug, it might interfere with ClangBuildAnalyzer
-    build_flags =
-    {
-        "LinkTimeOptimization"
     }
 
     defines
@@ -166,7 +160,7 @@ project "magnolia"
     filter "configurations:release"
         buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
+        linktimeoptimization ("fast")
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -187,7 +181,8 @@ project "test_game"
         "%{prj.name}/src",
         "magnolia/include",
         "libs/fmt/include", -- @TODO: remove when fmt is removed
-        "libs/json/single_include"
+        "libs/json/single_include",
+        "libs/glm"
     }
 
     libdirs
@@ -227,7 +222,7 @@ project "test_game"
     filter "configurations:release"
         buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
-        flags { build_flags }
+        linktimeoptimization ("fast")
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
