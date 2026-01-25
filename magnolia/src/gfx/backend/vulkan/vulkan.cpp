@@ -605,8 +605,8 @@ namespace mag
                 {
                     const u32 shader_module_count = desc.shader_modules.size();
 
-                    VkPipelineShaderStageCreateInfo shader_stages[shader_module_count];
-                    VkShaderModule shader_modules[shader_module_count];
+                    std::vector<VkPipelineShaderStageCreateInfo> shader_stages(shader_module_count);
+                    std::vector<VkShaderModule> shader_modules(shader_module_count);
 
                     for (u32 i = 0; i < shader_module_count; i++)
                     {
@@ -766,7 +766,7 @@ namespace mag
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
                     pipeline_info.pDepthStencilState = &depth_stencil_create_info;
                     pipeline_info.stageCount = shader_module_count;
-                    pipeline_info.pStages = shader_stages;
+                    pipeline_info.pStages = shader_stages.data();
                     pipeline_info.pVertexInputState = &vertex_input_info;
                     pipeline_info.pInputAssemblyState = &input_assembly;
                     pipeline_info.pViewportState = &viewport_state;
