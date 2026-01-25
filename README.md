@@ -10,11 +10,11 @@
 
 <!-- Add links -->
 
-- C++20
-- Gcc 11.4.0
-- Clang 15
-- Python 3.10.12
-- Cmake 3.22.1
+- C++23
+- Gcc 15.2.1
+- Clang 21.1.6
+- Python 3.14.2
+- Cmake 4.2.2
 - Vulkan SDK 1.3.268
 - [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `linkoptions` field in the [`premake5.lua`](premake5.lua) file)
 
