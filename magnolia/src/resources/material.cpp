@@ -79,4 +79,4 @@ namespace mag
             return material;
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

@@ -97,4 +97,4 @@ namespace mag
             return model;
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

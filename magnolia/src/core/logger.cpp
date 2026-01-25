@@ -21,4 +21,4 @@ namespace mag
             return formatted_time;
         }
     };  // namespace log
-};      // namespace mag
+};  // namespace mag

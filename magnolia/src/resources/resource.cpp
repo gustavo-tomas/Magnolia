@@ -69,4 +69,4 @@ namespace mag
 
         ResourceManager::~ResourceManager() = default;
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

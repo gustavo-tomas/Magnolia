@@ -21,4 +21,4 @@ namespace mag
             std::memcpy(dst, src, data_size);
         }
     };  // namespace mem
-};      // namespace mag
+};  // namespace mag

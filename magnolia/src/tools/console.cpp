@@ -553,4 +553,4 @@ namespace mag
 
         u32 get_window_id() { return SDL_GetWindowID(state->window); }
     };  // namespace console
-};      // namespace mag
+};  // namespace mag

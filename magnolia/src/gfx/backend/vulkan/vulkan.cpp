@@ -1498,6 +1498,6 @@ namespace mag
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag
 
 #endif

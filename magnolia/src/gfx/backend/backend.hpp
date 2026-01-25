@@ -432,4 +432,4 @@ namespace mag
 
         unique<IDevice> create_device();
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag

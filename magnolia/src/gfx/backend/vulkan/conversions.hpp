@@ -1283,4 +1283,4 @@ namespace mag
             }
         }
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag

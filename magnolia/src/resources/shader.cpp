@@ -359,4 +359,4 @@ namespace mag
             return system(compile_script_cmd.c_str()) == 0;
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

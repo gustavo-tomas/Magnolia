@@ -77,4 +77,4 @@ namespace mag
             return supported_formats.contains(extension_with_dot);
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

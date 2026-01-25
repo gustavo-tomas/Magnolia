@@ -676,4 +676,4 @@ namespace mag
 
         void on_event(const Event& e) { mag::dispatch_event<WindowResizeEvent>(e, on_resize); }
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag

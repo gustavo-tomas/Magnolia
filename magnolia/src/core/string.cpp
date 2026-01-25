@@ -70,4 +70,4 @@ namespace mag
 
         void to_upper(str& s) { std::transform(s.begin(), s.end(), s.begin(), toupper); }
     };  // namespace string
-};      // namespace mag
+};  // namespace mag

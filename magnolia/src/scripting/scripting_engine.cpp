@@ -123,4 +123,4 @@ namespace mag
             return true;
         }
     };  // namespace script
-};      // namespace mag
+};  // namespace mag

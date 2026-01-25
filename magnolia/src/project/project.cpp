@@ -63,4 +63,4 @@ namespace mag
             return true;
         }
     };  // namespace project
-};      // namespace mag
+};  // namespace mag

@@ -362,7 +362,7 @@ project "bullet"
         {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
         {name = "libLinearMath.a", dir = "src/LinearMath"}
     },
-    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF")
+    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
