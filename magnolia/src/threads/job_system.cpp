@@ -151,4 +151,4 @@ namespace mag
             return job;
         }
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

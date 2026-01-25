@@ -31,4 +31,4 @@ namespace mag
             return elapsed_seconds.count() * 1000.0;
         }
     };  // namespace plat
-};      // namespace mag
+};  // namespace mag

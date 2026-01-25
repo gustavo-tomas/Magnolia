@@ -113,4 +113,4 @@ namespace mag
             return false;
         }
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

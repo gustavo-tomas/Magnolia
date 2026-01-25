@@ -121,4 +121,4 @@ namespace mag
             return lines;
         };
     };  // namespace math
-};      // namespace mag
+};  // namespace mag

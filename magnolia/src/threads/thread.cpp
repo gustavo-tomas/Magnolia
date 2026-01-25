@@ -27,4 +27,4 @@ namespace mag
             std::this_thread::sleep_for(duration);
         }
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

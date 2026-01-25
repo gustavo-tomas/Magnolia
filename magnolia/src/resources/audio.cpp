@@ -50,4 +50,4 @@ namespace mag
             return audio;
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

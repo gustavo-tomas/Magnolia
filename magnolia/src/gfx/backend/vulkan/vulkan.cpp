@@ -337,7 +337,7 @@ namespace mag
                 VulkanSwapchain(const ISwapchainDesc& desc, const vkb::DispatchTable& disp, const vkb::Device& device)
                     : disp(disp), device(device), present_mode(desc.desired_present_mode)
                 {
-                    recreate_swapchain();
+                    recreate_swapchain(desc.desired_extent);
                 }
 
                 ~VulkanSwapchain()
@@ -377,15 +377,16 @@ namespace mag
                     return vk_to_mag(result);
                 }
 
-                virtual void resize() override { recreate_swapchain(); }
+                virtual void resize(const math::uvec2& extent) override { recreate_swapchain(extent); }
 
                 const VkSwapchainKHR& get_swapchain() const { return swapchain.swapchain; }
 
             private:
-                void recreate_swapchain()
+                void recreate_swapchain(const math::uvec2& extent)
                 {
                     vkb::SwapchainBuilder swapchain_builder{device};
                     const auto swap_ret = swapchain_builder.set_old_swapchain(swapchain)
+                                              .set_desired_extent(extent.x, extent.y)
                                               .set_desired_present_mode(mag_to_vk(present_mode))
                                               .add_fallback_present_mode(VK_PRESENT_MODE_MAILBOX_KHR)
                                               .add_fallback_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR)
@@ -605,8 +606,8 @@ namespace mag
                 {
                     const u32 shader_module_count = desc.shader_modules.size();
 
-                    VkPipelineShaderStageCreateInfo shader_stages[shader_module_count];
-                    VkShaderModule shader_modules[shader_module_count];
+                    std::vector<VkPipelineShaderStageCreateInfo> shader_stages(shader_module_count);
+                    std::vector<VkShaderModule> shader_modules(shader_module_count);
 
                     for (u32 i = 0; i < shader_module_count; i++)
                     {
@@ -766,7 +767,7 @@ namespace mag
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
                     pipeline_info.pDepthStencilState = &depth_stencil_create_info;
                     pipeline_info.stageCount = shader_module_count;
-                    pipeline_info.pStages = shader_stages;
+                    pipeline_info.pStages = shader_stages.data();
                     pipeline_info.pVertexInputState = &vertex_input_info;
                     pipeline_info.pInputAssemblyState = &input_assembly;
                     pipeline_info.pViewportState = &viewport_state;
@@ -1257,6 +1258,10 @@ namespace mag
             public:
                 VulkanDevice()
                 {
+                    const u32 vulkan_major_version = 1;
+                    const u32 vulkan_minor_version = 3;
+                    const u32 vulkan_patch_version = 0;
+
                     // Device
                     // -------------------------------------------------------------------------------------------------
                     vkb::InstanceBuilder instance_builder;
@@ -1293,7 +1298,7 @@ namespace mag
                                 })
                             .request_validation_layers()
     #endif
-                            .require_api_version(1, 3, 0)
+                            .require_api_version(vulkan_major_version, vulkan_minor_version, vulkan_patch_version)
                             .build();
 
                     MAG_ASSERT(instance_ret, instance_ret.error().message());
@@ -1321,7 +1326,7 @@ namespace mag
 
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
                     const vkb::Result<vkb::PhysicalDevice> phys_device_ret =
-                        phys_device_selector.set_minimum_version(1, 3)
+                        phys_device_selector.set_minimum_version(vulkan_major_version, vulkan_minor_version)
                             .set_surface(surface)
                             .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
                             .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
@@ -1498,6 +1503,6 @@ namespace mag
 
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag
 
 #endif

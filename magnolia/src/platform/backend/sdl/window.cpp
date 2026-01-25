@@ -344,4 +344,4 @@ namespace mag
 
         const std::vector<const c8*>& get_instance_extensions() { return state->extensions; }
     };  // namespace window
-};      // namespace mag
+};  // namespace mag

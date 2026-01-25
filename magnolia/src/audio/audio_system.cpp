@@ -42,4 +42,4 @@ namespace mag
 
         void stop(const ref<AudioResource>& audio) { state->soloud.stop(audio->handle); }
     };  // namespace audio
-};      // namespace mag
+};  // namespace mag

@@ -2,7 +2,7 @@
 workspace "magnolia"
     architecture "x86_64"
     language "c++"
-    cppdialect "c++20"
+    cppdialect "c++23"
     toolset "clang"
     configurations { "debug", "release" }
     location "build"
@@ -21,7 +21,6 @@ workspace "magnolia"
     
     engine_libdir =
     {
-        target_libdir .. "/fmt",
         target_libdir .. "/sdl",
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
@@ -36,7 +35,6 @@ workspace "magnolia"
     {
         "libs",
         "libs/sdl/include",
-        "libs/fmt/include",
         "libs/vulkan/include",
         "libs/vkbootstrap/src",
         "libs/vma/include",
@@ -58,7 +56,7 @@ workspace "magnolia"
     engine_lib_links = 
     {
         "vulkan",
-        "fmt", "SDL3", "assimp", "meshoptimizer",
+        "SDL3", "assimp", "meshoptimizer",
         "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
         "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
         "LinearMath",
@@ -67,18 +65,11 @@ workspace "magnolia"
         "imgui"
     }
 
-    -- @NOTE: don't use LTO on debug, it might interfere with ClangBuildAnalyzer
-    build_flags =
-    {
-        "LinkTimeOptimization"
-    }
-
     defines
     {
         "VULKAN_HPP_NAMESPACE=vk",
         "GLM_FORCE_QUAT_DATA_WXYZ",
-        "GLM_ENABLE_EXPERIMENTAL",
-        "FMT_USE_CONSTEVAL=0" -- @TODO: remove when fmt is removed
+        "GLM_ENABLE_EXPERIMENTAL"
     }
 
     linkoptions
@@ -134,7 +125,6 @@ project "magnolia"
 
     dependson
     {
-        "fmt",
         "sdl",
         "vulkan",
         "assimp",
@@ -166,7 +156,7 @@ project "magnolia"
     filter "configurations:release"
         buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
-        flags { build_flags }
+        linktimeoptimization ("fast")
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -186,19 +176,13 @@ project "test_game"
     { 
         "%{prj.name}/src",
         "magnolia/include",
-        "libs/fmt/include", -- @TODO: remove when fmt is removed
-        "libs/json/single_include"
-    }
-
-    libdirs
-    { 
-        target_libdir .. "/fmt" -- @TODO: remove when fmt is removed
+        "libs/json/single_include",
+        "libs/glm"
     }
 
     links
     {
-        "magnolia", 
-        "fmt" -- @TODO: remove when fmt is removed
+        "magnolia"
     }
 
     dependson
@@ -227,7 +211,7 @@ project "test_game"
     filter "configurations:release"
         buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
-        flags { build_flags }
+        linktimeoptimization ("fast")
         symbols "off"
         optimize "full" -- '-O3'
         runtime "release"
@@ -316,15 +300,7 @@ project "vulkan"
         local vulkan_bin_path = vulkan_dir .. "/" .. vulkan_lib
         os.execute("cp -u ext/linux/" .. vulkan_lib .. " " .. vulkan_bin_path)
     end
-
--- fmt -----------------------------------------------------------------------------------------------------------------
-project "fmt"
-    kind "none"
-    build_cmake_project("fmt", {
-        {name = "libfmt.a", dir = ""}
-    },
-    "-DFMT_DOC=OFF -DFMT_TEST=OFF -DFMT_INSTALL=OFF")
-        
+    
 -- sdl -----------------------------------------------------------------------------------------------------------------
 project "sdl"
     kind "none"
@@ -362,7 +338,7 @@ project "bullet"
         {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
         {name = "libLinearMath.a", dir = "src/LinearMath"}
     },
-    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF")
+    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF -DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"

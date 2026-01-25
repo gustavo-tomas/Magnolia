@@ -101,4 +101,4 @@ namespace mag
             return font;
         }
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

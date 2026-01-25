@@ -203,8 +203,7 @@ namespace mag
             str fixed_path = file_path.string();
 
             // Replace backslashes
-            std::replace_if(
-                fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
+            std::replace_if(fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
 
             return fixed_path;
         }
@@ -272,4 +271,4 @@ namespace mag
             return state->fw.files_on_watch.contains(file_path) && state->fw.files_on_watch[file_path].modified;
         }
     };  // namespace fs
-};      // namespace mag
+};  // namespace mag

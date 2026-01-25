@@ -528,4 +528,4 @@ namespace mag
         }
         // clang-format on
     };  // namespace window
-};      // namespace mag
+};  // namespace mag

@@ -1,12 +1,11 @@
 #include "magnolia/gfx/gfx.hpp"
 
-#include <map>
-
 #include "backend/backend.hpp"
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/event.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/types.hpp"
+#include "magnolia/platform/window.hpp"
 #include "magnolia/resources/shader.hpp"
 
 namespace mag
@@ -82,6 +81,7 @@ namespace mag
             // -------------------------------------------------------------------------------------------------
             ISwapchainDesc swapchain_desc = {};
             swapchain_desc.desired_present_mode = PresentMode::Mailbox;
+            swapchain_desc.desired_extent = window::get_size();
             state->swapchain = state->device->create_swapchain(swapchain_desc);
 
             // Queues
@@ -174,7 +174,7 @@ namespace mag
 
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
-                state->swapchain->resize();
+                state->swapchain->resize(window::get_size());
                 return false;
             }
 
@@ -270,7 +270,7 @@ namespace mag
 
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
-                state->swapchain->resize();
+                state->swapchain->resize(window::get_size());
                 return false;
             }
 
@@ -671,9 +671,9 @@ namespace mag
 
             state->device->wait_idle();
 
-            state->swapchain->resize();
+            state->swapchain->resize({e.width, e.height});
         }
 
         void on_event(const Event& e) { mag::dispatch_event<WindowResizeEvent>(e, on_resize); }
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag
