@@ -2,7 +2,7 @@
 
 ![screenshot](screenshots/magnolia_v0.7.0.png)
 
-> Current state of the engine
+> Current state of the engine (test-game branch)
 
 > Windows build is still in development (for now is linux only)!
 

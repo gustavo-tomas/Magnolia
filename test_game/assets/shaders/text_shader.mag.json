@@ -1,9 +1,0 @@
-{
-    "Name": "Text",
-    "File": "text.glsl",
-    "Stages": [
-        "Vertex",
-        "Fragment"
-    ],
-    "Topology": "TriangleStrip"
-}

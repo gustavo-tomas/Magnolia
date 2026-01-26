@@ -1,9 +1,0 @@
-{
-    "Name": "Mesh",
-    "File": "mesh.glsl",
-    "Stages": [
-        "Vertex",
-        "Fragment"
-    ],
-    "Topology": "TriangleList"
-}
