@@ -13,7 +13,6 @@ workspace "magnolia"
     objdir ("build/%{cfg.system}/%{cfg.buildcfg}/obj/%{prj.name}")
 
     -- @TODO: finish windows 
-    -- @TODO: some cmakes also compiles the examples/tests. We want to compile only the libs.
 
     -- @TODO: remaining libs configurations
     target_libdir = "build/" .. os.host() .. "/" .. "debug/bin"
@@ -156,61 +155,6 @@ project "magnolia"
     filter "configurations:release"
         buildoptions { "-fno-exceptions", "-fvisibility=hidden" }
         defines { "NDEBUG", "MAG_CONFIG_RELEASE=1", "MAG_PROFILE_ENABLED=1" }
-        linktimeoptimization ("fast")
-        symbols "off"
-        optimize "full" -- '-O3'
-        runtime "release"
-
--- Client Application --------------------------------------------------------------------------------------------------
-project "test_game"
-    targetname ("%{prj.name}")
-    kind "consoleapp"
-
-    files
-    {
-        "%{prj.name}/src/**.hpp",
-        "%{prj.name}/src/**.cpp"
-    }
-
-    includedirs 
-    { 
-        "%{prj.name}/src",
-        "magnolia/include",
-        "libs/json/single_include",
-        "libs/glm"
-    }
-
-    links
-    {
-        "magnolia"
-    }
-
-    dependson
-    {
-        "magnolia"
-    }
-
-    filter "system:linux"
-        pic "on"
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines
-        {
-            "_CRT_SECURE_NO_WARNINGS"
-        }
-        
-    filter "configurations:debug"
-        buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
-        defines { "MAG_CONFIG_DEBUG=1", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1" }
-        symbols "on" -- '-g'
-        optimize "off" -- '-O0'
-        runtime "debug"
-
-    filter "configurations:release"
-        buildoptions { "-Wall", "-Wextra", "-fno-exceptions" }
-        defines { "NDEBUG", "MAG_CONFIG_RELEASE=1" }
         linktimeoptimization ("fast")
         symbols "off"
         optimize "full" -- '-O3'
