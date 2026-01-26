@@ -40,7 +40,7 @@ def build(system, configuration):
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores}")
-  assert os.system(f"ext{bar}{system}{bar}{executable} gmake2 && cd build && make config={configuration} -j{number_of_cores}") == 0
+  assert os.system(f"ext{bar}{system}{bar}{executable} gmake && cd build && make config={configuration} -j{number_of_cores}") == 0
 
   return
 
