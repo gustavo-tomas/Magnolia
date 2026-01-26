@@ -25,7 +25,12 @@ namespace mag
         MAG_API void log_message(const str& level, const str& color, const std::source_location& loc,
                                  const std::format_string<Args...> fmt, Args&&... args)
         {
-            std::print("{}[{}:{}]\n{}", color::Blue, loc.file_name(), loc.line(), color::Reset);
+            // Remove '../' for prettier printing
+            const str location = loc.file_name();
+            const u64 location_start = location.find_first_not_of("../");
+            const str pretty_location = location.substr(location_start);
+
+            std::print("{}[{}:{}]\n{}", color::Blue, pretty_location, loc.line(), color::Reset);
             std::print("{}[{}] ", color, level);
             std::print(fmt, std::forward<Args>(args)...);
             std::print("\n{}", color::Reset);
