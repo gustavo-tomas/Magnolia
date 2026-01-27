@@ -22,4 +22,4 @@ namespace mag
 
         u32 get_window_id();
     };  // namespace console
-};      // namespace mag
+};  // namespace mag

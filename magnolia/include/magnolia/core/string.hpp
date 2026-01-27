@@ -29,4 +29,4 @@ namespace mag
         // Remove trailing spaces from the end
         void trimr(str& s);
     };  // namespace string
-};      // namespace mag
+};  // namespace mag

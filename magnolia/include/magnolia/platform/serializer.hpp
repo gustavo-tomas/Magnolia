@@ -84,4 +84,4 @@ namespace mag
                 std::unordered_map<std::type_index, std::function<void(void*, Serializer&)>> load_handlers;
         };
     };  // namespace fs
-};      // namespace mag
+};  // namespace mag

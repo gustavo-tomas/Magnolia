@@ -60,4 +60,4 @@ namespace mag
                 LineList get_line_list(const mat4& transform) const;
         };
     };  // namespace math
-};      // namespace mag
+};  // namespace mag

@@ -221,7 +221,7 @@ namespace mag
             OneMinusSrcAlpha
         };
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag
 
 ENABLE_BITMASK_OPERATORS(mag::gfx::BufferUsage);
 ENABLE_BITMASK_OPERATORS(mag::gfx::TextureUsage);

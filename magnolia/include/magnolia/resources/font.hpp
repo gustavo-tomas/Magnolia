@@ -34,4 +34,4 @@ namespace mag
                 virtual IResource* load(const str& file_path) override;
         };
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

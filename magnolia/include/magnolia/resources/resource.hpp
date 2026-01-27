@@ -121,4 +121,4 @@ namespace mag
                 std::unordered_map<std::type_index, unique<IResourceLoader>> loaders;
         };
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

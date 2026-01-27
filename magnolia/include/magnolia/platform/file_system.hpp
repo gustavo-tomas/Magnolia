@@ -39,4 +39,4 @@ namespace mag
 
         b8 was_file_modified(const fs::path& file_path);
     };  // namespace fs
-};      // namespace mag
+};  // namespace mag

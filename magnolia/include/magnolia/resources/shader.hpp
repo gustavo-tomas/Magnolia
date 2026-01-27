@@ -113,4 +113,4 @@ namespace mag
 
         MAG_API b8 compile_shader(const str& file_path);
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

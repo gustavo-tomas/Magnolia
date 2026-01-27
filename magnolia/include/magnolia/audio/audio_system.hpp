@@ -17,4 +17,4 @@ namespace mag
 
         MAG_API void stop(const ref<AudioResource>& audio);
     };  // namespace audio
-};      // namespace mag
+};  // namespace mag

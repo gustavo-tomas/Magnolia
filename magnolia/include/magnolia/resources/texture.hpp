@@ -35,4 +35,4 @@ namespace mag
         b8 get_image_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels);
         b8 is_image_extension_supported(const str& extension_with_dot);
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

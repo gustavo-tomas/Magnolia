@@ -19,4 +19,4 @@ namespace mag
         // Checks if a process is running. Invalid process are considered to not be running.
         b8 is_process_running(Process* process);
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

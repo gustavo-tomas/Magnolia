@@ -25,4 +25,4 @@ namespace mag
         MAG_API void add_job(Job job);
         MAG_API void process_callbacks();
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

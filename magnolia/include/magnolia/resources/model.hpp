@@ -51,4 +51,4 @@ namespace mag
                 ResourceManager& resource_manager;
         };
     };  // namespace resource
-};      // namespace mag
+};  // namespace mag

@@ -11,4 +11,4 @@ namespace mag
 
         MAG_API void sleep(const f64 ms);
     };  // namespace thread
-};      // namespace mag
+};  // namespace mag

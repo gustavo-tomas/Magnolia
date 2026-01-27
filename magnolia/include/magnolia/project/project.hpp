@@ -29,4 +29,4 @@ namespace mag
         MAG_API b8 load(const str& file_path, Project& project);
         MAG_API b8 save(const str& file_path, Project& project);
     };  // namespace project
-};      // namespace mag
+};  // namespace mag

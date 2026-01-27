@@ -17,7 +17,6 @@ def check_system():
   supported_systems = ["windows", "linux"]
   system = platform.system().lower()
 
-  print(f"System: {system}\n")
   assert system in supported_systems, f"System '{system}' is not supported\n"
 
   if system == "linux":
@@ -39,7 +38,7 @@ def build(system, configuration):
   executable = f"premake5" + executable_extension
   number_of_cores = get_number_of_cores()
 
-  print(f"(Python) Number of cores: {number_of_cores}")
+  print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
   assert os.system(f"ext{bar}{system}{bar}{executable} gmake && cd build && make config={configuration} -j{number_of_cores}") == 0
 
   return
@@ -50,8 +49,21 @@ def clean(configuration):
   return
 
 # ----- Format -----
-def format():
-  os.system(f"find magnolia/src/ -iname *.hpp -o -iname *.cpp -o -iname *.h | xargs clang-format -i -style=file")
+def format_files():
+
+  has_formatter = shutil.which("clang-format") != None
+  if not has_formatter:
+    return
+
+  directory = "magnolia/"
+
+  # I dislike python
+  file_paths = [os.path.join(dirpath, f) for (dirpath, dirnames, filenames) in os.walk(directory) for f in filenames]
+  file_paths_str = str()
+  for path in file_paths:
+    file_paths_str += " " + path
+
+  os.system(f"clang-format {file_paths_str} -i -style=file")
   return
 
 # ----- Lint -----
@@ -64,7 +76,7 @@ def main():
   # Check for system support
   check_system()
 
-  format()
+  format_files()
 
   if len(sys.argv) == 2:
     configuration = str(sys.argv[1])

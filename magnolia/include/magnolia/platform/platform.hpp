@@ -12,4 +12,4 @@ namespace mag
         // Ms since start
         MAG_API f64 get_time();
     };  // namespace plat
-};      // namespace mag
+};  // namespace mag

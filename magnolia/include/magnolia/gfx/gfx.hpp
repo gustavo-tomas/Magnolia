@@ -52,4 +52,4 @@ namespace mag
 
         MAG_API void on_event(const Event& e);
     };  // namespace gfx
-};      // namespace mag
+};  // namespace mag
