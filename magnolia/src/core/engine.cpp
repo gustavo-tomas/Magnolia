@@ -77,21 +77,30 @@ namespace mag
             u32 count = 0;
             for (const auto& num : config["WindowSize"])
             {
-                if (count >= window_options.size.length()) break;
+                if (count >= window_options.size.length())
+                {
+                    break;
+                }
                 window_options.size[count++] = num;
             }
 
             count = 0;
             for (const auto& num : config["WindowPosition"])
             {
-                if (count >= window_options.position.length()) break;
+                if (count >= window_options.position.length())
+                {
+                    break;
+                }
                 window_options.position[count++] = num;
             }
 
             count = 0;
             for (const auto& num : config["ScreenResolution"])
             {
-                if (count >= gfx_options.resolution.length()) break;
+                if (count >= gfx_options.resolution.length())
+                {
+                    break;
+                }
                 gfx_options.resolution[count++] = num;
             }
 

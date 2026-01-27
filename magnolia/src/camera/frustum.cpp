@@ -112,30 +112,62 @@ namespace mag
         u32 out;
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].x > maxp.x) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].x > maxp.x) ? 1 : 0);
+        }
+        if (out == 8)
+        {
+            return false;
+        }
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].x < minp.x) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].x < minp.x) ? 1 : 0);
+        }
+        if (out == 8)
+        {
+            return false;
+        }
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].y > maxp.y) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].y > maxp.y) ? 1 : 0);
+        }
+        if (out == 8)
+        {
+            return false;
+        }
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].y < minp.y) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].y < minp.y) ? 1 : 0);
+        }
+        if (out == 8)
+        {
+            return false;
+        }
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].z > maxp.z) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].z > maxp.z) ? 1 : 0);
+        }
+        if (out == 8)
+        {
+            return false;
+        }
 
         out = 0;
-        for (u32 i = 0; i < 8; i++) out += ((impl->points[i].z < minp.z) ? 1 : 0);
-        if (out == 8) return false;
+        for (u32 i = 0; i < 8; i++)
+        {
+            out += ((impl->points[i].z < minp.z) ? 1 : 0);
+        }
 
-        return true;
+        return out != 8;
     }
 
     template <Planes a, Planes b, Planes c>

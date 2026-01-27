@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include "magnolia/core/types.hpp"
 #include "magnolia/resources/resource.hpp"
 

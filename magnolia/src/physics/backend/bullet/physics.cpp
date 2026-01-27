@@ -26,8 +26,6 @@ namespace mag
                 (void)distance;
                 (void)lifeTime;
                 (void)color;
-
-                return;
             }
 
             virtual void reportErrorWarning(const c8* warning_string) override

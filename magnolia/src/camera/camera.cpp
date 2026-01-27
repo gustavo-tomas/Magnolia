@@ -29,7 +29,10 @@ namespace mag
         for (u32 i = 0; i < 3; i++)
         {
             this->rotation[i] = fmod(rotation[i] + math::pi<f32>(), math::two_pi<f32>());
-            if (this->rotation[i] < 0.0f) this->rotation[i] += math::two_pi<f32>();
+            if (this->rotation[i] < 0.0f)
+            {
+                this->rotation[i] += math::two_pi<f32>();
+            }
             this->rotation[i] -= math::pi<f32>();
         }
 

@@ -4,8 +4,6 @@
 #include <regex>
 #include <vector>
 
-#include "magnolia/core/logger.hpp"
-
 namespace mag
 {
     namespace string
