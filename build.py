@@ -33,6 +33,9 @@ def check_system():
 def get_number_of_cores():
   return multiprocessing.cpu_count()
 
+def has_executable(executable):
+  return shutil.which(executable) != None
+
 # ----- Build -----
 def build(system, configuration):
   executable = f"premake5" + executable_extension
@@ -51,8 +54,7 @@ def clean(configuration):
 # ----- Format -----
 def format_files():
 
-  has_formatter = shutil.which("clang-format") != None
-  if not has_formatter:
+  if not has_executable("clang-format"):
     return
 
   directory = "magnolia/"
@@ -68,7 +70,11 @@ def format_files():
 
 # ----- Lint -----
 def lint():
-  os.system(f"cppcheck --enable=warning,performance,portability,style,information --suppress=missingInclude --std=c++20 magnolia/src/**") == 0
+  
+  if not has_executable("cppcheck"):
+    return
+  
+  os.system(f"cppcheck --std=c++23 --check-level=exhaustive --enable=warning,performance,portability,style,information magnolia/**") == 0
   return
 
 def main():
