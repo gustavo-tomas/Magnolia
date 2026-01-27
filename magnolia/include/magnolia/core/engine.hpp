@@ -14,4 +14,6 @@ namespace mag
 
     MAG_API b8 initialize(const EngineInitializeOptions& options);
     MAG_API void shutdown();
+
+    MAG_API EngineInitializeOptions read_config_file(const str& file_path);
 };  // namespace mag

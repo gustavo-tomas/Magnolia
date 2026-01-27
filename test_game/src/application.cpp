@@ -25,58 +25,11 @@
 
 namespace game
 {
-    struct GameInitializeOptions
-    {
-            mag::EngineInitializeOptions engine_options = {};
-    };
-
-    GameInitializeOptions read_application_options(const str& config_file_path)
-    {
-        GameInitializeOptions app_options = {};
-
-        // Read config file
-
-        mag::fs::json config;
-
-        if (mag::fs::read_json_data(config_file_path, config))
-        {
-            mag::window::WindowOptions& window_options = app_options.engine_options.window_options;
-            mag::gfx::GfxOptions& gfx_options = app_options.engine_options.gfx_options;
-
-            u32 count = 0;
-            for (const auto& num : config["WindowSize"])
-            {
-                if (count >= window_options.size.length()) break;
-                window_options.size[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["WindowPosition"])
-            {
-                if (count >= window_options.position.length()) break;
-                window_options.position[count++] = num;
-            }
-
-            count = 0;
-            for (const auto& num : config["ScreenResolution"])
-            {
-                if (count >= gfx_options.resolution.length()) break;
-                gfx_options.resolution[count++] = num;
-            }
-
-            window_options.title = config["WindowTitle"].get<str>();
-            window_options.window_icon = config["WindowIcon"].get<str>();
-            window_options.target_frame_rate = config["TargetFrameRate"].get<i32>();
-        }
-
-        return app_options;
-    }
-
     TestGame::TestGame()
     {
-        const GameInitializeOptions options = read_application_options("test_game/config.json");
+        const mag::EngineInitializeOptions options = mag::read_config_file("test_game/config.json");
 
-        MAG_ASSERT(mag::initialize(options.engine_options), "Failed to initialize mag");
+        MAG_ASSERT(mag::initialize(options), "Failed to initialize mag");
 
         renderer = mag::create_unique<Renderer>();
 

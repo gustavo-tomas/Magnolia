@@ -62,4 +62,44 @@ namespace mag
         fs::shutdown();
         plat::shutdown();
     }
+
+    EngineInitializeOptions read_config_file(const str& file_path)
+    {
+        EngineInitializeOptions options = {};
+
+        mag::fs::json config;
+
+        if (mag::fs::read_json_data(file_path, config))
+        {
+            mag::window::WindowOptions& window_options = options.window_options;
+            mag::gfx::GfxOptions& gfx_options = options.gfx_options;
+
+            u32 count = 0;
+            for (const auto& num : config["WindowSize"])
+            {
+                if (count >= window_options.size.length()) break;
+                window_options.size[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["WindowPosition"])
+            {
+                if (count >= window_options.position.length()) break;
+                window_options.position[count++] = num;
+            }
+
+            count = 0;
+            for (const auto& num : config["ScreenResolution"])
+            {
+                if (count >= gfx_options.resolution.length()) break;
+                gfx_options.resolution[count++] = num;
+            }
+
+            window_options.title = config["WindowTitle"].get<str>();
+            window_options.window_icon = config["WindowIcon"].get<str>();
+            window_options.target_frame_rate = config["TargetFrameRate"].get<i32>();
+        }
+
+        return options;
+    }
 };  // namespace mag
