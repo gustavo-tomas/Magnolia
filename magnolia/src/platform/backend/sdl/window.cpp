@@ -15,6 +15,8 @@
 #include "magnolia/core/event.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/platform/platform.hpp"
+#include "magnolia/threads/thread.hpp"
 #include "magnolia/tools/console.hpp"
 
 namespace mag
@@ -32,6 +34,9 @@ namespace mag
                 SDL_Event last_window_resize_event = {};
                 SDL_Event last_mouse_move_event = {};
                 std::vector<const c8*> extensions;
+
+                f64 dt = 0;
+                i32 target_frame_rate = -1;
 
                 std::unordered_map<SDL_Keycode, b8> key_state;
                 std::unordered_map<SDL_Keycode, u32> key_update;
@@ -88,6 +93,8 @@ namespace mag
                 set_window_icon(options.window_icon);
             }
 
+            set_target_frame_rate(options.target_frame_rate);
+
             SDL_ShowWindow(state->handle);
 
             return state != nullptr;
@@ -104,6 +111,25 @@ namespace mag
         void on_update()
         {
             state->update_counter++;
+
+            static f64 curr_time = 0;
+            static f64 last_time = plat::get_time();
+
+            // Delay if needed
+            const f64 target_frame_rate = static_cast<f64>(state->target_frame_rate);
+            if (target_frame_rate > 0.0)
+            {
+                const f64 delay = (1000.0 / target_frame_rate) - (plat::get_time() - last_time);
+                if (delay > 0.0)
+                {
+                    thread::sleep(delay);
+                }
+            }
+
+            // Calculate dt
+            curr_time = plat::get_time();
+            state->dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
+            last_time = curr_time;
 
             SDL_Event e;
 
@@ -219,7 +245,7 @@ namespace mag
                 state->mouse_moved = false;
             }
 
-            mag::console::on_update();
+            console::on_update();
         }
 
         void create_surface(const void* instance, void* surface)
@@ -319,6 +345,10 @@ namespace mag
         }
 
         void set_event_callback(const EventCallback& callback) { state->event_callback = callback; }
+
+        void set_target_frame_rate(const i32 frame_rate) { state->target_frame_rate = frame_rate; }
+
+        f64 get_delta_time() { return state->dt; }
 
         math::ivec2 get_mouse_position()
         {

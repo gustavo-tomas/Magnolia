@@ -28,7 +28,6 @@ namespace game
     struct GameInitializeOptions
     {
             mag::EngineInitializeOptions engine_options = {};
-            f32 target_frame_rate = -1;
     };
 
     GameInitializeOptions read_application_options(const str& config_file_path)
@@ -67,8 +66,7 @@ namespace game
 
             window_options.title = config["WindowTitle"].get<str>();
             window_options.window_icon = config["WindowIcon"].get<str>();
-
-            app_options.target_frame_rate = config["TargetFrameRate"].get<f32>();
+            window_options.target_frame_rate = config["TargetFrameRate"].get<i32>();
         }
 
         return app_options;
@@ -84,8 +82,6 @@ namespace game
 
         // Set a callback for window events
         mag::window::set_event_callback(BIND_FN(TestGame::on_event));
-
-        set_target_frame_rate(options.target_frame_rate);
 
         // Load the project
 
@@ -123,20 +119,14 @@ namespace game
 
     void TestGame::run()
     {
-        f64 curr_time = 0;
-        f64 last_time = 0;
-        f64 dt = 0;
-
         running = true;
 
         while (running)
         {
-            // Calculate dt
-            curr_time = mag::plat::get_time();
-            dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
-            last_time = curr_time;
-
             mag::window::on_update();
+
+            // Called after window update
+            const f32 dt = mag::window::get_delta_time();
 
             // Skip rendering if minimized or resizing
             if (mag::window::is_minimized())
@@ -149,13 +139,6 @@ namespace game
 
             // Update the application
             on_update(dt);
-
-            // Delay if needed
-            const f64 delay = (1000.0 / target_frame_rate) - (mag::plat::get_time() - last_time);
-            if (delay > 0.0 && target_frame_rate > 0.0)
-            {
-                mag::thread::sleep(delay);
-            }
         }
     }
 
@@ -242,6 +225,4 @@ namespace game
                                            }
                                        });
     }
-
-    void TestGame::set_target_frame_rate(const f32 frame_rate) { target_frame_rate = frame_rate; }
 };  // namespace game

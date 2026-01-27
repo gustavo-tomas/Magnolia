@@ -27,14 +27,10 @@ namespace game
 
             void register_commands();
 
-            // -1 is no limits
-            void set_target_frame_rate(const f32 frame_rate);
-
             void on_window_close(const mag::WindowCloseEvent& e);
             void on_quit(const mag::QuitEvent& e);
 
             b8 running = false;
-            f32 target_frame_rate = -1;
 
             mag::unique<Renderer> renderer;
             mag::unique<Scene> scene = nullptr;

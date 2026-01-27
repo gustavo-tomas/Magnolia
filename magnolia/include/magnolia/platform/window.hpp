@@ -22,14 +22,15 @@ namespace mag
                 math::ivec2 position = math::ivec2(CenterPos);
                 str title = "Magnolia";
                 str window_icon = "";
+                i32 target_frame_rate = -1;
         };
 
         b8 initialize(const WindowOptions& options);
         void shutdown();
 
-        MAG_API void on_update();
-
         void create_surface(const void* instance, void* surface);
+
+        MAG_API void on_update();
 
         MAG_API b8 set_window_icon(const str& bmp_file);
         MAG_API void set_title(const str& title);
@@ -39,6 +40,9 @@ namespace mag
 
         MAG_API void set_capture_mouse(const b8 capture);
         MAG_API void set_mouse_position(const i32 x, const i32 y);
+
+        // Set target fps. -1 is no limits
+        MAG_API void set_target_frame_rate(const i32 frame_rate = -1);
 
         MAG_API b8 is_key_pressed(const Key key);
         MAG_API b8 is_key_down(const Key key);
@@ -51,7 +55,8 @@ namespace mag
         MAG_API math::ivec2 get_mouse_position();
         MAG_API math::uvec2 get_window_center();
         MAG_API math::uvec2 get_size();
+        MAG_API f64 get_delta_time();
 
         const std::vector<const c8*>& get_instance_extensions();
     };  // namespace window
-};      // namespace mag
+};  // namespace mag
