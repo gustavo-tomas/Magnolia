@@ -396,7 +396,8 @@ namespace mag
 
                 virtual void wait_idle() const = 0;
 
-                virtual void submit_commands_immediate(std::function<void(ICommandBuffer& cmd)>&& function) const = 0;
+                virtual void submit_commands_immediate(
+                    const std::function<void(ICommandBuffer& cmd)>& function) const = 0;
 
                 virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) const = 0;
 
