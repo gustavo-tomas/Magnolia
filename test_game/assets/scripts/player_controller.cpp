@@ -20,11 +20,11 @@ class PlayerController : public ScriptableEntity
         f32 yaw = 0.0f;
 
     public:
-        virtual void on_create() override
+        void on_create() override
         {
             const RigidBodyComponent* rigid_body_c = get_component<RigidBodyComponent>();
 
-            if (!rigid_body_c)
+            if (rigid_body_c == nullptr)
             {
                 LOG_WARNING("Missing rigidbody");
                 return;
@@ -38,31 +38,31 @@ class PlayerController : public ScriptableEntity
             LOG_SUCCESS("Created PlayerController");
         }
 
-        virtual void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
+        void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
 
-        virtual void on_update(const f32 dt) override
+        void on_update(const f32 dt) override
         {
             handle_movement(dt);
             handle_shooting();
         }
 
-        virtual void on_signal_received(const u32 sender_id, const void* data) override
+        void on_signal_received(const u32 sender_id, const void* data) override
         {
             // Damaged by some enemy
             const DamageData* damage_data = static_cast<const DamageData*>(data);
-            if (damage_data)
+            if (damage_data != nullptr)
             {
                 hp -= damage_data->damage;
 
-                printf("Damage: %.2f sent from: %u\n", damage_data->damage, sender_id);
-                printf("Player HP: %.2f\n", hp);
+                LOG_INFO("Damage: {0:.2} sent from: {1}", damage_data->damage, sender_id);
+                LOG_INFO("Player HP: {0:.2}", hp);
             }
         }
 
         void handle_shooting()
         {
             auto [transform] = get_components<TransformComponent>();
-            if (!transform)
+            if (transform == nullptr)
             {
                 return;
             }
@@ -78,7 +78,7 @@ class PlayerController : public ScriptableEntity
             auto [transform, camera_c, rigid_body_c] =
                 get_components<TransformComponent, CameraComponent, RigidBodyComponent>();
 
-            if (!transform || !camera_c || !rigid_body_c)
+            if (transform == nullptr || camera_c == nullptr || rigid_body_c == nullptr)
             {
                 LOG_WARNING("Missing components");
                 return;
@@ -116,10 +116,22 @@ class PlayerController : public ScriptableEntity
 
             mag::vec3 input_direction(0.0f);
 
-            if (mag::window::is_key_down(mag::Key::w)) input_direction -= forward;
-            if (mag::window::is_key_down(mag::Key::s)) input_direction += forward;
-            if (mag::window::is_key_down(mag::Key::a)) input_direction -= right;
-            if (mag::window::is_key_down(mag::Key::d)) input_direction += right;
+            if (mag::window::is_key_down(mag::Key::w))
+            {
+                input_direction -= forward;
+            }
+            if (mag::window::is_key_down(mag::Key::s))
+            {
+                input_direction += forward;
+            }
+            if (mag::window::is_key_down(mag::Key::a))
+            {
+                input_direction -= right;
+            }
+            if (mag::window::is_key_down(mag::Key::d))
+            {
+                input_direction += right;
+            }
 
             // Prevent nan values
             if (length(input_direction) > 0.0f)
@@ -135,7 +147,7 @@ class PlayerController : public ScriptableEntity
 
             // Update the camera transform
             mag::quat new_rot = mag::quat();
-            mag::vec3 new_pos = mag::vec3(0.0f);
+            mag::vec3 new_pos(0.0f);
             physics.get_collision_object_transform(rigid_body_handle, new_pos, new_rot);
             new_rot = mag::vec3(pitch, yaw, 0.0f);
 
@@ -154,7 +166,7 @@ class PlayerController : public ScriptableEntity
             const u32 bullet_id = create_entity("Bullet_" + std::to_string(counter++));
 
             // Apply small offset to avoid collisions with the player
-            TransformComponent bullet_transform = TransformComponent(transform);
+            TransformComponent bullet_transform = transform;
             bullet_transform.scale = mag::vec3(100.0f);
             bullet_transform.translation -= forward_dir * bullet_offset;
 
@@ -177,7 +189,7 @@ class PlayerController : public ScriptableEntity
             physics.apply_impulse(bullet_rigid_body->rigid_body_handle, -forward_dir * 1000.0f);
         }
 
-        virtual void on_event(const mag::Event& e) override
+        void on_event(const mag::Event& e) override
         {
             dispatch_event<mag::MousePressEvent>(e, [this](const mag::MousePressEvent& e) { on_mouse_click(e); });
             dispatch_event<mag::KeyPressEvent>(e, [this](const mag::KeyPressEvent& e) { on_key_press(e); });
@@ -212,7 +224,7 @@ class PlayerController : public ScriptableEntity
 
         mag::vec3 get_right_dir() const
         {
-            mag::vec3 right = mag::vec3(0.0f);
+            mag::vec3 right(0.0f);
             right.x = cos(yaw);
             right.y = 0;
             right.z = -sin(yaw);
@@ -222,7 +234,7 @@ class PlayerController : public ScriptableEntity
 
         mag::vec3 get_forward_dir() const
         {
-            mag::vec3 forward = mag::vec3(0.0f);
+            mag::vec3 forward(0.0f);
             forward.x = cos(-pitch) * sin(yaw);
             forward.y = sin(-pitch);
             forward.z = cos(-pitch) * cos(yaw);
