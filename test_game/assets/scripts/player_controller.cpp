@@ -1,6 +1,8 @@
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/model.hpp>
+#include <magnolia/resources/resource.hpp>
+#include <magnolia/resources/texture.hpp>
 
 #include "common.hpp"
 
@@ -12,6 +14,7 @@ class PlayerController : public ScriptableEntity
         f32 hp = 100.0f;
         f32 walk_speed = 1650.0f;
         f32 mouse_sensitivity = 0.002f;
+        f32 fire_rate = 20.0f;  // per second
         mag::vec3 camera_offset = mag::vec3(50.0f);
         mag::vec3 bullet_offset = mag::vec3(50.0f);
 
@@ -43,7 +46,7 @@ class PlayerController : public ScriptableEntity
         void on_update(const f32 dt) override
         {
             handle_movement(dt);
-            handle_shooting();
+            handle_shooting(dt);
         }
 
         void on_signal_received(const u32 sender_id, const void* data) override
@@ -59,7 +62,7 @@ class PlayerController : public ScriptableEntity
             }
         }
 
-        void handle_shooting()
+        void handle_shooting(const f32 dt)
         {
             auto [transform] = get_components<TransformComponent>();
             if (transform == nullptr)
@@ -67,9 +70,12 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            if (mag::window::is_button_pressed(mag::Button::Left))
+            static f32 timer = 0;
+            timer += dt;
+            if (timer >= 1.0f / fire_rate && mag::window::is_button_down(mag::Button::Left))
             {
                 fire_bullet(*transform);
+                timer = 0.0f;
             }
         }
 
@@ -167,20 +173,20 @@ class PlayerController : public ScriptableEntity
 
             // Apply small offset to avoid collisions with the player
             TransformComponent bullet_transform = transform;
-            bullet_transform.scale = mag::vec3(100.0f);
+            bullet_transform.scale = mag::vec3(0.01f);
             bullet_transform.translation -= forward_dir * bullet_offset;
 
-            const mag::ref<mag::ModelResource> model =
-                mag::resource::get_model("test_game/assets/models/hammer/native/wooden_hammer_01.model.json");
+            const mag::ref<mag::TextureResource> texture =
+                mag::resource::get_texture("test_game/assets/sprites/test_texture0.png");
 
             ColliderComponent::Collider collider = {};
-            collider.capsule.radius = 5.0f;
-            collider.capsule.height = 10.0f;
+            collider.capsule.radius = 2.5f;
+            collider.capsule.height = 0.0f;
 
             const f32 mass = 10.0f;
 
             add_component_to_entity<TransformComponent>(bullet_id, bullet_transform);
-            add_component_to_entity<ModelComponent>(bullet_id, model);
+            add_component_to_entity<SpriteComponent>(bullet_id, texture);
             add_component_to_entity<RigidBodyComponent>(bullet_id, mass);
             add_component_to_entity<ColliderComponent>(bullet_id, ColliderComponent::ColliderType::Capsule, collider);
 
