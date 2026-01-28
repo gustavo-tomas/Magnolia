@@ -1,5 +1,7 @@
 #include "magnolia/camera/frustum.hpp"
 
+#include <algorithm>
+
 #include "magnolia/math/types.hpp"
 
 namespace mag
@@ -93,19 +95,22 @@ namespace mag
         const vec3& maxp = aabb.max;
 
         // check box outside/inside of frustum
-        for (const vec4& plane : impl->planes)
+        const b8 inside = std::any_of(impl->planes.begin(), impl->planes.end(),
+                                      [&maxp, &minp](const vec4& plane)
+                                      {
+                                          return (dot(plane, vec4(minp.x, minp.y, minp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(maxp.x, minp.y, minp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(minp.x, maxp.y, minp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(maxp.x, maxp.y, minp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(minp.x, minp.y, maxp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(maxp.x, minp.y, maxp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(minp.x, maxp.y, maxp.z, 1.0f)) >= 0.0) ||
+                                                 (dot(plane, vec4(maxp.x, maxp.y, maxp.z, 1.0f)) >= 0.0);
+                                      });
+
+        if (!inside)
         {
-            if ((dot(plane, vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(plane, vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0))
-            {
-                return false;
-            }
+            return false;
         }
 
         // check frustum outside/inside box

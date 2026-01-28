@@ -619,9 +619,9 @@ namespace mag
 
         void use_shader(const ShaderHandle& handle)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
+            const FrameData& current_frame = state->frames[state->current_frame];
             const ShaderData& shader = state->shaders[handle];
-            const DescriptorData& descriptor_data = current_frame.descriptor_set_map[handle];
+            const DescriptorData& descriptor_data = current_frame.descriptor_set_map.at(handle);
 
             // Because we are using the descriptor indexing extension with the update after bind feature, we can bind
             // descriptors sets only once and later update them
@@ -637,21 +637,21 @@ namespace mag
 
         void bind_vertex_buffer(const BufferHandle vertex_buffer_handle)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
+            const FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->bind_vertex_buffers(0, 1, {state->buffers[vertex_buffer_handle].get()}, {0});
         }
 
         void bind_index_buffer(const BufferHandle index_buffer_handle)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
+            const FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->bind_index_buffer(state->buffers[index_buffer_handle].get(), 0);
         }
 
         void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
+            const FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
         }
@@ -659,7 +659,7 @@ namespace mag
         void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
                           const i32 vertex_offset, const u32 first_instance)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
+            const FrameData& current_frame = state->frames[state->current_frame];
 
             current_frame.command_buffer->draw_indexed(index_count, instance_count, first_index, vertex_offset,
                                                        first_instance);

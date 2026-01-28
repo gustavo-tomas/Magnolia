@@ -47,7 +47,7 @@ namespace mag
             return true;
         }
 
-        b8 save(const str& file_path, Project& project)
+        b8 save(const str& file_path, const Project& project)
         {
             fs::json data;
             data["Name"] = project.get_name();

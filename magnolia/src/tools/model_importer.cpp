@@ -32,7 +32,8 @@ namespace mag
             b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
             void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
                                       ModelResource& model);
-            void optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices, ModelResource& model);
+            void optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,
+                               ModelResource& model);
 
             const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
 
@@ -243,7 +244,7 @@ namespace mag
         return true;
     }
 
-    void ModelImporter::IMPL::optimize_mesh(std::vector<Vertex>& vertices, std::vector<u32>& indices,
+    void ModelImporter::IMPL::optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,
                                             ModelResource& model)
     {
         const u32 vertex_count = vertices.size();

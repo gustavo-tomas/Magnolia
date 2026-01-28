@@ -78,7 +78,7 @@ def lint():
   cmd += "--output-file=build/lint_cppcheck.txt "
   cmd += "--enable=warning,performance,portability,style,information "
   cmd += "--enable=all "
-  cmd += "--suppress=missingInclude --suppress=missingIncludeSystem --suppress=noExplicitConstructor --suppress=unusedFunction "
+  cmd += "--suppress=missingInclude --suppress=missingIncludeSystem --suppress=noExplicitConstructor --suppress=unusedFunction --suppress=unknownMacro "
   os.system(f"{cmd} -Imagnolia/include magnolia/**") == 0
   return
 
