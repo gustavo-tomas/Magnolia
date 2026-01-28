@@ -7,19 +7,10 @@ namespace mag
     // @NOTE: not all keys are mapped. We probably wont need them.
 
     // Buttons
-    typedef enum class Buttons : u64
-    {
-        Unknown,
-        Left,
-        Middle,
-        Right,
-        X1,
-        X2
-    } Button;
+    using Button = enum class Buttons : u8 { Unknown, Left, Middle, Right, X1, X2 };
 
     // Keys
-    typedef enum class Keys : u64
-    {
+    using Key = enum class Keys : u8 {
         Unknown = 0,
         Return,
         Enter,
@@ -262,5 +253,5 @@ namespace mag
 
         Eject,
         Sleep
-    } Key;
+    };
 };  // namespace mag

@@ -7,7 +7,7 @@ namespace mag
 {
 #define DEFAULT_MATERIAL_NAME "__mag_default_material__"
 
-    enum class TextureSlot
+    enum class TextureSlot : u8
     {
         Albedo = 0,
         Normal,
@@ -28,9 +28,9 @@ namespace mag
         {
             public:
                 MaterialLoader(ResourceManager& resource_manager);
-                ~MaterialLoader();
+                ~MaterialLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
 
             private:
                 ResourceManager& resource_manager;

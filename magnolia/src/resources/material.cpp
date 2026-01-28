@@ -18,7 +18,7 @@ namespace mag
             // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
         }
 
-        MaterialLoader::~MaterialLoader() {}
+        MaterialLoader::~MaterialLoader() = default;
 
         IResource* MaterialLoader::load(const str& file_path)
         {

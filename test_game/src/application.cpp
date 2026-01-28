@@ -34,7 +34,7 @@ namespace game
         renderer = mag::create_unique<Renderer>();
 
         // Set a callback for window events
-        mag::window::set_event_callback(BIND_FN(TestGame::on_event));
+        mag::window::set_event_callback([this](const mag::Event& e) { on_event(e); });
 
         // Load the project
 
@@ -123,8 +123,8 @@ namespace game
 
     void TestGame::on_event(const mag::Event& e)
     {
-        dispatch_event<mag::WindowCloseEvent>(e, BIND_FN(TestGame::on_window_close));
-        dispatch_event<mag::QuitEvent>(e, BIND_FN(TestGame::on_quit));
+        dispatch_event<mag::WindowCloseEvent>(e, [this](const mag::WindowCloseEvent& e) { on_window_close(e); });
+        dispatch_event<mag::QuitEvent>(e, [this](const mag::QuitEvent& e) { on_quit(e); });
 
         scene->on_event(e);
         renderer->on_event(e);

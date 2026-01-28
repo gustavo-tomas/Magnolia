@@ -36,7 +36,7 @@ namespace mag
         struct LogData
         {
                 math::vec4 color = COLOR_WHITE;
-                str text = "";
+                str text;
         };
 
         struct ConsoleState
@@ -58,20 +58,20 @@ namespace mag
 
         static ConsoleState* state = nullptr;
 
-        void create_window();
+        static void create_window();
 
-        void destroy_window();
+        static void destroy_window();
 
-        void initialize_console();
+        static void initialize_console();
 
-        void draw_console();
+        static void draw_console();
 
-        i32 text_edit_callback(ImGuiInputTextCallbackData* data);
+        static i32 text_edit_callback(ImGuiInputTextCallbackData* data);
 
-        void clear_log();
+        static void clear_log();
 
         template <typename... Args>
-        void add_log(const LogData log, const Args&... args);
+        static void add_log(const LogData& log, const Args&... args);
 
         b8 initialize()
         {
@@ -144,7 +144,8 @@ namespace mag
             register_command("HISTORY",
                              [](const std::vector<str>&)
                              {
-                                 const i32 first = state->history.size() - state->history_display_size;
+                                 const i64 first =
+                                     static_cast<i64>(state->history.size()) - state->history_display_size;
                                  for (u64 i = first > 0 ? first : 0; i < state->history.size(); i++)
                                  {
                                      add_log({.color = COLOR_BLUE, .text = "{0:3}: {1}"}, i, state->history[i].c_str());
@@ -175,7 +176,7 @@ namespace mag
         {
             if (!state->commands.contains(command))
             {
-                state->commands[command] = std::move(func);
+                state->commands[command] = func;
                 return;
             }
 
@@ -220,7 +221,7 @@ namespace mag
             SDL_Window* window = state->window;
             SDL_Renderer* renderer = state->renderer;
 
-            if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
+            if ((SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) != 0u)
             {
                 return;
             }
@@ -281,7 +282,7 @@ namespace mag
             }
 
             ImGui::SameLine();
-            state->filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+            state->filter.Draw(R"(Filter ("incl,-excl") ("error"))", 180);
 
             ImGui::Separator();
 
@@ -352,7 +353,7 @@ namespace mag
                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll |
                 ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
 
-            str command_line = "";
+            str command_line;
 
             ImGui::PushItemWidth(-1);
 
@@ -368,7 +369,7 @@ namespace mag
 
                 if (!substrings.empty())
                 {
-                    const str command = substrings[0];
+                    const str& command = substrings[0];
                     std::vector<str> args;
 
                     for (u64 i = 1; i < substrings.size(); i++)
@@ -456,7 +457,7 @@ namespace mag
 
                             for (u64 i = 0; i < candidates.size() && all_candidates_matches; i++)
                             {
-                                const c8 candidate_c = std::toupper(candidates[i][match_len]);
+                                const i32 candidate_c = std::toupper(candidates[i][match_len]);
                                 if (i == 0)
                                 {
                                     c = candidate_c;
@@ -484,9 +485,9 @@ namespace mag
                         // List matches
                         add_log({.text = "Possible matches:"});
 
-                        for (u64 i = 0; i < candidates.size(); i++)
+                        for (const str& candidate : candidates)
                         {
-                            add_log({.text = "- {0}"}, candidates[i]);
+                            add_log({.text = "- {0}"}, candidate);
                         }
                     }
 
@@ -496,12 +497,12 @@ namespace mag
                 // History
                 case ImGuiInputTextFlags_CallbackHistory:
                 {
-                    const i32 prev_history_pos = state->history_pos;
+                    const i64 prev_history_pos = state->history_pos;
                     if (data->EventKey == ImGuiKey_UpArrow)
                     {
                         if (state->history_pos == -1)
                         {
-                            state->history_pos = state->history.size() - 1;
+                            state->history_pos = static_cast<i64>(state->history.size()) - 1;
                         }
                         else if (state->history_pos > 0)
                         {
@@ -536,7 +537,7 @@ namespace mag
         }
 
         template <typename... Args>
-        void add_log(const LogData log, const Args&... args)
+        void add_log(const LogData& log, const Args&... args)
         {
             const str formatted_text = log::get_formatted_log(log.text, args...);
 

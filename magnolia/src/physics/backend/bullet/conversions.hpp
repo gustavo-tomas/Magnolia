@@ -49,7 +49,7 @@ namespace mag
 
     inline void bt_to_mag(const btTransform& t, math::vec3& translation, math::quat& rotation)
     {
-        math::mat4 mag_transform = math::mat4(1.0f);
+        math::mat4 mag_transform(1.0f);
 
         t.getOpenGLMatrix(math::value_ptr(mag_transform));
 

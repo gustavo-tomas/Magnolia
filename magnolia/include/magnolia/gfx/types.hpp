@@ -8,31 +8,31 @@ namespace mag
     namespace gfx
     {
         // Keep it simple
-        typedef u32 ShaderHandle;
-        typedef u32 VertexBufferHandle;
-        typedef u32 IndexBufferHandle;
-        typedef u32 TextureHandle;
+        using ShaderHandle = u32;
+        using VertexBufferHandle = u32;
+        using IndexBufferHandle = u32;
+        using TextureHandle = u32;
 
         struct GfxOptions
         {
                 math::uvec2 resolution = math::uvec2(1280, 720);
         };
 
-        enum class Result
+        enum class Result : u8
         {
             Success,
             ErrorOutOfDate,
             SubOptimal
         };
 
-        enum class PresentMode
+        enum class PresentMode : u8
         {
             Immediate,
             Mailbox,
             Fifo
         };
 
-        enum class QueueType
+        enum class QueueType : u8
         {
             Present,
             Graphics,
@@ -40,7 +40,7 @@ namespace mag
             Transfer
         };
 
-        enum class Format
+        enum class Format : u8
         {
             Undefined,
             R8_UNORM,
@@ -57,14 +57,14 @@ namespace mag
             D24_UNORM_S8_UINT
         };
 
-        enum class TextureType
+        enum class TextureType : u8
         {
             Texture1D,
             Texture2D,
             Texture3D
         };
 
-        enum class TextureViewType
+        enum class TextureViewType : u8
         {
             Texture1D,
             Texture2D,
@@ -75,7 +75,7 @@ namespace mag
             TextureCubeArray
         };
 
-        enum class TextureUsage : u32
+        enum class TextureUsage : u8
         {
             TransferSrc = 1 << 0,
             TransferDst = 1 << 1,
@@ -85,7 +85,7 @@ namespace mag
             DepthStencilAttachment = 1 << 5
         };
 
-        enum class TextureLayout
+        enum class TextureLayout : u8
         {
             Undefined,
             ColorAttachment,
@@ -95,7 +95,7 @@ namespace mag
             ShaderReadOnly
         };
 
-        enum class TextureAspect
+        enum class TextureAspect : u8
         {
             None = 0,
             Color = 1 << 0,
@@ -103,19 +103,19 @@ namespace mag
             Stencil = 1 << 2
         };
 
-        enum class Filter
+        enum class Filter : u8
         {
             Nearest,
             Linear
         };
 
-        enum class SamplerMipMapMode
+        enum class SamplerMipMapMode : u8
         {
             Nearest,
             Linear
         };
 
-        enum class SamplerAddressMode
+        enum class SamplerAddressMode : u8
         {
             Repeat,
             MirroredRepeat,
@@ -124,7 +124,7 @@ namespace mag
             MirrorClampToEdge
         };
 
-        enum class SampleCount
+        enum class SampleCount : u8
         {
             e1 = 1 << 0,
             e2 = 1 << 1,
@@ -133,7 +133,7 @@ namespace mag
             e16 = 1 << 4
         };
 
-        enum class AccessMask
+        enum class AccessMask : u8
         {
             None = 0,
             ColorAttachmentWrite = 1 << 0,
@@ -144,7 +144,7 @@ namespace mag
             ShaderRead = 1 << 5
         };
 
-        enum class PipelineStage
+        enum class PipelineStage : u8
         {
             TopOfPipe = 1 << 0,
             ColorAttachmentOutput = 1 << 1,
@@ -154,32 +154,32 @@ namespace mag
             AllCommands = 1 << 5
         };
 
-        enum class PrimitiveTopology
+        enum class PrimitiveTopology : u8
         {
             TriangleList,
             TriangleStrip,
             LineList
         };
 
-        enum class CommandBufferLevel
+        enum class CommandBufferLevel : u8
         {
             Primary,
             Secondary
         };
 
-        enum class RenderingAttachmentType
+        enum class RenderingAttachmentType : u8
         {
             Color,
             Depth
         };
 
-        enum class ShaderStage
+        enum class ShaderStage : u8
         {
             Vertex = 1 << 0,
             Fragment = 1 << 1
         };
 
-        enum class BufferUsage
+        enum class BufferUsage : u8
         {
             Vertex = 1 << 0,
             Index = 1 << 1,
@@ -189,32 +189,32 @@ namespace mag
             TransferDst = 1 << 5
         };
 
-        enum class MemoryUsage
+        enum class MemoryUsage : u8
         {
             Auto,
             PreferHost,
             PreferDevice
         };
 
-        enum class DescriptorType
+        enum class DescriptorType : u8
         {
             Uniform,
             Storage,
             CombinedImageSampler
         };
 
-        enum class VertexInputRate
+        enum class VertexInputRate : u8
         {
             Vertex,
             Instance
         };
 
-        enum class BlendOp
+        enum class BlendOp : u8
         {
             Add
         };
 
-        enum class BlendFactor
+        enum class BlendFactor : u8
         {
             One,
             SrcAlpha,

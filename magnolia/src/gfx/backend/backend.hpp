@@ -160,7 +160,7 @@ namespace mag
         {
                 const IDescriptorPool* descriptor_pool = nullptr;
                 const IDescriptorSetLayout* descriptor_layout = nullptr;
-                u32 max_variable_descriptor_count;
+                u32 max_variable_descriptor_count = 0;
         };
 
         struct ISamplerDesc

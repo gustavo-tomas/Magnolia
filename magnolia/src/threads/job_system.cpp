@@ -6,7 +6,7 @@
 
 namespace mag
 {
-    Job::Job(const JobExecuteFn& execute, const JobCallbackFn& on_execute_finished)
+    Job::Job(JobExecuteFn&& execute, JobCallbackFn&& on_execute_finished)
         : execute_fn(std::move(execute)), callback_fn(std::move(on_execute_finished))
     {
     }
@@ -19,7 +19,7 @@ namespace mag
                 JobQueue();
                 ~JobQueue();
 
-                void push(Job job);
+                void push(const Job& job);
                 Job pop();
 
             private:
@@ -118,7 +118,7 @@ namespace mag
             }
         }
 
-        void add_job(Job job) { state->job_queue.push(job); }
+        void add_job(const Job& job) { state->job_queue.push(job); }
 
         JobQueue::JobQueue() = default;
 
@@ -131,7 +131,7 @@ namespace mag
             }
         }
 
-        void JobQueue::push(Job job)
+        void JobQueue::push(const Job& job)
         {
             std::unique_lock<std::mutex> lock(jobs_mutex);
             jobs.push(job);
@@ -142,7 +142,7 @@ namespace mag
             std::unique_lock<std::mutex> lock(jobs_mutex);
             if (jobs.empty())
             {
-                return Job({}, {});
+                return {{}, {}};
             }
 
             Job job = jobs.front();

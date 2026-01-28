@@ -26,9 +26,9 @@ namespace mag
     void Camera::set_rotation(const vec3& rotation)
     {
         // Constrain rotation between [-180, 180)
-        for (u32 i = 0; i < 3; i++)
+        for (i32 i = 0; i < 3; i++)
         {
-            this->rotation[i] = fmod(rotation[i] + math::pi<f32>(), math::two_pi<f32>());
+            this->rotation[i] = static_cast<f32>(fmod(rotation[i] + math::pi<f32>(), math::two_pi<f32>()));
             if (this->rotation[i] < 0.0f)
             {
                 this->rotation[i] += math::two_pi<f32>();
@@ -101,7 +101,7 @@ namespace mag
     // OrthographicCamera
     // -----------------------------------------------------------------------------------------------------------------
 
-    OrthographicCamera::OrthographicCamera(const OrhographicCameraDesc& camera_desc)
+    OrthographicCamera::OrthographicCamera(const OrthographicCameraDesc& camera_desc)
     {
         set_position(camera_desc.position);
         set_rotation(camera_desc.rotation);

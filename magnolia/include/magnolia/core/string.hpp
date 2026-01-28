@@ -9,7 +9,7 @@ namespace mag
     namespace string
     {
         // Separate substrings by a delimiter
-        void split(const str& s, const str del, std::vector<str>& output);
+        void split(const str& s, const str& del, std::vector<str>& output);
 
         // Lower case (because c++ is icky)
         void to_lower(str& s);

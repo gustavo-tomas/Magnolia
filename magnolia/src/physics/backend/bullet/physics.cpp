@@ -18,8 +18,8 @@ namespace mag
     class PhysicsDebugDraw : public btIDebugDraw
     {
         public:
-            virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
-                                          int lifeTime, const btVector3& color) override
+            void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance,
+                                  int lifeTime, const btVector3& color) override
             {
                 (void)PointOnB;
                 (void)normalOnB;
@@ -28,18 +28,18 @@ namespace mag
                 (void)color;
             }
 
-            virtual void reportErrorWarning(const c8* warning_string) override
+            void reportErrorWarning(const c8* warning_string) override
             {
                 LOG_ERROR("Physics Error: {0}", warning_string);
             }
 
-            virtual void draw3dText(const btVector3& location, const c8* text_string) override
+            void draw3dText(const btVector3& location, const c8* text_string) override
             {
                 (void)location;
                 LOG_ERROR("3D text not supported: {0}", text_string);
             }
 
-            virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
+            void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
             {
                 // We dont actually draw in this method, only keep a record of the lines.
 
@@ -52,9 +52,9 @@ namespace mag
             }
 
             // @TODO: finish debug mode
-            virtual void setDebugMode(int debugMode) override { (void)debugMode; }
+            void setDebugMode(int debugMode) override { (void)debugMode; }
 
-            virtual int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
+            int getDebugMode() const override { return btIDebugDraw::DBG_DrawWireframe; }
 
             void reset_lines() { line_list.lines.clear(); }
 
@@ -67,41 +67,37 @@ namespace mag
     class BulletPhysicsWorld : public IPhysicsWorld
     {
         public:
-            BulletPhysicsWorld() : physics_debug_draw(new PhysicsDebugDraw())
+            BulletPhysicsWorld()
+                : collision_configuration(new btDefaultCollisionConfiguration()),
+                  dispatcher(new btCollisionDispatcher(collision_configuration)),
+                  overlapping_pair_cache(new btDbvtBroadphase()),
+                  solver(new btSequentialImpulseConstraintSolver()),
+                  dynamics_world(
+                      new btDiscreteDynamicsWorld(dispatcher, overlapping_pair_cache, solver, collision_configuration)),
+                  physics_debug_draw(new PhysicsDebugDraw())
             {
-                collision_configuration = new btDefaultCollisionConfiguration();
-
-                dispatcher = new btCollisionDispatcher(collision_configuration);
-
-                overlapping_pair_cache = new btDbvtBroadphase();
-
-                solver = new btSequentialImpulseConstraintSolver();
-
-                dynamics_world =
-                    new btDiscreteDynamicsWorld(dispatcher, overlapping_pair_cache, solver, collision_configuration);
-
                 dynamics_world->setGravity(btVector3(0, -10, 0));
 
                 dynamics_world->setDebugDrawer(physics_debug_draw.get());
             }
 
-            ~BulletPhysicsWorld()
+            ~BulletPhysicsWorld() override
             {
                 // Cleanup in the reverse order of creation/initialization
 
                 for (i32 i = dynamics_world->getNumCollisionObjects() - 1; i >= 0; i--)
                 {
                     btCollisionObject* bt_object = dynamics_world->getCollisionObjectArray().at(i);
-                    btRigidBody* bt_rigid_body = static_cast<btRigidBody*>(bt_object);
+                    btRigidBody* bt_rigid_body = dynamic_cast<btRigidBody*>(bt_object);
 
-                    if (bt_rigid_body && bt_rigid_body->getMotionState())
+                    if (bt_rigid_body != nullptr && bt_rigid_body->getMotionState() != nullptr)
                     {
                         delete bt_rigid_body->getMotionState();
                     }
 
                     dynamics_world->removeCollisionObject(bt_object);
 
-                    if (bt_object->getCollisionShape())
+                    if (bt_object->getCollisionShape() != nullptr)
                     {
                         delete bt_object->getCollisionShape();
                     }
@@ -145,8 +141,8 @@ namespace mag
                 return bt_rigid_body;
             }
 
-            virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                   const math::vec3& collider_dimensions, const f32 mass) override
+            RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
+                                           const math::vec3& collider_dimensions, const f32 mass) override
             {
                 btBoxShape* shape = new btBoxShape(mag_to_bt(collider_dimensions));
                 btRigidBody* bt_rigid_body = add_rigid_body_base(position, rotation, mass, shape);
@@ -158,8 +154,8 @@ namespace mag
                 return handle;
             }
 
-            virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                   const f32 radius, const f32 height, const f32 mass) override
+            RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation, const f32 radius,
+                                           const f32 height, const f32 mass) override
             {
                 btCapsuleShape* shape = new btCapsuleShape(radius, height);
                 btRigidBody* bt_rigid_body = add_rigid_body_base(position, rotation, mass, shape);
@@ -171,19 +167,19 @@ namespace mag
                 return handle;
             }
 
-            virtual void remove_rigid_body(const RigidBodyHandle handle) override
+            void remove_rigid_body(const RigidBodyHandle handle) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
                 btCollisionObject* bt_object = static_cast<btCollisionObject*>(bt_rigid_body);
 
-                if (bt_rigid_body && bt_rigid_body->getMotionState())
+                if (bt_rigid_body != nullptr && bt_rigid_body->getMotionState() != nullptr)
                 {
                     delete bt_rigid_body->getMotionState();
                 }
 
                 dynamics_world->removeCollisionObject(bt_object);
 
-                if (bt_object->getCollisionShape())
+                if (bt_object->getCollisionShape() != nullptr)
                 {
                     delete bt_object->getCollisionShape();
                 }
@@ -193,9 +189,8 @@ namespace mag
                 rigid_bodies.erase(handle);
             }
 
-            virtual void reset_rigid_body(const RigidBodyHandle handle, const math::vec3& position,
-                                          const math::quat& rotation, const math::vec3& collider_dimensions,
-                                          const f32 mass) override
+            void reset_rigid_body(const RigidBodyHandle handle, const math::vec3& position, const math::quat& rotation,
+                                  const math::vec3& collider_dimensions, const f32 mass) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
@@ -216,7 +211,7 @@ namespace mag
                     shape->calculateLocalInertia(new_mass, local_inertia);
                 }
 
-                if (bt_rigid_body->getCollisionShape())
+                if (bt_rigid_body->getCollisionShape() != nullptr)
                 {
                     delete bt_rigid_body->getCollisionShape();
                 }
@@ -242,7 +237,7 @@ namespace mag
                 bt_rigid_body->activate();
             }
 
-            virtual void on_update(const f32 dt) override
+            void on_update(const f32 dt) override
             {
                 // @TODO: investigate the jittering that happens when maxSubSteps > 0.
                 dynamics_world->stepSimulation(dt, 0);
@@ -251,14 +246,14 @@ namespace mag
                 render_debug_lines();
             }
 
-            virtual void apply_force(const RigidBodyHandle handle, const math::vec3& force) override
+            void apply_force(const RigidBodyHandle handle, const math::vec3& force) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
                 bt_rigid_body->applyCentralForce(mag_to_bt(force));
             }
 
-            virtual void apply_impulse(const RigidBodyHandle handle, const math::vec3& impulse) override
+            void apply_impulse(const RigidBodyHandle handle, const math::vec3& impulse) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
@@ -268,14 +263,14 @@ namespace mag
                 bt_rigid_body->applyCentralImpulse(mag_to_bt(impulse));
             }
 
-            virtual void apply_torque(const RigidBodyHandle handle, const math::vec3& torque) override
+            void apply_torque(const RigidBodyHandle handle, const math::vec3& torque) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
                 bt_rigid_body->applyTorque(mag_to_bt(torque));
             }
 
-            virtual void apply_torque_impulse(const RigidBodyHandle handle, const math::vec3& torque) override
+            void apply_torque_impulse(const RigidBodyHandle handle, const math::vec3& torque) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
@@ -285,7 +280,7 @@ namespace mag
                 bt_rigid_body->applyTorqueImpulse(mag_to_bt(torque));
             }
 
-            virtual void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
+            void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
@@ -295,7 +290,7 @@ namespace mag
                 bt_rigid_body->setLinearVelocity(mag_to_bt(velocity));
             }
 
-            virtual void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
+            void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
@@ -305,22 +300,21 @@ namespace mag
                 bt_rigid_body->setAngularVelocity(mag_to_bt(velocity));
             }
 
-            virtual void set_angular_factor(const RigidBodyHandle handle, const math::vec3& axes) override
+            void set_angular_factor(const RigidBodyHandle handle, const math::vec3& axes) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
                 bt_rigid_body->setAngularFactor(mag_to_bt(axes));
             }
 
-            virtual void set_activation_state(const RigidBodyHandle handle,
-                                              const ActivationState activation_state) override
+            void set_activation_state(const RigidBodyHandle handle, const ActivationState activation_state) override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies[handle];
 
                 bt_rigid_body->setActivationState(mag_to_bt(activation_state));
             }
 
-            virtual math::vec3 get_linear_velocity(const RigidBodyHandle handle) const override
+            math::vec3 get_linear_velocity(const RigidBodyHandle handle) const override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies.at(handle);
 
@@ -328,7 +322,7 @@ namespace mag
                 return velocity;
             }
 
-            virtual math::vec3 get_angular_velocity(const RigidBodyHandle handle) const override
+            math::vec3 get_angular_velocity(const RigidBodyHandle handle) const override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies.at(handle);
 
@@ -336,19 +330,19 @@ namespace mag
                 return velocity;
             }
 
-            virtual void get_collision_object_transform(const RigidBodyHandle handle, math::vec3& position,
-                                                        math::quat& rotation) const override
+            void get_collision_object_transform(const RigidBodyHandle handle, math::vec3& position,
+                                                math::quat& rotation) const override
             {
                 btRigidBody* bt_rigid_body = rigid_bodies.at(handle);
 
                 btTransform bt_transform(btQuaternion(0, 0, 0, 0));
 
-                if (bt_rigid_body && bt_rigid_body->getMotionState())
+                if (bt_rigid_body != nullptr && bt_rigid_body->getMotionState() != nullptr)
                 {
                     bt_rigid_body->getMotionState()->getWorldTransform(bt_transform);
                 }
 
-                else if (bt_rigid_body)
+                else if (bt_rigid_body != nullptr)
                 {
                     bt_transform = bt_rigid_body->getWorldTransform();
                 }
@@ -356,13 +350,10 @@ namespace mag
                 bt_to_mag(bt_transform, position, rotation);
             }
 
-            virtual const math::LineList& get_debug_line_list() const override
-            {
-                return physics_debug_draw->get_line_list();
-            }
+            const math::LineList& get_debug_line_list() const override { return physics_debug_draw->get_line_list(); }
 
         private:
-            virtual void render_debug_lines() override
+            void render_debug_lines() override
             {
                 physics_debug_draw->reset_lines();
                 dynamics_world->debugDrawWorld();

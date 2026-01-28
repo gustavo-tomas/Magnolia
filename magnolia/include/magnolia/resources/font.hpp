@@ -29,9 +29,9 @@ namespace mag
         {
             public:
                 FontLoader();
-                ~FontLoader();
+                ~FontLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
         };
     };  // namespace resource
 };  // namespace mag

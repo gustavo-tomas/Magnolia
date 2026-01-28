@@ -4,30 +4,30 @@
 #include <memory>
 
 // Unsigned integers
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
 
 // Integers
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
+using i8 = int8_t;
+using i16 = int16_t;
+using i32 = int32_t;
+using i64 = int64_t;
 
 // Floats
-typedef float f32;
-typedef double f64;
+using f32 = float;
+using f64 = double;
 
 // Chars
-typedef char c8;
-typedef unsigned char uc8;
+using c8 = char;
+using uc8 = unsigned char;
 
 // Bool
-typedef bool b8;
+using b8 = bool;
 
 // Strings
-typedef std::string str;
+using str = std::string;
 
 // Assert sizes
 static_assert(sizeof(u8) == 1, "Expected u8 to be 1 byte.");
@@ -87,58 +87,63 @@ namespace mag
 
     // Bitwise operators that work with any enum class marked with EnableBitMaskOperators
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator|(Enum lhs, Enum rhs)
+    Enum operator|(Enum lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         using underlying = std::underlying_type_t<Enum>;
         return static_cast<Enum>(static_cast<underlying>(lhs) | static_cast<underlying>(rhs));
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator&(Enum lhs, Enum rhs)
+    Enum operator&(Enum lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         using underlying = std::underlying_type_t<Enum>;
         return static_cast<Enum>(static_cast<underlying>(lhs) & static_cast<underlying>(rhs));
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator^(Enum lhs, Enum rhs)
+    Enum operator^(Enum lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         using underlying = std::underlying_type_t<Enum>;
         return static_cast<Enum>(static_cast<underlying>(lhs) ^ static_cast<underlying>(rhs));
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type operator~(Enum e)
+    Enum operator~(Enum e)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         using underlying = std::underlying_type_t<Enum>;
         return static_cast<Enum>(~static_cast<underlying>(e));
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator|=(Enum& lhs, Enum rhs)
+    Enum& operator|=(Enum& lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         lhs = lhs | rhs;
         return lhs;
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator&=(Enum& lhs, Enum rhs)
+    Enum& operator&=(Enum& lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         lhs = lhs & rhs;
         return lhs;
     }
 
     template <typename Enum>
-    typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum&>::type operator^=(Enum& lhs, Enum rhs)
+    Enum& operator^=(Enum& lhs, Enum rhs)
+        requires EnableBitMaskOperators<Enum>::enable
     {
         lhs = lhs ^ rhs;
         return lhs;
     }
 
 // Common macros
-#define VEC_SIZE_BYTES(vec) (vec.empty() ? 0 : vec.size() * sizeof(vec[0]))           /* Vector size in bytes */
-#define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)                         /* Shortcut to bind methods */
-#define BIND_FN2(x) std::bind(&x, this, std::placeholders::_1, std::placeholders::_2) /* Shortcut to bind methods */
+#define VEC_SIZE_BYTES(vec) ((vec).empty() ? 0 : (vec).size() * sizeof((vec)[0])) /* Vector size in bytes */
 
 // Define a macro to make enum bitmask-ready
 #define ENABLE_BITMASK_OPERATORS(x)            \
@@ -148,7 +153,7 @@ namespace mag
             static constexpr b8 enable = true; \
     };
 
-#define IS_BIT_SET(x, enum) ((x & enum) == enum)
+#define IS_BIT_SET(x, enum) (((x) & enum) == enum)
 
 // Platform
 

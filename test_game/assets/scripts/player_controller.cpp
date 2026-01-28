@@ -179,8 +179,8 @@ class PlayerController : public ScriptableEntity
 
         virtual void on_event(const mag::Event& e) override
         {
-            dispatch_event<mag::MousePressEvent>(e, BIND_FN(PlayerController::on_mouse_click));
-            dispatch_event<mag::KeyPressEvent>(e, BIND_FN(PlayerController::on_key_press));
+            dispatch_event<mag::MousePressEvent>(e, [this](const mag::MousePressEvent& e) { on_mouse_click(e); });
+            dispatch_event<mag::KeyPressEvent>(e, [this](const mag::KeyPressEvent& e) { on_key_press(e); });
         }
 
         void on_key_press(const mag::KeyPressEvent& e)

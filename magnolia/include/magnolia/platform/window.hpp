@@ -21,7 +21,7 @@ namespace mag
                 math::uvec2 size = math::uvec2(MaxSize);
                 math::ivec2 position = math::ivec2(CenterPos);
                 str title = "Magnolia";
-                str window_icon = "";
+                str window_icon;
                 i32 target_frame_rate = -1;
         };
 

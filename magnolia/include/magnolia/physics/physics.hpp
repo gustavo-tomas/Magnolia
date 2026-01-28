@@ -10,9 +10,9 @@ namespace mag::math
 
 namespace mag
 {
-    typedef u32 RigidBodyHandle;
+    using RigidBodyHandle = u32;
 
-    enum class ActivationState
+    enum class ActivationState : u8
     {
         DisableDeactivation = 1
     };

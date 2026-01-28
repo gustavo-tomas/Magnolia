@@ -74,7 +74,7 @@ namespace mag
             mag::window::WindowOptions& window_options = options.window_options;
             mag::gfx::GfxOptions& gfx_options = options.gfx_options;
 
-            u32 count = 0;
+            i32 count = 0;
             for (const auto& num : config["WindowSize"])
             {
                 if (count >= window_options.size.length())

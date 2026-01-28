@@ -5,6 +5,7 @@
 #include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
+#include <utility>
 
 namespace mag
 {
@@ -96,7 +97,7 @@ namespace game
 
     struct ColliderComponent
     {
-            enum class ColliderType
+            enum class ColliderType : u8
             {
                 Box,
                 Capsule
@@ -131,7 +132,7 @@ namespace game
 
             f32 mass;
 
-            mag::RigidBodyHandle rigid_body_handle;
+            mag::RigidBodyHandle rigid_body_handle = {};
     };
 
     struct LightComponent
@@ -150,14 +151,17 @@ namespace game
     };
 
     class ScriptableEntity;
-    typedef std::function<ScriptableEntity*()> CreateScriptFn;
-    typedef std::function<void(ScriptableEntity*)> DestroyScriptFn;
+    using CreateScriptFn = std::function<ScriptableEntity*()>;
+    using DestroyScriptFn = std::function<void(ScriptableEntity*)>;
 
     struct ScriptComponent
     {
-            ScriptComponent(const str& file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
+            ScriptComponent(str file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
                             DestroyScriptFn destroy_entity = nullptr)
-                : create_entity(create_entity), destroy_entity(destroy_entity), file_path(file_path), handle(handle)
+                : create_entity(std::move(create_entity)),
+                  destroy_entity(std::move(destroy_entity)),
+                  file_path(std::move(file_path)),
+                  handle(handle)
             {
             }
 

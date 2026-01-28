@@ -4,8 +4,8 @@
 
 namespace mag
 {
-    enum class Keys : u64;
-    enum class Buttons : u64;
+    enum class Keys : u8;
+    enum class Buttons : u8;
 
     struct MAG_API Event
     {

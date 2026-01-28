@@ -70,19 +70,19 @@ namespace mag
     {
         public:
             PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
-            ~PerspectiveCamera();
+            ~PerspectiveCamera() override;
 
             void set_fov(const f32 fov);
             const f32& get_fov() const;
 
         protected:
-            virtual void calculate_projection() override;
+            void calculate_projection() override;
 
         private:
             f32 fov;
     };
 
-    struct OrhographicCameraDesc
+    struct OrthographicCameraDesc
     {
             vec3 position = vec3(0.0f);
             vec3 rotation = vec3(0.0f);
@@ -95,14 +95,14 @@ namespace mag
     class MAG_API OrthographicCamera : public Camera
     {
         public:
-            OrthographicCamera(const OrhographicCameraDesc& camera_desc);
-            ~OrthographicCamera();
+            OrthographicCamera(const OrthographicCameraDesc& camera_desc);
+            ~OrthographicCamera() override;
 
             void set_size(const f32 size);
             f32 get_size() const;
 
         protected:
-            virtual void calculate_projection() override;
+            void calculate_projection() override;
 
         private:
             f32 size;

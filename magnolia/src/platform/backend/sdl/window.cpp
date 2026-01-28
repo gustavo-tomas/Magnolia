@@ -54,8 +54,8 @@ namespace mag
 
             SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
-            i32 width = options.size.x;
-            i32 height = options.size.y;
+            i32 width = static_cast<i32>(options.size.x);
+            i32 height = static_cast<i32>(options.size.y);
             i32 position_x = options.position.x;
             i32 position_y = options.position.y;
 
@@ -81,7 +81,7 @@ namespace mag
             SDL_SetWindowPosition(state->handle, position_x, position_y);
 
             u32 count = 0;
-            auto extensions = SDL_Vulkan_GetInstanceExtensions(&count);
+            const c8* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
             MAG_ASSERT(count, "Failed to get window extensions: " + str(SDL_GetError()));
 
@@ -153,7 +153,7 @@ namespace mag
                         auto event = KeyPressEvent(sdl_to_mag_key(key));
                         state->event_callback(event);
 
-                        if (e.key.repeat == 1)
+                        if (e.key.repeat)
                         {
                             continue;
                         }
@@ -217,6 +217,9 @@ namespace mag
                         state->event_callback(event);
                     }
                     break;
+
+                    default:
+                        break;
                 }
             }
 
@@ -234,10 +237,10 @@ namespace mag
             // restrict this event to happen only once per frame
             if (state->mouse_moved)
             {
-                const i32 x_direction = state->last_mouse_move_event.motion.xrel;
-                const i32 y_direction = state->last_mouse_move_event.motion.yrel;
-                const i32 x = state->last_mouse_move_event.motion.x;
-                const i32 y = state->last_mouse_move_event.motion.y;
+                const i32 x_direction = static_cast<i32>(state->last_mouse_move_event.motion.xrel);
+                const i32 y_direction = static_cast<i32>(state->last_mouse_move_event.motion.yrel);
+                const i32 x = static_cast<i32>(state->last_mouse_move_event.motion.x);
+                const i32 y = static_cast<i32>(state->last_mouse_move_event.motion.y);
 
                 auto event = MouseMoveEvent(x_direction, y_direction, x, y);
 
@@ -250,7 +253,7 @@ namespace mag
 
         void create_surface(const void* instance, void* surface)
         {
-            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *reinterpret_cast<const VkInstance*>(instance), NULL,
+            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *reinterpret_cast<const VkInstance*>(instance), nullptr,
                                                 reinterpret_cast<VkSurfaceKHR*>(surface)),
                        "Failed to create surface: " + str(SDL_GetError()));
         }
@@ -272,10 +275,10 @@ namespace mag
 
         b8 is_mouse_captured() { return SDL_GetWindowRelativeMouseMode(state->handle); }
 
-        b8 is_flag_set(const SDL_WindowFlags flag)
+        static b8 is_flag_set(const SDL_WindowFlags flag)
         {
             const SDL_WindowFlags flags = SDL_GetWindowFlags(state->handle);
-            return (flag & flags);
+            return (flag & flags) != 0;
         }
 
         b8 is_minimized()
@@ -298,17 +301,17 @@ namespace mag
                 return false;
             }
 
-            SDL_IOStream* rw = SDL_IOFromMem(buffer.cast<void*>(), buffer.get_size());
+            SDL_IOStream* rw = SDL_IOFromMem(buffer.cast<void>(), buffer.get_size());
 
-            if (!rw)
+            if (rw == nullptr)
             {
                 LOG_ERROR("Failed to read from memory: '{0}'", SDL_GetError());
                 return false;
             }
 
-            SDL_Surface* icon = SDL_LoadBMP_IO(rw, 1);
+            SDL_Surface* icon = SDL_LoadBMP_IO(rw, true);
 
-            if (!icon)
+            if (icon == nullptr)
             {
                 LOG_ERROR("Failed to load application icon: '{0}'", SDL_GetError());
                 return false;
@@ -329,7 +332,10 @@ namespace mag
             }
         }
 
-        void set_mouse_position(const i32 x, const i32 y) { SDL_WarpMouseInWindow(state->handle, x, y); }
+        void set_mouse_position(const i32 x, const i32 y)
+        {
+            SDL_WarpMouseInWindow(state->handle, static_cast<f32>(x), static_cast<f32>(y));
+        }
 
         void set_title(const str& title) { SDL_SetWindowTitle(state->handle, title.c_str()); }
 
@@ -337,8 +343,7 @@ namespace mag
 
         void set_fullscreen(const b8 fullscreen)
         {
-            const SDL_WindowFlags flag = SDL_WINDOW_FULLSCREEN;
-            if (SDL_SetWindowFullscreen(state->handle, fullscreen ? flag : 0) != 0)
+            if (SDL_SetWindowFullscreen(state->handle, fullscreen))
             {
                 LOG_ERROR("Failed to set fullscreen mode: {0}", SDL_GetError());
             }

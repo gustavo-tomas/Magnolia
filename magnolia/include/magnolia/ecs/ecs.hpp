@@ -5,14 +5,15 @@
 #include <functional>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
 
 #include "magnolia/core/types.hpp"
 
 namespace mag
 {
-    typedef u32 EntityID;
+    using EntityID = u32;
 
-    typedef std::function<void(const EntityID entity_id, std::any component)> ComponentAddedCallbackFn;
+    using ComponentAddedCallbackFn = std::function<void(const EntityID entity_id, std::any component)>;
 
     // @TODO: We need this interface to properly store templated storages. Its not ideal since vector and other data
     // structures already allocate on the heap, so we would prefer to store them directly instead.
@@ -54,7 +55,7 @@ namespace mag
     {
         public:
             ECS() = default;
-            ECS(ComponentAddedCallbackFn on_component_added) : on_component_added(on_component_added) {}
+            ECS(ComponentAddedCallbackFn on_component_added) : on_component_added(std::move(on_component_added)) {}
             ~ECS() = default;
 
             EntityID create_entity()
@@ -71,8 +72,9 @@ namespace mag
                 {
                     storage->remove_component(entity_id);
                 }
-                entities_ids.erase(std::remove(entities_ids.begin(), entities_ids.end(), entity_id),
-                                   entities_ids.end());
+
+                auto range = std::ranges::remove(entities_ids, entity_id);
+                entities_ids.erase(range.begin(), range.end());
             }
 
             template <typename Component, typename... Args>
@@ -172,7 +174,7 @@ namespace mag
             {
                 // @NOTE: Because a new entity id is always greater than the current id, the array is sorted and we can
                 // use binary search. If this changes for whatever reason, the search also needs to be updated.
-                return std::binary_search(entities_ids.begin(), entities_ids.end(), entity_id);
+                return std::ranges::binary_search(entities_ids, entity_id);
             }
 
             const std::vector<EntityID>& get_entities_ids() const { return entities_ids; }

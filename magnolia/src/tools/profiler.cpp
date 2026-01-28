@@ -48,9 +48,8 @@ namespace mag
     }
 
     ScopedProfiler::ScopedProfiler(const str& name, const f64 time_interval_ms)
-        : name(name), time_interval_ms(time_interval_ms)
+        : name(name), start(plat::get_time()), time_interval_ms(time_interval_ms)
     {
-        start = plat::get_time();
     }
 
     ScopedProfiler::~ScopedProfiler()

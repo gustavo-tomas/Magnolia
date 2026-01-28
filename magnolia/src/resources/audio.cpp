@@ -9,15 +9,15 @@ namespace mag
 {
     namespace resource
     {
-        AudioLoader::AudioLoader() {}
+        AudioLoader::AudioLoader() = default;
 
-        AudioLoader::~AudioLoader() {}
+        AudioLoader::~AudioLoader() = default;
 
         IResource *AudioLoader::load(const str &file_path)
         {
             AudioResource *audio = new AudioResource();
 
-            if (!audio)
+            if (audio == nullptr)
             {
                 LOG_ERROR("Invalid audio ptr");
                 delete audio;

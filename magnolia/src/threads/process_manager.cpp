@@ -4,7 +4,6 @@
 #include "magnolia/platform/file_system.hpp"
 
 #if MAG_PLATFORM_LINUX
-    #include <signal.h>
     #include <sys/wait.h>
 #elif MAG_PLATFORM_WINDOWS
     #error "@TODO: windows process manager not implemented"
@@ -15,7 +14,7 @@ namespace mag
     struct Process
     {
             pid_t pid = -1;
-            str path = "";
+            str path;
     };
 
     namespace thread
@@ -39,7 +38,7 @@ namespace mag
             if (pid == 0)
             {
                 // Child process
-                execl(process_path.c_str(), process_path.c_str(), NULL);
+                execl(process_path.c_str(), process_path.c_str(), nullptr);
 
                 // If execl returns, it failed
                 exit(EXIT_FAILURE);
@@ -55,7 +54,7 @@ namespace mag
 
         b8 kill_process(Process* process)
         {
-            if (!process)
+            if (process == nullptr)
             {
                 return false;
             }
@@ -86,7 +85,7 @@ namespace mag
         b8 is_process_running(Process* process)
         {
             // Send signal 0 to check if process exists
-            if (!process || kill(process->pid, 0) != 0)
+            if ((process == nullptr) || kill(process->pid, 0) != 0)
             {
                 // Process doesn't exist anymore
                 return false;
@@ -103,7 +102,7 @@ namespace mag
             }
 
             // Process is still running
-            else if (result == 0)
+            if (result == 0)
             {
                 return true;
             }

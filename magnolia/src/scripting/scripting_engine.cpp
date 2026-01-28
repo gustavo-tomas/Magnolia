@@ -20,7 +20,7 @@ namespace mag
             const str bin_script_file_path = MAG_BUILD_SCRIPT_NAME(script_name);
 
             void* handle = dlopen(bin_script_file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
-            if (!handle)
+            if (handle == nullptr)
             {
                 LOG_ERROR("Failed to load script '{0}': {1}", bin_script_file_path, dlerror());
                 return nullptr;
@@ -31,7 +31,7 @@ namespace mag
 
         void unload_script(void* handle)
         {
-            if (handle)
+            if (handle != nullptr)
             {
                 dlclose(handle);
             }
@@ -39,7 +39,7 @@ namespace mag
 
         void* get_symbol(void* handle, const str& name)
         {
-            if (!handle)
+            if (handle == nullptr)
             {
                 LOG_ERROR("Handle is nullptr");
                 return nullptr;
@@ -47,7 +47,7 @@ namespace mag
 
             void* symbol = dlsym(handle, name.c_str());
 
-            if (!symbol)
+            if (symbol == nullptr)
             {
                 LOG_ERROR("Failed to load script symbols '{0}': {1}", name, dlerror());
                 return nullptr;

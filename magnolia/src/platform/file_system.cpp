@@ -1,5 +1,6 @@
 #include "magnolia/platform/file_system.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <mutex>
 #include <thread>
@@ -103,7 +104,7 @@ namespace mag
 
             std::streampos end = file.tellg();
             file.seekg(0, std::ios::beg);
-            const u64 size = end - file.tellg();
+            const i64 size = end - file.tellg();
 
             // File is empty
             if (size == 0)
@@ -138,7 +139,7 @@ namespace mag
                 return false;
             }
 
-            file.write(buffer.cast<c8>(), buffer.get_size());
+            file.write(buffer.cast<c8>(), static_cast<i64>(buffer.get_size()));
             file.close();
 
             return true;
@@ -203,7 +204,8 @@ namespace mag
             str fixed_path = file_path.string();
 
             // Replace backslashes
-            std::replace_if(fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
+            std::ranges::replace_if(
+                fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
 
             return fixed_path;
         }

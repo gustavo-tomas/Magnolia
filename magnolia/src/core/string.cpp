@@ -27,7 +27,7 @@ namespace mag
             return str_a == str_b;
         }
 
-        void split(const str& s, const str del, std::vector<str>& output)
+        void split(const str& s, const str& del, std::vector<str>& output)
         {
             std::regex delimiter = std::regex(del);
 
@@ -56,16 +56,18 @@ namespace mag
 
         void triml(str& s)
         {
-            s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](const uc8 ch) { return !std::isspace(ch); }));
+            auto it = std::ranges::find_if(s, [](const uc8 ch) { return !std::isspace(ch); });
+            s.erase(s.begin(), it);
         }
 
         void trimr(str& s)
         {
-            s.erase(std::find_if(s.rbegin(), s.rend(), [](const uc8 ch) { return !std::isspace(ch); }).base(), s.end());
+            auto it = std::ranges::find_if(s.rbegin(), s.rend(), [](const uc8 ch) { return !std::isspace(ch); }).base();
+            s.erase(it, s.end());
         }
 
-        void to_lower(str& s) { std::transform(s.begin(), s.end(), s.begin(), tolower); }
+        void to_lower(str& s) { std::ranges::transform(s.begin(), s.end(), s.begin(), tolower); }
 
-        void to_upper(str& s) { std::transform(s.begin(), s.end(), s.begin(), toupper); }
+        void to_upper(str& s) { std::ranges::transform(s.begin(), s.end(), s.begin(), toupper); }
     };  // namespace string
 };  // namespace mag

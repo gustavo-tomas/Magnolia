@@ -17,9 +17,9 @@ namespace mag
         {
             public:
                 AudioLoader();
-                ~AudioLoader();
+                ~AudioLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
         };
     };  // namespace resource
 };  // namespace mag

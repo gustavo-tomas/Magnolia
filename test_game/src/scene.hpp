@@ -48,17 +48,17 @@ namespace game
             virtual void on_resize(const mag::WindowResizeEvent& e);
 
             str name = "Untitled";
-            str file_path = "";
+            str file_path;
             mag::unique<mag::ECS> ecs;
             mag::unique<mag::IPhysicsWorld> physics_world;
 
         private:
-            void on_component_added(const mag::EntityID id, std::any component);
+            void on_component_added(const mag::EntityID id, std::any& component);
             void create_script(const mag::EntityID id);
             void destroy_script(ScriptComponent* script);
 
             std::vector<mag::EntityID> entity_deletion_queue;
-            str next_scene = "";
+            str next_scene;
             b8 running = false;
     };
 };  // namespace game

@@ -18,7 +18,7 @@ namespace mag
             u32 width = 64;
             u32 height = 64;
             u32 mip_levels = 1;
-            std::vector<u8> pixels = std::vector<u8>(64 * 64 * 4, 153);
+            std::vector<u8> pixels = std::vector<u8>(64l * 64 * 4, 153);
     };
 
     namespace resource
@@ -27,9 +27,9 @@ namespace mag
         {
             public:
                 TextureLoader();
-                ~TextureLoader();
+                ~TextureLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
         };
 
         b8 get_image_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels);

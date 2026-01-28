@@ -24,11 +24,13 @@ namespace mag
             Buffer buffer;
             fs::read_binary_data(file_path, buffer);
 
-            i32 tex_width = 0, tex_height = 0, tex_channels = 0;
-            stbi_uc* pixels = stbi_load_from_memory(buffer.data.data(), buffer.get_size(), &tex_width, &tex_height,
-                                                    &tex_channels, STBI_rgb_alpha);
+            i32 tex_width = 0;
+            i32 tex_height = 0;
+            i32 tex_channels = 0;
+            stbi_uc* pixels = stbi_load_from_memory(buffer.data.data(), static_cast<i32>(buffer.get_size()), &tex_width,
+                                                    &tex_height, &tex_channels, STBI_rgb_alpha);
 
-            if (pixels == NULL)
+            if (pixels == nullptr)
             {
                 LOG_ERROR("Failed to load image file: {0}", file_path);
                 stbi_image_free(pixels);
@@ -40,7 +42,7 @@ namespace mag
             // @TODO: hardcoded channels
             tex_channels = 4;
 
-            const u64 image_size = tex_width * tex_height * tex_channels;
+            const u64 image_size = static_cast<u64>(tex_width * tex_height) * tex_channels;
 
             // Update image data
             texture->name = file_path;
@@ -61,7 +63,7 @@ namespace mag
             const str file_path = fs::get_fixed_path(raw_file_path);
 
             const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width),
-                                        reinterpret_cast<i32*>(height), reinterpret_cast<i32*>(channels));
+                                        reinterpret_cast<i32*>(height), reinterpret_cast<i32*>(channels)) != 0;
 
             *mip_levels = static_cast<u32>(std::floor(std::log2(std::max(*width, *height)))) + 1;
 

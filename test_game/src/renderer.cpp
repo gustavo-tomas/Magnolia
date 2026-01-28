@@ -126,10 +126,10 @@ namespace game
         static std::unordered_map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
         static std::unordered_map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
 
-        for (u32 i = 0; i < model_entities.size(); i++)
+        for (auto& model_entity : model_entities)
         {
-            const auto& transform = std::get<0>(model_entities[i]);
-            const auto& model = std::get<1>(model_entities[i])->model;
+            const auto& transform = std::get<0>(model_entity);
+            const auto& model = std::get<1>(model_entity)->model;
 
             if (model->loading_status != LoadingStatus::Finished)
             {
@@ -211,7 +211,8 @@ namespace game
                 mag::gfx::set_uniform("u_instance", &mesh_data, mesh_offset);
 
                 // Draw the mesh
-                mag::gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, mesh.base_vertex, mesh_offset);
+                mag::gfx::draw_indexed(mesh.index_count, 1, mesh.base_index, static_cast<i32>(mesh.base_vertex),
+                                       mesh_offset);
 
                 mesh_offset++;
             }
@@ -247,10 +248,10 @@ namespace game
         }
 
         u32 texture_offset = 0;
-        for (u32 i = 0; i < sprite_entities.size(); i++)
+        for (auto& sprite_entity : sprite_entities)
         {
-            const auto& transform = std::get<0>(sprite_entities[i]);
-            const auto& sprite = std::get<1>(sprite_entities[i]);
+            const auto& transform = std::get<0>(sprite_entity);
+            const auto& sprite = std::get<1>(sprite_entity);
 
             // Skip sprites that are not loaded yet
             if (sprite->texture->loading_status != LoadingStatus::Finished)
@@ -335,10 +336,10 @@ namespace game
         mag::gfx::set_uniform("u_global", &global_data);
 
         u32 char_offset = 0;
-        for (u32 i = 0; i < text_entities.size(); i++)
+        for (auto& text_entity : text_entities)
         {
-            const auto& transform = std::get<0>(text_entities[i]);
-            const auto& text = std::get<1>(text_entities[i]);
+            const auto& transform = std::get<0>(text_entity);
+            const auto& text = std::get<1>(text_entity);
 
             // Skip fonts that are not loaded yet
             if (text->font->loading_status != LoadingStatus::Finished)
@@ -383,26 +384,27 @@ namespace game
                 // Skip chars with no visual representation (i.e. spaces)
                 if (ch.data.empty())
                 {
-                    x += (ch.advance.x >> 6) * scale;
+                    x += static_cast<f32>(ch.advance.x >> 6) * scale;
                     continue;
                 }
 
                 // Format newlines
                 if (c == '\n')
                 {
-                    y -= ch.size.y * 1.5 * scale;  // @TODO: hardcoded line spacing
+                    y -= static_cast<f32>(ch.size.y) * 1.5f * scale;  // @TODO: hardcoded line spacing
                     x = transform->translation.x;
                     continue;
                 }
 
                 // Don't offset the first letter of the text
-                const f32 xpos = x + (char_offset > 0 ? ch.bearing.x * scale : 0);
-                const f32 ypos = y - (char_offset > 0 ? (ch.size.y - ch.bearing.y) * scale : 0);
+                const f32 xpos = x + (char_offset > 0 ? static_cast<f32>(ch.bearing.x) * scale : 0);
+                const f32 ypos = y - (char_offset > 0 ? static_cast<f32>(ch.size.y - ch.bearing.y) * scale : 0);
                 const f32 zpos = z;
 
                 TransformComponent char_transform;
                 char_transform.translation = vec3(xpos, ypos, zpos);
-                char_transform.scale = vec3(ch.size.x * scale, ch.size.y * scale, 1.0f);
+                char_transform.scale =
+                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0f);
                 char_transform.rotation = transform->rotation;
 
                 // @TODO: rotation is a bit iffy but for now its ok
@@ -411,7 +413,7 @@ namespace game
                 const u32 font_offset = fonts[name].idx * 128;  // skip next 128 character textures
                 const u32 texture_idx = font_offset + c;
 
-                TextData text_data;
+                TextData text_data = {};
                 text_data.color = text->color;
                 text_data.model = model_matrix;
                 text_data.texture_idx = texture_idx;
@@ -424,7 +426,7 @@ namespace game
 
                 // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to
                 // get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
-                x += (ch.advance.x >> 6) * scale;
+                x += static_cast<f32>(ch.advance.x >> 6) * scale;
             }
         }
 
@@ -435,7 +437,7 @@ namespace game
     {
         mag::Camera& camera = scene.get_camera();
 
-        OrhographicCameraDesc ortho_camera_desc = {};
+        OrthographicCameraDesc ortho_camera_desc = {};
         ortho_camera_desc.near = -100.0f;
         ortho_camera_desc.far = 100.0f;
         ortho_camera_desc.position = vec3(0.0f);
@@ -635,33 +637,34 @@ namespace game
             f32 y = transform.translation.y;
             f32 z = transform.translation.z;
 
-            for (auto& c : text)
+            for (const c8& c : text)
             {
                 Character& ch = fonts[font_name].font.characters[c];
 
                 // Skip chars with no visual representation (i.e. spaces)
                 if (ch.data.empty())
                 {
-                    x += (ch.advance.x >> 6) * scale;
+                    x += static_cast<f32>(ch.advance.x >> 6) * scale;
                     continue;
                 }
 
                 // Format newlines
                 if (c == '\n')
                 {
-                    y -= ch.size.y * 1.5 * scale;  // @TODO: hardcoded line spacing
+                    y -= static_cast<f32>(ch.size.y) * 1.5f * scale;  // @TODO: hardcoded line spacing
                     x = transform.translation.x;
                     continue;
                 }
 
                 // Don't offset the first letter of the text
-                const f32 xpos = x + (char_offset > 0 ? ch.bearing.x * scale : 0);
-                const f32 ypos = y - (char_offset > 0 ? (ch.size.y - ch.bearing.y) * scale : 0);
+                const f32 xpos = x + (char_offset > 0 ? static_cast<f32>(ch.bearing.x) * scale : 0);
+                const f32 ypos = y - (char_offset > 0 ? static_cast<f32>(ch.size.y - ch.bearing.y) * scale : 0);
                 const f32 zpos = z;
 
                 TransformComponent char_transform;
                 char_transform.translation = vec3(xpos, ypos, zpos);
-                char_transform.scale = vec3(ch.size.x * scale, ch.size.y * scale, 1.0f);
+                char_transform.scale =
+                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0f);
                 char_transform.rotation = transform.rotation;
 
                 // @TODO: rotation is a bit iffy but for now its ok
@@ -670,7 +673,7 @@ namespace game
                 const u32 font_offset = fonts[font_name].idx * 128;  // skip next 128 character textures
                 const u32 texture_idx = font_offset + c;
 
-                DebugTextData text_data;
+                DebugTextData text_data = {};
                 text_data.color = color;
                 text_data.model = model_matrix;
                 text_data.texture_idx = texture_idx;
@@ -683,7 +686,7 @@ namespace game
 
                 // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to
                 // get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
-                x += (ch.advance.x >> 6) * scale;
+                x += static_cast<f32>(ch.advance.x >> 6) * scale;
             }
 
             mag::gfx::draw(4, char_offset);

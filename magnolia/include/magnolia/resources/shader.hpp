@@ -7,20 +7,20 @@
 
 namespace mag
 {
-    enum class ShaderResourceStage
+    enum class ShaderResourceStage : u8
     {
         Vertex,
         Fragment
     };
 
-    enum class ShaderResourceTopology
+    enum class ShaderResourceTopology : u8
     {
         TriangleList,
         TriangleStrip,
         LineList
     };
 
-    enum class ShaderResourceFormat
+    enum class ShaderResourceFormat : u8
     {
         Undefined,
         R32_UINT,
@@ -29,19 +29,19 @@ namespace mag
         R32G32B32A32_SFLOAT
     };
 
-    enum class ShaderResourceDescriptorType
+    enum class ShaderResourceDescriptorType : u8
     {
         Uniform,
         Storage,
         CombinedImageSampler
     };
 
-    enum class ShaderResourceBlendOp
+    enum class ShaderResourceBlendOp : u8
     {
         Add
     };
 
-    enum class ShaderResourceBlendFactor
+    enum class ShaderResourceBlendFactor : u8
     {
         One,
         SrcAlpha,
@@ -92,7 +92,7 @@ namespace mag
 
     struct ShaderResource : public IResource
     {
-            str glsl_file_path = "";
+            str glsl_file_path;
             ShaderResourceTopology topology;
             ShaderResourceColorBlend color_blend;
             std::vector<ShaderResourceVertexInputData> vertex_inputs;
@@ -105,9 +105,9 @@ namespace mag
         {
             public:
                 ShaderLoader();
-                ~ShaderLoader();
+                ~ShaderLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
         };
 
         MAG_API b8 compile_shader(const str& file_path);

@@ -30,7 +30,7 @@ namespace game
             {
                 ScriptComponent* script = ecs->get_component<ScriptComponent>(target_id);
 
-                if (!script || !script->entity)
+                if ((script == nullptr) || (script->entity == nullptr))
                 {
                     return;
                 }

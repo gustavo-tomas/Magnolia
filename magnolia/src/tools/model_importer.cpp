@@ -250,14 +250,14 @@ namespace mag
         const u32 index_count = indices.size();
 
         std::vector<u32> remap(index_count);
-        const u64 optimized_vertex_count =
-            meshopt_generateVertexRemap(remap.data(), NULL, index_count, vertices.data(), vertex_count, sizeof(Vertex));
+        const u64 optimized_vertex_count = meshopt_generateVertexRemap(remap.data(), nullptr, index_count,
+                                                                       vertices.data(), vertex_count, sizeof(Vertex));
 
         std::vector<Vertex> optimized_vertices(optimized_vertex_count);
         std::vector<u32> optimized_indices(index_count);
 
         // Remove duplicates
-        meshopt_remapIndexBuffer(optimized_indices.data(), NULL, index_count, remap.data());
+        meshopt_remapIndexBuffer(optimized_indices.data(), nullptr, index_count, remap.data());
         meshopt_remapVertexBuffer(optimized_vertices.data(), vertices.data(), vertex_count, sizeof(Vertex),
                                   remap.data());
 

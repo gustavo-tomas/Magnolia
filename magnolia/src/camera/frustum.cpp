@@ -4,24 +4,24 @@
 
 namespace mag
 {
-    enum Planes
+    enum Planes : u8
     {
         Left = 0,
-        Right,
-        Bottom,
-        Top,
-        Near,
-        Far,
-        Count,
+        Right = 1,
+        Bottom = 2,
+        Top = 3,
+        Near = 4,
+        Far = 5,
+        Count = 6,
         Combinations = Count * (Count - 1) / 2
     };
 
     template <Planes i, Planes j>
     struct ij2k
     {
-            enum
+            enum ij : u8
             {
-                k = i * (9 - i) / 2 + j - 1
+                k = (i * (9 - i) / 2) + j - 1
             };
     };
 
@@ -31,10 +31,10 @@ namespace mag
             ~IMPL() = default;
 
             template <Planes a, Planes b, Planes c>
-            vec3 intersection(const vec3* crosses) const;
+            vec3 intersection(const std::array<vec3, Combinations>& crosses) const;
 
-            vec4 planes[Count];
-            vec3 points[8];
+            std::array<vec4, Count> planes;
+            std::array<vec3, 8> points;
     };
 
     Frustum::Frustum() = default;
@@ -61,21 +61,21 @@ namespace mag
         impl->planes[Near] = m[3] + m[2];
         impl->planes[Far] = m[3] - m[2];
 
-        vec3 crosses[Combinations] = {cross(vec3(impl->planes[Left]), vec3(impl->planes[Right])),
-                                      cross(vec3(impl->planes[Left]), vec3(impl->planes[Bottom])),
-                                      cross(vec3(impl->planes[Left]), vec3(impl->planes[Top])),
-                                      cross(vec3(impl->planes[Left]), vec3(impl->planes[Near])),
-                                      cross(vec3(impl->planes[Left]), vec3(impl->planes[Far])),
-                                      cross(vec3(impl->planes[Right]), vec3(impl->planes[Bottom])),
-                                      cross(vec3(impl->planes[Right]), vec3(impl->planes[Top])),
-                                      cross(vec3(impl->planes[Right]), vec3(impl->planes[Near])),
-                                      cross(vec3(impl->planes[Right]), vec3(impl->planes[Far])),
-                                      cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Top])),
-                                      cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Near])),
-                                      cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Far])),
-                                      cross(vec3(impl->planes[Top]), vec3(impl->planes[Near])),
-                                      cross(vec3(impl->planes[Top]), vec3(impl->planes[Far])),
-                                      cross(vec3(impl->planes[Near]), vec3(impl->planes[Far]))};
+        std::array<vec3, Combinations> crosses = {cross(vec3(impl->planes[Left]), vec3(impl->planes[Right])),
+                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Bottom])),
+                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Top])),
+                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Near])),
+                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Far])),
+                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Bottom])),
+                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Top])),
+                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Near])),
+                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Far])),
+                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Top])),
+                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Near])),
+                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Far])),
+                                                  cross(vec3(impl->planes[Top]), vec3(impl->planes[Near])),
+                                                  cross(vec3(impl->planes[Top]), vec3(impl->planes[Far])),
+                                                  cross(vec3(impl->planes[Near]), vec3(impl->planes[Far]))};
 
         impl->points[0] = impl->intersection<Left, Bottom, Near>(crosses);
         impl->points[1] = impl->intersection<Left, Top, Near>(crosses);
@@ -93,23 +93,23 @@ namespace mag
         const vec3& maxp = aabb.max;
 
         // check box outside/inside of frustum
-        for (u32 i = 0; i < Count; i++)
+        for (const vec4& plane : impl->planes)
         {
-            if ((dot(impl->planes[i], vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0) &&
-                (dot(impl->planes[i], vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0))
+            if ((dot(plane, vec4(minp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(maxp.x, minp.y, minp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(minp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(maxp.x, maxp.y, minp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(minp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(maxp.x, minp.y, maxp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(minp.x, maxp.y, maxp.z, 1.0f)) < 0.0) &&
+                (dot(plane, vec4(maxp.x, maxp.y, maxp.z, 1.0f)) < 0.0))
             {
                 return false;
             }
         }
 
         // check frustum outside/inside box
-        u32 out;
+        u32 out = 0;
 
         out = 0;
         for (u32 i = 0; i < 8; i++)
@@ -171,7 +171,7 @@ namespace mag
     }
 
     template <Planes a, Planes b, Planes c>
-    vec3 Frustum::IMPL::intersection(const vec3* crosses) const
+    vec3 Frustum::IMPL::intersection(const std::array<vec3, Combinations>& crosses) const
     {
         const f32 D = dot(vec3(planes[a]), crosses[ij2k<b, c>::k]);
         const vec3 res = mat3(crosses[ij2k<b, c>::k], -crosses[ij2k<a, c>::k], crosses[ij2k<a, b>::k]) *
@@ -180,5 +180,9 @@ namespace mag
         return res * (-1.0f / D);
     }
 
-    std::vector<vec3> Frustum::get_points() const { return std::vector<vec3>(&impl->points[0], &impl->points[8]); }
+    std::vector<vec3> Frustum::get_points() const
+    {
+        std::vector<vec3> points(impl->points.begin(), impl->points.end());
+        return points;
+    }
 };  // namespace mag

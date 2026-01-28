@@ -12,7 +12,7 @@ namespace mag
 {
     namespace gfx
     {
-        typedef u32 BufferHandle;
+        using BufferHandle = u32;
 
         struct BindingData
         {
@@ -178,7 +178,7 @@ namespace mag
                 return false;
             }
 
-            else if (result != Result::Success)
+            if (result != Result::Success)
             {
                 MAG_ASSERT(false, "Failed to acquire swapchain image");
                 return false;
@@ -274,7 +274,7 @@ namespace mag
                 return false;
             }
 
-            else if (result != Result::Success)
+            if (result != Result::Success)
             {
                 MAG_ASSERT(false, "Failed to present swapchain image");
                 return false;
@@ -344,7 +344,7 @@ namespace mag
 
             state->buffers[handle] = state->device->create_buffer(buffer_desc);
 
-            if (data)
+            if (data != nullptr)
             {
                 state->buffers[handle]->set_data(data, size);
             }
@@ -441,12 +441,12 @@ namespace mag
 
             ISamplerDesc sampler_desc = {};
             sampler_desc.min_lod = 0.0f;
-            sampler_desc.max_lod = texture_desc.mip_levels;
+            sampler_desc.max_lod = static_cast<f32>(texture_desc.mip_levels);
 
             state->textures[handle].sampler = state->device->create_sampler(sampler_desc);
             state->textures[handle].texture = state->device->create_texture(texture_desc);
 
-            if (size && pixels)
+            if ((size > 0) && (pixels != nullptr))
             {
                 set_texture_data(handle, size, pixels);
             }
@@ -665,10 +665,8 @@ namespace mag
                                                        first_instance);
         }
 
-        void on_resize(const WindowResizeEvent& e)
+        static void on_resize(const WindowResizeEvent& e)
         {
-            (void)e;
-
             state->device->wait_idle();
 
             state->swapchain->resize({e.width, e.height});

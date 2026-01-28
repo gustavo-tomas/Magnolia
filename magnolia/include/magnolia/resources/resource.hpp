@@ -11,7 +11,7 @@
 
 namespace mag
 {
-    enum class LoadingStatus
+    enum class LoadingStatus : u8
     {
         Pending,
         InProgress,
@@ -24,11 +24,11 @@ namespace mag
     {
             virtual ~IResource() = default;
             LoadingStatus loading_status = LoadingStatus::Pending;
-            str file_path = "";
-            str name = "";
+            str file_path;
+            str name;
     };
 
-    typedef std::function<void(const IResource*)> ResourceLoadedCallbackFn;
+    using ResourceLoadedCallbackFn = std::function<void(const IResource*)>;
 
     struct TextureResource;
     struct MaterialResource;

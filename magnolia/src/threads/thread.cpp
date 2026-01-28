@@ -4,13 +4,12 @@
 #include <ratio>
 #include <thread>
 
+#include "magnolia/threads/job_system.hpp"
+
 namespace mag
 {
     namespace thread
     {
-        b8 initialize_job_system(const u32 max_number_of_threads);
-        void shutdown_job_system();
-
         b8 initialize()
         {
             const u32 max_number_of_threads = std::thread::hardware_concurrency();

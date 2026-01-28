@@ -43,9 +43,9 @@ namespace mag
         {
             public:
                 ModelLoader(ResourceManager& resource_manager);
-                ~ModelLoader();
+                ~ModelLoader() override;
 
-                virtual IResource* load(const str& file_path) override;
+                IResource* load(const str& file_path) override;
 
             private:
                 ResourceManager& resource_manager;

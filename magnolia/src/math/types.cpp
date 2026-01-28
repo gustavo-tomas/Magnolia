@@ -32,7 +32,7 @@ namespace mag
         // @TODO: DRY helper methods
         BoundingBox BoundingBox::get_transformed_bounding_box(const mat4& transform) const
         {
-            BoundingBox transformed_aabb;
+            BoundingBox transformed_aabb = {};
 
             // Remove translation influence
             mat4 model_without_transform = transform;
