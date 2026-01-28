@@ -74,7 +74,12 @@ def lint():
   if not has_executable("cppcheck"):
     return
   
-  os.system(f"cppcheck --std=c++23 --check-level=exhaustive --enable=warning,performance,portability,style,information magnolia/**") == 0
+  cmd = "cppcheck --std=c++23 --check-level=exhaustive "
+  cmd += "--output-file=build/lint_cppcheck.txt "
+  cmd += "--enable=warning,performance,portability,style,information "
+  cmd += "--enable=all "
+  cmd += "--suppress=missingInclude --suppress=missingIncludeSystem --suppress=noExplicitConstructor --suppress=unusedFunction "
+  os.system(f"{cmd} -Imagnolia/include magnolia/**") == 0
   return
 
 def main():

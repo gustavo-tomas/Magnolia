@@ -339,16 +339,12 @@ namespace mag
             str compile_script_cmd = MAG_EXT_GLSLC " -O0";
 
             // Include paths
-            for (const str& path : include_paths)
-            {
-                compile_script_cmd += " -I" + path;
-            }
+            compile_script_cmd = std::accumulate(include_paths.begin(), include_paths.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -I" + arg; });
 
             // Defines
-            for (const str& def : defines)
-            {
-                compile_script_cmd += " -D" + def;
-            }
+            compile_script_cmd = std::accumulate(defines.begin(), defines.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -D" + arg; });
 
             // Stage
             compile_script_cmd += " -fshader-stage=" + shader_stage;

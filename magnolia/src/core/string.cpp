@@ -21,8 +21,8 @@ namespace mag
             to_lower(str_a);
             to_lower(str_b);
 
-            str_a = str_a.substr(0, n);
-            str_b = str_b.substr(0, n);
+            str_a.resize(n);
+            str_b.resize(n);
 
             return str_a == str_b;
         }

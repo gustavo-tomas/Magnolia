@@ -79,7 +79,7 @@ namespace mag
             void calculate_projection() override;
 
         private:
-            f32 fov;
+            f32 fov = 1.047198f;  // 60°;
     };
 
     struct OrthographicCameraDesc
@@ -105,6 +105,6 @@ namespace mag
             void calculate_projection() override;
 
         private:
-            f32 size;
+            f32 size = 1000.0f;
     };
 };  // namespace mag

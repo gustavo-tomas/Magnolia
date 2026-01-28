@@ -81,28 +81,20 @@ namespace mag
             str compile_script_cmd = "clang++ " + compilation_flags;
 
             // Include paths
-            for (const str& path : include_paths)
-            {
-                compile_script_cmd += " -I" + path;
-            }
+            compile_script_cmd = std::accumulate(include_paths.begin(), include_paths.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -I" + arg; });
 
             // Defines
-            for (const str& def : defines)
-            {
-                compile_script_cmd += " -D" + def;
-            }
+            compile_script_cmd = std::accumulate(defines.begin(), defines.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -D" + arg; });
 
             // Libs paths
-            for (const str& path : lib_paths)
-            {
-                compile_script_cmd += " -L" + path;
-            }
+            compile_script_cmd = std::accumulate(lib_paths.begin(), lib_paths.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -L" + arg; });
 
             // Link libs
-            for (const str& lib : link_libs)
-            {
-                compile_script_cmd += " -l" + lib;
-            }
+            compile_script_cmd = std::accumulate(link_libs.begin(), link_libs.end(), compile_script_cmd,
+                                                 [](const str& cmd, const str& arg) { return cmd + " -l" + arg; });
 
             compile_script_cmd += " " + file_path + " -o " + bin_script_file_path;
 

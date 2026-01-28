@@ -13,6 +13,7 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 
 #include <map>
+#include <numeric>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/logger.hpp"
@@ -186,10 +187,10 @@ namespace mag
         void execute_command(const str& command, const std::vector<str>& args)
         {
             str full_command = command;
-            for (const str& arg : args)
-            {
-                full_command += " " + arg;
-            }
+
+            // Include paths
+            full_command = std::accumulate(args.begin(), args.end(), full_command,
+                                           [](const str& cmd, const str& arg) { return cmd + " " + arg; });
 
             add_log({.color = COLOR_BROWN, .text = "# {0}"}, full_command);
 
