@@ -42,13 +42,13 @@ namespace mag
         class ModelLoader : public IResourceLoader
         {
             public:
-                ModelLoader(ResourceManager& resource_manager);
+                ModelLoader(ResourceManager* resource_manager);
                 ~ModelLoader() override;
 
                 IResource* load(const str& file_path) override;
 
             private:
-                ResourceManager& resource_manager;
+                ResourceManager* resource_manager = nullptr;
         };
     };  // namespace resource
 };  // namespace mag

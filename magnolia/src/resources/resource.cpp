@@ -60,8 +60,8 @@ namespace mag
         {
             // Register loaders
             register_loader<TextureResource>(create_unique<TextureLoader>());
-            register_loader<MaterialResource>(create_unique<MaterialLoader>(*this));
-            register_loader<ModelResource>(create_unique<ModelLoader>(*this));
+            register_loader<MaterialResource>(create_unique<MaterialLoader>(this));
+            register_loader<ModelResource>(create_unique<ModelLoader>(this));
             register_loader<FontResource>(create_unique<FontLoader>());
             register_loader<ShaderResource>(create_unique<ShaderLoader>());
             register_loader<AudioResource>(create_unique<AudioLoader>());

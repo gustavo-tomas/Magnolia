@@ -11,7 +11,7 @@ namespace mag
 {
     namespace resource
     {
-        ModelLoader::ModelLoader(ResourceManager& resource_manager) : resource_manager(resource_manager) {}
+        ModelLoader::ModelLoader(ResourceManager* resource_manager) : resource_manager(resource_manager) {}
 
         ModelLoader::~ModelLoader() = default;
 
@@ -89,7 +89,7 @@ namespace mag
             // Get dependencies
             for (const str& material : materials)
             {
-                const ref<MaterialResource>& material_ref = resource_manager.get_sync<MaterialResource>(material);
+                const ref<MaterialResource>& material_ref = resource_manager->get_sync<MaterialResource>(material);
                 model->materials.push_back(material_ref);
             }
 

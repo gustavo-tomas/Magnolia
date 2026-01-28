@@ -8,7 +8,7 @@ namespace mag
 {
     namespace resource
     {
-        MaterialLoader::MaterialLoader(ResourceManager& resource_manager) : resource_manager(resource_manager)
+        MaterialLoader::MaterialLoader(ResourceManager* resource_manager) : resource_manager(resource_manager)
         {
             // materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
             // materials[DEFAULT_MATERIAL_NAME]->name = "Default";
@@ -72,7 +72,7 @@ namespace mag
             // Get dependencies
             for (const auto& [slot, texture] : textures_map)
             {
-                material->textures[slot] = resource_manager.get_sync<TextureResource>(texture);
+                material->textures[slot] = resource_manager->get_sync<TextureResource>(texture);
             }
 
             LOG_SUCCESS("Loaded material: {0}", file_path);

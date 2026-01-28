@@ -27,13 +27,13 @@ namespace mag
         class MaterialLoader : public IResourceLoader
         {
             public:
-                MaterialLoader(ResourceManager& resource_manager);
+                MaterialLoader(ResourceManager* resource_manager);
                 ~MaterialLoader() override;
 
                 IResource* load(const str& file_path) override;
 
             private:
-                ResourceManager& resource_manager;
+                ResourceManager* resource_manager = nullptr;
         };
 
         ref<MaterialResource> MAG_API get_default_material();
