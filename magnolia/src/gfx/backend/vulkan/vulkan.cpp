@@ -37,9 +37,9 @@
 
 namespace mag
 {
-    #define VK_CHECK(result, message)                                               \
-        {                                                                           \
-            MAG_ASSERT((result) == VK_SUCCESS, "Vk check failed: " + str(message)); \
+    #define VK_CHECK(result, message)                                             \
+        {                                                                         \
+            MAG_ASSERT((result) == VK_SUCCESS, "Vk check failed: '{}'", message); \
         }
 
     namespace gfx
@@ -392,7 +392,7 @@ namespace mag
                                                                      VK_IMAGE_USAGE_TRANSFER_DST_BIT)
                                               .build();
 
-                    MAG_ASSERT(swap_ret, swap_ret.error().message() + " " + std::to_string(swap_ret.vk_result()));
+                    MAG_ASSERT(swap_ret, "{0} {1}", swap_ret.error().message(), std::to_string(swap_ret.vk_result()));
 
                     swapchain_textures.clear();
 
@@ -1175,7 +1175,7 @@ namespace mag
                 {
                     const vkb::Result<VkQueue> queue_ret = device.get_queue(mag_to_vk(desc.queue_type));
 
-                    MAG_ASSERT(queue_ret, queue_ret.error().message());
+                    MAG_ASSERT(queue_ret, "{}", queue_ret.error().message());
 
                     queue = queue_ret.value();
                 }
@@ -1291,7 +1291,7 @@ namespace mag
                             .require_api_version(vulkan_major_version, vulkan_minor_version, vulkan_patch_version)
                             .build();
 
-                    MAG_ASSERT(instance_ret, instance_ret.error().message());
+                    MAG_ASSERT(instance_ret, "{}", instance_ret.error().message());
 
                     instance = instance_ret.value();
                     inst_disp = instance.make_table();
@@ -1323,14 +1323,14 @@ namespace mag
                             .add_required_extension_features(descriptor_indexing_features)
                             .select();
 
-                    MAG_ASSERT(phys_device_ret, phys_device_ret.error().message());
+                    MAG_ASSERT(phys_device_ret, "{}", phys_device_ret.error().message());
 
                     const vkb::PhysicalDevice& physical_device = phys_device_ret.value();
                     vkb::DeviceBuilder device_builder{physical_device};
                     const vkb::Result<vkb::Device> device_ret =
                         device_builder.add_pNext(&dynamic_rendering_feature).build();
 
-                    MAG_ASSERT(device_ret, device_ret.error().message());
+                    MAG_ASSERT(device_ret, "{}", device_ret.error().message());
 
                     device = device_ret.value();
 

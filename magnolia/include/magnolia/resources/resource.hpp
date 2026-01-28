@@ -73,8 +73,8 @@ namespace mag
                     static_assert(std::is_base_of_v<IResource, T>, "T must derive from IResource");
 
                     const str resource_type_name = std::type_index(typeid(T)).name();
-                    MAG_ASSERT(loaders.contains(std::type_index(typeid(T))),
-                               "Loader for type '" + resource_type_name + "' is not registered");
+                    MAG_ASSERT(loaders.contains(std::type_index(typeid(T))), "Loader for type '{}' is not registered",
+                               resource_type_name);
 
                     // Check if resource is already loaded
                     auto it = resources.find(name);

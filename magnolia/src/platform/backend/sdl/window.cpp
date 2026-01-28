@@ -50,7 +50,7 @@ namespace mag
         {
             state = new State();
 
-            MAG_ASSERT(SDL_Init(SDL_INIT_VIDEO), "Failed to initialize SDL: " + str(SDL_GetError()));
+            MAG_ASSERT(SDL_Init(SDL_INIT_VIDEO), "Failed to initialize SDL: '{}'", SDL_GetError());
 
             SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
@@ -76,14 +76,14 @@ namespace mag
 
             state->handle = SDL_CreateWindow(options.title.c_str(), width, height, flags);
 
-            MAG_ASSERT(state->handle != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
+            MAG_ASSERT(state->handle != nullptr, "Failed to create SDL window: '{}'", SDL_GetError());
 
             SDL_SetWindowPosition(state->handle, position_x, position_y);
 
             u32 count = 0;
             const c8* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
-            MAG_ASSERT(count, "Failed to get window extensions: " + str(SDL_GetError()));
+            MAG_ASSERT(count, "Failed to get window extensions: '{}'", SDL_GetError());
 
             state->extensions.resize(count);
             std::copy(extensions, extensions + count, state->extensions.data());
@@ -255,7 +255,7 @@ namespace mag
         {
             MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *reinterpret_cast<const VkInstance*>(instance), nullptr,
                                                 reinterpret_cast<VkSurfaceKHR*>(surface)),
-                       "Failed to create surface: " + str(SDL_GetError()));
+                       "Failed to create surface: '{}'", SDL_GetError());
         }
 
         b8 is_key_pressed(const Key key)

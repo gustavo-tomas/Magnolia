@@ -92,9 +92,9 @@ namespace mag
             state->window = SDL_CreateWindow("Console", width, height, flags);
             state->renderer = SDL_CreateRenderer(state->window, nullptr);
 
-            MAG_ASSERT(state->window != nullptr, "Failed to create SDL window: " + str(SDL_GetError()));
+            MAG_ASSERT(state->window != nullptr, "Failed to create SDL window: '{}'", SDL_GetError());
 
-            MAG_ASSERT(state->renderer, "Failed to create SDL renderer: " + str(SDL_GetError()));
+            MAG_ASSERT(state->renderer, "Failed to create SDL renderer: '{}'", SDL_GetError());
 
             SDL_SetWindowPosition(state->window, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED);
 
