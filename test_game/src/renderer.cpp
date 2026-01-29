@@ -1,5 +1,6 @@
 #include "renderer.hpp"
 
+#include <magnolia/core/logger.hpp>
 #include <magnolia/core/types.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/gfx/gfx.hpp>
@@ -598,7 +599,7 @@ namespace game
                 color = math::vec4(0.98f, 0.02f, 0.02f, 1.0f);
             }
 
-            const str text = "fps: " + std::to_string(fps) + "\ntime: " + std::to_string(dt * 1000.0) + " ms/frame";
+            const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", fps, dt * 1000.0);
 
             u32 char_offset = 0;
 
