@@ -27,6 +27,7 @@ namespace game
 
             void on_event(const mag::Event& e);
             void on_update(const f32 dt);
+            void on_render(const f32 dt);
 
             void remove_entity(const mag::EntityID id);
 

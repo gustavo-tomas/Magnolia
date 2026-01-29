@@ -10,10 +10,14 @@ namespace mag
 {
     struct Event;
     class IPhysicsWorld;
+    class Camera;
 };  // namespace mag
 
 namespace game
 {
+    // @TODO: scripts are quite limited and don't work very well with a data oriented ECS. I think the best way to
+    // handle them right now is to use them to extend functionalities of the engine (like the debug script) and work
+    // mostly independent of the user application.
     class ScriptableEntity
     {
         public:
@@ -24,6 +28,7 @@ namespace game
             virtual void on_create() {}
             virtual void on_destroy() {}
             virtual void on_update(const f32 dt) { (void)dt; }
+            virtual void on_render(const f32 dt) { (void)dt; }
             virtual void on_event(const mag::Event& e) { (void)e; }
 
             virtual void on_signal_sent(const mag::EntityID target_id, const void* data)
@@ -63,6 +68,8 @@ namespace game
 
             mag::IPhysicsWorld& get_physics_world() const { return *physics_world; }
 
+            mag::Camera& get_camera() { return scene->get_camera(); }
+
             template <typename T>
             T* get_component()
             {
@@ -73,6 +80,12 @@ namespace game
             std::tuple<Ts*...> get_components()
             {
                 return ecs->get_components<Ts...>(entity_id);
+            }
+
+            template <typename... Ts>
+            std::vector<std::tuple<Ts*...>> get_all_components_of_types()
+            {
+                return ecs->get_all_components_of_types<Ts...>();
             }
 
             template <typename... Ts>

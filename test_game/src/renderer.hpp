@@ -27,7 +27,6 @@ namespace game
             void render_models(Scene& scene);
             void render_sprites(Scene& scene);
             void render_text(Scene& scene);
-            void render_debug(Scene& scene, const f32 dt);
 
             std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
     };

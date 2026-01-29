@@ -4,6 +4,7 @@
 
 #include <magnolia/platform/window.hpp>
 
+#include "../../assets/shaders/include/common.h"
 #include "../../src/components.hpp"
 #include "../../src/scriptable_entity.hpp"
 
