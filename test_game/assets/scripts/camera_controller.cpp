@@ -14,7 +14,7 @@ class CameraController : public ScriptableEntity
 
         virtual void on_update(const f32 dt) override
         {
-            auto [camera_c] = get_components<CameraComponent>();
+            auto [camera_c] = get_components<PerspectiveCameraComponent>();
             if (!camera_c)
             {
                 LOG_WARNING("Missing transform/camera");

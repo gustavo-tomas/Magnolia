@@ -278,7 +278,12 @@ namespace game
     {
         const uvec2 size = {e.width, e.height};
 
-        for (auto* camera_c : ecs->get_all_components_of_type<CameraComponent>())
+        for (auto* camera_c : ecs->get_all_components_of_type<PerspectiveCameraComponent>())
+        {
+            camera_c->camera.set_viewport_size(size);
+        }
+
+        for (auto* camera_c : ecs->get_all_components_of_type<OrthographicCameraComponent>())
         {
             camera_c->camera.set_viewport_size(size);
         }
@@ -314,13 +319,21 @@ namespace game
     mag::Camera& Scene::get_camera()
     {
         // @TODO: for now we assume the active camera is the first entity with a camera component
-        auto components = ecs->get_all_components_of_types<CameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : components)
+        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : perspective_cameras)
+        {
+            return camera_c->camera;
+        }
+
+        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent, TransformComponent>();
+        for (auto [camera_c, transform] : ortho_cameras)
         {
             return camera_c->camera;
         }
 
         MAG_ASSERT(false, "No runtime camera!");
-        return std::get<0>(components[0])->camera;
+
+        static mag::PerspectiveCamera default_camera({});
+        return default_camera;
     }
 };  // namespace game

@@ -143,11 +143,18 @@ namespace game
             f32 intensity;
     };
 
-    struct CameraComponent
+    struct PerspectiveCameraComponent
     {
-            CameraComponent(const mag::PerspectiveCamera& camera) : camera(camera) {}
+            PerspectiveCameraComponent(const mag::PerspectiveCamera& camera) : camera(camera) {}
 
             mag::PerspectiveCamera camera;
+    };
+
+    struct OrthographicCameraComponent
+    {
+            OrthographicCameraComponent(const mag::OrthographicCamera& camera) : camera(camera) {}
+
+            mag::OrthographicCamera camera;
     };
 
     class ScriptableEntity;

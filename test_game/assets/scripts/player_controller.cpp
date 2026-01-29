@@ -82,7 +82,7 @@ class PlayerController : public ScriptableEntity
         void handle_movement(const f32 dt)
         {
             auto [transform, camera_c, rigid_body_c] =
-                get_components<TransformComponent, CameraComponent, RigidBodyComponent>();
+                get_components<TransformComponent, PerspectiveCameraComponent, RigidBodyComponent>();
 
             if (transform == nullptr || camera_c == nullptr || rigid_body_c == nullptr)
             {

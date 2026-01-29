@@ -141,11 +141,18 @@ namespace game
                             entity["LightComponent"]["Intensity"] = component->intensity;
                         }
 
-                        if (auto component = ecs.get_component<CameraComponent>(entity_id))
+                        if (auto component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
                         {
-                            entity["CameraComponent"]["Fov"] = component->camera.get_fov();
-                            entity["CameraComponent"]["Near"] = component->camera.get_near();
-                            entity["CameraComponent"]["Far"] = component->camera.get_far();
+                            entity["PerspectiveCameraComponent"]["Fov"] = component->camera.get_fov();
+                            entity["PerspectiveCameraComponent"]["Near"] = component->camera.get_near();
+                            entity["PerspectiveCameraComponent"]["Far"] = component->camera.get_far();
+                        }
+
+                        if (auto component = ecs.get_component<OrthographicCameraComponent>(entity_id))
+                        {
+                            entity["OrthographicCameraComponent"]["Size"] = component->camera.get_size();
+                            entity["OrthographicCameraComponent"]["Near"] = component->camera.get_near();
+                            entity["OrthographicCameraComponent"]["Far"] = component->camera.get_far();
                         }
 
                         if (auto component = ecs.get_component<ScriptComponent>(entity_id))
@@ -325,9 +332,9 @@ namespace game
                             ecs.add_component<LightComponent>(entity_id, color, intensity);
                         }
 
-                        if (entity.contains("CameraComponent"))
+                        if (entity.contains("PerspectiveCameraComponent"))
                         {
-                            const auto& component = entity["CameraComponent"];
+                            const auto& component = entity["PerspectiveCameraComponent"];
 
                             const f32 fov = component["Fov"].get<f32>();
                             const f32 near = component["Near"].get<f32>();
@@ -343,7 +350,28 @@ namespace game
 
                             mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
 
-                            ecs.add_component<CameraComponent>(entity_id, camera);
+                            ecs.add_component<PerspectiveCameraComponent>(entity_id, camera);
+                        }
+
+                        if (entity.contains("OrthographicCameraComponent"))
+                        {
+                            const auto& component = entity["OrthographicCameraComponent"];
+
+                            const f32 size = component["Size"].get<f32>();
+                            const f32 near = component["Near"].get<f32>();
+                            const f32 far = component["Far"].get<f32>();
+
+                            mag::OrthographicCameraDesc camera_desc = {};
+                            camera_desc.near = near;
+                            camera_desc.far = far;
+                            camera_desc.size = size;
+                            camera_desc.viewport_size = mag::window::get_size();
+                            camera_desc.position = mag::vec3(0.0f);
+                            camera_desc.rotation = mag::vec3(0.0f);
+
+                            mag::OrthographicCamera camera = mag::OrthographicCamera(camera_desc);
+
+                            ecs.add_component<OrthographicCameraComponent>(entity_id, camera);
                         }
 
                         if (entity.contains("ScriptComponent"))
@@ -366,4 +394,4 @@ namespace game
             return true;
         }
     };  // namespace scene
-};      // namespace game
+};  // namespace game

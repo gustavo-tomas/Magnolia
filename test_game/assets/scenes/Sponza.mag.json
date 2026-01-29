@@ -11,7 +11,7 @@
         "Rotation": [0.0, -1.570796012878418, 0.0],
         "Scale": [1.0, 1.0, 1.0]
       },
-      "CameraComponent": {
+      "PerspectiveCameraComponent": {
         "Fov": 1.0471980571746826,
         "Near": 1.0,
         "Far": 10000.0

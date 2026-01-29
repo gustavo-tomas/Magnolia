@@ -45,7 +45,7 @@
         "Name": "wooden_hammer_01",
         "FilePath": "test_game/assets/models/hammer/native/wooden_hammer_01.model.json"
       },
-      "CameraComponent": {
+      "PerspectiveCameraComponent": {
         "Fov": 1.0471980571746826,
         "Near": 1.0,
         "Far": 10000.0
