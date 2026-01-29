@@ -179,4 +179,10 @@ namespace game
             void* handle = nullptr;
             ScriptableEntity* entity = nullptr;
     };
+
+    // Debug
+    struct DebugComponent
+    {
+            DebugComponent() = default;
+    };
 };  // namespace game

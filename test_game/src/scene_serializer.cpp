@@ -160,6 +160,11 @@ namespace game
                             entity["ScriptComponent"]["FilePath"] = component->file_path;
                         }
 
+                        if (auto component = ecs.get_component<DebugComponent>(entity_id))
+                        {
+                            entity["DebugComponent"] = {};
+                        }
+
                         data["Entities"].push_back(entity);
                     }
                 });
@@ -381,6 +386,11 @@ namespace game
                             const str file_path = component["FilePath"];
 
                             ecs.add_component<ScriptComponent>(entity_id, file_path);
+                        }
+
+                        if (entity.contains("DebugComponent"))
+                        {
+                            ecs.add_component<DebugComponent>(entity_id);
                         }
                     }
                 });
