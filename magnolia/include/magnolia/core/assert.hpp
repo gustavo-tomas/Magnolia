@@ -6,14 +6,14 @@ namespace mag
 {
 // Assert
 #if MAG_ASSERTIONS_ENABLED
-    #define MAG_ASSERT(assertion, ...)         \
-        {                                      \
-            if (!(assertion))                  \
-            {                                  \
-                LOG_ERROR("Assertion failed"); \
-                LOG_ERROR(__VA_ARGS__);        \
-                std::abort();                  \
-            }                                  \
+    #define MAG_ASSERT(assertion, ...)                         \
+        {                                                      \
+            if (!(assertion))                                  \
+            {                                                  \
+                LOG_ERROR("Assertion failed: {}", #assertion); \
+                LOG_ERROR(__VA_ARGS__);                        \
+                std::abort();                                  \
+            }                                                  \
         }
 #else
     #define MAG_ASSERT(assertion, ...)    \
