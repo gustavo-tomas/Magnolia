@@ -1,14 +1,8 @@
 {
-    "WindowSize": [
-        1280,
-        720
-    ],
-    "ScreenResolution": [
-        1920,
-        1080
-    ],
-    "WindowPosition": [],
-    "WindowTitle": "TestGame",
-    "WindowIcon": "",
-    "TargetFrameRate": 120
+  "WindowSize": [1280, 720],
+  "ScreenResolution": [1920, 1080],
+  "WindowPosition": [],
+  "WindowTitle": "TestGame",
+  "WindowIcon": "",
+  "TargetFrameRate": 120
 }
