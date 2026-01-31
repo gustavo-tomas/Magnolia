@@ -43,3 +43,6 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "libs/jolt"]
+	path = libs/jolt
+	url = https://github.com/jrouwe/JoltPhysics.git

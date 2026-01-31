@@ -13,6 +13,7 @@
 #include "magnolia/math/types.hpp"
 
 // Third party headers
+#include <Jolt/Jolt.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
