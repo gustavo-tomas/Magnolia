@@ -20,6 +20,8 @@ namespace mag
 
         void shutdown() { shutdown_job_system(); }
 
+        u32 get_core_count() { return std::thread::hardware_concurrency(); }
+
         void sleep(const f64 ms)
         {
             std::chrono::duration<f64, std::milli> duration(ms);

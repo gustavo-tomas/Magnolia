@@ -9,6 +9,8 @@ namespace mag
         b8 initialize();
         void shutdown();
 
+        MAG_API u32 get_core_count();
+
         MAG_API void sleep(const f64 ms);
     };  // namespace thread
 };  // namespace mag
