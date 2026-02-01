@@ -170,7 +170,13 @@ namespace mag
                     const JPH::EMotionType motion_type =
                         (mass > 0.0f) ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static;
 
-                    const JPH::BodyCreationSettings creation_settings(shape, pos, rot, motion_type, Layers::Moving);
+                    JPH::BodyCreationSettings creation_settings(shape, pos, rot, motion_type, Layers::Moving);
+
+                    JPH::MassProperties mass_properties;
+                    mass_properties.ScaleToMass(mass);
+
+                    creation_settings.mMassPropertiesOverride = mass_properties;
+                    creation_settings.mOverrideMassProperties = JPH::EOverrideMassProperties::CalculateInertia;
 
                     // Create the actual rigid body
                     // Note that if we run out of bodies this can return nullptr

@@ -184,6 +184,7 @@ class PlayerController : public ScriptableEntity
             collider.capsule.height = 0.0f;
 
             const f32 mass = 10.0f;
+            const f32 impulse = 1000.0f;
 
             add_component_to_entity<TransformComponent>(bullet_id, bullet_transform);
             add_component_to_entity<SpriteComponent>(bullet_id, texture);
@@ -192,7 +193,7 @@ class PlayerController : public ScriptableEntity
 
             auto [bullet_rigid_body] = get_external_entity_components<RigidBodyComponent>(bullet_id);
 
-            physics.apply_impulse(bullet_rigid_body->rigid_body_handle, -forward_dir * 1000.0f);
+            physics.apply_impulse(bullet_rigid_body->rigid_body_handle, -forward_dir * impulse);
         }
 
         void on_event(const mag::Event& e) override
