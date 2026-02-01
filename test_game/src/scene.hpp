@@ -9,7 +9,11 @@ namespace mag
 {
     class ECS;
     class Camera;
-    class IPhysicsWorld;
+
+    namespace physics
+    {
+        class IPhysicsWorld;
+    };
 };  // namespace mag
 
 namespace game
@@ -40,7 +44,7 @@ namespace game
             const str& get_name() const;
             const str& get_file_path() const;
             const str& get_next_scene() const;
-            const mag::IPhysicsWorld* get_physics_world() const;
+            const mag::physics::IPhysicsWorld* get_physics_world() const;
             mag::ECS& get_ecs();
             virtual mag::Camera& get_camera();
 
@@ -51,7 +55,7 @@ namespace game
             str name = "Untitled";
             str file_path;
             mag::unique<mag::ECS> ecs;
-            mag::unique<mag::IPhysicsWorld> physics_world;
+            mag::unique<mag::physics::IPhysicsWorld> physics_world;
 
         private:
             void on_component_added(const mag::EntityID id, std::any& component);

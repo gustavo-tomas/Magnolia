@@ -66,7 +66,7 @@ namespace game
                 return entity_id;
             }
 
-            mag::IPhysicsWorld& get_physics_world() const { return *physics_world; }
+            mag::physics::IPhysicsWorld& get_physics_world() const { return *physics_world; }
 
             mag::Camera& get_camera() { return scene->get_camera(); }
 
@@ -110,7 +110,7 @@ namespace game
             friend class Scene;
 
             Scene* scene = nullptr;
-            mag::IPhysicsWorld* physics_world = nullptr;
+            mag::physics::IPhysicsWorld* physics_world = nullptr;
             mag::ECS* ecs = nullptr;
             mag::EntityID entity_id = mag::Invalid_ID;
     };

@@ -17,7 +17,7 @@ namespace game
     Scene::Scene()
         : ecs(mag::create_unique<mag::ECS>([this](const mag::EntityID id, std::any component)
                                            { on_component_added(id, component); })),
-          physics_world(mag::create_physics_world())
+          physics_world(mag::physics::create_physics_world())
     {
     }
 
@@ -320,7 +320,7 @@ namespace game
 
     const str& Scene::get_next_scene() const { return next_scene; }
 
-    const mag::IPhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
+    const mag::physics::IPhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
 
     mag::ECS& Scene::get_ecs() { return *ecs; }
 

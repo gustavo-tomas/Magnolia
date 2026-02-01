@@ -8,14 +8,14 @@ using namespace game;
 class CameraController : public ScriptableEntity
 {
     public:
-        virtual void on_create() override { LOG_SUCCESS("Created CameraController"); }
+        void on_create() override { LOG_SUCCESS("Created CameraController"); }
 
-        virtual void on_destroy() override { LOG_SUCCESS("Destroyed CameraController"); }
+        void on_destroy() override { LOG_SUCCESS("Destroyed CameraController"); }
 
-        virtual void on_update(const f32 dt) override
+        void on_update(const f32 dt) override
         {
             auto [camera_c] = get_components<PerspectiveCameraComponent>();
-            if (!camera_c)
+            if (camera_c == nullptr)
             {
                 LOG_WARNING("Missing transform/camera");
                 return;
@@ -50,12 +50,30 @@ class CameraController : public ScriptableEntity
             vec3 direction(0.0f);
             const f32 speed = 50.0f;
 
-            if (mag::window::is_key_down(mag::Key::a)) direction -= side;
-            if (mag::window::is_key_down(mag::Key::d)) direction += side;
-            if (mag::window::is_key_down(mag::Key::w)) direction -= forward;
-            if (mag::window::is_key_down(mag::Key::s)) direction += forward;
-            if (mag::window::is_key_down(mag::Key::Space)) direction += up;
-            if (mag::window::is_key_down(mag::Key::Lctrl)) direction -= up;
+            if (mag::window::is_key_down(mag::Key::a))
+            {
+                direction -= side;
+            }
+            if (mag::window::is_key_down(mag::Key::d))
+            {
+                direction += side;
+            }
+            if (mag::window::is_key_down(mag::Key::w))
+            {
+                direction -= forward;
+            }
+            if (mag::window::is_key_down(mag::Key::s))
+            {
+                direction += forward;
+            }
+            if (mag::window::is_key_down(mag::Key::Space))
+            {
+                direction += up;
+            }
+            if (mag::window::is_key_down(mag::Key::Lctrl))
+            {
+                direction -= up;
+            }
 
             // Prevent nan values
             if (length(direction) > 0.0f)
@@ -69,7 +87,7 @@ class CameraController : public ScriptableEntity
             camera_c->camera.set_position(translation);
         }
 
-        virtual void on_event(const mag::Event& e) override
+        void on_event(const mag::Event& e) override
         {
             dispatch_event<mag::MousePressEvent>(e, [this](const mag::MousePressEvent& e) { on_mouse_click(e); });
             dispatch_event<mag::KeyPressEvent>(e, [this](const mag::KeyPressEvent& e) { on_key_press(e); });

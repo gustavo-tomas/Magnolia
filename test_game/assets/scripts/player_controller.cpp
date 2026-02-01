@@ -33,7 +33,7 @@ class PlayerController : public ScriptableEntity
                 return;
             }
 
-            mag::IPhysicsWorld& physics = get_physics_world();
+            mag::physics::IPhysicsWorld& physics = get_physics_world();
 
             // Prevent player from sleeping
             physics.set_activation_state(rigid_body_c->rigid_body_handle, mag::ActivationState::Activate);
@@ -107,7 +107,7 @@ class PlayerController : public ScriptableEntity
                 mag::window::set_mouse_position(window_center.x, window_center.y);
             }
 
-            mag::IPhysicsWorld& physics = get_physics_world();
+            mag::physics::IPhysicsWorld& physics = get_physics_world();
 
             const mag::RigidBodyHandle rigid_body_handle = rigid_body_c->rigid_body_handle;
 
@@ -163,7 +163,7 @@ class PlayerController : public ScriptableEntity
 
         void fire_bullet(const TransformComponent& transform)
         {
-            mag::IPhysicsWorld& physics = get_physics_world();
+            mag::physics::IPhysicsWorld& physics = get_physics_world();
 
             const mag::vec3& forward_dir = get_forward_dir();
 

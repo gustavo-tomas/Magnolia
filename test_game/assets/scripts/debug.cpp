@@ -51,7 +51,7 @@ class Debug : public ScriptableEntity
 
             std::vector<Line> lines;
 
-            const mag::IPhysicsWorld& physics = get_physics_world();
+            const mag::physics::IPhysicsWorld& physics = get_physics_world();
 
             const mag::math::LineList& line_list = physics.get_debug_line_list();
 
