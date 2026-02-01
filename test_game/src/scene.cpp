@@ -187,35 +187,26 @@ namespace game
 
         entity_deletion_queue.clear();
 
-        if (running)
+        // Update physics world
+        physics_world->on_update(dt);
+
+        // Synchronize physics components with the physics world
+        auto objects = ecs->get_all_components_of_types<TransformComponent, RigidBodyComponent>();
+
+        for (auto [transform, rigid_body] : objects)
         {
-            // Update physics world
-            physics_world->on_update(dt);
-
-            // Synchronize physics components with the physics world
-            auto objects = ecs->get_all_components_of_types<TransformComponent, RigidBodyComponent>();
-
-            for (auto [transform, rigid_body] : objects)
-            {
-                // Object has default scale, so we don't copy it
-                physics_world->get_collision_object_transform(rigid_body->rigid_body_handle, transform->translation,
-                                                              transform->rotation);
-            }
-
-            // Update scripts
-            for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
-            {
-                if (script->entity != nullptr)
-                {
-                    script->entity->on_update(dt);
-                }
-            }
+            // Object has default scale, so we don't copy it
+            physics_world->get_collision_object_transform(rigid_body->rigid_body_handle, transform->translation,
+                                                          transform->rotation);
         }
 
-        else
+        // Update scripts
+        for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
         {
-            // Update physics world without advancing the simulation
-            physics_world->on_update(0);
+            if (script->entity != nullptr)
+            {
+                script->entity->on_update(dt);
+            }
         }
     }
 
