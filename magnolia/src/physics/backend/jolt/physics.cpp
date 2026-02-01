@@ -252,21 +252,38 @@ namespace mag
                 rigid_bodies.erase(it);
             }
 
+            // Can't go wrong with this one
+            // https://gafferongames.com/post/fix_your_timestep/
+
+            // @TODO: this still isn't perfect and some stutter will happen after a few frames. For now we keep the
+            // application running in a steady timestep and maybe we will solve this later.
+
             void on_update(const f32 dt) override
             {
-                // @TODO: adjust collision steps according to dt
-
                 // We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics
                 // system.
                 const f32 fixed_dt = 1.0f / 60.0f;
+                static f32 accumulated_dt = 0.0f;
 
-                // If you take larger steps than 1 / 60th of a second you need to do multiple collision steps in
-                // order to keep the simulation stable. Do 1 collision step per 1 / 60th of a second (round up).
-                const i32 collision_steps = 1;
+                // Adjust collision steps according to the fixed dt
+                i32 collision_steps = 0;
 
-                // Step the world
-                physics_system->Update(fixed_dt, collision_steps, physics::state->temp_allocator.get(),
-                                       physics::state->job_system.get());
+                // Cap the collision steps (if we ever hit this stage it will be a miserable experience anyways)
+                accumulated_dt += dt;
+                accumulated_dt = math::min(accumulated_dt, 1.0f / 4.0f);
+
+                while (accumulated_dt >= fixed_dt)
+                {
+                    collision_steps++;
+                    accumulated_dt -= fixed_dt;
+                }
+
+                if (collision_steps > 0)
+                {
+                    // Step the world
+                    physics_system->Update(fixed_dt, collision_steps, physics::state->temp_allocator.get(),
+                                           physics::state->job_system.get());
+                }
 
                 // Render the world
                 static JPH::BodyManager::DrawSettings settings = {};
