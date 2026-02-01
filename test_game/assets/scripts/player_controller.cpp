@@ -36,7 +36,7 @@ class PlayerController : public ScriptableEntity
             mag::IPhysicsWorld& physics = get_physics_world();
 
             // Prevent player from sleeping
-            physics.set_activation_state(rigid_body_c->rigid_body_handle, mag::ActivationState::DisableDeactivation);
+            physics.set_activation_state(rigid_body_c->rigid_body_handle, mag::ActivationState::Activate);
 
             LOG_SUCCESS("Created PlayerController");
         }

@@ -12,8 +12,7 @@ workspace "magnolia"
     targetdir ("build/%{cfg.system}/%{cfg.buildcfg}/bin/%{prj.name}")
     objdir ("build/%{cfg.system}/%{cfg.buildcfg}/obj/%{prj.name}")
 
-    -- @TODO: finish windows 
-    -- @TODO: some cmakes also compiles the examples/tests. We want to compile only the libs.
+    -- @TODO: finish windows
 
     -- @TODO: remaining libs configurations
     target_libdir = "build/" .. os.host() .. "/" .. "debug/bin"
@@ -25,7 +24,6 @@ workspace "magnolia"
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
         target_libdir .. "/meshoptimizer",
-        target_libdir .. "/bullet",
         target_libdir .. "/freetype",
         target_libdir .. "/soloud",
         target_libdir .. "/imgui",
@@ -45,7 +43,6 @@ workspace "magnolia"
         "libs/spirv_reflect",
         "libs/json/single_include",
         "libs/meshoptimizer/src",
-        "libs/bullet/src",
         "libs/freetype/include",
         "libs/soloud/include",
         "libs/imgui",
@@ -58,10 +55,9 @@ workspace "magnolia"
     engine_lib_links = 
     {
         "vulkan",
-        "SDL3", "assimp", "meshoptimizer",
-        "BulletDynamics", "BulletInverseDynamics", "BulletCollision",
-        "Bullet3Common", "Bullet3Dynamics", "Bullet3Collision", "Bullet3Geometry", 
-        "LinearMath",
+        "SDL3", 
+        "assimp",
+        "meshoptimizer",
         "freetype",
         "soloud",
         "imgui",
@@ -135,7 +131,6 @@ project "magnolia"
         "vulkan",
         "assimp",
         "meshoptimizer",
-        "bullet",
         "freetype",
         "soloud",
         "imgui",
@@ -334,23 +329,7 @@ project "meshoptimizer"
         {name = "libmeshoptimizer.a", dir = ""}
     },
     "")
-    
--- bullet --------------------------------------------------------------------------------------------------------------
-project "bullet"
-    kind "none"
-    build_cmake_project("bullet", "", {
-        {name = "libBulletDynamics.a", dir = "src/BulletDynamics"},
-        {name = "libBulletInverseDynamics.a", dir = "src/BulletInverseDynamics"},
-        {name = "libBulletCollision.a", dir = "src/BulletCollision"},
-        {name = "libBullet3Common.a", dir = "src/Bullet3Common"},
-        {name = "libBullet3Dynamics.a", dir = "src/Bullet3Dynamics"},
-        {name = "libBullet3Collision.a", dir = "src/Bullet3Collision"},
-        {name = "libBullet3Geometry.a", dir = "src/Bullet3Geometry"},
-        {name = "libLinearMath.a", dir = "src/LinearMath"}
-    },
-    "-DBUILD_CPU_DEMOS=OFF -DBUILD_BULLET2_DEMOS=OFF -DBUILD_OPENGL3_DEMOS=OFF -DBUILD_UNIT_TESTS=OFF " ..
-    "-DBUILD_EXTRAS=OFF -DINSTALL_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5")
-    
+
 -- jolt ----------------------------------------------------------------------------------------------------------------
 project "jolt"
     kind "none"
@@ -372,8 +351,6 @@ project "freetype"
 -- soloud --------------------------------------------------------------------------------------------------------------
 project "soloud"
     kind "staticlib"
-    language "c++"
-    cppdialect "c++20"
 
     includedirs
     {
@@ -410,8 +387,6 @@ project "soloud"
 -- imgui ---------------------------------------------------------------------------------------------------------------
 project "imgui"
 	kind "staticlib"
-	language "c++"
-	cppdialect "c++20"
 
 	includedirs { ".", "libs/imgui", "libs/sdl/include" }
 

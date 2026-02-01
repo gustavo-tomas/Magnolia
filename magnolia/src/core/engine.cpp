@@ -5,6 +5,7 @@
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/gfx.hpp"
+#include "magnolia/physics/physics.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/platform/platform.hpp"
 #include "magnolia/platform/window.hpp"
@@ -29,6 +30,7 @@ namespace mag
         initialized = initialized && window::initialize(options.window_options);
         initialized = initialized && gfx::initialize(options.gfx_options);
         initialized = initialized && resource::initialize();
+        initialized = initialized && physics::initialize();
         initialized = initialized && console::initialize();
 
         MAG_ASSERT(initialized, "Failed to initialize Engine");
@@ -54,6 +56,7 @@ namespace mag
         }
 
         console::shutdown();
+        physics::shutdown();
         resource::shutdown();
         gfx::shutdown();
         window::shutdown();

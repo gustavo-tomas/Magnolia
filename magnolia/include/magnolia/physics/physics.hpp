@@ -14,8 +14,18 @@ namespace mag
 
     enum class ActivationState : u8
     {
-        DisableDeactivation = 1
+        Activate,
+        Deactivate
     };
+
+    // @TODO: finish
+
+    namespace physics
+    {
+        b8 initialize();
+
+        void shutdown();
+    };  // namespace physics
 
     class MAG_API IPhysicsWorld
     {
@@ -33,10 +43,6 @@ namespace mag
                                                    const f32 radius, const f32 height, const f32 mass) = 0;
 
             virtual void remove_rigid_body(const RigidBodyHandle handle) = 0;
-
-            virtual void reset_rigid_body(const RigidBodyHandle handle, const math::vec3& position,
-                                          const math::quat& rotation, const math::vec3& collider_dimensions,
-                                          const f32 mass = -1.0f) = 0;
 
             // Applies continuous force over time
             virtual void apply_force(const RigidBodyHandle handle, const math::vec3& force) = 0;
@@ -74,9 +80,6 @@ namespace mag
 
             // Debug lines for visualization
             virtual const math::LineList& get_debug_line_list() const = 0;
-
-        private:
-            virtual void render_debug_lines() = 0;
     };
 
     MAG_API unique<IPhysicsWorld> create_physics_world();
