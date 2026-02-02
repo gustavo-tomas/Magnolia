@@ -9,6 +9,7 @@
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
+#include "magnolia/threads/job_system.hpp"
 
 namespace mag
 {
@@ -29,7 +30,7 @@ namespace mag
             str name;
     };
 
-    using ResourceLoadedCallbackFn = std::function<void(const IResource*)>;
+    using ResourceLoadedCallbackFn = std::function<void(ref<IResource>)>;
 
     struct TextureResource;
     struct MaterialResource;
@@ -52,6 +53,12 @@ namespace mag
         MAG_API ref<FontResource> get_font(const str& file_path, const b8 reload = false);
         MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
         MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
+
+        MAG_API void get_model_async(const str& file_path, const b8 reload = false,
+                                     const ResourceLoadedCallbackFn& callback = nullptr);
+
+        MAG_API void get_texture_async(const str& file_path, const b8 reload = false,
+                                       const ResourceLoadedCallbackFn& callback = nullptr);
 
         // Interface for a resource loader
         class IResourceLoader
@@ -145,6 +152,25 @@ namespace mag
                     resources[name] = ref<IResource>(resource);
 
                     return std::dynamic_pointer_cast<T>(resources[name]);
+                }
+
+                // ASynchronous loading. Basically calls sync loading in another thread.
+                template <typename T>
+                void get_async(const str& name, const b8 reload = false, ResourceLoadedCallbackFn callback = nullptr)
+                {
+                    Job job([name, reload, this]() { return get_sync<T>(name, reload) != nullptr; },
+
+                            [this, name, reload, callback](const b8)
+                            {
+                                if (callback != nullptr)
+                                {
+                                    // @TODO: this is quite ugly. It would be better to add a 'user_data' field to the
+                                    // job system to make passing data easier instead of calling get_sync again.
+                                    callback(get_sync<T>(name, reload));
+                                }
+                            });
+
+                    thread::add_job(job);
                 }
 
                 // Register a loader for a specific resource type

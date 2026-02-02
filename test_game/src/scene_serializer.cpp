@@ -8,6 +8,7 @@
 #include <magnolia/resources/audio.hpp>
 #include <magnolia/resources/font.hpp>
 #include <magnolia/resources/model.hpp>
+#include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/texture.hpp>
 
 #include "components.hpp"
@@ -235,9 +236,14 @@ namespace game
                             const auto& component = entity["ModelComponent"];
                             const str file_path = component["FilePath"];
 
-                            const auto& model = mag::resource::get_model(file_path);
+                            mag::resource::get_model_async(
+                                file_path, false,
+                                [&ecs, file_path, entity_id](const mag::ref<mag::IResource>& resource)
+                                {
+                                    auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
 
-                            ecs.add_component<ModelComponent>(entity_id, model);
+                                    ecs.add_component<ModelComponent>(entity_id, res);
+                                });
                         }
 
                         if (entity.contains("SpriteComponent"))
@@ -247,9 +253,16 @@ namespace game
                             const b8 constant_size = component["ConstantSize"].get<b8>();
                             const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
-                            const auto& sprite = mag::resource::get_texture(file_path);
+                            mag::resource::get_texture_async(
+                                file_path, false,
+                                [&ecs, file_path, entity_id, constant_size,
+                                 always_face_camera](const mag::ref<mag::IResource>& resource)
+                                {
+                                    auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-                            ecs.add_component<SpriteComponent>(entity_id, sprite, constant_size, always_face_camera);
+                                    ecs.add_component<SpriteComponent>(entity_id, res, constant_size,
+                                                                       always_face_camera);
+                                });
                         }
 
                         if (entity.contains("TextComponent"))

@@ -176,8 +176,14 @@ class PlayerController : public ScriptableEntity
             bullet_transform.scale = mag::vec3(0.01f);
             bullet_transform.translation -= forward_dir * bullet_offset;
 
-            const mag::ref<mag::TextureResource> texture =
-                mag::resource::get_texture("test_game/assets/sprites/test_texture0.png");
+            const str file_path = "test_game/assets/sprites/test_texture0.png";
+            mag::resource::get_texture_async(file_path, false,
+                                             [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
+                                             {
+                                                 auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+
+                                                 add_component_to_entity<SpriteComponent>(bullet_id, res);
+                                             });
 
             ColliderComponent::Collider collider = {};
             collider.capsule.radius = 2.5f;
@@ -187,7 +193,6 @@ class PlayerController : public ScriptableEntity
             const f32 impulse = 1000.0f;
 
             add_component_to_entity<TransformComponent>(bullet_id, bullet_transform);
-            add_component_to_entity<SpriteComponent>(bullet_id, texture);
             add_component_to_entity<RigidBodyComponent>(bullet_id, mass);
             add_component_to_entity<ColliderComponent>(bullet_id, ColliderComponent::ColliderType::Capsule, collider);
 
