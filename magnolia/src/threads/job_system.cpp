@@ -85,10 +85,8 @@ namespace mag
 
             for (auto& worker : state->workers)
             {
-                if (worker.joinable())
-                {
-                    worker.join();
-                }
+                worker.detach();
+                worker.~thread();
             }
 
             delete state;
