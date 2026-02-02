@@ -327,14 +327,14 @@ namespace game
     mag::Camera& Scene::get_camera()
     {
         // @TODO: for now we assume the active camera is the first entity with a camera component
-        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : perspective_cameras)
+        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent>();
+        for (auto [camera_c] : perspective_cameras)
         {
             return camera_c->camera;
         }
 
-        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : ortho_cameras)
+        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent>();
+        for (auto [camera_c] : ortho_cameras)
         {
             return camera_c->camera;
         }
