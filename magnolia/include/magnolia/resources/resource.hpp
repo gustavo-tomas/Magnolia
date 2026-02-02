@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <typeindex>
 #include <unordered_map>
 
@@ -60,6 +61,52 @@ namespace mag
                 virtual IResource* load(const str& file_path) = 0;
         };
 
+        // @TODO: it might be a good idea to create our own types with mutex variants to make life easier. They are
+        // mostly wrappers for the STL anyway.
+
+        template <typename Key, typename Value>
+        class Map
+        {
+            public:
+                using iterator = typename std::unordered_map<Key, Value>::iterator;
+
+                Map() = default;
+
+                ~Map()
+                {
+                    std::unique_lock<std::mutex> lock(map_mutex);
+                    map.clear();
+                }
+
+                b8 contains(const Key& key)
+                {
+                    std::unique_lock<std::mutex> lock(map_mutex);
+                    return map.contains(key);
+                }
+
+                iterator find(const Key& key)
+                {
+                    std::unique_lock<std::mutex> lock(map_mutex);
+                    return map.find(key);
+                }
+
+                iterator end()
+                {
+                    std::unique_lock<std::mutex> lock(map_mutex);
+                    return map.end();
+                }
+
+                Value& operator[](const Key& key)
+                {
+                    std::unique_lock<std::mutex> lock(map_mutex);
+                    return map[key];
+                }
+
+            private:
+                std::unordered_map<Key, Value> map;
+                std::mutex map_mutex;
+        };
+
         class ResourceManager
         {
             public:
@@ -111,14 +158,14 @@ namespace mag
             private:
                 // Shorthand to load a resource
                 template <typename T>
-                T* load_resource(const str& file_path) const
+                T* load_resource(const str& file_path)
                 {
-                    T* resource = reinterpret_cast<T*>(loaders.at(std::type_index(typeid(T)))->load(file_path));
+                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load(file_path));
                     return resource;
                 }
 
-                std::unordered_map<str, ref<IResource>> resources;
-                std::unordered_map<std::type_index, unique<IResourceLoader>> loaders;
+                Map<str, ref<IResource>> resources;
+                Map<std::type_index, unique<IResourceLoader>> loaders;
         };
     };  // namespace resource
 };  // namespace mag
