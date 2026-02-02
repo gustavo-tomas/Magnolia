@@ -160,7 +160,7 @@ namespace game
                             entity["ScriptComponent"]["FilePath"] = component->file_path;
                         }
 
-                        if (auto component = ecs.get_component<DebugComponent>(entity_id))
+                        if (ecs.get_component<DebugComponent>(entity_id) != nullptr)
                         {
                             entity["DebugComponent"] = {};
                         }
