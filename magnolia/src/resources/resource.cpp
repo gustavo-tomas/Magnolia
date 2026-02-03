@@ -56,14 +56,14 @@ namespace mag
             return state->rm.get_sync<ShaderResource>(file_path, reload);
         }
 
-        void get_model_async(const str& file_path, const b8 reload, const ResourceLoadedCallbackFn& callback)
+        void get_model_async(const str& file_path, const ResourceLoadedCallbackFn& callback, const b8 reload)
         {
-            state->rm.get_async<ModelResource>(file_path, reload, callback);
+            state->rm.get_async<ModelResource>(file_path, callback, reload);
         }
 
-        void get_texture_async(const str& file_path, const b8 reload, const ResourceLoadedCallbackFn& callback)
+        void get_texture_async(const str& file_path, const ResourceLoadedCallbackFn& callback, const b8 reload)
         {
-            state->rm.get_async<TextureResource>(file_path, reload, callback);
+            state->rm.get_async<TextureResource>(file_path, callback, reload);
         }
 
         ResourceManager::ResourceManager()

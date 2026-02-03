@@ -177,13 +177,15 @@ class PlayerController : public ScriptableEntity
             bullet_transform.translation -= forward_dir * bullet_offset;
 
             const str file_path = "test_game/assets/sprites/test_texture0.png";
-            mag::resource::get_texture_async(file_path, false,
-                                             [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
-                                             {
-                                                 auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+            mag::resource::get_texture_async(
+                file_path,
+                [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
+                {
+                    auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-                                                 add_component_to_entity<SpriteComponent>(bullet_id, res);
-                                             });
+                    add_component_to_entity<SpriteComponent>(bullet_id, res);
+                },
+                false);
 
             ColliderComponent::Collider collider = {};
             collider.capsule.radius = 2.5f;

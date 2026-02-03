@@ -2,13 +2,12 @@
 
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <typeindex>
-#include <unordered_map>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
+#include "magnolia/threads/containers.hpp"
 #include "magnolia/threads/job_system.hpp"
 
 namespace mag
@@ -54,11 +53,11 @@ namespace mag
         MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
         MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
 
-        MAG_API void get_model_async(const str& file_path, const b8 reload = false,
-                                     const ResourceLoadedCallbackFn& callback = nullptr);
+        MAG_API void get_model_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
+                                     const b8 reload = false);
 
-        MAG_API void get_texture_async(const str& file_path, const b8 reload = false,
-                                       const ResourceLoadedCallbackFn& callback = nullptr);
+        MAG_API void get_texture_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
+                                       const b8 reload = false);
 
         // Interface for a resource loader
         class IResourceLoader
@@ -66,52 +65,6 @@ namespace mag
             public:
                 virtual ~IResourceLoader() = default;
                 virtual IResource* load(const str& file_path) = 0;
-        };
-
-        // @TODO: it might be a good idea to create our own types with mutex variants to make life easier. They are
-        // mostly wrappers for the STL anyway.
-
-        template <typename Key, typename Value>
-        class Map
-        {
-            public:
-                using iterator = typename std::unordered_map<Key, Value>::iterator;
-
-                Map() = default;
-
-                ~Map()
-                {
-                    std::unique_lock<std::mutex> lock(map_mutex);
-                    map.clear();
-                }
-
-                b8 contains(const Key& key)
-                {
-                    std::unique_lock<std::mutex> lock(map_mutex);
-                    return map.contains(key);
-                }
-
-                iterator find(const Key& key)
-                {
-                    std::unique_lock<std::mutex> lock(map_mutex);
-                    return map.find(key);
-                }
-
-                iterator end()
-                {
-                    std::unique_lock<std::mutex> lock(map_mutex);
-                    return map.end();
-                }
-
-                Value& operator[](const Key& key)
-                {
-                    std::unique_lock<std::mutex> lock(map_mutex);
-                    return map[key];
-                }
-
-            private:
-                std::unordered_map<Key, Value> map;
-                std::mutex map_mutex;
         };
 
         class ResourceManager
@@ -154,10 +107,29 @@ namespace mag
                     return std::dynamic_pointer_cast<T>(resources[name]);
                 }
 
-                // Asynchronous loading. Basically calls sync loading in another thread.
+                // Asynchronous loading. Basically calls sync loading in another thread. Must be called from the main
+                // thread.
                 template <typename T>
-                void get_async(const str& name, const b8 reload = false, ResourceLoadedCallbackFn callback = nullptr)
+                void get_async(const str& name, const ResourceLoadedCallbackFn& callback, const b8 reload = false)
                 {
+                    // Check if resource is loaded
+                    auto it = resources.find(name);
+                    if (!reload && it != resources.end())
+                    {
+                        callback(std::dynamic_pointer_cast<T>(it->second));
+                        return;
+                    }
+
+                    // Check if resource is loading
+                    if (loading_map.contains(name))
+                    {
+                        loading_map[name].push(callback);
+                        return;
+                    }
+
+                    // First time loading this resource
+                    loading_map[name].push(callback);
+
                     Job job(
                         [this, name, reload]()
                         {
@@ -168,12 +140,15 @@ namespace mag
                             return data;
                         },
 
-                        [callback](const JobData data)
+                        [this, name](const JobData data)
                         {
-                            if (callback != nullptr && data.result && data.data.has_value())
+                            while (!loading_map[name].empty())
                             {
-                                callback(std::any_cast<ref<T>>(data.data));
+                                ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
+                                queued_callback(std::any_cast<ref<T>>(data.data));
                             }
+
+                            loading_map.erase(name);
                         });
 
                     thread::add_job(job);
@@ -196,8 +171,9 @@ namespace mag
                     return resource;
                 }
 
-                Map<str, ref<IResource>> resources;
-                Map<std::type_index, unique<IResourceLoader>> loaders;
+                thread::Map<str, ref<IResource>> resources;
+                thread::Map<std::type_index, unique<IResourceLoader>> loaders;
+                thread::Map<str, thread::Queue<ResourceLoadedCallbackFn>> loading_map;
         };
     };  // namespace resource
 };  // namespace mag

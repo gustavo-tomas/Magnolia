@@ -5,6 +5,8 @@
 #include <queue>
 #include <thread>
 
+#include "magnolia/threads/containers.hpp"
+
 namespace mag
 {
     Job::Job(JobExecuteFn&& execute, JobCallbackFn&& on_execute_finished)
@@ -14,25 +16,9 @@ namespace mag
 
     namespace thread
     {
-        class JobQueue
-        {
-            public:
-                JobQueue();
-                ~JobQueue();
-
-                void push(const Job& job);
-                Job pop();
-                b8 empty();
-                void clear();
-
-            private:
-                std::queue<Job> jobs;
-                std::mutex jobs_mutex;
-        };
-
         struct State
         {
-                JobQueue job_queue;
+                Queue<Job> job_queue;
                 std::vector<std::thread> workers;
 
                 std::queue<JobCallbackFn> callback_queue;
@@ -136,45 +122,6 @@ namespace mag
         {
             state->job_queue.push(job);
             state->job_available.notify_one();
-        }
-
-        JobQueue::JobQueue() = default;
-
-        JobQueue::~JobQueue() { clear(); }
-
-        void JobQueue::push(const Job& job)
-        {
-            std::unique_lock<std::mutex> lock(jobs_mutex);
-            jobs.push(job);
-        }
-
-        Job JobQueue::pop()
-        {
-            std::unique_lock<std::mutex> lock(jobs_mutex);
-            if (jobs.empty())
-            {
-                return {{}, {}};
-            }
-
-            Job job = jobs.front();
-            jobs.pop();
-
-            return job;
-        }
-
-        b8 JobQueue::empty()
-        {
-            std::unique_lock<std::mutex> lock(jobs_mutex);
-            return jobs.empty();
-        }
-
-        void JobQueue::clear()
-        {
-            std::unique_lock<std::mutex> lock(jobs_mutex);
-            while (!jobs.empty())
-            {
-                jobs.pop();
-            }
         }
     };  // namespace thread
 };  // namespace mag
