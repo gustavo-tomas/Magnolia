@@ -1,5 +1,11 @@
 #include "magnolia/scripting/scripting_engine.hpp"
 
+#include <unordered_map>
+
+#include "magnolia/core/logger.hpp"
+#include "magnolia/core/types.hpp"
+#include "magnolia/platform/file_system.hpp"
+
 // @TODO: this is unix only, create an interface for the windows build
 #if MAG_PLATFORM_LINUX
     #include <dlfcn.h>
@@ -7,45 +13,84 @@
     #error "Unsupported platform"
 #endif
 
-#include "magnolia/core/logger.hpp"
-#include "magnolia/platform/file_system.hpp"
-
 namespace mag
 {
     namespace script
     {
-        void* load_script(const str& file_path)
+        struct State
+        {
+                std::unordered_map<ScriptHandle, void*> scripts;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize()
+        {
+            state = new State();
+
+            return state != nullptr;
+        }
+
+        void shutdown()
+        {
+            std::erase_if(state->scripts,
+                          [](const auto& item)
+                          {
+                              const auto& [key, value] = item;
+                              dlclose(value);
+                              return true;
+                          });
+
+            delete state;
+        }
+
+        static ScriptHandle create_handle()
+        {
+            static u32 counter = 0;
+            return counter++;
+        }
+
+        ScriptHandle load_script(const str& file_path)
         {
             const str script_name = fs::path(file_path).stem();
             const str bin_script_file_path = MAG_BUILD_SCRIPT_NAME(script_name);
 
-            void* handle = dlopen(bin_script_file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
-            if (handle == nullptr)
+            void* script = dlopen(bin_script_file_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
+            if (script == nullptr)
             {
                 LOG_ERROR("Failed to load script '{0}': {1}", bin_script_file_path, dlerror());
-                return nullptr;
+                return Invalid_ID;
             }
+
+            const ScriptHandle handle = create_handle();
+
+            state->scripts[handle] = script;
 
             return handle;
         }
 
-        void unload_script(void* handle)
+        void unload_script(const ScriptHandle handle)
         {
-            if (handle != nullptr)
+            auto it = state->scripts.find(handle);
+            if (it == state->scripts.end())
             {
-                dlclose(handle);
+                return;
             }
+
+            dlclose(it->second);
+            state->scripts.erase(it);
         }
 
-        void* get_symbol(void* handle, const str& name)
+        void* get_symbol(const ScriptHandle handle, const str& name)
         {
-            if (handle == nullptr)
+            auto it = state->scripts.find(handle);
+            if (it == state->scripts.end())
             {
-                LOG_ERROR("Handle is nullptr");
+                LOG_ERROR("Invalid handle");
                 return nullptr;
             }
 
-            void* symbol = dlsym(handle, name.c_str());
+            void* symbol = dlsym(it->second, name.c_str());
 
             if (symbol == nullptr)
             {

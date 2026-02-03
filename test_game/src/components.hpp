@@ -5,6 +5,7 @@
 #include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
+#include <magnolia/scripting/scripting_engine.hpp>
 #include <utility>
 
 namespace mag
@@ -163,8 +164,8 @@ namespace game
 
     struct ScriptComponent
     {
-            ScriptComponent(str file_path, void* handle = nullptr, CreateScriptFn create_entity = nullptr,
-                            DestroyScriptFn destroy_entity = nullptr)
+            ScriptComponent(str file_path, const mag::script::ScriptHandle handle = mag::Invalid_ID,
+                            CreateScriptFn create_entity = nullptr, DestroyScriptFn destroy_entity = nullptr)
                 : create_entity(std::move(create_entity)),
                   destroy_entity(std::move(destroy_entity)),
                   file_path(std::move(file_path)),
@@ -176,7 +177,7 @@ namespace game
             DestroyScriptFn destroy_entity;
 
             str file_path;
-            void* handle = nullptr;
+            mag::script::ScriptHandle handle = mag::Invalid_ID;
             ScriptableEntity* entity = nullptr;
     };
 

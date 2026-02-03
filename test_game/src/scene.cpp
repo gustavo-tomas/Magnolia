@@ -4,6 +4,7 @@
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/assert.hpp>
 #include <magnolia/core/event.hpp>
+#include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/resources/audio.hpp>
@@ -77,8 +78,8 @@ namespace game
         }
 
         // Now we can safely load
-        void* handle = mag::script::load_script(script_params.file_path);
-        if (handle == nullptr)
+        const mag::script::ScriptHandle handle = mag::script::load_script(script_params.file_path);
+        if (handle == mag::Invalid_ID)
         {
             return;
         }
@@ -119,9 +120,6 @@ namespace game
         script->entity->on_destroy();
         script->destroy_entity(script->entity);
         script->entity = nullptr;
-
-        mag::script::unload_script(script->handle);
-        script->handle = nullptr;
     }
 
     void Scene::on_stop()

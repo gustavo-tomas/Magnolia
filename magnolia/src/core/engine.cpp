@@ -10,6 +10,7 @@
 #include "magnolia/platform/platform.hpp"
 #include "magnolia/platform/window.hpp"
 #include "magnolia/resources/resource.hpp"
+#include "magnolia/scripting/scripting_engine.hpp"
 #include "magnolia/threads/thread.hpp"
 #include "magnolia/tools/console.hpp"
 
@@ -25,6 +26,7 @@ namespace mag
 
         initialized = initialized && plat::initialize();
         initialized = initialized && fs::initialize();
+        initialized = initialized && script::initialize();
         initialized = initialized && thread::initialize();
         initialized = initialized && audio::initialize();
         initialized = initialized && window::initialize(options.window_options);
@@ -62,6 +64,7 @@ namespace mag
         window::shutdown();
         audio::shutdown();
         thread::shutdown();
+        script::shutdown();
         fs::shutdown();
         plat::shutdown();
     }
