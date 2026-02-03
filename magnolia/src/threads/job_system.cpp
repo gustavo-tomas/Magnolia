@@ -23,6 +23,7 @@ namespace mag
                 void push(const Job& job);
                 Job pop();
                 b8 empty();
+                void clear();
 
             private:
                 std::queue<Job> jobs;
@@ -54,14 +55,16 @@ namespace mag
 
             for (u32 i = 0; i < max_number_of_threads; i++)
             {
-                auto worker_thread = []
+                auto worker = []
                 {
                     while (state->running)
                     {
                         // Wait for jobs or the sad ending :(
-                        std::unique_lock<std::mutex> lock(state->job_available_mutex);
-                        state->job_available.wait(lock, [] { return !state->job_queue.empty() || !state->running; });
-                        lock.unlock();
+                        {
+                            std::unique_lock<std::mutex> lock(state->job_available_mutex);
+                            state->job_available.wait(lock);
+                            lock.unlock();
+                        }
 
                         if (!state->running)
                         {
@@ -87,7 +90,8 @@ namespace mag
                     }
                 };
 
-                state->workers.emplace_back(worker_thread);
+                state->workers.emplace_back(worker);
+                state->workers.back().detach();
             }
 
             return state != nullptr;
@@ -99,11 +103,7 @@ namespace mag
 
             state->job_available.notify_all();
 
-            for (auto it = state->workers.end() - 1; it >= state->workers.begin(); it--)
-            {
-                it->detach();
-                state->workers.erase(it);
-            }
+            state->workers.clear();
 
             delete state;
         }
@@ -132,24 +132,20 @@ namespace mag
             }
         }
 
-        void add_job(const Job& job) { state->job_queue.push(job); }
+        void add_job(const Job& job)
+        {
+            state->job_queue.push(job);
+            state->job_available.notify_one();
+        }
 
         JobQueue::JobQueue() = default;
 
-        JobQueue::~JobQueue()
-        {
-            std::unique_lock<std::mutex> lock(jobs_mutex);
-            while (!jobs.empty())
-            {
-                jobs.pop();
-            }
-        }
+        JobQueue::~JobQueue() { clear(); }
 
         void JobQueue::push(const Job& job)
         {
             std::unique_lock<std::mutex> lock(jobs_mutex);
             jobs.push(job);
-            state->job_available.notify_one();
         }
 
         Job JobQueue::pop()
@@ -170,6 +166,15 @@ namespace mag
         {
             std::unique_lock<std::mutex> lock(jobs_mutex);
             return jobs.empty();
+        }
+
+        void JobQueue::clear()
+        {
+            std::unique_lock<std::mutex> lock(jobs_mutex);
+            while (!jobs.empty())
+            {
+                jobs.pop();
+            }
         }
     };  // namespace thread
 };  // namespace mag

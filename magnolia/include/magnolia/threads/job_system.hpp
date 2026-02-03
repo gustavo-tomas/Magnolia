@@ -16,8 +16,8 @@ namespace mag
     {
             Job(JobExecuteFn&& execute, JobCallbackFn&& on_execute_finished);
 
-            const JobExecuteFn execute_fn;
-            const JobCallbackFn callback_fn;
+            JobExecuteFn execute_fn;
+            JobCallbackFn callback_fn;
     };
 
     namespace thread
