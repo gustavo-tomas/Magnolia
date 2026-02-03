@@ -154,21 +154,27 @@ namespace mag
                     return std::dynamic_pointer_cast<T>(resources[name]);
                 }
 
-                // ASynchronous loading. Basically calls sync loading in another thread.
+                // Asynchronous loading. Basically calls sync loading in another thread.
                 template <typename T>
                 void get_async(const str& name, const b8 reload = false, ResourceLoadedCallbackFn callback = nullptr)
                 {
-                    Job job([name, reload, this]() { return get_sync<T>(name, reload) != nullptr; },
+                    Job job(
+                        [this, name, reload]()
+                        {
+                            JobData data = {};
+                            data.data = get_sync<T>(name, reload);
+                            data.result = data.data.has_value();
 
-                            [this, name, reload, callback](const b8)
+                            return data;
+                        },
+
+                        [callback](const JobData data)
+                        {
+                            if (callback != nullptr && data.result && data.data.has_value())
                             {
-                                if (callback != nullptr)
-                                {
-                                    // @TODO: this is quite ugly. It would be better to add a 'user_data' field to the
-                                    // job system to make passing data easier instead of calling get_sync again.
-                                    callback(get_sync<T>(name, reload));
-                                }
-                            });
+                                callback(std::any_cast<ref<T>>(data.data));
+                            }
+                        });
 
                     thread::add_job(job);
                 }

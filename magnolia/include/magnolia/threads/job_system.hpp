@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include <functional>
 
 #include "magnolia/core/types.hpp"
@@ -9,8 +10,14 @@
 
 namespace mag
 {
-    using JobExecuteFn = std::function<b8()>;
-    using JobCallbackFn = std::function<void(const b8)>;
+    struct MAG_API JobData
+    {
+            b8 result = false;
+            std::any data;
+    };
+
+    using JobExecuteFn = std::function<JobData()>;
+    using JobCallbackFn = std::function<void(const JobData&)>;
 
     struct MAG_API Job
     {

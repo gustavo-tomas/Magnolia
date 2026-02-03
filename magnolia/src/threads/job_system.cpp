@@ -36,7 +36,7 @@ namespace mag
                 std::vector<std::thread> workers;
 
                 std::queue<JobCallbackFn> callback_queue;
-                std::queue<b8> execute_result_queue;
+                std::queue<JobData> execute_result_queue;
                 std::mutex callback_mutex;
                 std::mutex execute_mutex;
                 std::mutex job_available_mutex;
@@ -76,7 +76,7 @@ namespace mag
                         // Execute the job
                         if (job.execute_fn)
                         {
-                            const b8 result = job.execute_fn();
+                            const JobData result = job.execute_fn();
                             std::lock_guard<std::mutex> lock(state->execute_mutex);
                             state->execute_result_queue.push(result);
                         }
@@ -116,7 +116,7 @@ namespace mag
             while (!state->callback_queue.empty())
             {
                 auto callback = state->callback_queue.front();
-                const b8 result = state->execute_result_queue.front();
+                const JobData result = state->execute_result_queue.front();
 
                 state->callback_queue.pop();
                 state->execute_result_queue.pop();
