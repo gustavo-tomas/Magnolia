@@ -29,7 +29,7 @@ namespace mag
                 TextureLoader();
                 ~TextureLoader() override;
 
-                IResource* load(const str& file_path) override;
+                IResource* load_sync(const str& file_path) override;
         };
 
         b8 get_image_info(const str& file_path, u32* width, u32* height, u32* channels, u32* mip_levels);

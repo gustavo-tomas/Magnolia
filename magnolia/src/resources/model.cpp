@@ -15,7 +15,7 @@ namespace mag
 
         ModelLoader::~ModelLoader() = default;
 
-        IResource* ModelLoader::load(const str& file_path)
+        IResource* ModelLoader::load_sync(const str& file_path)
         {
             ModelResource* model = new ModelResource();
 

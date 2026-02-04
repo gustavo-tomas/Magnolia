@@ -17,7 +17,7 @@ namespace mag
 
         FontLoader::~FontLoader() = default;
 
-        IResource *FontLoader::load(const str &file_path)
+        IResource *FontLoader::load_sync(const str &file_path)
         {
             FontResource *font = new FontResource();
 

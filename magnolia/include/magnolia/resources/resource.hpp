@@ -64,7 +64,7 @@ namespace mag
         {
             public:
                 virtual ~IResourceLoader() = default;
-                virtual IResource* load(const str& file_path) = 0;
+                virtual IResource* load_sync(const str& file_path) = 0;
         };
 
         class ResourceManager
@@ -167,7 +167,7 @@ namespace mag
                 template <typename T>
                 T* load_resource(const str& file_path)
                 {
-                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load(file_path));
+                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load_sync(file_path));
                     return resource;
                 }
 
