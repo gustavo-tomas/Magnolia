@@ -57,8 +57,6 @@ namespace game
         }
     }
 
-    void Renderer::on_event(const mag::Event& e) { mag::gfx::on_event(e); }
-
     void Renderer::render_models(Scene& scene)
     {
         auto& ecs = scene.get_ecs();
@@ -78,66 +76,41 @@ namespace game
         mag::gfx::use_shader(shaders[MESH_SHADER]);
 
         // Global buffer
+        struct GlobalData
         {
-            struct GlobalData
-            {
-                    mat4 view;
-                    mat4 projection;
-                    u32 light_count;
-            };
+                mat4 view;
+                mat4 projection;
+                u32 light_count;
+        };
 
-            static GlobalData global_data = {};
-            global_data.view = camera.get_view();
-            global_data.projection = camera.get_projection();
-            global_data.light_count = light_entities.size();
+        GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+        global_data.light_count = light_entities.size();
 
-            mag::gfx::set_uniform("u_global", &global_data);
-        }
+        mag::gfx::set_uniform("u_global", &global_data);
 
         // Lights buffer
+        u32 light_num = 0;
+        for (const auto& [transform, light] : light_entities)
         {
-            u32 light_num = 0;
-            for (const auto& [transform, light] : light_entities)
-            {
-                LightData light_data = {};
-                light_data.position = transform->translation;
-                light_data.color = light->color;
-                light_data.intensity = light->intensity;
+            LightData light_data = {};
+            light_data.position = transform->translation;
+            light_data.color = light->color;
+            light_data.intensity = light->intensity;
 
-                mag::gfx::set_uniform("u_light", &light_data, light_num++);
-            }
+            mag::gfx::set_uniform("u_light", &light_data, light_num++);
         }
 
         u32 mesh_offset = 0;
         u32 material_offset = 0;
         u32 texture_offset = 0;
 
-        static std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
-        static std::unordered_map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
-        static std::unordered_map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
-
         for (auto& model_entity : model_entities)
         {
             const auto& transform = std::get<0>(model_entity);
             const auto& model = std::get<1>(model_entity)->model;
-
-            if (model->loading_status != LoadingStatus::Finished)
-            {
-                continue;
-            }
-
             const str& model_name = model->file_path;
-            if (!vertex_buffer_handles.contains(model_name))
-            {
-                const mag::gfx::VertexBufferHandle vertex_buffer =
-                    mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(model->vertices), model->vertices.data());
-
-                const mag::gfx::IndexBufferHandle index_buffer =
-                    mag::gfx::create_index_buffer(VEC_SIZE_BYTES(model->indices), model->indices.data());
-
-                vertex_buffer_handles[model_name] = vertex_buffer;
-                index_buffer_handles[model_name] = index_buffer;
-            }
 
             mag::gfx::bind_vertex_buffer(vertex_buffer_handles[model_name]);
             mag::gfx::bind_index_buffer(index_buffer_handles[model_name]);
@@ -160,24 +133,8 @@ namespace game
 
                     const ref<mag::MaterialResource>& material = model->materials[mesh.material_index];
 
-                    if (material->loading_status != LoadingStatus::Finished)
-                    {
-                        continue;
-                    }
-
-                    for (const auto& [slot, texture] : material->textures)
-                    {
-                        const str& name = texture->file_path;
-
-                        if (!texture_handles.contains(name))
-                        {
-                            texture_handles[name] = mag::gfx::create_texture(
-                                texture->width, texture->height, texture->pixels.size(), texture->pixels.data());
-                        }
-                    }
-
                     // @TODO: hardcoded material parameters
-                    static MaterialData material_data = {};
+                    MaterialData material_data = {};
                     material_data.albedo = vec4(1, 1, 1, 1);
                     material_data.roughness = 1;
                     material_data.metallic = 1;
@@ -235,44 +192,24 @@ namespace game
         mag::gfx::use_shader(shaders[SPRITE_SHADER]);
 
         // Global buffer
+        struct GlobalData
         {
-            struct GlobalData
-            {
-                    mat4 view;
-                    mat4 projection;
-            };
+                mat4 view;
+                mat4 projection;
+        };
 
-            static GlobalData global_data = {};
-            global_data.view = camera.get_view();
-            global_data.projection = camera.get_projection();
+        GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
 
-            mag::gfx::set_uniform("u_global", &global_data);
-        }
+        mag::gfx::set_uniform("u_global", &global_data);
 
         u32 texture_offset = 0;
         for (auto& sprite_entity : sprite_entities)
         {
             const auto& transform = std::get<0>(sprite_entity);
             const auto& sprite = std::get<1>(sprite_entity);
-
-            // Skip sprites that are not loaded yet
-            if (sprite->texture->loading_status != LoadingStatus::Finished)
-            {
-                continue;
-            }
-
-            // @TODO: temp
-            static std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
-
             const str& name = sprite->texture->file_path;
-
-            if (!texture_handles.contains(sprite->texture->file_path))
-            {
-                const ref<mag::TextureResource>& texture = sprite->texture;
-
-                texture_handles[name] = mag::gfx::create_texture(texture->width, texture->height,
-                                                                 texture->pixels.size(), texture->pixels.data());
-            }
 
             // Remove rotation if sprite is aligned to the camera
             const quat model_rotation = transform->rotation;
@@ -316,22 +253,13 @@ namespace game
 
         mag::Camera& camera = scene.get_camera();
 
-        // @TODO: temp
-        struct FontData
-        {
-                std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
-                u32 idx;
-        };
-
-        static std::unordered_map<str, FontData> fonts;
-
         struct GlobalData
         {
                 mat4 view;
                 mat4 projection;
         };
 
-        static GlobalData global_data = {};
+        GlobalData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 
@@ -342,37 +270,7 @@ namespace game
         {
             const auto& transform = std::get<0>(text_entity);
             const auto& text = std::get<1>(text_entity);
-
-            // Skip fonts that are not loaded yet
-            if (text->font->loading_status != LoadingStatus::Finished)
-            {
-                continue;
-            }
-
             const str& name = text->font->file_path;
-
-            if (!fonts.contains(name))
-            {
-                const ref<mag::FontResource>& font = text->font;
-
-                FontData font_data = {};
-                font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
-
-                for (const auto& [c, ch] : font->characters)
-                {
-                    // Skip non visual characters
-                    if (ch.texture.pixels.empty())
-                    {
-                        continue;
-                    }
-
-                    font_data.char_texture_handles[c] =
-                        mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
-                                                 ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
-                }
-
-                fonts[name] = font_data;
-            }
 
             const f32 scale = transform->scale.x;
             f32 x = transform->translation.x;
@@ -454,5 +352,90 @@ namespace game
         }
 
         shaders[file_path] = mag::gfx::create_shader(*shader_resource);
+    }
+
+    void Renderer::on_event(const mag::Event& e) { mag::gfx::on_event(e); }
+
+    void Renderer::on_model_added(const mag::ModelResource& model)
+    {
+        const str& name = model.file_path;
+
+        if (model.loading_status != LoadingStatus::Finished)
+        {
+            LOG_WARNING("Model '{0}' has not finished loading", name);
+        }
+
+        if (vertex_buffer_handles.contains(name))
+        {
+            return;
+        }
+
+        const mag::gfx::VertexBufferHandle vertex_buffer =
+            mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(model.vertices), model.vertices.data());
+
+        const mag::gfx::IndexBufferHandle index_buffer =
+            mag::gfx::create_index_buffer(VEC_SIZE_BYTES(model.indices), model.indices.data());
+
+        vertex_buffer_handles[name] = vertex_buffer;
+        index_buffer_handles[name] = index_buffer;
+
+        for (const auto& material : model.materials)
+        {
+            for (const auto& [slot, texture] : material->textures)
+            {
+                on_texture_added(*texture);
+            }
+        }
+    }
+
+    void Renderer::on_texture_added(const mag::TextureResource& texture)
+    {
+        const str& name = texture.file_path;
+
+        if (texture.loading_status != LoadingStatus::Finished)
+        {
+            LOG_WARNING("Texture '{0}' has not finished loading", name);
+        }
+
+        if (texture_handles.contains(name))
+        {
+            return;
+        }
+
+        texture_handles[name] =
+            mag::gfx::create_texture(texture.width, texture.height, texture.pixels.size(), texture.pixels.data());
+    }
+
+    void Renderer::on_font_added(const mag::FontResource& font)
+    {
+        const str& name = font.file_path;
+
+        if (font.loading_status != LoadingStatus::Finished)
+        {
+            LOG_WARNING("Font '{0}' has not finished loading", name);
+        }
+
+        if (fonts.contains(name))
+        {
+            return;
+        }
+
+        FontData font_data = {};
+        font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
+
+        for (const auto& [c, ch] : font.characters)
+        {
+            // Skip non visual characters
+            if (ch.texture.pixels.empty())
+            {
+                continue;
+            }
+
+            font_data.char_texture_handles[c] =
+                mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
+                                         ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
+        }
+
+        fonts[name] = font_data;
     }
 };  // namespace game

@@ -19,11 +19,12 @@ namespace mag
 namespace game
 {
     struct ScriptComponent;
+    class Renderer;
 
     class Scene
     {
         public:
-            Scene();
+            Scene(Renderer* renderer);
             virtual ~Scene();
 
             void on_start();
@@ -62,6 +63,7 @@ namespace game
             void create_script(const mag::EntityID id);
             void destroy_script(ScriptComponent* script);
 
+            Renderer* renderer = nullptr;
             std::vector<mag::EntityID> entity_deletion_queue;
             str next_scene;
             b8 running = false;

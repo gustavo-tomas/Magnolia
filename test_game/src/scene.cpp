@@ -11,14 +11,16 @@
 #include <magnolia/scripting/scripting_engine.hpp>
 
 #include "components.hpp"
+#include "renderer.hpp"
 #include "scriptable_entity.hpp"
 
 namespace game
 {
-    Scene::Scene()
+    Scene::Scene(Renderer* renderer)
         : ecs(mag::create_unique<mag::ECS>([this](const mag::EntityID id, std::any component)
                                            { on_component_added(id, component); })),
-          physics_world(mag::physics::create_physics_world())
+          physics_world(mag::physics::create_physics_world()),
+          renderer(renderer)
     {
     }
 
@@ -222,12 +224,15 @@ namespace game
 
     void Scene::on_component_added(const mag::EntityID id, std::any& component)
     {
-        const b8 is_rigid_body_component = component.type() == typeid(RigidBodyComponent);
-        const b8 is_collider_component = component.type() == typeid(ColliderComponent);
-        const b8 is_script_component = component.type() == typeid(ScriptComponent);
+        const b8 is_rigid_body = component.type() == typeid(RigidBodyComponent);
+        const b8 is_collider = component.type() == typeid(ColliderComponent);
+        const b8 is_script = component.type() == typeid(ScriptComponent);
+        const b8 is_model = component.type() == typeid(ModelComponent);
+        const b8 is_sprite = component.type() == typeid(SpriteComponent);
+        const b8 is_text = component.type() == typeid(TextComponent);
 
         // Add rigidbody to physics world if component is a rigidbody or collider
-        if (is_rigid_body_component || is_collider_component)
+        if (is_rigid_body || is_collider)
         {
             auto* transform = ecs->get_component<TransformComponent>(id);
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
@@ -258,12 +263,39 @@ namespace game
                         break;
                 }
             }
+
+            return;
         }
 
         // Instantiate scripts during runtime
-        if (is_running() && is_script_component)
+        if (is_running() && is_script)
         {
             create_script(id);
+            return;
+        }
+
+        // Upload model data to the GPU
+        if (is_model)
+        {
+            auto* model = ecs->get_component<ModelComponent>(id);
+            renderer->on_model_added(*model->model);
+            return;
+        }
+
+        // Upload texture data to the GPU
+        if (is_sprite)
+        {
+            auto* sprite = ecs->get_component<SpriteComponent>(id);
+            renderer->on_texture_added(*sprite->texture);
+            return;
+        }
+
+        // Upload font data to the GPU
+        if (is_text)
+        {
+            auto* text = ecs->get_component<TextComponent>(id);
+            renderer->on_font_added(*text->font);
+            return;
         }
     }
 

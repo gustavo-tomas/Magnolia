@@ -51,7 +51,7 @@ namespace game
 
         // Then load starting scene
 
-        scene = mag::create_unique<Scene>();
+        scene = mag::create_unique<Scene>(renderer.get());
 
         const str start_scene_file_path = project->get_asset_dir() / project->get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
@@ -101,7 +101,7 @@ namespace game
         const str& next_scene_file_path = scene->get_next_scene();
         if (!next_scene_file_path.empty())
         {
-            Scene* next_scene = new Scene();
+            Scene* next_scene = new Scene(renderer.get());
             if (!scene::load(next_scene_file_path, *next_scene))
             {
                 LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);
