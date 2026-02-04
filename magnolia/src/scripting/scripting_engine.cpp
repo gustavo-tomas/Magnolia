@@ -69,16 +69,18 @@ namespace mag
             return handle;
         }
 
-        void unload_script(const ScriptHandle handle)
+        b8 unload_script(const ScriptHandle handle)
         {
             auto it = state->scripts.find(handle);
             if (it == state->scripts.end())
             {
-                return;
+                return false;
             }
 
-            dlclose(it->second);
+            const b8 res = dlclose(it->second) == 0;
             state->scripts.erase(it);
+
+            return res;
         }
 
         void* get_symbol(const ScriptHandle handle, const str& name)

@@ -151,6 +151,7 @@ namespace game
         for (auto& script : scripts)
         {
             destroy_script(&script);
+            mag::script::unload_script(script.handle);
         }
 
         running = false;
