@@ -111,9 +111,6 @@ namespace game
         u32 material_offset = 0;
         u32 texture_offset = 0;
 
-        static MeshData mesh_data = {};
-        mesh_data.material_idx = Max_U32;
-
         static std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
         static std::unordered_map<str, mag::gfx::VertexBufferHandle> vertex_buffer_handles;
         static std::unordered_map<str, mag::gfx::IndexBufferHandle> index_buffer_handles;
@@ -144,16 +141,21 @@ namespace game
             mag::gfx::bind_vertex_buffer(vertex_buffer_handles[model_name]);
             mag::gfx::bind_index_buffer(index_buffer_handles[model_name]);
 
+            u32 mesh_materials_bound = 0;
+            u32 last_bound_material_idx = Max_U32;
             for (auto& mesh : model->meshes)
             {
                 // Instance
+                MeshData mesh_data = {};
                 mesh_data.model = transform->get_transformation_matrix();
+                mesh_data.material_idx = mesh.material_index + material_offset;
 
                 // Set the material. The meshes are sorted by material index (see model loader), so we draw all
                 // meshes with the same material before swapping to the next one.
-                if (mesh_data.material_idx != mesh.material_index)
+                if (last_bound_material_idx != mesh.material_index)
                 {
-                    mesh_data.material_idx = mesh.material_index;
+                    last_bound_material_idx = mesh.material_index;
+                    mesh_data.material_idx = mesh.material_index + material_offset;
 
                     const ref<mag::MaterialResource>& material = model->materials[mesh.material_index];
 
@@ -178,7 +180,7 @@ namespace game
                     material_data.roughness_tex_idx = texture_offset + 2;
                     material_data.metalness_tex_idx = texture_offset + 3;
 
-                    mag::gfx::set_uniform("u_material", &material_data, material_offset);
+                    mag::gfx::set_uniform("u_material", &material_data, mesh_data.material_idx);
 
                     mag::gfx::set_uniform("u_material_textures",
                                           texture_handles[material->textures.at(TextureSlot::Albedo)->file_path],
@@ -196,7 +198,7 @@ namespace game
                                           texture_handles[material->textures.at(TextureSlot::Metalness)->file_path],
                                           texture_offset + 2);  // ARM texture
 
-                    material_offset++;
+                    mesh_materials_bound++;
                     texture_offset += 4;
                 }
 
@@ -208,6 +210,8 @@ namespace game
 
                 mesh_offset++;
             }
+
+            material_offset += mesh_materials_bound;
         }
     }
 
