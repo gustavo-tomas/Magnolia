@@ -10,6 +10,7 @@
 #include <magnolia/resources/font.hpp>
 #include <magnolia/resources/material.hpp>
 #include <magnolia/resources/model.hpp>
+#include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
 
@@ -158,6 +159,11 @@ namespace game
                     mesh_data.material_idx = mesh.material_index + material_offset;
 
                     const ref<mag::MaterialResource>& material = model->materials[mesh.material_index];
+
+                    if (material->loading_status != LoadingStatus::Finished)
+                    {
+                        continue;
+                    }
 
                     for (const auto& [slot, texture] : material->textures)
                     {

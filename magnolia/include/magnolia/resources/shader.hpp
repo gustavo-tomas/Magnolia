@@ -107,7 +107,7 @@ namespace mag
                 ShaderLoader();
                 ~ShaderLoader() override;
 
-                IResource* load(const str& file_path) override;
+                IResource* load_sync(const str& file_path) override;
         };
 
         MAG_API b8 compile_shader(const str& file_path);

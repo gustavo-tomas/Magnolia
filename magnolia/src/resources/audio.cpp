@@ -13,7 +13,7 @@ namespace mag
 
         AudioLoader::~AudioLoader() = default;
 
-        IResource *AudioLoader::load(const str &file_path)
+        IResource *AudioLoader::load_sync(const str &file_path)
         {
             AudioResource *audio = new AudioResource();
 

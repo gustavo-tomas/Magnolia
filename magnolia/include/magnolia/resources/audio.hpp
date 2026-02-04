@@ -19,7 +19,7 @@ namespace mag
                 AudioLoader();
                 ~AudioLoader() override;
 
-                IResource* load(const str& file_path) override;
+                IResource* load_sync(const str& file_path) override;
         };
     };  // namespace resource
 };  // namespace mag

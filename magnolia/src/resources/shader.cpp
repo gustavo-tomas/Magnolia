@@ -153,7 +153,7 @@ namespace mag
 
         ShaderLoader::~ShaderLoader() = default;
 
-        IResource* ShaderLoader::load(const str& file_path)
+        IResource* ShaderLoader::load_sync(const str& file_path)
         {
             ShaderResource* shader = new ShaderResource();
 

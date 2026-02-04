@@ -30,7 +30,7 @@ namespace mag
                 MaterialLoader(ResourceManager* resource_manager);
                 ~MaterialLoader() override;
 
-                IResource* load(const str& file_path) override;
+                IResource* load_sync(const str& file_path) override;
 
             private:
                 ResourceManager* resource_manager = nullptr;

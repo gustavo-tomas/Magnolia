@@ -3,11 +3,12 @@
 #include <functional>
 #include <memory>
 #include <typeindex>
-#include <unordered_map>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
+#include "magnolia/threads/containers.hpp"
+#include "magnolia/threads/job_system.hpp"
 
 namespace mag
 {
@@ -28,7 +29,7 @@ namespace mag
             str name;
     };
 
-    using ResourceLoadedCallbackFn = std::function<void(const IResource*)>;
+    using ResourceLoadedCallbackFn = std::function<void(ref<IResource>)>;
 
     struct TextureResource;
     struct MaterialResource;
@@ -52,12 +53,18 @@ namespace mag
         MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
         MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
 
+        MAG_API void get_model_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
+                                     const b8 reload = false);
+
+        MAG_API void get_texture_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
+                                       const b8 reload = false);
+
         // Interface for a resource loader
         class IResourceLoader
         {
             public:
                 virtual ~IResourceLoader() = default;
-                virtual IResource* load(const str& file_path) = 0;
+                virtual IResource* load_sync(const str& file_path) = 0;
         };
 
         class ResourceManager
@@ -100,6 +107,53 @@ namespace mag
                     return std::dynamic_pointer_cast<T>(resources[name]);
                 }
 
+                // Asynchronous loading. Basically calls sync loading in another thread. Must be called from the main
+                // thread.
+                template <typename T>
+                void get_async(const str& name, const ResourceLoadedCallbackFn& callback, const b8 reload = false)
+                {
+                    // Check if resource is loaded
+                    auto it = resources.find(name);
+                    if (!reload && it != resources.end())
+                    {
+                        callback(std::dynamic_pointer_cast<T>(it->second));
+                        return;
+                    }
+
+                    // Check if resource is loading
+                    if (loading_map.contains(name))
+                    {
+                        loading_map[name].push(callback);
+                        return;
+                    }
+
+                    // First time loading this resource
+                    loading_map[name].push(callback);
+
+                    Job job(
+                        [this, name, reload]()
+                        {
+                            JobData data = {};
+                            data.data = get_sync<T>(name, reload);
+                            data.result = data.data.has_value();
+
+                            return data;
+                        },
+
+                        [this, name](const JobData data)
+                        {
+                            while (!loading_map[name].empty())
+                            {
+                                ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
+                                queued_callback(std::any_cast<ref<T>>(data.data));
+                            }
+
+                            loading_map.erase(name);
+                        });
+
+                    thread::add_job(job);
+                }
+
                 // Register a loader for a specific resource type
                 template <typename T>
                 void register_loader(unique<IResourceLoader> loader)
@@ -111,14 +165,15 @@ namespace mag
             private:
                 // Shorthand to load a resource
                 template <typename T>
-                T* load_resource(const str& file_path) const
+                T* load_resource(const str& file_path)
                 {
-                    T* resource = reinterpret_cast<T*>(loaders.at(std::type_index(typeid(T)))->load(file_path));
+                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load_sync(file_path));
                     return resource;
                 }
 
-                std::unordered_map<str, ref<IResource>> resources;
-                std::unordered_map<std::type_index, unique<IResourceLoader>> loaders;
+                thread::Map<str, ref<IResource>> resources;
+                thread::Map<std::type_index, unique<IResourceLoader>> loaders;
+                thread::Map<str, thread::Queue<ResourceLoadedCallbackFn>> loading_map;
         };
     };  // namespace resource
 };  // namespace mag

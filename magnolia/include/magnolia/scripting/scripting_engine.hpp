@@ -6,12 +6,24 @@
 
 namespace mag
 {
+    // The scripting engine keeps track of the loaded scripts. All scripts are unloaded during shutdown, but the user
+    // has the option to unload manually if they want.
+
     namespace script
     {
-        // returns nullptr on error
-        MAG_API void* load_script(const str& file_path);
+        using ScriptHandle = u32;
 
-        MAG_API void unload_script(void* handle);
+        b8 initialize();
+
+        void shutdown();
+
+        // returns invalid on error
+        MAG_API ScriptHandle load_script(const str& file_path);
+
+        MAG_API b8 unload_script(const ScriptHandle handle);
+
+        // returns nullptr on error
+        MAG_API void* get_symbol(const ScriptHandle handle, const str& name);
 
         struct RecompileScriptParams
         {
@@ -27,8 +39,5 @@ namespace mag
 
         // Skips compilation if scripts exists, or recompile if force recompilation is true
         MAG_API b8 compile_script(const RecompileScriptParams& params);
-
-        // returns nullptr on error
-        MAG_API void* get_symbol(void* handle, const str& name);
     };  // namespace script
 };  // namespace mag

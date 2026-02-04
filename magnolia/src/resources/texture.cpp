@@ -17,7 +17,7 @@ namespace mag
 
         TextureLoader::~TextureLoader() = default;
 
-        IResource* TextureLoader::load(const str& file_path)
+        IResource* TextureLoader::load_sync(const str& file_path)
         {
             TextureResource* texture = new TextureResource();
 

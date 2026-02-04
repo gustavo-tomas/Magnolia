@@ -4,6 +4,7 @@
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/assert.hpp>
 #include <magnolia/core/event.hpp>
+#include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/resources/audio.hpp>
@@ -77,8 +78,8 @@ namespace game
         }
 
         // Now we can safely load
-        void* handle = mag::script::load_script(script_params.file_path);
-        if (handle == nullptr)
+        const mag::script::ScriptHandle handle = mag::script::load_script(script_params.file_path);
+        if (handle == mag::Invalid_ID)
         {
             return;
         }
@@ -119,9 +120,6 @@ namespace game
         script->entity->on_destroy();
         script->destroy_entity(script->entity);
         script->entity = nullptr;
-
-        mag::script::unload_script(script->handle);
-        script->handle = nullptr;
     }
 
     void Scene::on_stop()
@@ -153,6 +151,7 @@ namespace game
         for (auto& script : scripts)
         {
             destroy_script(&script);
+            mag::script::unload_script(script.handle);
         }
 
         running = false;
@@ -327,14 +326,14 @@ namespace game
     mag::Camera& Scene::get_camera()
     {
         // @TODO: for now we assume the active camera is the first entity with a camera component
-        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : perspective_cameras)
+        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent>();
+        for (auto [camera_c] : perspective_cameras)
         {
             return camera_c->camera;
         }
 
-        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent, TransformComponent>();
-        for (auto [camera_c, transform] : ortho_cameras)
+        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent>();
+        for (auto [camera_c] : ortho_cameras)
         {
             return camera_c->camera;
         }

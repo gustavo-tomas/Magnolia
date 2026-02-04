@@ -20,7 +20,7 @@ namespace mag
 
         MaterialLoader::~MaterialLoader() = default;
 
-        IResource* MaterialLoader::load(const str& file_path)
+        IResource* MaterialLoader::load_sync(const str& file_path)
         {
             MaterialResource* material = new MaterialResource();
 
