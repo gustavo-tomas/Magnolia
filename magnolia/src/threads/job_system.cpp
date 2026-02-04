@@ -116,12 +116,14 @@ namespace mag
                 callback_lock.lock();
                 execute_lock.lock();
             }
+
+            // If the queue is not empty, make sure to tell the workers
+            if (!state->job_queue.empty())
+            {
+                state->job_available.notify_one();
+            }
         }
 
-        void add_job(const Job& job)
-        {
-            state->job_queue.push(job);
-            state->job_available.notify_one();
-        }
+        void add_job(const Job& job) { state->job_queue.push(job); }
     };  // namespace thread
 };  // namespace mag
