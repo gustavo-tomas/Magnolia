@@ -48,29 +48,23 @@ namespace mag
             return q;
         }
 
-        inline void from_mag(const std::vector<math::vec3>& vertices, JPH::VertexList& out_vertices)
+        inline void from_mag(const std::vector<math::Triangle>& triangles, JPH::TriangleList& out_triangles)
         {
-            out_vertices.resize(vertices.size());
+            out_triangles.resize(triangles.size());
 
-            for (u64 i = 0; i < vertices.size(); i++)
+            for (u64 i = 0; i < out_triangles.size(); i++)
             {
-                out_vertices[i].x = vertices[i].x;
-                out_vertices[i].y = vertices[i].y;
-                out_vertices[i].z = vertices[i].z;
-            }
-        }
+                out_triangles[i].mV[0].x = triangles[i].v0.x;
+                out_triangles[i].mV[0].y = triangles[i].v0.y;
+                out_triangles[i].mV[0].z = triangles[i].v0.z;
 
-        inline void from_mag(const std::vector<u32>& indices, JPH::IndexedTriangleList& out_indices)
-        {
-            MAG_ASSERT(indices.size() % 3 == 0, "Invalid index list, size must be divisible by 3: {0}", indices.size());
+                out_triangles[i].mV[1].x = triangles[i].v1.x;
+                out_triangles[i].mV[1].y = triangles[i].v1.y;
+                out_triangles[i].mV[1].z = triangles[i].v1.z;
 
-            out_indices.resize(indices.size() / 3);
-
-            for (u64 i = 0; i < out_indices.size(); i++)
-            {
-                out_indices[i].mIdx[0] = indices[i];
-                out_indices[i].mIdx[1] = indices[i + 1];
-                out_indices[i].mIdx[2] = indices[i + 2];
+                out_triangles[i].mV[2].x = triangles[i].v2.x;
+                out_triangles[i].mV[2].y = triangles[i].v2.y;
+                out_triangles[i].mV[2].z = triangles[i].v2.z;
             }
         }
     };  // namespace physics

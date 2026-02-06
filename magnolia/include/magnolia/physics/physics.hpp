@@ -36,8 +36,8 @@ namespace mag
 
                 // Add a rigid body with a mesh collider
                 virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                       const f32 mass, const std::vector<math::vec3>& vertices,
-                                                       const std::vector<u32>& indices) = 0;
+                                                       const f32 mass,
+                                                       const std::vector<math::Triangle>& triangle_list) = 0;
 
                 virtual void remove_rigid_body(const RigidBodyHandle handle) = 0;
 
