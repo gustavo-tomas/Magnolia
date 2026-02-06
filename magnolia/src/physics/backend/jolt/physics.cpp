@@ -241,16 +241,13 @@ namespace mag
                 }
 
                 RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation, const f32 mass,
-                                               const std::vector<math::vec3>& vertices,
-                                               const std::vector<u32>& indices) override
+                                               const std::vector<math::Triangle>& triangle_list) override
                 {
-                    JPH::VertexList converted_vertices;
-                    JPH::IndexedTriangleList converted_indices;
+                    JPH::TriangleList converted_triangle_list;
 
-                    from_mag(vertices, converted_vertices);
-                    from_mag(indices, converted_indices);
+                    from_mag(triangle_list, converted_triangle_list);
 
-                    const JPH::MeshShapeSettings shape_settings(converted_vertices, converted_indices);
+                    const JPH::MeshShapeSettings shape_settings(converted_triangle_list);
 
                     shape_settings.SetEmbedded();
 

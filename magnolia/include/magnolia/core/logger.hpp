@@ -37,9 +37,17 @@ namespace mag
         }
 
         template <typename... Args>
+        MAG_API str get_formatted_str(const std::string_view fmt, Args... args)
+        {
+            const str formatted_str = std::vformat(fmt, std::make_format_args(args...));
+
+            return formatted_str;
+        }
+
+        template <typename... Args>
         MAG_API str get_formatted_log(const std::string_view fmt, Args... args)
         {
-            const str formatted_str = std::vformat(fmt, std::make_format_args(args...)) + "\n";
+            const str formatted_str = get_formatted_str(fmt, args...) + "\n";
 
             return formatted_str;
         }

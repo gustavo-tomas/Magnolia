@@ -18,6 +18,7 @@
 #include <magnolia/threads/job_system.hpp>
 #include <magnolia/threads/thread.hpp>
 #include <magnolia/tools/console.hpp>
+#include <magnolia/tools/model_importer.hpp>
 
 #include "renderer.hpp"
 #include "scene.hpp"
@@ -175,6 +176,22 @@ namespace game
                                                const str file_path = project->get_asset_dir() / arg;
 
                                                renderer->build_shader(file_path, true);
+                                           }
+                                       });
+
+        mag::console::register_command("import_model",
+                                       [this](const std::vector<str>& args)
+                                       {
+                                           for (const str& arg : args)
+                                           {
+                                               mag::ModelImporter importer;
+
+                                               // We reuse the asset dir retrieved from the project to make things
+                                               // easier
+                                               const str file_path = project->get_asset_dir() / arg;
+
+                                               str out_file_path;
+                                               importer.import(file_path, out_file_path);
                                            }
                                        });
     }

@@ -167,10 +167,9 @@ namespace game
             const mag::EntityID entity_id = entity_deletion_queue[i];
 
             // Remove physics object from physics world if entity has physics properties
-            auto [rigid_body, collider, transform] =
-                ecs->get_components<RigidBodyComponent, ColliderComponent, TransformComponent>(entity_id);
+            RigidBodyComponent* rigid_body = ecs->get_component<RigidBodyComponent>(entity_id);
 
-            if ((rigid_body != nullptr) && (collider != nullptr) && (transform != nullptr))
+            if (rigid_body != nullptr)
             {
                 physics_world->remove_rigid_body(rigid_body->rigid_body_handle);
             }
@@ -225,43 +224,61 @@ namespace game
     void Scene::on_component_added(const mag::EntityID id, std::any& component)
     {
         const b8 is_rigid_body = component.type() == typeid(RigidBodyComponent);
-        const b8 is_collider = component.type() == typeid(ColliderComponent);
         const b8 is_script = component.type() == typeid(ScriptComponent);
         const b8 is_model = component.type() == typeid(ModelComponent);
         const b8 is_sprite = component.type() == typeid(SpriteComponent);
         const b8 is_text = component.type() == typeid(TextComponent);
 
-        // Add rigidbody to physics world if component is a rigidbody or collider
-        if (is_rigid_body || is_collider)
+        // @TODO: this code is quite brittle and assumes that a rigidbody component must be preceded by a transform and
+        // a collider, else it doesn't work.
+
+        // Add rigidbody to physics world
+        if (is_rigid_body)
         {
             auto* transform = ecs->get_component<TransformComponent>(id);
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
-            auto* collider = ecs->get_component<ColliderComponent>(id);
-            if ((transform != nullptr) && (rigid_body != nullptr) && (collider != nullptr))
+            auto* box_collider = ecs->get_component<BoxColliderComponent>(id);
+            auto* capsule_collider = ecs->get_component<CapsuleColliderComponent>(id);
+            auto* mesh_collider = ecs->get_component<MeshColliderComponent>(id);
+
+            const vec3 position = transform->translation;
+            const quat rotation = transform->rotation;
+            const vec3 scale = transform->scale;
+
+            if (box_collider != nullptr)
             {
-                switch (collider->collider_type)
+                const vec3 dimensions = box_collider->dimensions;
+
+                rigid_body->rigid_body_handle =
+                    physics_world->add_rigid_body(position, rotation, dimensions, rigid_body->mass);
+            }
+
+            else if (capsule_collider != nullptr)
+            {
+                const f32 radius = capsule_collider->radius;
+                const f32 height = capsule_collider->height;
+
+                rigid_body->rigid_body_handle =
+                    physics_world->add_rigid_body(position, rotation, radius, height, rigid_body->mass);
+            }
+
+            else if (mesh_collider != nullptr)
+            {
+                // Scale the dimensions of the collider to match the transform
+                for (mag::math::Triangle& triangle : mesh_collider->triangles)
                 {
-                    case ColliderComponent::ColliderType::Box:
-                    {
-                        const vec3 dimensions = collider->collider.box.dimensions;
-                        rigid_body->rigid_body_handle = physics_world->add_rigid_body(
-                            transform->translation, transform->rotation, dimensions, rigid_body->mass);
-                    }
-                    break;
-
-                    case ColliderComponent::ColliderType::Capsule:
-                    {
-                        const f32 radius = collider->collider.capsule.radius;
-                        const f32 height = collider->collider.capsule.height;
-                        rigid_body->rigid_body_handle = physics_world->add_rigid_body(
-                            transform->translation, transform->rotation, radius, height, rigid_body->mass);
-                    }
-                    break;
-
-                    default:
-                        MAG_ASSERT(false, "Unhandled collider type");
-                        break;
+                    triangle.v0 *= scale;
+                    triangle.v1 *= scale;
+                    triangle.v2 *= scale;
                 }
+
+                rigid_body->rigid_body_handle =
+                    physics_world->add_rigid_body(position, rotation, rigid_body->mass, mesh_collider->triangles);
+            }
+
+            else
+            {
+                MAG_ASSERT(false, "Missing collider for rigidbody: '{0}'", static_cast<void*>(rigid_body));
             }
 
             return;

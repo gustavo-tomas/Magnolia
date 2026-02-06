@@ -181,7 +181,7 @@ namespace mag
                 return false;
             }
 
-            file << std::setw(4) << data;
+            file << std::setw(2) << data;
             file.close();
 
             return true;

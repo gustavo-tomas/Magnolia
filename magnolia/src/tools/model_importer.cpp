@@ -35,7 +35,8 @@ namespace mag
             void optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,
                                ModelResource& model);
 
-            const str find_texture(const aiMaterial* ai_material, aiTextureType ai_type, const str& directory) const;
+            str find_texture(const str& material_name, const aiMaterial* ai_material, aiTextureType ai_type,
+                             const str& directory) const;
 
             unique<Assimp::Importer> importer;
     };
@@ -46,7 +47,8 @@ namespace mag
     b8 ModelImporter::import(const str& file_path, str& imported_model_path)
     {
         const u32 flags = aiProcessPreset_TargetRealtime_Fast | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes |
-                          aiProcess_PreTransformVertices | aiProcess_Debone;
+                          aiProcess_PreTransformVertices | aiProcess_OptimizeMeshes | aiProcess_Debone |
+                          aiProcess_RemoveRedundantMaterials;
 
         const aiScene* scene = impl->importer->ReadFile(file_path, flags);
         if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
@@ -294,22 +296,31 @@ namespace mag
             // Invalid material name, use placeholder instead
             if (material_name.empty())
             {
-                material_name =
-                    "__Material_" + std::to_string(i) + "_" + std::to_string(ai_scene->mNumMaterials) + "__";
+                material_name = log::get_formatted_str("__Material_{0}_{1}__", i, ai_scene->mNumMaterials - 1);
             }
 
             const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
 
-            model.materials[i] = resource::get_material(material_file_path);
+            model.materials[i] = create_ref<MaterialResource>();
+            model.materials[i]->name = material_name;
+            model.materials[i]->file_path = material_file_path;
 
             // Write material data to file
             fs::json data;
             data["Type"] = "Material";
             data["Name"] = material_name;
-            data["Textures"]["Albedo"] = find_texture(ai_material, aiTextureType_DIFFUSE, model_directory);
-            data["Textures"]["Normal"] = find_texture(ai_material, aiTextureType_NORMALS, model_directory);
-            data["Textures"]["Roughness"] = find_texture(ai_material, aiTextureType_DIFFUSE_ROUGHNESS, model_directory);
-            data["Textures"]["Metalness"] = find_texture(ai_material, aiTextureType_METALNESS, model_directory);
+
+            data["Textures"]["Albedo"] =
+                find_texture(material_name, ai_material, aiTextureType_DIFFUSE, model_directory);
+
+            data["Textures"]["Normal"] =
+                find_texture(material_name, ai_material, aiTextureType_NORMALS, model_directory);
+
+            data["Textures"]["Roughness"] =
+                find_texture(material_name, ai_material, aiTextureType_DIFFUSE_ROUGHNESS, model_directory);
+
+            data["Textures"]["Metalness"] =
+                find_texture(material_name, ai_material, aiTextureType_METALNESS, model_directory);
 
             if (!fs::write_json_data(material_file_path, data))
             {
@@ -319,11 +330,9 @@ namespace mag
         }
     }
 
-    const str ModelImporter::IMPL::find_texture(const aiMaterial* ai_material, aiTextureType ai_type,
-                                                const str& directory) const
+    str ModelImporter::IMPL::find_texture(const str& material_name, const aiMaterial* ai_material,
+                                          aiTextureType ai_type, const str& directory) const
     {
-        const str material_name = ai_material->GetName().C_Str();
-
         // For some reason, assimp may identify normal textures as height textures
         u32 texture_count = ai_material->GetTextureCount(ai_type);
         if (ai_type == aiTextureType_NORMALS && texture_count == 0)
@@ -332,29 +341,7 @@ namespace mag
             texture_count = ai_material->GetTextureCount(ai_type);
         }
 
-        str texture_name = "";
-        switch (ai_type)
-        {
-            case aiTextureType_DIFFUSE:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Albedo]->file_path;
-                break;
-
-            case aiTextureType_NORMALS:
-            case aiTextureType_HEIGHT:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Normal]->file_path;
-                break;
-
-            case aiTextureType_DIFFUSE_ROUGHNESS:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Roughness]->file_path;
-                break;
-
-            case aiTextureType_METALNESS:
-                texture_name = resource::get_default_material()->textures[TextureSlot::Metalness]->file_path;
-                break;
-
-            default:
-                break;
-        }
+        str texture_name;
 
         if (texture_count > 1)
         {
@@ -376,13 +363,12 @@ namespace mag
             const str texture_path = directory + "/" + ai_tex_path.C_Str();
             texture_name = texture_path;
 
-            LOG_INFO("Material '{0}': Loaded texture: {1}", material_name, texture_name);
+            LOG_INFO("Material '{0}': Found texture: '{1}'", material_name, texture_name);
             return texture_name;
         }
 
-        // No textures, use default
-        LOG_WARNING("Material '{0}' has no texture of type '{1}', using default", material_name,
-                    std::to_string(ai_type));
+        LOG_WARNING("Material '{0}' has no texture of type '{1}'", material_name, std::to_string(ai_type));
+
         return texture_name;
     }
 

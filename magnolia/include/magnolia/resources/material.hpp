@@ -35,7 +35,5 @@ namespace mag
             private:
                 ResourceManager* resource_manager = nullptr;
         };
-
-        ref<MaterialResource> MAG_API get_default_material();
     };  // namespace resource
 };  // namespace mag

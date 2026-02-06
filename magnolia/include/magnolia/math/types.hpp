@@ -25,11 +25,13 @@ namespace mag
         // Wrapper for glm
         using namespace glm;
 
-        // Simpler version of glm::decompose
-        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation);
-
-        // Calculate a rotation mat from XYZ rotation
-        MAG_API mat4 calculate_rotation_mat(const vec3& rotation);
+        // Represents a simple triangle
+        struct MAG_API Triangle
+        {
+                math::vec3 v0;
+                math::vec3 v1;
+                math::vec3 v2;
+        };
 
         // A structure that represents a line that goes from start to end.
         struct MAG_API Line
@@ -59,5 +61,11 @@ namespace mag
                 // Helper method to get the list of edges.
                 LineList get_line_list(const mat4& transform) const;
         };
+
+        // Simpler version of glm::decompose
+        MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation);
+
+        // Calculate a rotation mat from XYZ rotation
+        MAG_API mat4 calculate_rotation_mat(const vec3& rotation);
     };  // namespace math
 };  // namespace mag
