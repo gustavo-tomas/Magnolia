@@ -11,11 +11,11 @@
         "Rotation": [0.0, 0.0, 0.0],
         "Scale": [1.0, 1.0, 1.0]
       },
-      "BoxColliderComponent": {
-        "Dimensions": [1000.0, 10.0, 1000.0]
-      },
       "RigidBodyComponent": {
-        "Mass": 0.0
+        "Mass": 0.0,
+        "BoxCollider": {
+          "Dimensions": [1000.0, 10.0, 1000.0]
+        }
       }
     },
     {
@@ -53,11 +53,11 @@
       "ScriptComponent": {
         "FilePath": "test_game/assets/scripts/player_controller.cpp"
       },
-      "BoxColliderComponent": {
-        "Dimensions": [10.0, 10.0, 5.0]
-      },
       "RigidBodyComponent": {
-        "Mass": 1.0
+        "Mass": 1.0,
+        "BoxCollider": {
+          "Dimensions": [10.0, 10.0, 5.0]
+        }
       }
     }
   ]

@@ -1,6 +1,7 @@
 #include "scene_serializer.hpp"
 
 #include <magnolia/camera/camera.hpp>
+#include <magnolia/core/assert.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
@@ -11,6 +12,7 @@
 #include <magnolia/resources/model.hpp>
 #include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/texture.hpp>
+#include <variant>
 
 #include "components.hpp"
 #include "scene.hpp"
@@ -113,24 +115,24 @@ namespace game
                             entity["AudioComponent"]["Velocity"] << component->velocity;
                         }
 
-                        if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
-                        {
-                            entity["BoxColliderComponent"]["Dimensions"] << component->dimensions;
-                        }
-
-                        if (auto component = ecs.get_component<CapsuleColliderComponent>(entity_id))
-                        {
-                            entity["CapsuleColliderComponent"]["Radius"] = component->radius;
-                            entity["CapsuleColliderComponent"]["Height"] = component->height;
-                        }
-
-                        if (auto component = ecs.get_component<MeshColliderComponent>(entity_id))
-                        {
-                            entity["MeshColliderComponent"]["FilePath"] = component->file_path;
-                        }
-
                         if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
                         {
+                            if (auto* collider = std::get_if<BoxCollider>(&component->collider))
+                            {
+                                entity["BoxColliderComponent"]["Dimensions"] << collider->dimensions;
+                            }
+
+                            if (auto* collider = std::get_if<CapsuleCollider>(&component->collider))
+                            {
+                                entity["CapsuleColliderComponent"]["Radius"] = collider->radius;
+                                entity["CapsuleColliderComponent"]["Height"] = collider->height;
+                            }
+
+                            if (auto* collider = std::get_if<MeshCollider>(&component->collider))
+                            {
+                                entity["MeshColliderComponent"]["FilePath"] = collider->file_path;
+                            }
+
                             entity["RigidBodyComponent"]["Mass"] = component->mass;
                         }
 
@@ -300,73 +302,80 @@ namespace game
                                                               velocity);
                         }
 
-                        if (entity.contains("BoxColliderComponent"))
-                        {
-                            const auto& component = entity["BoxColliderComponent"];
-
-                            mag::vec3 dimensions = mag::vec3(0);
-
-                            for (i32 i = 0; i < dimensions.length(); i++)
-                            {
-                                dimensions[i] = component["Dimensions"][i].get<f32>();
-                            }
-
-                            ecs.add_component<BoxColliderComponent>(entity_id, dimensions);
-                        }
-
-                        if (entity.contains("CapsuleColliderComponent"))
-                        {
-                            const auto& component = entity["CapsuleColliderComponent"];
-
-                            const f32 radius = component["Radius"].get<f32>();
-                            const f32 height = component["Height"].get<f32>();
-
-                            ecs.add_component<CapsuleColliderComponent>(entity_id, radius, height);
-                        }
-
-                        if (entity.contains("MeshColliderComponent"))
-                        {
-                            const auto& component = entity["MeshColliderComponent"];
-
-                            const str file_path = component["FilePath"];
-
-                            // @TODO: figure out how to make this async
-                            const auto& res = mag::resource::get_model(file_path, false);
-
-                            std::vector<mag::math::Triangle> triangles;
-
-                            for (const auto& m : res->meshes)
-                            {
-                                const u32 base_vertex = m.base_vertex;
-                                const u32 base_index = m.base_index;
-                                const u32 index_count = m.index_count;
-
-                                for (u32 i = base_index; i < base_index + index_count; i += 3)
-                                {
-                                    const u32 idx_0 = base_vertex + res->indices[i];
-                                    const u32 idx_1 = base_vertex + res->indices[i + 1];
-                                    const u32 idx_2 = base_vertex + res->indices[i + 2];
-
-                                    mag::math::Triangle triangle = {};
-
-                                    triangle.v0 = res->vertices[idx_0].position;
-                                    triangle.v1 = res->vertices[idx_1].position;
-                                    triangle.v2 = res->vertices[idx_2].position;
-
-                                    triangles.push_back(triangle);
-                                }
-                            }
-
-                            ecs.add_component<MeshColliderComponent>(entity_id, file_path, triangles);
-                        }
-
                         if (entity.contains("RigidBodyComponent"))
                         {
                             const auto& component = entity["RigidBodyComponent"];
 
                             f32 mass = component["Mass"].get<f32>();
 
-                            ecs.add_component<RigidBodyComponent>(entity_id, mass);
+                            Collider collider = BoxCollider();
+
+                            if (component.contains("BoxCollider"))
+                            {
+                                const auto& box_collider = component["BoxCollider"];
+
+                                mag::vec3 dimensions = mag::vec3(0);
+
+                                for (i32 i = 0; i < dimensions.length(); i++)
+                                {
+                                    dimensions[i] = box_collider["Dimensions"][i].get<f32>();
+                                }
+
+                                collider = BoxCollider(dimensions);
+                            }
+
+                            else if (component.contains("CapsuleCollider"))
+                            {
+                                const auto& capsule_collider = component["CapsuleCollider"];
+
+                                const f32 radius = capsule_collider["Radius"].get<f32>();
+                                const f32 height = capsule_collider["Height"].get<f32>();
+
+                                collider = CapsuleCollider(radius, height);
+                            }
+
+                            else if (component.contains("MeshCollider"))
+                            {
+                                const auto& mesh_collider = component["MeshCollider"];
+
+                                const str file_path = mesh_collider["FilePath"];
+
+                                // @TODO: figure out how to make this async
+                                const auto& res = mag::resource::get_model(file_path, false);
+
+                                std::vector<mag::math::Triangle> triangles;
+
+                                for (const auto& m : res->meshes)
+                                {
+                                    const u32 base_vertex = m.base_vertex;
+                                    const u32 base_index = m.base_index;
+                                    const u32 index_count = m.index_count;
+
+                                    for (u32 i = base_index; i < base_index + index_count; i += 3)
+                                    {
+                                        const u32 idx_0 = base_vertex + res->indices[i];
+                                        const u32 idx_1 = base_vertex + res->indices[i + 1];
+                                        const u32 idx_2 = base_vertex + res->indices[i + 2];
+
+                                        mag::math::Triangle triangle = {};
+
+                                        triangle.v0 = res->vertices[idx_0].position;
+                                        triangle.v1 = res->vertices[idx_1].position;
+                                        triangle.v2 = res->vertices[idx_2].position;
+
+                                        triangles.push_back(triangle);
+                                    }
+                                }
+
+                                collider = MeshCollider(file_path, triangles);
+                            }
+
+                            else
+                            {
+                                MAG_ASSERT(false, "Entity '{0}' has a rigidbody with no collider", entity_id);
+                            }
+
+                            ecs.add_component<RigidBodyComponent>(entity_id, collider, mass);
                         }
 
                         if (entity.contains("LightComponent"))

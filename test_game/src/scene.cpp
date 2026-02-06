@@ -237,35 +237,32 @@ namespace game
         {
             auto* transform = ecs->get_component<TransformComponent>(id);
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
-            auto* box_collider = ecs->get_component<BoxColliderComponent>(id);
-            auto* capsule_collider = ecs->get_component<CapsuleColliderComponent>(id);
-            auto* mesh_collider = ecs->get_component<MeshColliderComponent>(id);
 
             const vec3 position = transform->translation;
             const quat rotation = transform->rotation;
             const vec3 scale = transform->scale;
 
-            if (box_collider != nullptr)
+            if (auto* collider = std::get_if<BoxCollider>(&rigid_body->collider))
             {
-                const vec3 dimensions = box_collider->dimensions;
+                const vec3 dimensions = collider->dimensions;
 
                 rigid_body->rigid_body_handle =
                     physics_world->add_rigid_body(position, rotation, dimensions, rigid_body->mass);
             }
 
-            else if (capsule_collider != nullptr)
+            else if (auto* collider = std::get_if<CapsuleCollider>(&rigid_body->collider))
             {
-                const f32 radius = capsule_collider->radius;
-                const f32 height = capsule_collider->height;
+                const f32 radius = collider->radius;
+                const f32 height = collider->height;
 
                 rigid_body->rigid_body_handle =
                     physics_world->add_rigid_body(position, rotation, radius, height, rigid_body->mass);
             }
 
-            else if (mesh_collider != nullptr)
+            else if (auto* collider = std::get_if<MeshCollider>(&rigid_body->collider))
             {
                 // Scale the dimensions of the collider to match the transform
-                for (mag::math::Triangle& triangle : mesh_collider->triangles)
+                for (mag::math::Triangle& triangle : collider->triangles)
                 {
                     triangle.v0 *= scale;
                     triangle.v1 *= scale;
@@ -273,7 +270,7 @@ namespace game
                 }
 
                 rigid_body->rigid_body_handle =
-                    physics_world->add_rigid_body(position, rotation, rigid_body->mass, mesh_collider->triangles);
+                    physics_world->add_rigid_body(position, rotation, rigid_body->mass, collider->triangles);
             }
 
             else
@@ -285,7 +282,7 @@ namespace game
         }
 
         // Instantiate scripts during runtime
-        if (is_running() && is_script)
+        if (is_script && is_running())
         {
             create_script(id);
             return;

@@ -192,9 +192,9 @@ class PlayerController : public ScriptableEntity
             const f32 mass = 10.0f;
             const f32 impulse = 1000.0f;
 
+            const CapsuleCollider collider = CapsuleCollider(radius, height);
             add_component_to_entity<TransformComponent>(bullet_id, bullet_transform);
-            add_component_to_entity<CapsuleColliderComponent>(bullet_id, radius, height);
-            add_component_to_entity<RigidBodyComponent>(bullet_id, mass);
+            add_component_to_entity<RigidBodyComponent>(bullet_id, collider, mass);
 
             auto [bullet_rigid_body] = get_external_entity_components<RigidBodyComponent>(bullet_id);
 
