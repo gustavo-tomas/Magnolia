@@ -1,0 +1,10 @@
+{
+  "Type": "Material",
+  "Name": "__Material_4_24__",
+  "Textures": {
+    "Albedo": "test_game/assets/models/sponza/glTF/5792855332885324923.jpg",
+    "Normal": "test_game/assets/models/sponza/glTF/16299174074766089871.jpg",
+    "Roughness": "test_game/assets/models/sponza/glTF/11968150294050148237.jpg",
+    "Metalness": "test_game/assets/models/sponza/glTF/11968150294050148237.jpg"
+  }
+}

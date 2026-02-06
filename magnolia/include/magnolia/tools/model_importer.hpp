@@ -7,7 +7,7 @@ namespace mag
     struct ModelResource;
     struct Vertex;
 
-    class ModelImporter
+    class MAG_API ModelImporter
     {
         public:
             ModelImporter();

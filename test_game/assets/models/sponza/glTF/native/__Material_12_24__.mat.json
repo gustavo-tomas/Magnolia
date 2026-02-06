@@ -1,0 +1,10 @@
+{
+  "Type": "Material",
+  "Name": "__Material_12_24__",
+  "Textures": {
+    "Albedo": "test_game/assets/models/sponza/glTF/white.png",
+    "Normal": "",
+    "Roughness": "",
+    "Metalness": ""
+  }
+}
