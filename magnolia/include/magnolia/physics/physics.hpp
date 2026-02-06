@@ -34,6 +34,11 @@ namespace mag
                 virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
                                                        const f32 radius, const f32 height, const f32 mass) = 0;
 
+                // Add a rigid body with a mesh collider
+                virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
+                                                       const f32 mass, const std::vector<math::vec3>& vertices,
+                                                       const std::vector<u32>& indices) = 0;
+
                 virtual void remove_rigid_body(const RigidBodyHandle handle) = 0;
 
                 // Applies continuous force over time

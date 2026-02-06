@@ -16,6 +16,7 @@
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -229,6 +230,27 @@ namespace mag
                                                const f32 height, const f32 mass) override
                 {
                     const JPH::CapsuleShapeSettings shape_settings(height, radius);
+
+                    shape_settings.SetEmbedded();
+
+                    const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
+
+                    const RigidBodyHandle handle = add_rigid_body_base(shape_result, position, rotation, mass);
+
+                    return handle;
+                }
+
+                RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation, const f32 mass,
+                                               const std::vector<math::vec3>& vertices,
+                                               const std::vector<u32>& indices) override
+                {
+                    JPH::VertexList converted_vertices;
+                    JPH::IndexedTriangleList converted_indices;
+
+                    from_mag(vertices, converted_vertices);
+                    from_mag(indices, converted_indices);
+
+                    const JPH::MeshShapeSettings shape_settings(converted_vertices, converted_indices);
 
                     shape_settings.SetEmbedded();
 
