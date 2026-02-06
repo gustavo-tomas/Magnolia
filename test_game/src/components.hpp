@@ -96,35 +96,24 @@ namespace game
             b8 play_on_load;
     };
 
-    struct ColliderComponent
+    // @TODO: we can have only one collider per rigid body. The current implementation allows for multiple colliders,
+    // but that can cause bugs and shouldn't be allowed.
+
+    struct BoxColliderComponent
     {
-            enum class ColliderType : u8
-            {
-                Box,
-                Capsule
-            } collider_type;
+            BoxColliderComponent(const vec3& dimensions = vec3(1.0f)) : dimensions(dimensions) {}
 
-            struct BoxCollider
-            {
-                    vec3 dimensions = vec3(1.0f);
-            };
+            vec3 dimensions;
+    };
 
-            struct CapsuleCollider
-            {
-                    f32 radius = 1.0f;
-                    f32 height = 1.0f;
-            };
-
-            union Collider
-            {
-                    struct BoxCollider box = {};
-                    struct CapsuleCollider capsule;
-            } collider;
-
-            ColliderComponent(const ColliderType collider_type, const Collider collider)
-                : collider_type(collider_type), collider(collider)
+    struct CapsuleColliderComponent
+    {
+            CapsuleColliderComponent(const f32 radius = 1.0f, const f32 height = 1.0f) : radius(radius), height(height)
             {
             }
+
+            f32 radius;
+            f32 height;
     };
 
     struct RigidBodyComponent

@@ -112,23 +112,15 @@ namespace game
                             entity["AudioComponent"]["Velocity"] << component->velocity;
                         }
 
-                        if (auto component = ecs.get_component<ColliderComponent>(entity_id))
+                        if (auto component = ecs.get_component<BoxColliderComponent>(entity_id))
                         {
-                            switch (component->collider_type)
-                            {
-                                case ColliderComponent::ColliderType::Box:
-                                    entity["BoxColliderComponent"]["Dimensions"] << component->collider.box.dimensions;
-                                    break;
+                            entity["BoxColliderComponent"]["Dimensions"] << component->dimensions;
+                        }
 
-                                case ColliderComponent::ColliderType::Capsule:
-                                    entity["CapsuleColliderComponent"]["Radius"] = component->collider.capsule.radius;
-                                    entity["CapsuleColliderComponent"]["Height"] = component->collider.capsule.height;
-                                    break;
-
-                                default:
-                                    MAG_ASSERT(false, "Unhandled collider type");
-                                    break;
-                            }
+                        if (auto component = ecs.get_component<CapsuleColliderComponent>(entity_id))
+                        {
+                            entity["CapsuleColliderComponent"]["Radius"] = component->radius;
+                            entity["CapsuleColliderComponent"]["Height"] = component->height;
                         }
 
                         if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
@@ -309,25 +301,21 @@ namespace game
                             mag::vec3 dimensions = mag::vec3(0);
 
                             for (i32 i = 0; i < dimensions.length(); i++)
+                            {
                                 dimensions[i] = component["Dimensions"][i].get<f32>();
+                            }
 
-                            ColliderComponent::Collider collider = {};
-                            collider.box.dimensions = dimensions;
-
-                            ecs.add_component<ColliderComponent>(entity_id, ColliderComponent::ColliderType::Box,
-                                                                 collider);
+                            ecs.add_component<BoxColliderComponent>(entity_id, dimensions);
                         }
 
                         if (entity.contains("CapsuleColliderComponent"))
                         {
                             const auto& component = entity["CapsuleColliderComponent"];
 
-                            ColliderComponent::Collider collider = {};
-                            collider.capsule.radius = component["Radius"].get<f32>();
-                            collider.capsule.height = component["Height"].get<f32>();
+                            const f32 radius = component["Radius"].get<f32>();
+                            const f32 height = component["Height"].get<f32>();
 
-                            ecs.add_component<ColliderComponent>(entity_id, ColliderComponent::ColliderType::Capsule,
-                                                                 collider);
+                            ecs.add_component<CapsuleColliderComponent>(entity_id, radius, height);
                         }
 
                         if (entity.contains("RigidBodyComponent"))
