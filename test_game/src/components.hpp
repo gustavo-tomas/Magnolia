@@ -116,6 +116,17 @@ namespace game
             f32 height;
     };
 
+    struct MeshColliderComponent
+    {
+            MeshColliderComponent(const str& file_path, const std::vector<mag::math::Triangle>& triangles)
+                : file_path(file_path), triangles(triangles)
+            {
+            }
+
+            str file_path;
+            std::vector<mag::math::Triangle> triangles;
+    };
+
     struct RigidBodyComponent
     {
             RigidBodyComponent(const f32 mass) : mass(mass) {}

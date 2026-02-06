@@ -239,9 +239,11 @@ namespace game
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
             auto* box_collider = ecs->get_component<BoxColliderComponent>(id);
             auto* capsule_collider = ecs->get_component<CapsuleColliderComponent>(id);
+            auto* mesh_collider = ecs->get_component<MeshColliderComponent>(id);
 
             const vec3 position = transform->translation;
             const quat rotation = transform->rotation;
+            const vec3 scale = transform->scale;
 
             if (box_collider != nullptr)
             {
@@ -249,22 +251,35 @@ namespace game
 
                 rigid_body->rigid_body_handle =
                     physics_world->add_rigid_body(position, rotation, dimensions, rigid_body->mass);
-
-                return;
             }
 
-            if (capsule_collider != nullptr)
+            else if (capsule_collider != nullptr)
             {
                 const f32 radius = capsule_collider->radius;
                 const f32 height = capsule_collider->height;
 
                 rigid_body->rigid_body_handle =
                     physics_world->add_rigid_body(position, rotation, radius, height, rigid_body->mass);
-
-                return;
             }
 
-            MAG_ASSERT(false, "Missing collider for rigidbody: '{0}'", static_cast<void*>(rigid_body));
+            else if (mesh_collider != nullptr)
+            {
+                // Scale the dimensions of the collider to match the transform
+                for (mag::math::Triangle& triangle : mesh_collider->triangles)
+                {
+                    triangle.v0 *= scale;
+                    triangle.v1 *= scale;
+                    triangle.v2 *= scale;
+                }
+
+                rigid_body->rigid_body_handle =
+                    physics_world->add_rigid_body(position, rotation, rigid_body->mass, mesh_collider->triangles);
+            }
+
+            else
+            {
+                MAG_ASSERT(false, "Missing collider for rigidbody: '{0}'", static_cast<void*>(rigid_body));
+            }
 
             return;
         }

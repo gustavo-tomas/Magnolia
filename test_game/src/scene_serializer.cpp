@@ -2,6 +2,7 @@
 
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/ecs/ecs.hpp>
+#include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/serializer.hpp>
 #include <magnolia/platform/window.hpp>
@@ -121,6 +122,11 @@ namespace game
                         {
                             entity["CapsuleColliderComponent"]["Radius"] = component->radius;
                             entity["CapsuleColliderComponent"]["Height"] = component->height;
+                        }
+
+                        if (auto component = ecs.get_component<MeshColliderComponent>(entity_id))
+                        {
+                            entity["MeshColliderComponent"]["FilePath"] = component->file_path;
                         }
 
                         if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
@@ -316,6 +322,42 @@ namespace game
                             const f32 height = component["Height"].get<f32>();
 
                             ecs.add_component<CapsuleColliderComponent>(entity_id, radius, height);
+                        }
+
+                        if (entity.contains("MeshColliderComponent"))
+                        {
+                            const auto& component = entity["MeshColliderComponent"];
+
+                            const str file_path = component["FilePath"];
+
+                            // @TODO: figure out how to make this async
+                            const auto& res = mag::resource::get_model(file_path, false);
+
+                            std::vector<mag::math::Triangle> triangles;
+
+                            for (const auto& m : res->meshes)
+                            {
+                                const u32 base_vertex = m.base_vertex;
+                                const u32 base_index = m.base_index;
+                                const u32 index_count = m.index_count;
+
+                                for (u32 i = base_index; i < base_index + index_count; i += 3)
+                                {
+                                    const u32 idx_0 = base_vertex + res->indices[i];
+                                    const u32 idx_1 = base_vertex + res->indices[i + 1];
+                                    const u32 idx_2 = base_vertex + res->indices[i + 2];
+
+                                    mag::math::Triangle triangle = {};
+
+                                    triangle.v0 = res->vertices[idx_0].position;
+                                    triangle.v1 = res->vertices[idx_1].position;
+                                    triangle.v2 = res->vertices[idx_2].position;
+
+                                    triangles.push_back(triangle);
+                                }
+                            }
+
+                            ecs.add_component<MeshColliderComponent>(entity_id, file_path, triangles);
                         }
 
                         if (entity.contains("RigidBodyComponent"))
