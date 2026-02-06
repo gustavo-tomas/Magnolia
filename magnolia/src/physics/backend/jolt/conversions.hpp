@@ -66,7 +66,7 @@ namespace mag
 
             out_indices.resize(indices.size() / 3);
 
-            for (u64 i = 0; i < indices.size(); i += 3)
+            for (u64 i = 0; i < out_indices.size(); i++)
             {
                 out_indices[i].mIdx[0] = indices[i];
                 out_indices[i].mIdx[1] = indices[i + 1];
