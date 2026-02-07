@@ -37,6 +37,12 @@ namespace game
         return out;
     }
 
+    mag::fs::json& operator<<(mag::fs::json& out, const mag::quat& q)
+    {
+        for (i32 i = 0; i < q.length(); i++) out.push_back(q[i]);
+        return out;
+    }
+
     namespace scene
     {
         b8 save(const str& file_path, Scene& scene)
@@ -65,7 +71,7 @@ namespace game
                         if (auto component = ecs.get_component<TransformComponent>(entity_id))
                         {
                             entity["TransformComponent"]["Translation"] << component->translation;
-                            entity["TransformComponent"]["Rotation"] << mag::math::eulerAngles(component->rotation);
+                            entity["TransformComponent"]["Rotation"] << component->rotation;
                             entity["TransformComponent"]["Scale"] << component->scale;
                         }
 
@@ -216,7 +222,7 @@ namespace game
                             const auto& component = entity["TransformComponent"];
 
                             mag::vec3 translation = mag::vec3(0);
-                            mag::vec3 rotation = mag::vec3(0);
+                            mag::quat rotation = mag::quat(1.0f, 0.0f, 0.0f, 0.0f);
                             mag::vec3 scale = mag::vec3(0);
 
                             // @TODO: dry this
