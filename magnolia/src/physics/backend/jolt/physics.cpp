@@ -373,6 +373,43 @@ namespace mag
                     }
 
                     // @TODO: idk
+                    MAG_ASSERT(false, "@TODO");
+                }
+
+                void set_position(const RigidBodyHandle handle, const math::vec3& position) override
+                {
+                    auto it = rigid_bodies.find(handle);
+                    if (it == rigid_bodies.end())
+                    {
+                        MAG_ASSERT(false, "Invalid rigidbody handle");
+                        return;
+                    }
+
+                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+
+                    const JPH::EActivation activation = body_interface.IsActive(it->second)
+                                                            ? JPH::EActivation::Activate
+                                                            : JPH::EActivation::DontActivate;
+
+                    body_interface.SetPosition(it->second, from_mag(position), activation);
+                }
+
+                void set_rotation(const RigidBodyHandle handle, const math::quat& rotation) override
+                {
+                    auto it = rigid_bodies.find(handle);
+                    if (it == rigid_bodies.end())
+                    {
+                        MAG_ASSERT(false, "Invalid rigidbody handle");
+                        return;
+                    }
+
+                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+
+                    const JPH::EActivation activation = body_interface.IsActive(it->second)
+                                                            ? JPH::EActivation::Activate
+                                                            : JPH::EActivation::DontActivate;
+
+                    body_interface.SetRotation(it->second, from_mag(rotation), activation);
                 }
 
                 void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
@@ -415,6 +452,7 @@ namespace mag
                     }
 
                     // @TODO: idk
+                    MAG_ASSERT(false, "@TODO");
                 }
 
                 void set_activation_state(const RigidBodyHandle handle, const ActivationState activation_state) override

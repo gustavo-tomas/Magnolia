@@ -223,24 +223,28 @@ namespace game
 
     void Scene::on_component_added(const mag::EntityID id, std::any& component)
     {
+        const b8 is_transform = component.type() == typeid(TransformComponent);
         const b8 is_rigid_body = component.type() == typeid(RigidBodyComponent);
         const b8 is_script = component.type() == typeid(ScriptComponent);
         const b8 is_model = component.type() == typeid(ModelComponent);
         const b8 is_sprite = component.type() == typeid(SpriteComponent);
         const b8 is_text = component.type() == typeid(TextComponent);
 
-        // @TODO: this code is quite brittle and assumes that a rigidbody component must be preceded by a transform and
-        // a collider, else it doesn't work.
-
         // Add rigidbody to physics world
         if (is_rigid_body)
         {
-            auto* transform = ecs->get_component<TransformComponent>(id);
             auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
 
-            const vec3 position = transform->translation;
-            const quat rotation = transform->rotation;
-            const vec3 scale = transform->scale;
+            vec3 position = vec3(0.0f);
+            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
+            vec3 scale = vec3(1.0f);
+
+            if (auto* transform = ecs->get_component<TransformComponent>(id))
+            {
+                position = transform->translation;
+                rotation = transform->rotation;
+                scale = transform->scale;
+            }
 
             if (auto* collider = std::get_if<BoxCollider>(&rigid_body->collider))
             {
@@ -279,6 +283,18 @@ namespace game
             }
 
             return;
+        }
+
+        // Set rigidbody transforms
+        if (is_transform)
+        {
+            auto* transform = ecs->get_component<TransformComponent>(id);
+
+            if (auto* rigid_body = ecs->get_component<RigidBodyComponent>(id))
+            {
+                physics_world->set_position(rigid_body->rigid_body_handle, transform->translation);
+                physics_world->set_rotation(rigid_body->rigid_body_handle, transform->rotation);
+            }
         }
 
         // Instantiate scripts during runtime

@@ -53,6 +53,10 @@ namespace mag
                 // Applies an instantaneous change in torque
                 virtual void apply_torque_impulse(const RigidBodyHandle handle, const math::vec3& force) = 0;
 
+                virtual void set_position(const RigidBodyHandle handle, const math::vec3& position) = 0;
+
+                virtual void set_rotation(const RigidBodyHandle handle, const math::quat& rotation) = 0;
+
                 // Set body linear velocity
                 virtual void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) = 0;
 
