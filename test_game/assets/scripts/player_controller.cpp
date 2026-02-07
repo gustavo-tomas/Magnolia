@@ -13,12 +13,11 @@ class PlayerController : public ScriptableEntity
     private:
         f32 hp = 100.0f;
         f32 walk_speed = 1650.0f;
-        f32 mouse_sensitivity = 0.002f;
+        f32 mouse_sensitivity = 0.2f;
         f32 fire_rate = 20.0f;  // per second
         mag::vec3 camera_offset = mag::vec3(50.0f);
         mag::vec3 bullet_offset = mag::vec3(50.0f);
 
-        // We can use the camera params instead of these
         f32 pitch = 0.0f;
         f32 yaw = 0.0f;
 
@@ -101,8 +100,8 @@ class PlayerController : public ScriptableEntity
                 const mag::math::vec2 mouse_delta = window_center - mouse_position;
 
                 // Rotate
-                pitch += mouse_delta.y * mouse_sensitivity;
-                yaw += mouse_delta.x * mouse_sensitivity;
+                pitch += mouse_delta.y * mouse_sensitivity * dt;
+                yaw += mouse_delta.x * mouse_sensitivity * dt;
 
                 mag::window::set_mouse_position(window_center.x, window_center.y);
             }
@@ -146,7 +145,7 @@ class PlayerController : public ScriptableEntity
 
                 // Set horizontal velocity directly
                 mag::vec3 new_velocity = input_direction * walk_speed * dt;
-                new_velocity.y = (velocity.y);  // Preserve vertical velocity
+                new_velocity.y = velocity.y;  // Preserve vertical velocity
 
                 physics.set_linear_velocity(rigid_body_handle, new_velocity);
             }
@@ -156,8 +155,9 @@ class PlayerController : public ScriptableEntity
             mag::vec3 new_pos(0.0f);
             physics.get_collision_object_transform(rigid_body_handle, new_pos, new_rot);
             new_rot = mag::vec3(pitch, yaw, 0.0f);
+            new_rot = math::normalize(new_rot);
 
-            camera_c->camera.set_rotation(mag::math::eulerAngles(new_rot));
+            camera_c->camera.set_rotation(new_rot);
             camera_c->camera.set_position(new_pos + forward * camera_offset);
         }
 

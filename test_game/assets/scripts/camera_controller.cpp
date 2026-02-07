@@ -7,8 +7,31 @@ using namespace game;
 
 class CameraController : public ScriptableEntity
 {
+    private:
+        const f32 mouse_sensitivity = 0.2f;
+        const f32 speed = 50.0f;
+        f32 pitch = 0.0f;
+        f32 yaw = math::radians(-90.0f);
+        vec3 initial_position = vec3(-900.0f, 450.0f, -175.0f);
+
     public:
-        void on_create() override { LOG_SUCCESS("Created CameraController"); }
+        void on_create() override
+        {
+            auto [camera_c] = get_components<PerspectiveCameraComponent>();
+            if (camera_c == nullptr)
+            {
+                LOG_WARNING("Missing camera");
+                return;
+            }
+
+            mag::quat initial_rotation = mag::vec3(pitch, yaw, 0.0f);
+            initial_rotation = math::normalize(initial_rotation);
+
+            camera_c->camera.set_rotation(initial_rotation);
+            camera_c->camera.set_position(initial_position);
+
+            LOG_SUCCESS("Created CameraController");
+        }
 
         void on_destroy() override { LOG_SUCCESS("Destroyed CameraController"); }
 
@@ -17,74 +40,72 @@ class CameraController : public ScriptableEntity
             auto [camera_c] = get_components<PerspectiveCameraComponent>();
             if (camera_c == nullptr)
             {
-                LOG_WARNING("Missing transform/camera");
+                LOG_WARNING("Missing camera");
                 return;
             }
-
-            vec3 translation = camera_c->camera.get_position();
-            vec3 rotation = camera_c->camera.get_rotation();
 
             // Handle mouse inputs first
             if (mag::window::is_mouse_captured())
             {
                 const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
                 const mag::math::ivec2 window_center = mag::window::get_window_center();
-                mag::math::vec2 mouse_delta = window_center - mouse_position;
+                const mag::math::vec2 mouse_delta = window_center - mouse_position;
 
                 // Rotate
-
-                const f32 mouse_sensitivity = 0.002f;
-                mouse_delta.x *= mouse_sensitivity;
-                mouse_delta.y *= mouse_sensitivity;
-
-                rotation += vec3(mouse_delta.y, mouse_delta.x, 0.0f);
+                pitch += mouse_delta.y * mouse_sensitivity * dt;
+                yaw += mouse_delta.x * mouse_sensitivity * dt;
 
                 mag::window::set_mouse_position(window_center.x, window_center.y);
             }
 
-            const mat4 rotation_mat = mag::calculate_rotation_mat(rotation);
-            const vec3 side = rotation_mat[0];
-            const vec3 up = rotation_mat[1];
-            const vec3 forward = rotation_mat[2];
+            vec3 position = camera_c->camera.get_position();
+            mag::quat rotation = mag::vec3(pitch, yaw, 0.0f);
 
-            vec3 direction(0.0f);
-            const f32 speed = 50.0f;
+            rotation = math::normalize(rotation);
 
-            if (mag::window::is_key_down(mag::Key::a))
-            {
-                direction -= side;
-            }
-            if (mag::window::is_key_down(mag::Key::d))
-            {
-                direction += side;
-            }
+            // Calculate desired movement direction
+            const mat4 rotation_mat = toMat4(rotation);
+            const mag::vec3& right = rotation_mat[0];
+            const mag::vec3& up = rotation_mat[1];
+            const mag::vec3& forward = rotation_mat[2];
+
+            mag::vec3 input_direction(0.0f);
+
             if (mag::window::is_key_down(mag::Key::w))
             {
-                direction -= forward;
+                input_direction -= forward;
             }
             if (mag::window::is_key_down(mag::Key::s))
             {
-                direction += forward;
+                input_direction += forward;
+            }
+            if (mag::window::is_key_down(mag::Key::a))
+            {
+                input_direction -= right;
+            }
+            if (mag::window::is_key_down(mag::Key::d))
+            {
+                input_direction += right;
             }
             if (mag::window::is_key_down(mag::Key::Space))
             {
-                direction += up;
+                input_direction += up;
             }
             if (mag::window::is_key_down(mag::Key::Lctrl))
             {
-                direction -= up;
+                input_direction -= up;
             }
 
             // Prevent nan values
-            if (length(direction) > 0.0f)
+            if (length(input_direction) > 0.0f)
             {
-                direction = normalize(direction) * dt;
-                translation += direction * speed;
+                input_direction = normalize(input_direction);
+                position += input_direction * speed * dt;
             }
 
             // Update the camera transform
             camera_c->camera.set_rotation(rotation);
-            camera_c->camera.set_position(translation);
+            camera_c->camera.set_position(position);
         }
 
         void on_event(const mag::Event& e) override

@@ -15,14 +15,14 @@ namespace mag
             virtual ~Camera() = default;
 
             void set_position(const vec3& position);
-            void set_rotation(const vec3& rotation);
+            void set_rotation(const quat& rotation);
             void set_near_far(const vec2& near_far);
             void set_viewport_size(const vec2& size);
 
             const mat4& get_view() const;
             const mat4& get_projection() const;
             const vec3& get_position() const;
-            const vec3& get_rotation() const;
+            quat get_rotation() const;
             const mat4& get_rotation_mat() const;
             const Frustum& get_frustum() const;
 
@@ -53,13 +53,12 @@ namespace mag
             mat4 view = mat4(1.0f);
             mat4 rotation_mat = mat4(1.0f);
             vec3 position = vec3(0.0f);
-            vec3 rotation = vec3(0.0f);
     };
 
     struct PerspectiveCameraDesc
     {
             vec3 position = vec3(0.0f);
-            vec3 rotation = vec3(0.0f);
+            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
             vec2 viewport_size = vec2(1280.0f, 720.0f);
             f32 near = 1.0f;
             f32 far = 1000.0f;
@@ -85,7 +84,7 @@ namespace mag
     struct OrthographicCameraDesc
     {
             vec3 position = vec3(0.0f);
-            vec3 rotation = vec3(0.0f);
+            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
             vec2 viewport_size = vec2(1280.0f, 720.0f);
             f32 near = -1.0f;
             f32 far = 1000.0f;

@@ -436,8 +436,6 @@ namespace game
                             camera_desc.far = far;
                             camera_desc.fov = fov;
                             camera_desc.viewport_size = mag::window::get_size();
-                            camera_desc.position = mag::vec3(0.0f);
-                            camera_desc.rotation = mag::vec3(0.0f);
 
                             mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
 
@@ -457,8 +455,6 @@ namespace game
                             camera_desc.far = far;
                             camera_desc.size = size;
                             camera_desc.viewport_size = mag::window::get_size();
-                            camera_desc.position = mag::vec3(0.0f);
-                            camera_desc.rotation = mag::vec3(0.0f);
 
                             mag::OrthographicCamera camera = mag::OrthographicCamera(camera_desc);
 
