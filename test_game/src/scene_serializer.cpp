@@ -19,28 +19,64 @@
 
 namespace game
 {
-    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec2& v)
+    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec2& v)
     {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        for (i32 i = 0; i < v.length(); i++)
+        {
+            out.push_back(v[i]);
+        }
         return out;
     }
 
-    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec3& v)
+    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec3& v)
     {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        for (i32 i = 0; i < v.length(); i++)
+        {
+            out.push_back(v[i]);
+        }
         return out;
     }
 
-    mag::fs::json& operator<<(mag::fs::json& out, const mag::vec4& v)
+    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec4& v)
     {
-        for (i32 i = 0; i < v.length(); i++) out.push_back(v[i]);
+        for (i32 i = 0; i < v.length(); i++)
+        {
+            out.push_back(v[i]);
+        }
         return out;
     }
 
-    mag::fs::json& operator<<(mag::fs::json& out, const mag::quat& q)
+    static mag::fs::json& operator<<(mag::fs::json& out, const mag::quat& q)
     {
-        for (i32 i = 0; i < q.length(); i++) out.push_back(q[i]);
+        for (i32 i = 0; i < q.length(); i++)
+        {
+            out.push_back(q[i]);
+        }
         return out;
+    }
+
+    static void get_array_value(const mag::fs::json& data, mag::math::vec3& v)
+    {
+        for (i32 i = 0; i < mag::math::vec3::length(); i++)
+        {
+            v[i] = data[i].get<f32>();
+        }
+    }
+
+    static void get_array_value(const mag::fs::json& data, mag::math::vec4& v)
+    {
+        for (i32 i = 0; i < mag::math::vec4::length(); i++)
+        {
+            v[i] = data[i].get<f32>();
+        }
+    }
+
+    static void get_array_value(const mag::fs::json& data, mag::math::quat& v)
+    {
+        for (i32 i = 0; i < mag::math::quat::length(); i++)
+        {
+            v[i] = data[i].get<f32>();
+        }
     }
 
     namespace scene
@@ -225,14 +261,9 @@ namespace game
                             mag::quat rotation = mag::quat(1.0f, 0.0f, 0.0f, 0.0f);
                             mag::vec3 scale = mag::vec3(0);
 
-                            // @TODO: dry this
-                            for (i32 i = 0; i < translation.length(); i++)
-                                translation[i] = component["Translation"][i].get<f32>();
-
-                            for (i32 i = 0; i < rotation.length(); i++)
-                                rotation[i] = component["Rotation"][i].get<f32>();
-
-                            for (i32 i = 0; i < scale.length(); i++) scale[i] = component["Scale"][i].get<f32>();
+                            get_array_value(component["Translation"], translation);
+                            get_array_value(component["Rotation"], rotation);
+                            get_array_value(component["Scale"], scale);
 
                             ecs.add_component<TransformComponent>(entity_id, translation, rotation, scale);
                         }
@@ -280,7 +311,7 @@ namespace game
                             const str text = component["Text"];
                             mag::vec4 color = mag::vec4(0.0f);
 
-                            for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
+                            get_array_value(component["Color"], color);
 
                             const auto& font = mag::resource::get_font(file_path);
 
@@ -297,10 +328,8 @@ namespace game
                             mag::vec3 position = mag::vec3(0.0f);
                             mag::vec3 velocity = mag::vec3(0.0f);
 
-                            for (i32 i = 0; i < position.length(); i++)
-                                position[i] = component["Position"][i].get<f32>();
-                            for (i32 i = 0; i < velocity.length(); i++)
-                                velocity[i] = component["Velocity"][i].get<f32>();
+                            get_array_value(component["Position"], position);
+                            get_array_value(component["Velocity"], velocity);
 
                             const auto& audio = mag::resource::get_audio(file_path);
 
@@ -322,10 +351,7 @@ namespace game
 
                                 mag::vec3 dimensions = mag::vec3(0);
 
-                                for (i32 i = 0; i < dimensions.length(); i++)
-                                {
-                                    dimensions[i] = box_collider["Dimensions"][i].get<f32>();
-                                }
+                                get_array_value(box_collider["Dimensions"], dimensions);
 
                                 collider = BoxCollider(dimensions);
                             }
@@ -391,7 +417,7 @@ namespace game
                             mag::vec3 color = mag::vec3(0);
                             f32 intensity = 0;
 
-                            for (i32 i = 0; i < color.length(); i++) color[i] = component["Color"][i].get<f32>();
+                            get_array_value(component["Color"], color);
                             intensity = component["Intensity"].get<f32>();
 
                             ecs.add_component<LightComponent>(entity_id, color, intensity);
