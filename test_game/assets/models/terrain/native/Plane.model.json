@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "Plane",
+  "File": "test_game/assets/models/terrain/native/Plane.model.bin",
+  "NumVertices": 465,
+  "NumIndices": 726,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/terrain/native/__Material_0_0__.mat.json"
+  ]
+}

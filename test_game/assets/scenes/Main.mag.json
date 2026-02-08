@@ -7,15 +7,19 @@
         "Name": "Floor"
       },
       "TransformComponent": {
-        "Translation": [0.0, -10.0, 0.0],
+        "Translation": [0.0, 0.0, 0.0],
         "Rotation": [1.0, 0.0, 0.0, 0.0],
-        "Scale": [1.0, 1.0, 1.0]
+        "Scale": [120.0, 120.0, 120.0]
       },
       "RigidBodyComponent": {
         "Mass": 0.0,
-        "BoxCollider": {
-          "Dimensions": [1000.0, 10.0, 1000.0]
+        "MeshCollider": {
+          "FilePath": "test_game/assets/models/terrain/native/Plane.model.json"
         }
+      },
+      "ModelComponent": {
+        "Name": "terrain",
+        "FilePath": "test_game/assets/models/terrain/native/Plane.model.json"
       }
     },
     {
