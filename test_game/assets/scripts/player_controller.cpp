@@ -12,7 +12,7 @@ class PlayerController : public ScriptableEntity
 {
     private:
         f32 hp = 100.0f;
-        f32 walk_speed = 1650.0f;
+        f32 walk_speed = 3000.0f;
         f32 mouse_sensitivity = 0.2f;
         f32 fire_rate = 20.0f;  // per second
         mag::vec3 camera_offset = mag::vec3(50.0f);
