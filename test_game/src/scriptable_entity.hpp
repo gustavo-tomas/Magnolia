@@ -2,6 +2,7 @@
 
 #include <magnolia/core/types.hpp>
 #include <magnolia/ecs/ecs.hpp>
+#include <magnolia/threads/job_system.hpp>
 
 #include "components.hpp"
 #include "scene.hpp"
@@ -65,6 +66,8 @@ namespace game
 
                 return entity_id;
             }
+
+            const mag::JobGroupHandle& get_job_group() const { return scene->get_job_group(); }
 
             mag::physics::IPhysicsWorld& get_physics_world() const { return *physics_world; }
 

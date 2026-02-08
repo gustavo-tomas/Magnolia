@@ -5,6 +5,7 @@
 #include <queue>
 #include <thread>
 
+#include "magnolia/core/logger.hpp"
 #include "magnolia/threads/containers.hpp"
 
 namespace mag
@@ -18,16 +19,15 @@ namespace mag
     {
         struct State
         {
-                Queue<Job> job_queue;
+                Map<JobGroupHandle, Queue<Job>> job_queues;
                 std::vector<std::thread> workers;
-
                 std::queue<JobCallbackFn> callback_queue;
                 std::queue<JobData> execute_result_queue;
                 std::mutex callback_mutex;
                 std::mutex execute_mutex;
                 std::mutex job_available_mutex;
                 std::condition_variable job_available;
-
+                JobGroupHandle current_job_handle = 0;
                 b8 running = false;
         };
 
@@ -57,7 +57,16 @@ namespace mag
                             break;
                         }
 
-                        Job job = state->job_queue.pop();
+                        Job job;
+
+                        for (auto& [handle, queue] : state->job_queues)
+                        {
+                            if (!queue.empty())
+                            {
+                                job = queue.pop();
+                                break;
+                            }
+                        }
 
                         // Execute the job
                         if (job.execute_fn)
@@ -118,12 +127,30 @@ namespace mag
             }
 
             // If the queue is not empty, make sure to tell the workers
-            if (!state->job_queue.empty())
+            for (auto& [handle, queue] : state->job_queues)
             {
-                state->job_available.notify_one();
+                if (!queue.empty())
+                {
+                    state->job_available.notify_one();
+                }
             }
         }
 
-        void add_job(const Job& job) { state->job_queue.push(job); }
+        void add_job(const JobGroupHandle group, const Job& job) { state->job_queues[group].push(job); }
+
+        JobGroupHandle create_job_group() { return state->current_job_handle++; }
+
+        // @TODO: also destroy the threads
+        void destroy_job_group(const JobGroupHandle group)
+        {
+            auto it = state->job_queues.find(group);
+            if (it == state->job_queues.end())
+            {
+                LOG_ERROR("Invalid job group handle: '{0}'", group);
+                return;
+            }
+
+            state->job_queues.erase(group);
+        }
     };  // namespace thread
 };  // namespace mag

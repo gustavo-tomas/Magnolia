@@ -176,16 +176,17 @@ class PlayerController : public ScriptableEntity
             bullet_transform.scale = mag::vec3(0.01f);
             bullet_transform.translation -= forward_dir * bullet_offset;
 
-            const str file_path = "test_game/assets/sprites/test_texture0.png";
-            mag::resource::get_texture_async(
-                file_path,
-                [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
-                {
-                    auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+            // @TODO: figure out a better way to handle data flow
+            // const str file_path = "test_game/assets/sprites/test_texture0.png";
+            // mag::resource::get_texture_async(
+            //     file_path, get_job_group(),
+            //     [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
+            //     {
+            //         auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-                    add_component_to_entity<SpriteComponent>(bullet_id, res);
-                },
-                false);
+            //         add_component_to_entity<SpriteComponent>(bullet_id, res);
+            //     },
+            //     false);
 
             const f32 radius = 2.5f;
             const f32 height = 0.0f;
