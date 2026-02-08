@@ -146,7 +146,7 @@ namespace mag
             auto it = state->job_queues.find(group);
             if (it == state->job_queues.end())
             {
-                LOG_ERROR("Invalid job group handle: '{0}'", group);
+                // A job group might be created and not submit jobs during its lifetime
                 return;
             }
 
