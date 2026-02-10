@@ -44,6 +44,12 @@ namespace mag
                     return map.find(key);
                 }
 
+                iterator begin()
+                {
+                    std::unique_lock<std::mutex> lock(mutex);
+                    return map.begin();
+                }
+
                 iterator end()
                 {
                     std::unique_lock<std::mutex> lock(mutex);

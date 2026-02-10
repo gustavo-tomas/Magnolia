@@ -274,7 +274,7 @@ namespace game
                             const str file_path = component["FilePath"];
 
                             mag::resource::get_model_async(
-                                file_path,
+                                file_path, scene.get_job_group(),
                                 [&ecs, file_path, entity_id](const mag::ref<mag::IResource>& resource)
                                 {
                                     auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
@@ -292,7 +292,7 @@ namespace game
                             const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
                             mag::resource::get_texture_async(
-                                file_path,
+                                file_path, scene.get_job_group(),
                                 [&ecs, file_path, entity_id, constant_size,
                                  always_face_camera](const mag::ref<mag::IResource>& resource)
                                 {

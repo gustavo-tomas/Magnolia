@@ -53,11 +53,11 @@ namespace mag
         MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
         MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
 
-        MAG_API void get_model_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
-                                     const b8 reload = false);
+        MAG_API void get_model_async(const str& file_path, const JobGroupHandle job_group,
+                                     const ResourceLoadedCallbackFn& callback, const b8 reload = false);
 
-        MAG_API void get_texture_async(const str& file_path, const ResourceLoadedCallbackFn& callback,
-                                       const b8 reload = false);
+        MAG_API void get_texture_async(const str& file_path, const JobGroupHandle job_group,
+                                       const ResourceLoadedCallbackFn& callback, const b8 reload = false);
 
         // Interface for a resource loader
         class IResourceLoader
@@ -110,7 +110,8 @@ namespace mag
                 // Asynchronous loading. Basically calls sync loading in another thread. Must be called from the main
                 // thread.
                 template <typename T>
-                void get_async(const str& name, const ResourceLoadedCallbackFn& callback, const b8 reload = false)
+                void get_async(const str& name, const JobGroupHandle job_group,
+                               const ResourceLoadedCallbackFn& callback, const b8 reload = false)
                 {
                     // Check if resource is loaded
                     auto it = resources.find(name);
@@ -151,7 +152,7 @@ namespace mag
                             loading_map.erase(name);
                         });
 
-                    thread::add_job(job);
+                    thread::add_job(job_group, job);
                 }
 
                 // Register a loader for a specific resource type

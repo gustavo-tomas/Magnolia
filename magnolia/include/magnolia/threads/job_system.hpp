@@ -10,6 +10,8 @@
 
 namespace mag
 {
+    using JobGroupHandle = u32;
+
     struct MAG_API JobData
     {
             b8 result = false;
@@ -21,6 +23,7 @@ namespace mag
 
     struct MAG_API Job
     {
+            Job() = default;
             Job(JobExecuteFn&& execute, JobCallbackFn&& on_execute_finished);
 
             JobExecuteFn execute_fn;
@@ -32,7 +35,15 @@ namespace mag
         b8 initialize_job_system(const u32 max_number_of_threads);
         void shutdown_job_system();
 
-        MAG_API void add_job(const Job& job);
+        // Create a job group. This is useful for the caller to track pending jobs.
+        MAG_API JobGroupHandle create_job_group();
+
+        // Destroy all jobs in a group and wait for the threads that are executing jobs belonging to that group to
+        // finish. This is a blocking operation.
+        MAG_API void destroy_job_group(const JobGroupHandle group);
+
+        MAG_API void add_job(const JobGroupHandle group, const Job& job);
+
         MAG_API void process_callbacks();
     };  // namespace thread
 };  // namespace mag

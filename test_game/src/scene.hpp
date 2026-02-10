@@ -3,6 +3,7 @@
 #include <any>
 #include <magnolia/core/event.hpp>
 #include <magnolia/ecs/ecs.hpp>
+#include <magnolia/threads/job_system.hpp>
 #include <vector>
 
 namespace mag
@@ -45,6 +46,7 @@ namespace game
             const str& get_name() const;
             const str& get_file_path() const;
             const str& get_next_scene() const;
+            const mag::JobGroupHandle& get_job_group() const;
             const mag::physics::IPhysicsWorld* get_physics_world() const;
             mag::ECS& get_ecs();
             virtual mag::Camera& get_camera();
@@ -66,6 +68,7 @@ namespace game
             Renderer* renderer = nullptr;
             std::vector<mag::EntityID> entity_deletion_queue;
             str next_scene;
+            mag::JobGroupHandle job_group;
             b8 running = false;
     };
 };  // namespace game

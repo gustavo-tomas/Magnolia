@@ -9,6 +9,7 @@
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/resources/audio.hpp>
 #include <magnolia/scripting/scripting_engine.hpp>
+#include <magnolia/threads/job_system.hpp>
 
 #include "components.hpp"
 #include "renderer.hpp"
@@ -20,12 +21,16 @@ namespace game
         : ecs(mag::create_unique<mag::ECS>([this](const mag::EntityID id, std::any component)
                                            { on_component_added(id, component); })),
           physics_world(mag::physics::create_physics_world()),
-          renderer(renderer)
+          renderer(renderer),
+          job_group(mag::thread::create_job_group())
     {
     }
 
     Scene::~Scene()
     {
+        // Destroy the job group
+        mag::thread::destroy_job_group(job_group);
+
         if (running)
         {
             on_stop();
@@ -380,6 +385,8 @@ namespace game
     const str& Scene::get_file_path() const { return file_path; }
 
     const str& Scene::get_next_scene() const { return next_scene; }
+
+    const mag::JobGroupHandle& Scene::get_job_group() const { return job_group; }
 
     const mag::physics::IPhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
 
