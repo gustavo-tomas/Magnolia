@@ -38,7 +38,8 @@ namespace mag
         // Create a job group. This is useful for the caller to track pending jobs.
         MAG_API JobGroupHandle create_job_group();
 
-        // Destroy all jobs in a group and stop the threads that are executing jobs belonging to that group.
+        // Destroy all jobs in a group and wait for the threads that are executing jobs belonging to that group to
+        // finish. This is a blocking operation.
         MAG_API void destroy_job_group(const JobGroupHandle group);
 
         MAG_API void add_job(const JobGroupHandle group, const Job& job);
