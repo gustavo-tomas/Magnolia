@@ -84,6 +84,75 @@
         "Name": "nodes[0]",
         "FilePath": "test_game/assets/models/sponza/glTF/native/nodes[0].model.json"
       }
+    },
+    {
+      "NameComponent": {
+        "Name": "Sprite1"
+      },
+      "TransformComponent": {
+        "Translation": [0.0, 0.0, -10.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [0.1, 0.1, 0.1]
+      },
+      "SpriteComponent": {
+        "FilePath": "test_game/assets/sprites/test_texture0.png",
+        "ConstantSize": false,
+        "AlwaysFaceCamera": false
+      }
+    },
+    {
+      "NameComponent": {
+        "Name": "Sprite2"
+      },
+      "TransformComponent": {
+        "Translation": [140.0, 0.0, -10.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [0.1, 0.1, 0.1]
+      },
+      "SpriteComponent": {
+        "FilePath": "test_game/assets/sprites/test_texture1.png",
+        "ConstantSize": false,
+        "AlwaysFaceCamera": false
+      }
+    },
+    {
+      "NameComponent": {
+        "Name": "AlphabetText"
+      },
+      "TransformComponent": {
+        "Translation": [-117.13560485839844, 111.1741943359375, 0.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [0.20000000298023224, 0.20000000298023224, 0.20000000298023224]
+      },
+      "TextComponent": {
+        "FilePath": "test_game/assets/fonts/Jacquard_12/Jacquard12-Regular.ttf",
+        "Text": "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz",
+        "Color": [
+          0.4000000059604645, 0.800000011920929, 0.6000000238418579, 1.0
+        ]
+      }
+    },
+    {
+      "NameComponent": {
+        "Name": "BigText"
+      },
+      "TransformComponent": {
+        "Translation": [-117.13999938964844, 98.160400390625, 0.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [0.20000000298023224, 0.20000000298023224, 0.20000000298023224]
+      },
+      "TextComponent": {
+        "FilePath": "test_game/assets/fonts/Yatra_One/YatraOne-Regular.ttf",
+        "Text": "--- BigBoss Song ---\n\n(Invisible)\n(Invisible)\n(Invisible)\n(Invisible)\n\n[Verse 1]\n(Shy one) Walking by the wall\n(Shy one) The shadows will not fall\n(Shy one) Is silently ignored\n(Quiet one) Discouraged by the noise\n(Quiet one) Living without choice\n(Quiet one) Is a life without a voice",
+        "Color": [1.0, 0.5, 0.20000000298023224, 1.0]
+      },
+      "AudioComponent": {
+        "FilePath": "test_game/assets/audios/invisible.mp3",
+        "Volume": 0.15000000596046448,
+        "PlayOnLoad": true,
+        "Position": [0.0, 0.0, 0.0],
+        "Velocity": [0.0, 0.0, 0.0]
+      }
     }
   ]
 }
