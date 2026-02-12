@@ -25,6 +25,10 @@ namespace mag
         // Wrapper for glm
         using namespace glm;
 
+        b8 initialize();
+
+        void shutdown();
+
         // Represents a simple triangle
         struct MAG_API Triangle
         {
@@ -61,6 +65,10 @@ namespace mag
                 // Helper method to get the list of edges.
                 LineList get_line_list(const mat4& transform) const;
         };
+
+        MAG_API f32 random(const f32 begin = 0.0f, const f32 end = 1.0f);
+
+        MAG_API i32 random(const i32 begin = 0, const i32 end = 1);
 
         // Simpler version of glm::decompose
         MAG_API b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation);

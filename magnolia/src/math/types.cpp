@@ -1,9 +1,53 @@
 #include "magnolia/math/types.hpp"
 
+#include <random>
+
 namespace mag
 {
     namespace math
     {
+        struct State
+        {
+                std::mt19937 random_engine;
+                std::uniform_int_distribution<std::mt19937::result_type> distribution;
+        };
+
+        static State* state = nullptr;
+
+        b8 initialize()
+        {
+            state = new State();
+
+            state->random_engine.seed(std::random_device()());
+
+            return state != nullptr;
+        }
+
+        void shutdown() { delete state; }
+
+        f32 random(const f32 begin, const f32 end)
+        {
+            f32 b = begin;
+            f32 e = end;
+
+            // Swap values
+            if (begin > end)
+            {
+                std::swap(b, e);
+            }
+
+            // Number is a value between 0 and 1
+            f32 number = static_cast<f32>(state->distribution(state->random_engine)) /
+                         static_cast<f32>(std::numeric_limits<uint_fast32_t>::max());
+
+            return b + ((e - b) * number);
+        }
+
+        i32 random(const i32 begin, const i32 end)
+        {
+            return static_cast<i32>(random(static_cast<f32>(begin), static_cast<f32>(end)));
+        }
+
         b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation)
         {
             quat orientation;

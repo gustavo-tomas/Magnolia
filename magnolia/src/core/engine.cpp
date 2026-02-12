@@ -24,6 +24,7 @@ namespace mag
 
         initialized = true;
 
+        initialized = initialized && math::initialize();
         initialized = initialized && plat::initialize();
         initialized = initialized && fs::initialize();
         initialized = initialized && script::initialize();
@@ -67,6 +68,7 @@ namespace mag
         script::shutdown();
         fs::shutdown();
         plat::shutdown();
+        math::shutdown();
     }
 
     EngineInitializeOptions read_config_file(const str& file_path)
