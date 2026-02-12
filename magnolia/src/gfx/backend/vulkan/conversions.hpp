@@ -396,6 +396,10 @@ namespace mag
                     return VK_FORMAT_R32_UINT;
                     break;
 
+                case Format::R32_SFLOAT:
+                    return VK_FORMAT_R32_SFLOAT;
+                    break;
+
                 case Format::R32G32_SFLOAT:
                     return VK_FORMAT_R32G32_SFLOAT;
                     break;

@@ -50,6 +50,7 @@ namespace mag
             B8G8R8A8_SRGB,
             R16G16B16A16_SFLOAT,
             R32_UINT,
+            R32_SFLOAT,
             R32G32_SFLOAT,
             R32G32B32_SFLOAT,
             R32G32B32A32_SFLOAT,

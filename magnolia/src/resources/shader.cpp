@@ -58,6 +58,7 @@ namespace mag
         static const std::unordered_map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
             {SPV_REFLECT_FORMAT_UNDEFINED, ShaderResourceFormat::Undefined},
             {SPV_REFLECT_FORMAT_R32_UINT, ShaderResourceFormat::R32_UINT},
+            {SPV_REFLECT_FORMAT_R32_SFLOAT, ShaderResourceFormat::R32_SFLOAT},
             {SPV_REFLECT_FORMAT_R32G32_SFLOAT, ShaderResourceFormat::R32G32_SFLOAT},
             {SPV_REFLECT_FORMAT_R32G32B32_SFLOAT, ShaderResourceFormat::R32G32B32_SFLOAT},
             {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},

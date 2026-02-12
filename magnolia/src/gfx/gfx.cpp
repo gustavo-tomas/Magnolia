@@ -305,6 +305,7 @@ namespace mag
         static const std::unordered_map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
             {ShaderResourceFormat::Undefined, gfx::Format::Undefined},
             {ShaderResourceFormat::R32_UINT, gfx::Format::R32_UINT},
+            {ShaderResourceFormat::R32_SFLOAT, gfx::Format::R32_SFLOAT},
             {ShaderResourceFormat::R32G32_SFLOAT, gfx::Format::R32G32_SFLOAT},
             {ShaderResourceFormat::R32G32B32_SFLOAT, gfx::Format::R32G32B32_SFLOAT},
             {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
