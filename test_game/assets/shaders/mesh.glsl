@@ -144,7 +144,9 @@ void main()
 		light.color = u_light.lights[i].color;
 		light.intensity = u_light.lights[i].intensity;
 
-		vec3 lighting_color = phong_shading(in_normal, in_frag_position, camera_position, light);
+		float ao = 0;
+
+		vec3 lighting_color = phong_shading(in_normal, in_frag_position, camera_position, ao, light);
 		out_frag_color.rgb += object_color.rgb * lighting_color;
 	}
 

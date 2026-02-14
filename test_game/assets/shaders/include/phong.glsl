@@ -8,7 +8,7 @@ struct PhongLight
 	float intensity;
 };
 
-vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, PhongLight light)
+vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, float ao, PhongLight light)
 {
 	vec3 normal = normalize(surface_normal);
 	vec3 light_dir = normalize(light.position - frag_position);
@@ -37,7 +37,7 @@ vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, 
 							   quadratic * dist * dist);
  
 	diffuse_color *= attenuation * light.intensity;
-	ambient_color *= attenuation * light.intensity;
+	ambient_color *= attenuation * light.intensity * (1.0 - ao);
 	specular_color *= attenuation * light.intensity;
 
 	return ambient_color + diffuse_color + specular_color;

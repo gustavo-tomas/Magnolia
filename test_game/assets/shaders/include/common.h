@@ -16,9 +16,6 @@ using namespace mag::math;
     #define u32 uint
     #define alignas(x)
 
-// Constants
-const float PI = 3.1415926535;
-
 #endif
 
 // Types shared by c++ and glsl

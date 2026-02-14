@@ -33,7 +33,7 @@
       },
       "LightComponent": {
         "Color": [1.0, 1.0, 1.0],
-        "Intensity": 100.0
+        "Intensity": 50.0
       }
     },
     {
