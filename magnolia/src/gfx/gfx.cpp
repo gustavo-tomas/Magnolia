@@ -405,6 +405,31 @@ namespace mag
             }
         }
 
+        void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
+        {
+            FrameData& current_frame = state->frames[state->current_frame];
+
+            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+
+            const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
+
+            const BindingData& binding = bindings_map.at(uniform_name);
+
+            const unique<ITexture>& texture = state->textures[texture_handle].texture;
+            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+
+            // If we change the texture, we need to update the descriptor sets (for each frame)
+
+            // @TODO: this is bugged
+            // if (descriptor_data.last_bound_texture != texture_handle)
+            {
+                descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
+                                                       binding.descriptor_type);
+
+                descriptor_data.last_bound_texture = texture_handle;
+            }
+        }
+
         void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element)
         {
             for (u32 i = 0; i < state->frames.size(); i++)
@@ -436,28 +461,31 @@ namespace mag
             }
         }
 
-        void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
+        void set_uniform_static(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
         {
-            FrameData& current_frame = state->frames[state->current_frame];
-
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
-
-            const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
-
-            const BindingData& binding = bindings_map.at(uniform_name);
-
-            const unique<ITexture>& texture = state->textures[texture_handle].texture;
-            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
-
-            // If we change the texture, we need to update the descriptor sets (for each frame)
-
-            // @TODO: this is bugged
-            // if (descriptor_data.last_bound_texture != texture_handle)
+            for (u32 i = 0; i < state->frames.size(); i++)
             {
-                descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
-                                                       binding.descriptor_type);
+                FrameData& current_frame = state->frames[i];
 
-                descriptor_data.last_bound_texture = texture_handle;
+                DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+
+                const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
+
+                const BindingData& binding = bindings_map.at(uniform_name);
+
+                const unique<ITexture>& texture = state->textures[texture_handle].texture;
+                const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+
+                // If we change the texture, we need to update the descriptor sets (for each frame)
+
+                // @TODO: this is bugged
+                // if (descriptor_data.last_bound_texture != texture_handle)
+                {
+                    descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
+                                                           binding.descriptor_type);
+
+                    descriptor_data.last_bound_texture = texture_handle;
+                }
             }
         }
 
