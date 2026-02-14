@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "Grass.001",
+  "File": "test_game/assets/models/grass/native/Grass.001.model.bin",
+  "NumVertices": 25,
+  "NumIndices": 39,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/grass/native/__Material_0_0__.mat.json"
+  ]
+}
