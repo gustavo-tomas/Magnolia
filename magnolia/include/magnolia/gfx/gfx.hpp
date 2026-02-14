@@ -37,6 +37,10 @@ namespace mag
         // The uniforms are set according to the last bound shader
         MAG_API void set_uniform(const str& uniform_name, const void* data, const u32 array_element = 0);
 
+        // Set a uniform for every frame-in-flight. Useful for data that doesn't change between frames like static
+        // objects.
+        MAG_API void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element = 0);
+
         MAG_API void set_uniform(const str& uniform_name, const TextureHandle texture_handle,
                                  const u32 array_element = 0);
 
