@@ -58,6 +58,11 @@ struct alignas(16) MaterialData
         u32 metalness_tex_idx;  // 4 bytes
 };
 
+struct alignas(16) GrassData
+{
+        mat4 model;  // 64 bytes (16 x 4)
+};
+
 // Debug
 
 struct alignas(16) DebugTextData

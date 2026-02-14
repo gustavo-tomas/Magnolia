@@ -1,0 +1,6 @@
+{
+  "Name": "Grass",
+  "File": "grass.glsl",
+  "Stages": ["Vertex", "Fragment"],
+  "Topology": "TriangleList"
+}

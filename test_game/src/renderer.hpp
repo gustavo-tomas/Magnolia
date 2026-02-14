@@ -35,6 +35,7 @@ namespace game
         private:
             void render_models(Scene& scene);
             void render_sprites(Scene& scene);
+            void render_grass(Scene& scene);
             void render_text(Scene& scene);
 
             std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
