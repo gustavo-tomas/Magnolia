@@ -245,7 +245,7 @@ namespace game
         mag::gfx::draw(4, texture_offset);
     }
 
-    // @TODO: use better instancing, improve performance
+    // @TODO: don't use random values. Use a texture/noise function instead so the results stay consistent.
     void Renderer::render_grass(Scene& scene)
     {
         struct GrassVertex
@@ -290,8 +290,6 @@ namespace game
 
             vertex_buffer_handles[GRASS_SHADER] = vertex_buffer;
             index_buffer_handles[GRASS_SHADER] = index_buffer;
-
-            init = true;
         }
 
         mag::Camera& camera = scene.get_camera();
@@ -318,14 +316,13 @@ namespace game
         mag::gfx::bind_vertex_buffer(vertex_buffer_handles[GRASS_SHADER]);
         mag::gfx::bind_index_buffer(index_buffer_handles[GRASS_SHADER]);
 
-        i32 count = 100;
-        f32 patch_spread = 1.0f;
+        i32 count = 300;
+        f32 patch_spread = 1.5f;
         f32 position_variation = 0.7f;
 
-        static std::vector<mat4> model_mats;
-
-        if (model_mats.empty())
+        if (!init)
         {
+            u32 instance = 0;
             for (i32 i = -count / 2; i < count / 2; i++)
             {
                 for (i32 j = -count / 2; j < count / 2; j++)
@@ -336,23 +333,16 @@ namespace game
 
                     const vec3 scale = vec3(3.0f);
 
-                    mat4 model_mat = translate(mat4(1.0f), translation) * math::scale(mat4(1.0f), scale);
+                    const mat4 model_matrix = translate(mat4(1.0f), translation) * math::scale(mat4(1.0f), scale);
 
-                    model_mats.push_back(model_mat);
+                    GrassData grass_data = {};
+                    grass_data.model = model_matrix;
+
+                    mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
                 }
             }
-        }
 
-        u32 instance = 0;
-        for (i32 i = -count / 2; i < count / 2; i++)
-        {
-            for (i32 j = -count / 2; j < count / 2; j++)
-            {
-                GrassData grass_data = {};
-                grass_data.model = model_mats[instance];
-
-                mag::gfx::set_uniform("u_instance", &grass_data, instance++);
-            }
+            init = true;
         }
 
         // Lights buffer
@@ -367,7 +357,7 @@ namespace game
             mag::gfx::set_uniform("u_light", &light_data, light_num++);
         }
 
-        mag::gfx::draw_indexed(grass_indices.size(), instance);
+        mag::gfx::draw_indexed(grass_indices.size(), count * count);
     }
 
     void Renderer::render_text(Scene& scene)
