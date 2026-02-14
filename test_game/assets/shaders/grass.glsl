@@ -48,7 +48,7 @@ struct Gradient
         vec3 color;
 };
 
-Gradient gradients[] = {
+Gradient green_gradients[] = {
     { 0.7,  vec3(0.925, 0.952, 0.619) },
     { 0.5,  vec3(0.564, 0.662, 0.333) },
     { 0.2,  vec3(0.309, 0.466, 0.176) },
@@ -56,15 +56,24 @@ Gradient gradients[] = {
     { 0.0,  vec3(0.074, 0.164, 0.074) }
 };
 
-uint gradients_size = 5;
+Gradient cold_gradients[] = {
+    { 0.5,  vec3(0.741, 0.910, 0.961) },
+    { 0.3,  vec3(0.286, 0.533, 0.769) },
+    { 0.1,  vec3(0.110, 0.302, 0.553) },
+    { 0.0,  vec3(0.059, 0.157, 0.329) },
+};
 
 vec3 color_gradient(float y_pos)
 {
-    for (uint i = 0; i < gradients_size; i++)
+    uint size = cold_gradients.length();
+    for (uint i = 0; i < size; i++)
     {
-        if (y_pos >= in_max_height * gradients[i].cutoff)
+        float cutoff = cold_gradients[i].cutoff;
+        vec3 color = cold_gradients[i].color;
+
+        if (y_pos >= in_max_height * cutoff)
         {
-            return gradients[i].color;
+            return color;
         }
     }
 }
