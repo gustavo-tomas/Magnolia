@@ -4,8 +4,10 @@
 #include <magnolia/core/types.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/gfx/gfx.hpp>
+#include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
+#include <magnolia/platform/platform.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/font.hpp>
 #include <magnolia/resources/material.hpp>
@@ -27,6 +29,7 @@ namespace game
 #define MESH_SHADER "test_game/assets/shaders/mesh_shader.mag.json"
 #define SPRITE_SHADER "test_game/assets/shaders/sprite_shader.mag.json"
 #define TEXT_SHADER "test_game/assets/shaders/text_shader.mag.json"
+#define GRASS_SHADER "test_game/assets/shaders/grass_shader.mag.json"
 
     Renderer::Renderer()
     {
@@ -35,6 +38,7 @@ namespace game
         build_shader(MESH_SHADER, false);
         build_shader(SPRITE_SHADER, false);
         build_shader(TEXT_SHADER, false);
+        build_shader(GRASS_SHADER, false);
     }
 
     Renderer::~Renderer() = default;
@@ -48,6 +52,7 @@ namespace game
 
         render_sprites(scene);
         render_models(scene);
+        render_grass(scene);
         render_text(scene);
         scene.on_render(dt);
 
@@ -78,14 +83,13 @@ namespace game
         // Global buffer
         struct GlobalData
         {
-                mat4 view;
-                mat4 projection;
+                CameraData camera;
                 u32 light_count;
         };
 
         GlobalData global_data = {};
-        global_data.view = camera.get_view();
-        global_data.projection = camera.get_projection();
+        global_data.camera.view = camera.get_view();
+        global_data.camera.projection = camera.get_projection();
         global_data.light_count = light_entities.size();
 
         mag::gfx::set_uniform("u_global", &global_data);
@@ -192,13 +196,8 @@ namespace game
         mag::gfx::use_shader(shaders[SPRITE_SHADER]);
 
         // Global buffer
-        struct GlobalData
-        {
-                mat4 view;
-                mat4 projection;
-        };
 
-        GlobalData global_data = {};
+        CameraData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 
@@ -240,6 +239,111 @@ namespace game
         mag::gfx::draw(4, texture_offset);
     }
 
+    // @TODO: don't use random values. Use a texture/noise function instead so the results stay consistent.
+    void Renderer::render_grass(Scene& scene)
+    {
+        mag::gfx::use_shader(shaders[GRASS_SHADER]);
+
+        struct GrassVertex
+        {
+                vec3 position;
+                vec3 normal;
+        };
+
+        static std::vector<GrassVertex> grass_vertices;
+
+        static std::vector<u32> grass_indices;
+
+        static b8 init = false;
+
+        const i32 count = 300;
+        const f32 patch_spread = 1.0f;
+        const f32 position_variation = 0.7f;
+        static f32 max_height = 0.0f;
+
+        if (!init)
+        {
+            ref<ModelResource> grass_model;
+            grass_model = mag::resource::get_model("test_game/assets/models/grass/native/Grass.001.model.json");
+
+            // Quick hack to get max blade height
+            max_height = grass_model->meshes[0].aabb_max.y;
+
+            // Apply scale directly to the vertex
+            const vec3 scale = vec3(3.0f);
+            const mat4 model_matrix = math::scale(mat4(1.0f), scale);
+
+            for (Vertex& v : grass_model->vertices)
+            {
+                GrassVertex grass_vertex = {};
+                grass_vertex.position = model_matrix * vec4(v.position, 1.0f);
+                grass_vertex.normal = v.normal;
+
+                grass_vertices.push_back(grass_vertex);
+            }
+
+            grass_indices = grass_model->indices;
+
+            const mag::gfx::VertexBufferHandle vertex_buffer =
+                mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(grass_vertices), grass_vertices.data());
+
+            const mag::gfx::VertexBufferHandle index_buffer =
+                mag::gfx::create_index_buffer(VEC_SIZE_BYTES(grass_indices), grass_indices.data());
+
+            vertex_buffer_handles[GRASS_SHADER] = vertex_buffer;
+            index_buffer_handles[GRASS_SHADER] = index_buffer;
+
+            // Uniforms only need to be set once
+
+            u32 instance = 0;
+            for (i32 i = -count / 2; i < count / 2; i++)
+            {
+                for (i32 j = -count / 2; j < count / 2; j++)
+                {
+                    const vec3 position = vec3(
+                        (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
+                        (static_cast<f32>(j) * patch_spread) + math::random(-position_variation, position_variation));
+
+                    GrassData grass_data = {};
+                    grass_data.position = position;
+
+                    mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
+                }
+            }
+
+            init = true;
+        }
+
+        mag::Camera& camera = scene.get_camera();
+        auto light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
+
+        GlobalGrassData global_data = {};
+        global_data.camera_data.view = camera.get_view();
+        global_data.camera_data.projection = camera.get_projection();
+        global_data.light_count = light_entities.size();
+        global_data.time = static_cast<f32>(mag::plat::get_time());
+        global_data.max_blade_height = max_height;
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        mag::gfx::bind_vertex_buffer(vertex_buffer_handles[GRASS_SHADER]);
+        mag::gfx::bind_index_buffer(index_buffer_handles[GRASS_SHADER]);
+
+        // Lights buffer
+        u32 light_num = 0;
+        for (const auto& [transform, light] : light_entities)
+        {
+            LightData light_data = {};
+            light_data.position = transform->translation;
+            light_data.color = light->color;
+            light_data.intensity = light->intensity;
+
+            mag::gfx::set_uniform("u_light", &light_data, light_num++);
+        }
+
+        mag::gfx::draw_indexed(grass_indices.size(), count * count);
+    }
+
     void Renderer::render_text(Scene& scene)
     {
         auto text_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, TextComponent>();
@@ -253,13 +357,7 @@ namespace game
 
         mag::Camera& camera = scene.get_camera();
 
-        struct GlobalData
-        {
-                mat4 view;
-                mat4 projection;
-        };
-
-        GlobalData global_data = {};
+        CameraData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 

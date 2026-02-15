@@ -8,7 +8,7 @@
 // Including unbounded arrays
 // @TODO: these values should be retrieved from the renderer backend
 const u32 Max_Descriptor_Array_Size = 2 * 1024;
-const u32 Max_SSBO_Size_Byte = 4 * 1024 * 1024;  // 4 MiB
+const u32 Max_SSBO_Size_Byte = 16 * 1024 * 1024;  // 16 MiB
 
 namespace mag
 {

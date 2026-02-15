@@ -40,6 +40,13 @@ namespace mag
         MAG_API void set_uniform(const str& uniform_name, const TextureHandle texture_handle,
                                  const u32 array_element = 0);
 
+        // Set a uniform for every frame-in-flight. Useful for data that doesn't change between frames like static
+        // objects.
+        MAG_API void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element = 0);
+
+        MAG_API void set_uniform_static(const str& uniform_name, const TextureHandle texture_handle,
+                                        const u32 array_element = 0);
+
         MAG_API void bind_vertex_buffer(const VertexBufferHandle vertex_buffer_handle);
 
         MAG_API void bind_index_buffer(const IndexBufferHandle index_buffer_handle);
