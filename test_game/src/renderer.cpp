@@ -38,7 +38,7 @@ namespace game
         build_shader(MESH_SHADER, false);
         build_shader(SPRITE_SHADER, false);
         build_shader(TEXT_SHADER, false);
-        build_shader(GRASS_SHADER, true);
+        build_shader(GRASS_SHADER, false);
     }
 
     Renderer::~Renderer() = default;
@@ -254,7 +254,6 @@ namespace game
         {
                 vec3 position;
                 vec3 normal;
-                f32 max_height;
         };
 
         static std::vector<GrassVertex> grass_vertices;
@@ -266,6 +265,7 @@ namespace game
         const i32 count = 300;
         const f32 patch_spread = 1.0f;
         const f32 position_variation = 0.7f;
+        static f32 max_height = 0.0f;
 
         if (!init)
         {
@@ -273,7 +273,7 @@ namespace game
             grass_model = mag::resource::get_model("test_game/assets/models/grass/native/Grass.001.model.json");
 
             // Quick hack to get max blade height
-            const f32 max_height = grass_model->meshes[0].aabb_max.y;
+            max_height = grass_model->meshes[0].aabb_max.y;
 
             // Apply scale directly to the vertex
             const vec3 scale = vec3(3.0f);
@@ -284,7 +284,6 @@ namespace game
                 GrassVertex grass_vertex = {};
                 grass_vertex.position = model_matrix * vec4(v.position, 1.0f);
                 grass_vertex.normal = v.normal;
-                grass_vertex.max_height = max_height;  // @TODO: this doesn't need to be per vertex
 
                 grass_vertices.push_back(grass_vertex);
             }
@@ -330,6 +329,7 @@ namespace game
                 mat4 projection;
                 u32 light_count;
                 f32 time;
+                f32 max_blade_height;
         };
 
         GlobalData global_data = {};
@@ -337,6 +337,7 @@ namespace game
         global_data.projection = camera.get_projection();
         global_data.light_count = light_entities.size();
         global_data.time = static_cast<f32>(mag::plat::get_time());
+        global_data.max_blade_height = max_height;
 
         mag::gfx::set_uniform("u_global", &global_data);
 

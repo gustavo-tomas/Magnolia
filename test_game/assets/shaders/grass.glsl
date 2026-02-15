@@ -4,7 +4,7 @@
 #include "include/phong.glsl"
 #include "include/utils.glsl"
 
-// Based on this implementation: https://www.youtube.com/watch?v=bp7REZBV4P4
+// Based on this implementation from simondev: https://www.youtube.com/watch?v=bp7REZBV4P4
 
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
@@ -13,6 +13,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
     mat4 projection;
 	uint light_count;
     float time;
+    float max_blade_height;
 } u_global;
 
 // Instance buffer
@@ -27,20 +28,19 @@ layout (std140, set = 0, binding = 2) readonly buffer LightBuffer
     LightData lights[];
 } u_light;
 
-#define VIEW_MATRIX u_global.view
-#define PROJ_MATRIX u_global.projection
+#define VIEW_MATRIX      u_global.view
+#define PROJ_MATRIX      u_global.projection
+#define MAX_BLADE_HEIGHT u_global.max_blade_height
 
 #ifdef VERTEX_SHADER
 
 layout (location = 0) in vec3 in_position;
 layout (location = 1) in vec3 in_normal;
-layout (location = 2) in float in_max_height;
 
 layout (location = 0) out vec3 out_normal;
 layout (location = 1) out vec3 out_color;
 layout (location = 2) out vec3 out_frag_position;
 layout (location = 3) out vec3 out_original_vertex_position;
-layout (location = 4) out flat float out_max_height;
 
 struct Gradient
 {
@@ -71,7 +71,7 @@ vec3 color_gradient(float y_pos)
         float cutoff = green_gradients[i].cutoff;
         vec3 color = green_gradients[i].color;
 
-        if (y_pos >= in_max_height * cutoff)
+        if (y_pos >= MAX_BLADE_HEIGHT * cutoff)
         {
             return color;
         }
@@ -90,7 +90,7 @@ float calculate_rotation_z(vec3 grass_blade_position, float speed, float strengt
 {
     float angle = 0.15;
     
-    float height_factor = in_position.y / in_max_height;
+    float height_factor = in_position.y / MAX_BLADE_HEIGHT;
     angle *= height_factor;
 
     float noise = perlin_noise_normalized(vec2(u_global.time * speed) + grass_blade_position.xz) * strength;
@@ -134,7 +134,6 @@ void main()
 	out_normal = in_normal;
     out_color = color_gradient(in_position.y);
 	out_original_vertex_position = in_position;
-	out_max_height = in_max_height;
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * vec4(out_frag_position, 1.0);
 }
@@ -147,7 +146,6 @@ layout (location = 0) in vec3 in_normal;
 layout (location = 1) in vec3 in_color;
 layout (location = 2) in vec3 in_frag_position;
 layout (location = 3) in vec3 in_original_vertex_position;
-layout (location = 4) in flat float in_max_height;
 
 layout (location = 0) out vec4 out_frag_color;
 
@@ -160,7 +158,7 @@ void main()
 
     out_frag_color = vec4(0.0, 0.0, 0.0, 1.0);
 
-    float height_factor = in_original_vertex_position.y / in_max_height;
+    float height_factor = in_original_vertex_position.y / MAX_BLADE_HEIGHT;
     float ao = (1.0 - height_factor) * 0.75;
 
     for (uint i = 0; i < u_global.light_count; i++)
