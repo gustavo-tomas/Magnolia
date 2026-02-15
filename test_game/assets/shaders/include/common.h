@@ -20,6 +20,12 @@ using namespace mag::math;
 
 // Types shared by c++ and glsl
 
+struct alignas(16) CameraData
+{
+        mat4 view;        // 64 bytes (16 x 4)
+        mat4 projection;  // 64 bytes (16 x 4)
+};
+
 struct alignas(16) MeshData
 {
         mat4 model;        // 64 bytes (16 x 4)
@@ -60,8 +66,7 @@ struct alignas(16) MaterialData
 
 struct alignas(16) GlobalGrassData
 {
-        mat4 view;
-        mat4 projection;
+        CameraData camera_data;
         u32 light_count;
         f32 time;
         f32 max_blade_height;

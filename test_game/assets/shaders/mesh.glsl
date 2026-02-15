@@ -9,11 +9,7 @@ uint normal_output = 0;
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
-    // Camera
-    mat4 view;
-    mat4 projection;
-
-	// Lights
+    CameraData camera;
 	uint light_count;
 } u_global;
 
@@ -38,8 +34,8 @@ layout (std140, set = 0, binding = 3) readonly buffer MaterialBuffer
 // Material textures
 layout (set = 0, binding = 4) uniform sampler2D u_material_textures[];
 
-#define VIEW_MATRIX u_global.view
-#define PROJ_MATRIX u_global.projection
+#define VIEW_MATRIX u_global.camera.view
+#define PROJ_MATRIX u_global.camera.projection
 
 #ifdef VERTEX_SHADER
 

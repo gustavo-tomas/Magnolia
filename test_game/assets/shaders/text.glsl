@@ -5,9 +5,7 @@
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
-    // Camera
-    mat4 view;
-    mat4 projection;
+    CameraData camera;
 } u_global;
 
 // Instance buffer
@@ -19,8 +17,8 @@ layout (std140, set = 0, binding = 1) readonly buffer InstanceBuffer
 // Texture
 layout (set = 0, binding = 2) uniform sampler2D u_char_textures[];
 
-#define VIEW_MATRIX u_global.view
-#define PROJ_MATRIX u_global.projection
+#define VIEW_MATRIX u_global.camera.view
+#define PROJ_MATRIX u_global.camera.projection
 
 #ifdef VERTEX_SHADER
 

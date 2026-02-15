@@ -24,8 +24,8 @@ layout (std140, set = 0, binding = 2) readonly buffer LightBuffer
     LightData lights[];
 } u_light;
 
-#define VIEW_MATRIX      u_global.data.view
-#define PROJ_MATRIX      u_global.data.projection
+#define VIEW_MATRIX      u_global.data.camera_data.view
+#define PROJ_MATRIX      u_global.data.camera_data.projection
 #define MAX_BLADE_HEIGHT u_global.data.max_blade_height
 
 #ifdef VERTEX_SHADER

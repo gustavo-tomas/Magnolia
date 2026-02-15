@@ -7,9 +7,7 @@
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
-    // Camera
-    mat4 view;
-    mat4 projection;
+    CameraData camera;
 } u_global;
 
 // Instance buffer
@@ -38,8 +36,8 @@ const vec2 tex_coords[] = vec2[]
 
 void main()
 {
-	const mat4 VIEW_MATRIX = u_global.view;
-	const mat4 PROJ_MATRIX = u_global.projection;
+	const mat4 VIEW_MATRIX = u_global.camera.view;
+	const mat4 PROJ_MATRIX = u_global.camera.projection;
 
 	SpriteData sprite = u_instance.sprites[gl_InstanceIndex];
 

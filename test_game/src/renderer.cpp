@@ -83,14 +83,13 @@ namespace game
         // Global buffer
         struct GlobalData
         {
-                mat4 view;
-                mat4 projection;
+                CameraData camera;
                 u32 light_count;
         };
 
         GlobalData global_data = {};
-        global_data.view = camera.get_view();
-        global_data.projection = camera.get_projection();
+        global_data.camera.view = camera.get_view();
+        global_data.camera.projection = camera.get_projection();
         global_data.light_count = light_entities.size();
 
         mag::gfx::set_uniform("u_global", &global_data);
@@ -197,13 +196,8 @@ namespace game
         mag::gfx::use_shader(shaders[SPRITE_SHADER]);
 
         // Global buffer
-        struct GlobalData
-        {
-                mat4 view;
-                mat4 projection;
-        };
 
-        GlobalData global_data = {};
+        CameraData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 
@@ -324,8 +318,8 @@ namespace game
         auto light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
 
         GlobalGrassData global_data = {};
-        global_data.view = camera.get_view();
-        global_data.projection = camera.get_projection();
+        global_data.camera_data.view = camera.get_view();
+        global_data.camera_data.projection = camera.get_projection();
         global_data.light_count = light_entities.size();
         global_data.time = static_cast<f32>(mag::plat::get_time());
         global_data.max_blade_height = max_height;
@@ -363,13 +357,7 @@ namespace game
 
         mag::Camera& camera = scene.get_camera();
 
-        struct GlobalData
-        {
-                mat4 view;
-                mat4 projection;
-        };
-
-        GlobalData global_data = {};
+        CameraData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 
