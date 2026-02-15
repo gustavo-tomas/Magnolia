@@ -9,11 +9,7 @@
 // Global buffer
 layout (set = 0, binding = 0) uniform GlobalBuffer
 {
-    mat4 view;
-    mat4 projection;
-	uint light_count;
-    float time;
-    float max_blade_height;
+   GlobalGrassData data;
 } u_global;
 
 // Instance buffer
@@ -28,9 +24,9 @@ layout (std140, set = 0, binding = 2) readonly buffer LightBuffer
     LightData lights[];
 } u_light;
 
-#define VIEW_MATRIX      u_global.view
-#define PROJ_MATRIX      u_global.projection
-#define MAX_BLADE_HEIGHT u_global.max_blade_height
+#define VIEW_MATRIX      u_global.data.view
+#define PROJ_MATRIX      u_global.data.projection
+#define MAX_BLADE_HEIGHT u_global.data.max_blade_height
 
 #ifdef VERTEX_SHADER
 
@@ -93,7 +89,7 @@ float calculate_rotation_z(vec3 grass_blade_position, float speed, float strengt
     float height_factor = in_position.y / MAX_BLADE_HEIGHT;
     angle *= height_factor;
 
-    float noise = perlin_noise_normalized(vec2(u_global.time * speed) + grass_blade_position.xz) * strength;
+    float noise = perlin_noise_normalized(vec2(u_global.data.time * speed) + grass_blade_position.xz) * strength;
     angle += noise;
 
     return angle;
@@ -101,7 +97,7 @@ float calculate_rotation_z(vec3 grass_blade_position, float speed, float strengt
 
 float calculate_wind_strength(vec3 grass_blade_position, float speed, float range)
 {
-    float wind_strength = perlin_noise_normalized(grass_blade_position.xz * range + u_global.time * speed);
+    float wind_strength = perlin_noise_normalized(grass_blade_position.xz * range + u_global.data.time * speed);
 
     return wind_strength;
 }
@@ -161,7 +157,7 @@ void main()
     float height_factor = in_original_vertex_position.y / MAX_BLADE_HEIGHT;
     float ao = (1.0 - height_factor) * 0.75;
 
-    for (uint i = 0; i < u_global.light_count; i++)
+    for (uint i = 0; i < u_global.data.light_count; i++)
 	{	
 		PhongLight light;
 		light.position = u_light.lights[i].position;

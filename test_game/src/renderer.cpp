@@ -323,16 +323,7 @@ namespace game
         mag::Camera& camera = scene.get_camera();
         auto light_entities = scene.get_ecs().get_all_components_of_types<TransformComponent, LightComponent>();
 
-        struct GlobalData
-        {
-                mat4 view;
-                mat4 projection;
-                u32 light_count;
-                f32 time;
-                f32 max_blade_height;
-        };
-
-        GlobalData global_data = {};
+        GlobalGrassData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
         global_data.light_count = light_entities.size();

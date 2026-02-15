@@ -58,6 +58,15 @@ struct alignas(16) MaterialData
         u32 metalness_tex_idx;  // 4 bytes
 };
 
+struct alignas(16) GlobalGrassData
+{
+        mat4 view;
+        mat4 projection;
+        u32 light_count;
+        f32 time;
+        f32 max_blade_height;
+};
+
 struct alignas(16) GrassData
 {
         vec3 position;  // 12 bytes (16 x 4)
