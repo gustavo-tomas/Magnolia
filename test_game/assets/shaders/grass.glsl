@@ -39,7 +39,7 @@ layout (location = 2) in float in_max_height;
 layout (location = 0) out vec3 out_normal;
 layout (location = 1) out vec3 out_color;
 layout (location = 2) out vec3 out_frag_position;
-layout (location = 3) out vec3 out_original_grass_blade_position;
+layout (location = 3) out vec3 out_original_vertex_position;
 layout (location = 4) out flat float out_max_height;
 
 struct Gradient
@@ -65,11 +65,11 @@ Gradient cold_gradients[] = {
 
 vec3 color_gradient(float y_pos)
 {
-    uint size = cold_gradients.length();
+    uint size = green_gradients.length();
     for (uint i = 0; i < size; i++)
     {
-        float cutoff = cold_gradients[i].cutoff;
-        vec3 color = cold_gradients[i].color;
+        float cutoff = green_gradients[i].cutoff;
+        vec3 color = green_gradients[i].color;
 
         if (y_pos >= in_max_height * cutoff)
         {
@@ -108,33 +108,32 @@ float calculate_wind_strength(vec3 grass_blade_position, float speed, float rang
 
 void main()
 {
-	mat4 model_matrix = u_instance.blades[gl_InstanceIndex].model;
-    mat3 normal_matrix = mat3(transpose(inverse(model_matrix)));
+    // @TODO: fix normals and finish normal matrix
 
-    vec3 pos = in_position;
-    vec3 grass_blade_position = vec3(model_matrix[3]);
+    vec3 vertex_position = in_position;
+    vec3 grass_blade_position = u_instance.blades[gl_InstanceIndex].position;
    
-    // Calculate grass blade rotation around Z and Y
+    // Calculate grass blade rotation around Z and Y axes
 
     float blade_speed = 0.0005;
     float blade_strength = 0.12;
     float wind_speed = 0.0007;
-    float wind_range = -0.05;
+    float wind_range = -0.03;
     float wind_angle = HALF_PI;
 
     float rotation_z = calculate_rotation_z(grass_blade_position, blade_speed, blade_strength);
-    pos = rotate(pos, vec3(0, 0, 1), rotation_z);
+    vertex_position = rotate(vertex_position, vec3(0, 0, 1), rotation_z);
 
     float rotation_y = calculate_rotation_y(grass_blade_position);
-    pos = rotate(pos, vec3(0, 1, 0), rotation_y);
+    vertex_position = rotate(vertex_position, vec3(0, 1, 0), rotation_y);
 
     float wind_strength = calculate_wind_strength(grass_blade_position, wind_speed, wind_range) * 0.95;
-    pos = rotate(pos, vec3(0, 0, 1), wind_angle * wind_strength);
+    vertex_position = rotate(vertex_position, vec3(0, 0, 1), wind_angle * wind_strength);
 
-	out_frag_position = vec3(model_matrix * vec4(pos, 1.0));
-	out_normal = normalize(normal_matrix * in_normal);
+	out_frag_position = vertex_position + grass_blade_position;
+	out_normal = in_normal;
     out_color = color_gradient(in_position.y);
-	out_original_grass_blade_position = in_position;
+	out_original_vertex_position = in_position;
 	out_max_height = in_max_height;
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * vec4(out_frag_position, 1.0);
@@ -147,7 +146,7 @@ void main()
 layout (location = 0) in vec3 in_normal;
 layout (location = 1) in vec3 in_color;
 layout (location = 2) in vec3 in_frag_position;
-layout (location = 3) in vec3 in_original_grass_blade_position;
+layout (location = 3) in vec3 in_original_vertex_position;
 layout (location = 4) in flat float in_max_height;
 
 layout (location = 0) out vec4 out_frag_color;
@@ -161,7 +160,7 @@ void main()
 
     out_frag_color = vec4(0.0, 0.0, 0.0, 1.0);
 
-    float height_factor = in_original_grass_blade_position.y / in_max_height;
+    float height_factor = in_original_vertex_position.y / in_max_height;
     float ao = (1.0 - height_factor) * 0.75;
 
     for (uint i = 0; i < u_global.light_count; i++)

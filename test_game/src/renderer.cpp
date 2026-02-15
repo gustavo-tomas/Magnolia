@@ -38,7 +38,7 @@ namespace game
         build_shader(MESH_SHADER, false);
         build_shader(SPRITE_SHADER, false);
         build_shader(TEXT_SHADER, false);
-        build_shader(GRASS_SHADER, false);
+        build_shader(GRASS_SHADER, true);
     }
 
     Renderer::~Renderer() = default;
@@ -248,6 +248,8 @@ namespace game
     // @TODO: don't use random values. Use a texture/noise function instead so the results stay consistent.
     void Renderer::render_grass(Scene& scene)
     {
+        mag::gfx::use_shader(shaders[GRASS_SHADER]);
+
         struct GrassVertex
         {
                 vec3 position;
@@ -261,6 +263,10 @@ namespace game
 
         static b8 init = false;
 
+        const i32 count = 300;
+        const f32 patch_spread = 1.0f;
+        const f32 position_variation = 0.7f;
+
         if (!init)
         {
             ref<ModelResource> grass_model;
@@ -269,13 +275,16 @@ namespace game
             // Quick hack to get max blade height
             const f32 max_height = grass_model->meshes[0].aabb_max.y;
 
+            // Apply scale directly to the vertex
+            const vec3 scale = vec3(3.0f);
+            const mat4 model_matrix = math::scale(mat4(1.0f), scale);
+
             for (Vertex& v : grass_model->vertices)
             {
                 GrassVertex grass_vertex = {};
-                grass_vertex.position = v.position;
+                grass_vertex.position = model_matrix * vec4(v.position, 1.0f);
                 grass_vertex.normal = v.normal;
-                grass_vertex.position = v.position;
-                grass_vertex.max_height = max_height;
+                grass_vertex.max_height = max_height;  // @TODO: this doesn't need to be per vertex
 
                 grass_vertices.push_back(grass_vertex);
             }
@@ -290,6 +299,26 @@ namespace game
 
             vertex_buffer_handles[GRASS_SHADER] = vertex_buffer;
             index_buffer_handles[GRASS_SHADER] = index_buffer;
+
+            // Uniforms only need to be set once
+
+            u32 instance = 0;
+            for (i32 i = -count / 2; i < count / 2; i++)
+            {
+                for (i32 j = -count / 2; j < count / 2; j++)
+                {
+                    const vec3 position = vec3(
+                        (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
+                        (static_cast<f32>(j) * patch_spread) + math::random(-position_variation, position_variation));
+
+                    GrassData grass_data = {};
+                    grass_data.position = position;
+
+                    mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
+                }
+            }
+
+            init = true;
         }
 
         mag::Camera& camera = scene.get_camera();
@@ -309,41 +338,10 @@ namespace game
         global_data.light_count = light_entities.size();
         global_data.time = static_cast<f32>(mag::plat::get_time());
 
-        mag::gfx::use_shader(shaders[GRASS_SHADER]);
-
         mag::gfx::set_uniform("u_global", &global_data);
 
         mag::gfx::bind_vertex_buffer(vertex_buffer_handles[GRASS_SHADER]);
         mag::gfx::bind_index_buffer(index_buffer_handles[GRASS_SHADER]);
-
-        i32 count = 300;
-        f32 patch_spread = 1.5f;
-        f32 position_variation = 0.7f;
-
-        if (!init)
-        {
-            u32 instance = 0;
-            for (i32 i = -count / 2; i < count / 2; i++)
-            {
-                for (i32 j = -count / 2; j < count / 2; j++)
-                {
-                    const vec3 translation = vec3(
-                        (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
-                        (static_cast<f32>(j) * patch_spread) + math::random(-position_variation, position_variation));
-
-                    const vec3 scale = vec3(3.0f);
-
-                    const mat4 model_matrix = translate(mat4(1.0f), translation) * math::scale(mat4(1.0f), scale);
-
-                    GrassData grass_data = {};
-                    grass_data.model = model_matrix;
-
-                    mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
-                }
-            }
-
-            init = true;
-        }
 
         // Lights buffer
         u32 light_num = 0;

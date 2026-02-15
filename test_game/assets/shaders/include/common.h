@@ -60,7 +60,7 @@ struct alignas(16) MaterialData
 
 struct alignas(16) GrassData
 {
-        mat4 model;  // 64 bytes (16 x 4)
+        vec3 position;  // 12 bytes (16 x 4)
 };
 
 // Debug
