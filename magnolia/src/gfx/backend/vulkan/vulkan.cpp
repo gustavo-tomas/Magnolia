@@ -1069,7 +1069,7 @@ namespace mag
                     image_memory_barrier.newLayout = mag_to_vk(new_layout);
                     image_memory_barrier.image = dynamic_cast<const VulkanTexture* const>(texture)->get_image();
                     image_memory_barrier.subresourceRange = {
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .aspectMask = mag_to_vk(texture->get_aspect()),
                         .baseMipLevel = 0,
                         .levelCount = 1,
                         .baseArrayLayer = 0,

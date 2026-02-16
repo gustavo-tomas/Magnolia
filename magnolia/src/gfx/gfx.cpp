@@ -126,7 +126,7 @@ namespace mag
                 ITextureDesc render_target_depth_texture_desc = {};
                 render_target_depth_texture_desc.extent = render_target_extent;
                 render_target_depth_texture_desc.usage = TextureUsage::DepthStencilAttachment;
-                render_target_depth_texture_desc.aspect = TextureAspect::Depth;
+                render_target_depth_texture_desc.aspect = TextureAspect::Depth | TextureAspect::Stencil;
                 render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
                 state->frames[i].render_target_depth = state->device->create_texture(render_target_depth_texture_desc);
 
@@ -211,6 +211,18 @@ namespace mag
             render_pass = state->device->create_render_pass(render_pass_desc);
 
             current_frame.command_buffer->begin_recording();
+
+            static u32 f = 0;
+            if (f < state->frames.size())
+            {
+                // Transition depth render target to optimal (only needs to be done once per frame)
+                current_frame.command_buffer->pipeline_barrier(
+                    render_target_depth.get(), TextureLayout::DepthStencilAttachment, AccessMask::None,
+                    AccessMask::DepthStencilAttachmentRead | AccessMask::DepthStencilAttachmentWrite,
+                    PipelineStage::TopOfPipe, PipelineStage::EarlyFragmentTest);
+
+                f++;
+            }
 
             // Prepare render target for rendering
             current_frame.command_buffer->pipeline_barrier(

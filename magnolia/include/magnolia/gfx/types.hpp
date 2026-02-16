@@ -90,6 +90,8 @@ namespace mag
         {
             Undefined,
             ColorAttachment,
+            DepthAttachment,
+            DepthStencilAttachment,
             Present,
             TransferSrc,
             TransferDst,
@@ -138,11 +140,13 @@ namespace mag
         {
             None = 0,
             ColorAttachmentWrite = 1 << 0,
-            TransferRead = 1 << 1,
-            TransferWrite = 1 << 2,
-            MemoryRead = 1 << 3,
-            MemoryWrite = 1 << 4,
-            ShaderRead = 1 << 5
+            DepthStencilAttachmentRead = 1 << 1,
+            DepthStencilAttachmentWrite = 1 << 2,
+            TransferRead = 1 << 3,
+            TransferWrite = 1 << 4,
+            MemoryRead = 1 << 5,
+            MemoryWrite = 1 << 6,
+            ShaderRead = 1 << 7
         };
 
         enum class PipelineStage : u8
@@ -152,7 +156,8 @@ namespace mag
             BottomOfPipe = 1 << 2,
             Transfer = 1 << 3,
             FragmentShader = 1 << 4,
-            AllCommands = 1 << 5
+            EarlyFragmentTest = 1 << 5,
+            AllCommands = 1 << 6
         };
 
         enum class PrimitiveTopology : u8

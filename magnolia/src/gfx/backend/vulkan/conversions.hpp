@@ -480,6 +480,14 @@ namespace mag
                     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     break;
 
+                case TextureLayout::DepthAttachment:
+                    return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+                    break;
+
+                case TextureLayout::DepthStencilAttachment:
+                    return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                    break;
+
                 case TextureLayout::Present:
                     return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
                     break;
@@ -508,6 +516,14 @@ namespace mag
 
                 case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
                     return TextureLayout::ColorAttachment;
+                    break;
+
+                case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                    return TextureLayout::DepthAttachment;
+                    break;
+
+                case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                    return TextureLayout::DepthStencilAttachment;
                     break;
 
                 case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
@@ -928,6 +944,14 @@ namespace mag
             {
                 vk_access |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             }
+            if (IS_BIT_SET(mask, AccessMask::DepthStencilAttachmentRead))
+            {
+                vk_access |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            }
+            if (IS_BIT_SET(mask, AccessMask::DepthStencilAttachmentWrite))
+            {
+                vk_access |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            }
             if (IS_BIT_SET(mask, AccessMask::TransferRead))
             {
                 vk_access |= VK_ACCESS_TRANSFER_READ_BIT;
@@ -963,6 +987,14 @@ namespace mag
             if (IS_BIT_SET(mask, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT))
             {
                 mag_access |= AccessMask::ColorAttachmentWrite;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT))
+            {
+                mag_access |= AccessMask::DepthStencilAttachmentRead;
+            }
+            if (IS_BIT_SET(mask, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT))
+            {
+                mag_access |= AccessMask::DepthStencilAttachmentWrite;
             }
             if (IS_BIT_SET(mask, VK_ACCESS_TRANSFER_READ_BIT))
             {
@@ -1076,6 +1108,10 @@ namespace mag
             {
                 vk_stage |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             }
+            if (IS_BIT_SET(stage, PipelineStage::EarlyFragmentTest))
+            {
+                vk_stage |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            }
             if (IS_BIT_SET(stage, PipelineStage::AllCommands))
             {
                 vk_stage |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
@@ -1107,6 +1143,10 @@ namespace mag
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT))
             {
                 mag_stage |= PipelineStage::FragmentShader;
+            }
+            if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT))
+            {
+                mag_stage |= PipelineStage::EarlyFragmentTest;
             }
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT))
             {
