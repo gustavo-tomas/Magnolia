@@ -48,7 +48,6 @@ namespace mag
                 unique<ICommandPool> command_pool;
                 unique<ICommandBuffer> command_buffer;
                 unique<ISemaphore> available_semaphore;
-                unique<ISemaphore> finished_semaphore;
                 unique<IFence> in_flight_fence;
                 unique<ITexture> render_target_color;
                 unique<ITexture> render_target_depth;
@@ -63,6 +62,7 @@ namespace mag
                 unique<IQueue> graphics_queue;
                 unique<IQueue> present_queue;
                 std::vector<FrameData> frames;
+                std::vector<unique<ISemaphore>> submit_semaphores;
                 std::unordered_map<ShaderHandle, ShaderData> shaders;
                 std::unordered_map<BufferHandle, unique<IBuffer>> buffers;
                 std::unordered_map<TextureHandle, TextureData> textures;
@@ -91,6 +91,14 @@ namespace mag
 
             // Command Pool, Command Buffers and Sync Objects
             // -------------------------------------------------------------------------------------------------
+            ISemaphoreDesc submit_semaphore_desc = {};
+
+            state->submit_semaphores.resize(state->swapchain->get_image_count());
+
+            for (u32 i = 0; i < state->submit_semaphores.size(); i++)
+            {
+                state->submit_semaphores[i] = state->device->create_semaphore(submit_semaphore_desc);
+            }
 
             // Triple buffering if the device supports it
             const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
@@ -115,7 +123,6 @@ namespace mag
                 ISemaphoreDesc sem_desc = {};
 
                 state->frames[i].available_semaphore = state->device->create_semaphore(sem_desc);
-                state->frames[i].finished_semaphore = state->device->create_semaphore(sem_desc);
                 state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
 
                 ITextureDesc render_target_color_texture_desc = {};
@@ -250,6 +257,7 @@ namespace mag
 
             const u32 image_index = state->swapchain->get_current_image_index();
             ITexture* const swapchain_texture = state->swapchain->get_texture(image_index);
+            const unique<ISemaphore>& submit_semaphore = state->submit_semaphores[image_index];
 
             current_frame.command_buffer->end_rendering();
 
@@ -273,12 +281,10 @@ namespace mag
 
             current_frame.command_buffer->end_recording();
 
-            state->graphics_queue->submit(current_frame.available_semaphore.get(),
-                                          current_frame.finished_semaphore.get(), current_frame.in_flight_fence.get(),
-                                          current_frame.command_buffer.get());
+            state->graphics_queue->submit(current_frame.available_semaphore.get(), submit_semaphore.get(),
+                                          current_frame.in_flight_fence.get(), current_frame.command_buffer.get());
 
-            const Result result =
-                state->present_queue->present(state->swapchain.get(), current_frame.finished_semaphore.get());
+            const Result result = state->present_queue->present(state->swapchain.get(), submit_semaphore.get());
 
             if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
             {
