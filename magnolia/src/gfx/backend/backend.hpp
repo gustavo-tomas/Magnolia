@@ -364,6 +364,9 @@ namespace mag
                                           const u32 first_index = 0, const i32 vertex_offset = 0,
                                           const u32 first_instance = 0) const = 0;
 
+                virtual void draw_indexed_indirect(const IBuffer* const buffer, const u64 offset, const u32 draw_count,
+                                                   const u32 stride) const = 0;
+
                 virtual void pipeline_barrier(ITexture* const texture, const TextureLayout new_layout,
                                               const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                               const PipelineStage src_stage_mask,

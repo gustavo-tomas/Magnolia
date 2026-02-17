@@ -1058,6 +1058,14 @@ namespace mag
                                          first_instance);
                 }
 
+                void draw_indexed_indirect(const IBuffer* const buffer, const u64 offset, const u32 draw_count,
+                                           const u32 stride) const override
+                {
+                    VkBuffer vk_buffer = dynamic_cast<const VulkanBuffer* const>(buffer)->get_buffer();
+
+                    disp->cmdDrawIndexedIndirect(command_buffer, vk_buffer, offset, draw_count, stride);
+                }
+
                 void pipeline_barrier(ITexture* const texture, const TextureLayout new_layout,
                                       const AccessMask src_access_mask, const AccessMask dst_access_mask,
                                       const PipelineStage src_stage_mask,
