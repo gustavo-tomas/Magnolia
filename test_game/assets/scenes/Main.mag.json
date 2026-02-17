@@ -41,7 +41,7 @@
         "Name": "Player"
       },
       "TransformComponent": {
-        "Translation": [0.0, 10.0, 77.05213928222656],
+        "Translation": [0.0, 10.0, 0.0],
         "Rotation": [1.0, 0.0, 0.0, 0.0],
         "Scale": [100.0, 100.0, 100.0]
       },

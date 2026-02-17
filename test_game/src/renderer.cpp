@@ -302,7 +302,8 @@ namespace game
                 {
                     const vec3 position = vec3(
                         (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
-                        (static_cast<f32>(j) * patch_spread) + math::random(-position_variation, position_variation));
+                        (static_cast<f32>(j - count / 2 - 10) * patch_spread) +
+                            math::random(-position_variation, position_variation));
 
                     GrassData grass_data = {};
                     grass_data.position = position;
