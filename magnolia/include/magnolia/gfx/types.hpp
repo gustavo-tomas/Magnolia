@@ -192,7 +192,8 @@ namespace mag
             Uniform = 1 << 2,
             Storage = 1 << 3,
             TransferSrc = 1 << 4,
-            TransferDst = 1 << 5
+            TransferDst = 1 << 5,
+            Indirect = 1 << 6
         };
 
         enum class MemoryUsage : u8

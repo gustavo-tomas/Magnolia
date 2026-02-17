@@ -1184,6 +1184,10 @@ namespace mag
             {
                 vk_usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             }
+            if (IS_BIT_SET(usage, BufferUsage::Indirect))
+            {
+                vk_usage |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+            }
 
             return vk_usage;
         }
@@ -1215,6 +1219,10 @@ namespace mag
             if (IS_BIT_SET(usage, VK_BUFFER_USAGE_TRANSFER_DST_BIT))
             {
                 mag_usage |= BufferUsage::TransferDst;
+            }
+            if (IS_BIT_SET(usage, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT))
+            {
+                mag_usage |= BufferUsage::Indirect;
             }
 
             return mag_usage;

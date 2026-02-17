@@ -143,6 +143,8 @@ namespace mag
 
                 BufferUsage get_usage() const override { return usage; }
 
+                void* get_mapped_region() const override { return mapped_region; }
+
                 const VkBuffer& get_buffer() const { return buffer; }
 
             private:

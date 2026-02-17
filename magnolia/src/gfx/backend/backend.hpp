@@ -197,6 +197,8 @@ namespace mag
                 virtual u64 get_size() const = 0;
 
                 virtual BufferUsage get_usage() const = 0;
+
+                virtual void* get_mapped_region() const = 0;
         };
 
         class IRenderingAttachment
