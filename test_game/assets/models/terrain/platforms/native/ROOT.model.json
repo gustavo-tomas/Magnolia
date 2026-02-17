@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "ROOT",
+  "File": "test_game/assets/models/terrain/platforms/native/ROOT.model.bin",
+  "NumVertices": 72,
+  "NumIndices": 108,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/terrain/platforms/native/__Material_0_0__.mat.json"
+  ]
+}

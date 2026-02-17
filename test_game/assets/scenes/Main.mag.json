@@ -24,6 +24,66 @@
     },
     {
       "NameComponent": {
+        "Name": "Ruins"
+      },
+      "TransformComponent": {
+        "Translation": [0.0, 0.0, 0.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [10.0, 10.0, 10.0]
+      },
+      "RigidBodyComponent": {
+        "Mass": 0.0,
+        "MeshCollider": {
+          "FilePath": "test_game/assets/models/terrain/ruins/native/BaseRuins.model.json"
+        }
+      },
+      "ModelComponent": {
+        "Name": "terrain",
+        "FilePath": "test_game/assets/models/terrain/ruins/native/BaseRuins.model.json"
+      }
+    },
+    {
+      "NameComponent": {
+        "Name": "Ramp"
+      },
+      "TransformComponent": {
+        "Translation": [0.0, 0.0, 0.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [10.0, 10.0, 10.0]
+      },
+      "RigidBodyComponent": {
+        "Mass": 0.0,
+        "MeshCollider": {
+          "FilePath": "test_game/assets/models/terrain/ramp/native/Ramp.model.json"
+        }
+      },
+      "ModelComponent": {
+        "Name": "terrain",
+        "FilePath": "test_game/assets/models/terrain/ramp/native/Ramp.model.json"
+      }
+    },
+    {
+      "NameComponent": {
+        "Name": "Platforms"
+      },
+      "TransformComponent": {
+        "Translation": [0.0, 0.0, 0.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0],
+        "Scale": [10.0, 10.0, 10.0]
+      },
+      "RigidBodyComponent": {
+        "Mass": 0.0,
+        "MeshCollider": {
+          "FilePath": "test_game/assets/models/terrain/platforms/native/ROOT.model.json"
+        }
+      },
+      "ModelComponent": {
+        "Name": "terrain",
+        "FilePath": "test_game/assets/models/terrain/platforms/native/ROOT.model.json"
+      }
+    },
+    {
+      "NameComponent": {
         "Name": "Light"
       },
       "TransformComponent": {

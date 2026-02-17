@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "Ramp",
+  "File": "test_game/assets/models/terrain/ramp/native/Ramp.model.bin",
+  "NumVertices": 18,
+  "NumIndices": 24,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/terrain/ramp/native/__Material_0_0__.mat.json"
+  ]
+}

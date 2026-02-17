@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "BaseRuins",
+  "File": "test_game/assets/models/terrain/ruins/native/BaseRuins.model.bin",
+  "NumVertices": 76,
+  "NumIndices": 156,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/terrain/ruins/native/__Material_0_0__.mat.json"
+  ]
+}
