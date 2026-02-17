@@ -22,23 +22,7 @@ class PlayerController : public ScriptableEntity
         f32 yaw = 0.0f;
 
     public:
-        void on_create() override
-        {
-            const RigidBodyComponent* rigid_body_c = get_component<RigidBodyComponent>();
-
-            if (rigid_body_c == nullptr)
-            {
-                LOG_WARNING("Missing rigidbody");
-                return;
-            }
-
-            mag::physics::IPhysicsWorld& physics = get_physics_world();
-
-            // Prevent player from sleeping
-            physics.set_activation_state(rigid_body_c->rigid_body_handle, mag::ActivationState::Activate);
-
-            LOG_SUCCESS("Created PlayerController");
-        }
+        void on_create() override { LOG_SUCCESS("Created PlayerController"); }
 
         void on_destroy() override { LOG_SUCCESS("Destroyed PlayerController"); }
 
@@ -110,7 +94,12 @@ class PlayerController : public ScriptableEntity
 
             const mag::RigidBodyHandle rigid_body_handle = rigid_body_c->rigid_body_handle;
 
-            physics.set_linear_velocity(rigid_body_handle, mag::vec3(0.0f));
+            // Reset velocity for X and Z axes
+            vec3 new_velocity = physics.get_linear_velocity(rigid_body_handle);
+            new_velocity.x = 0.0f;
+            new_velocity.z = 0.0f;
+
+            physics.set_linear_velocity(rigid_body_handle, new_velocity);
 
             // Get current velocity
             const mag::vec3& velocity = physics.get_linear_velocity(rigid_body_handle);
