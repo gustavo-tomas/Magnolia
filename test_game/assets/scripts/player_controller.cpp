@@ -243,6 +243,14 @@ class PlayerController : public ScriptableEntity
 
             return forward;
         }
+
+        mag::vec3 get_up_dir() const
+        {
+            mag::vec3 forward = get_forward_dir();
+            mag::vec3 right = get_right_dir();
+
+            return math::cross(forward, right);
+        }
 };
 
 extern "C" ScriptableEntity* create_script() { return new PlayerController(); }
