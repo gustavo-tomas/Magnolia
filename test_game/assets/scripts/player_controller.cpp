@@ -30,6 +30,11 @@ class PlayerController : public ScriptableEntity
         {
             handle_movement(dt);
             handle_shooting(dt);
+
+            if (mag::window::is_key_pressed(Key::f))
+            {
+                mag::window::set_target_frame_rate(dt < 1.0f / 60.0f ? 120 : -1);
+            }
         }
 
         void on_signal_received(const u32 sender_id, const void* data) override
