@@ -33,7 +33,7 @@ class PlayerController : public ScriptableEntity
 
             if (mag::window::is_key_pressed(Key::f))
             {
-                mag::window::set_target_frame_rate(dt < 1.0f / 60.0f ? 120 : -1);
+                mag::window::set_target_frame_rate(dt < 1.0f / 120.0f ? 120 : -1);
             }
         }
 
