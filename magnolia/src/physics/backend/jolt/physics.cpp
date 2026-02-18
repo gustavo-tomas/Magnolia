@@ -535,6 +535,12 @@ namespace mag
                     rotation = physics::to_mag(rot);
                 }
 
+                math::vec3 get_gravity() const override
+                {
+                    const math::vec3 gravity = to_mag(physics_system->GetGravity());
+                    return gravity;
+                }
+
                 const math::LineList& get_debug_line_list() const override
                 {
                     return physics::state->debug_renderer->get_line_list();
