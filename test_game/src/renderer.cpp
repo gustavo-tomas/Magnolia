@@ -239,6 +239,33 @@ namespace game
         mag::gfx::draw(4, texture_offset);
     }
 
+    // Grass
+    static b8 init = false;
+
+    const i32 count = 300;
+    const f32 patch_spread = 1.0f;
+    const f32 position_variation = 0.7f;
+
+    void Renderer::set_grass_uniforms()
+    {
+        u32 instance = 0;
+        for (i32 i = -count / 2; i < count / 2; i++)
+        {
+            for (i32 j = -count / 2; j < count / 2; j++)
+            {
+                const vec3 position = vec3(
+                    (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
+                    (static_cast<f32>(j - count / 2 - 10) * patch_spread) +
+                        math::random(-position_variation, position_variation));
+
+                GrassData grass_data = {};
+                grass_data.position = position;
+
+                mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
+            }
+        }
+    }
+
     // @TODO: don't use random values. Use a texture/noise function instead so the results stay consistent.
     void Renderer::render_grass(Scene& scene)
     {
@@ -254,11 +281,6 @@ namespace game
 
         static std::vector<u32> grass_indices;
 
-        static b8 init = false;
-
-        const i32 count = 300;
-        const f32 patch_spread = 1.0f;
-        const f32 position_variation = 0.7f;
         static f32 max_height = 0.0f;
 
         if (!init)
@@ -293,26 +315,15 @@ namespace game
             vertex_buffer_handles[GRASS_SHADER] = vertex_buffer;
             index_buffer_handles[GRASS_SHADER] = index_buffer;
 
-            // Uniforms only need to be set once
-
-            u32 instance = 0;
-            for (i32 i = -count / 2; i < count / 2; i++)
-            {
-                for (i32 j = -count / 2; j < count / 2; j++)
-                {
-                    const vec3 position = vec3(
-                        (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
-                        (static_cast<f32>(j - count / 2 - 10) * patch_spread) +
-                            math::random(-position_variation, position_variation));
-
-                    GrassData grass_data = {};
-                    grass_data.position = position;
-
-                    mag::gfx::set_uniform_static("u_instance", &grass_data, instance++);
-                }
-            }
-
             init = true;
+        }
+
+        if (grass_uniforms_need_update)
+        {
+            // Uniforms only need to be set once
+            set_grass_uniforms();
+
+            grass_uniforms_need_update = false;
         }
 
         mag::Camera& camera = scene.get_camera();
@@ -451,6 +462,12 @@ namespace game
         }
 
         shaders[file_path] = mag::gfx::create_shader(*shader_resource);
+
+        // Set uniforms again
+        if (file_path == GRASS_SHADER && init)
+        {
+            grass_uniforms_need_update = true;
+        }
     }
 
     void Renderer::on_event(const mag::Event& e) { mag::gfx::on_event(e); }

@@ -371,6 +371,16 @@ namespace mag
             return handle;
         }
 
+        static void destroy_buffer(const BufferHandle handle)
+        {
+            // @TODO: we need to make sure that a buffer is not in use when we delete it. A more robust approach would
+            // be adding the buffer to a deletion queue and/or finding a way to query if the buffer is in use or not
+            // before deleting. WaitIdle is, however, simpler.
+
+            state->device->wait_idle();
+            state->buffers.erase(handle);
+        }
+
         VertexBufferHandle create_vertex_buffer(const u64 size, const void* data)
         {
             return create_buffer(size, data, BufferUsage::Vertex);
@@ -378,11 +388,7 @@ namespace mag
 
         void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle)
         {
-            // @TODO: we need to make sure that a buffer is not in use when we delete it. A more robust approach would
-            // be adding the buffer to a deletion queue and/or finding a way to query if the buffer is in use or not
-            // before deleting. WaitIdle is, however, simpler.
-            state->device->wait_idle();
-            state->buffers.erase(vertex_buffer_handle);
+            destroy_buffer(vertex_buffer_handle);
         }
 
         IndexBufferHandle create_index_buffer(const u64 size, const void* data)
@@ -687,12 +693,20 @@ namespace mag
         void destroy_shader(const ShaderHandle shader_handle)
         {
             state->device->wait_idle();
-            state->shaders.erase(shader_handle);
 
             for (FrameData& frame : state->frames)
             {
+                // Destroy uniform buffers
+                for (const auto& [uniform_name, binding_data] : frame.descriptor_set_map[shader_handle].bindings_map)
+                {
+                    destroy_buffer(binding_data.buffer_handle);
+                }
+
                 frame.descriptor_set_map.erase(shader_handle);
             }
+
+            // Destroy graphics pipeline and descriptor set layouts
+            state->shaders.erase(shader_handle);
         }
 
         void use_shader(const ShaderHandle& handle)

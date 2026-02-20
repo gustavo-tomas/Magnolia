@@ -37,6 +37,9 @@ namespace game
             void render_sprites(Scene& scene);
             void render_grass(Scene& scene);
             void render_text(Scene& scene);
+            void set_grass_uniforms();
+
+            b8 grass_uniforms_need_update = true;
 
             std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
             std::unordered_map<str, mag::gfx::TextureHandle> texture_handles;
