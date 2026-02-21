@@ -33,6 +33,12 @@ namespace game
 
     static PlayerComponent player = {};
 
+    void execute_systems(Scene& scene, const f32 dt)
+    {
+        player_system(scene, dt);
+        bullet_system(scene, dt);
+    }
+
     void player_system(Scene& scene, const f32 dt)
     {
         auto& ecs = scene.get_ecs();
