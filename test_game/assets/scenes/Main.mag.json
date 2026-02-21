@@ -114,9 +114,6 @@
         "Near": 1.0,
         "Far": 10000.0
       },
-      "ScriptComponent": {
-        "FilePath": "test_game/assets/scripts/player_controller.cpp"
-      },
       "RigidBodyComponent": {
         "Mass": 1.0,
         "BoxCollider": {

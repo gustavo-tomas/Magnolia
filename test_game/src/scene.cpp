@@ -14,6 +14,7 @@
 #include "components.hpp"
 #include "renderer.hpp"
 #include "scriptable_entity.hpp"
+#include "systems.hpp"
 
 namespace game
 {
@@ -213,6 +214,9 @@ namespace game
                 script->entity->on_update(dt);
             }
         }
+
+        // Update systems
+        player_system(*this, dt);
     }
 
     void Scene::on_render(const f32 dt)
@@ -388,7 +392,7 @@ namespace game
 
     const mag::JobGroupHandle& Scene::get_job_group() const { return job_group; }
 
-    const mag::physics::IPhysicsWorld* Scene::get_physics_world() const { return physics_world.get(); }
+    mag::physics::IPhysicsWorld& Scene::get_physics_world() { return *physics_world; }
 
     mag::ECS& Scene::get_ecs() { return *ecs; }
 

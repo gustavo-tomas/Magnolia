@@ -179,6 +179,20 @@ namespace game
             ScriptableEntity* entity = nullptr;
     };
 
+    struct PlayerComponent
+    {
+            vec3 camera_offset = vec3(50.0f);
+            vec3 bullet_offset = vec3(50.0f);
+
+            f32 hp = 100.0f;
+            f32 walk_speed = 3000.0f;
+            f32 mouse_sensitivity = 0.2f;
+            f32 fire_rate = 20.0f;  // per second
+
+            f32 pitch = 0.0f;
+            f32 yaw = 0.0f;
+    };
+
     // Debug
     struct DebugComponent
     {
