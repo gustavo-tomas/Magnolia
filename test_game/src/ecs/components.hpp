@@ -200,6 +200,11 @@ namespace game
             f32 time_to_live;  // seconds
     };
 
+    struct EnemyComponent
+    {
+            f32 hp = 100.0f;
+    };
+
     // Debug
     struct DebugComponent
     {

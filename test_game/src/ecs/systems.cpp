@@ -2,8 +2,10 @@
 
 #include <magnolia/core/keys.hpp>
 #include <magnolia/core/logger.hpp>
+#include <magnolia/ecs/ecs.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/window.hpp>
+#include <magnolia/resources/model.hpp>
 #include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/texture.hpp>
 
@@ -37,6 +39,7 @@ namespace game
     {
         player_system(scene, dt);
         bullet_system(scene, dt);
+        enemy_system(scene, dt);
     }
 
     void player_system(Scene& scene, const f32 dt)
@@ -259,6 +262,38 @@ namespace game
             {
                 scene.remove_entity(entity_id);
             }
+        }
+    }
+
+    // @TODO: quick hack for testing
+
+    void enemy_system(Scene& scene, const f32 dt)
+    {
+        auto& ecs = scene.get_ecs();
+
+        static b8 init = false;
+        static mag::EntityID enemy_id = mag::Invalid_ID;
+
+        if (!init)
+        {
+            const str file_path = "test_game/assets/models/enemy/native/Enemy.model.json";
+
+            enemy_id = ecs.create_entity();
+
+            ecs.add_component<TransformComponent>(enemy_id, vec3(-40, 0, 0), quat(), vec3(10.0f));
+            ecs.add_component<EnemyComponent>(enemy_id);
+
+            mag::resource::get_model_async(
+                file_path, scene.get_job_group(),
+                [&ecs, file_path](const mag::ref<mag::IResource>& resource)
+                {
+                    auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
+
+                    ecs.add_component<ModelComponent>(enemy_id, res);
+                },
+                false);
+
+            init = true;
         }
     }
 };  // namespace game

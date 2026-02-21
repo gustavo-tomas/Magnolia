@@ -1,0 +1,11 @@
+{
+  "Type": "Model",
+  "Name": "Enemy",
+  "File": "test_game/assets/models/enemy/native/Enemy.model.bin",
+  "NumVertices": 24,
+  "NumIndices": 36,
+  "NumMeshes": 1,
+  "Materials": [
+    "test_game/assets/models/enemy/native/__Material_0_0__.mat.json"
+  ]
+}
