@@ -4,6 +4,8 @@
 #include <magnolia/core/logger.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/window.hpp>
+#include <magnolia/resources/resource.hpp>
+#include <magnolia/resources/texture.hpp>
 
 #include "components.hpp"
 #include "scene.hpp"
@@ -13,10 +15,11 @@ namespace game
     static void handle_movement(const f32 dt, Scene& scene, mag::physics::IPhysicsWorld& physics,
                                 PerspectiveCameraComponent& camera, RigidBodyComponent& rigid_body);
 
-    static void handle_shooting(mag::ECS& ecs, mag::physics::IPhysicsWorld& physics, TransformComponent& transform,
-                                const f32 dt);
+    static void handle_shooting(Scene& scene, mag::ECS& ecs, mag::physics::IPhysicsWorld& physics,
+                                TransformComponent& transform, const f32 dt);
 
-    static void fire_bullet(mag::ECS& ecs, mag::physics::IPhysicsWorld& physics, const TransformComponent& transform);
+    static void fire_bullet(Scene& scene, mag::ECS& ecs, mag::physics::IPhysicsWorld& physics,
+                            const TransformComponent& transform);
 
     static void on_key_press(Scene& scene, const mag::Key& key);
 
@@ -42,7 +45,7 @@ namespace game
         for (auto& [transform, camera, rigid_body] : entities)
         {
             handle_movement(dt, scene, physics, *camera, *rigid_body);
-            handle_shooting(ecs, physics, *transform, dt);
+            handle_shooting(scene, ecs, physics, *transform, dt);
 
             if (mag::window::is_key_pressed(mag::Key::f))
             {
@@ -51,15 +54,15 @@ namespace game
         }
     }
 
-    void handle_shooting(mag::ECS& ecs, mag::physics::IPhysicsWorld& physics, TransformComponent& transform,
-                         const f32 dt)
+    void handle_shooting(Scene& scene, mag::ECS& ecs, mag::physics::IPhysicsWorld& physics,
+                         TransformComponent& transform, const f32 dt)
     {
         static f32 timer = 0;
         timer += dt;
 
         if (timer >= 1.0f / player.fire_rate && mag::window::is_button_down(mag::Button::Left))
         {
-            fire_bullet(ecs, physics, transform);
+            fire_bullet(scene, ecs, physics, transform);
             timer = 0.0f;
         }
     }
@@ -152,7 +155,8 @@ namespace game
         camera.camera.set_position(new_pos + forward * player.camera_offset);
     }
 
-    void fire_bullet(mag::ECS& ecs, mag::physics::IPhysicsWorld& physics, const TransformComponent& transform)
+    void fire_bullet(Scene& scene, mag::ECS& ecs, mag::physics::IPhysicsWorld& physics,
+                     const TransformComponent& transform)
     {
         const mag::vec3& forward_dir = mag::math::get_forward_dir(player.pitch, player.yaw);
 
@@ -165,17 +169,16 @@ namespace game
         bullet_transform.scale = mag::vec3(0.01f);
         bullet_transform.translation -= forward_dir * player.bullet_offset;
 
-        // @TODO: figure out a better way to handle data flow
-        // const str file_path = "test_game/assets/sprites/test_texture0.png";
-        // mag::resource::get_texture_async(
-        //     file_path, get_job_group(),
-        //     [this, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
-        //     {
-        //         auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+        const str file_path = "test_game/assets/sprites/test_texture0.png";
+        mag::resource::get_texture_async(
+            file_path, scene.get_job_group(),
+            [&ecs, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
+            {
+                auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-        //         add_component_to_entity<SpriteComponent>(bullet_id, res);
-        //     },
-        //     false);
+                ecs.add_component<SpriteComponent>(bullet_id, res);
+            },
+            false);
 
         const f32 radius = 2.5f;
         const f32 height = 0.0f;
