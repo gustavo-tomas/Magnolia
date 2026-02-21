@@ -75,5 +75,12 @@ namespace mag
 
         // Calculate a rotation mat from XYZ rotation
         MAG_API mat4 calculate_rotation_mat(const vec3& rotation);
+
+        // Get direction from angles
+        MAG_API vec3 get_right_dir(const f32 yaw);
+
+        MAG_API vec3 get_forward_dir(const f32 pitch, const f32 yaw);
+
+        MAG_API vec3 get_up_dir(const f32 pitch, const f32 yaw);
     };  // namespace math
 };  // namespace mag

@@ -22,10 +22,6 @@ namespace game
 
     static void on_mouse_click(const mag::Button& button);
 
-    static vec3 get_right_dir(const f32 yaw);
-    static vec3 get_forward_dir(const f32 pitch, const f32 yaw);
-    static vec3 get_up_dir(const f32 pitch, const f32 yaw);
-
     static mag::EntityID create_entity(mag::ECS& ecs, const str& name);
 
     // @TODO: we are being a bit lazy here to avoid updating the scene serializer. Because there is tipically only one
@@ -111,8 +107,8 @@ namespace game
         const mag::vec3& velocity = physics.get_linear_velocity(rigid_body_handle);
 
         // Calculate desired movement direction
-        const mag::vec3& forward = get_forward_dir(player.pitch, player.yaw);
-        const mag::vec3& right = get_right_dir(player.yaw);
+        const mag::vec3& forward = mag::math::get_forward_dir(player.pitch, player.yaw);
+        const mag::vec3& right = mag::math::get_right_dir(player.yaw);
 
         mag::vec3 input_direction(0.0f);
 
@@ -158,7 +154,7 @@ namespace game
 
     void fire_bullet(mag::ECS& ecs, mag::physics::IPhysicsWorld& physics, const TransformComponent& transform)
     {
-        const mag::vec3& forward_dir = get_forward_dir(player.pitch, player.yaw);
+        const mag::vec3& forward_dir = mag::math::get_forward_dir(player.pitch, player.yaw);
 
         // Create a bullet
         static u32 counter = 0;
@@ -232,34 +228,5 @@ namespace game
         }
 
         return entity_id;
-    }
-
-    // @TODO: move to math
-    mag::vec3 get_right_dir(const f32 yaw)
-    {
-        mag::vec3 right(0.0f);
-        right.x = cos(yaw);
-        right.y = 0;
-        right.z = -sin(yaw);
-
-        return right;
-    }
-
-    mag::vec3 get_forward_dir(const f32 pitch, const f32 yaw)
-    {
-        mag::vec3 forward(0.0f);
-        forward.x = cos(-pitch) * sin(yaw);
-        forward.y = sin(-pitch);
-        forward.z = cos(-pitch) * cos(yaw);
-
-        return forward;
-    }
-
-    mag::vec3 get_up_dir(const f32 pitch, const f32 yaw)
-    {
-        const mag::vec3 forward = get_forward_dir(pitch, yaw);
-        const mag::vec3 right = get_right_dir(yaw);
-
-        return mag::math::cross(forward, right);
     }
 };  // namespace game

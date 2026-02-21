@@ -71,6 +71,34 @@ namespace mag
             return rotation_mat;
         }
 
+        vec3 get_right_dir(const f32 yaw)
+        {
+            vec3 right(0.0f);
+            right.x = cos(yaw);
+            right.y = 0;
+            right.z = -sin(yaw);
+
+            return right;
+        }
+
+        vec3 get_forward_dir(const f32 pitch, const f32 yaw)
+        {
+            vec3 forward(0.0f);
+            forward.x = cos(-pitch) * sin(yaw);
+            forward.y = sin(-pitch);
+            forward.z = cos(-pitch) * cos(yaw);
+
+            return forward;
+        }
+
+        vec3 get_up_dir(const f32 pitch, const f32 yaw)
+        {
+            const vec3 forward = get_forward_dir(pitch, yaw);
+            const vec3 right = get_right_dir(yaw);
+
+            return cross(forward, right);
+        }
+
         void LineList::append(const Line& line) { lines.push_back(line); }
 
         // @TODO: DRY helper methods
