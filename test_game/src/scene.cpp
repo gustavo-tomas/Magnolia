@@ -11,10 +11,10 @@
 #include <magnolia/scripting/scripting_engine.hpp>
 #include <magnolia/threads/job_system.hpp>
 
-#include "components.hpp"
+#include "ecs/components.hpp"
+#include "ecs/systems.hpp"
 #include "renderer.hpp"
 #include "scriptable_entity.hpp"
-#include "systems.hpp"
 
 namespace game
 {

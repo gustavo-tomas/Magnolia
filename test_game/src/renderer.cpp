@@ -16,7 +16,7 @@
 #include <magnolia/resources/shader.hpp>
 #include <magnolia/resources/texture.hpp>
 
-#include "components.hpp"
+#include "ecs/components.hpp"
 #include "scene.hpp"
 
 // @TODO: temp

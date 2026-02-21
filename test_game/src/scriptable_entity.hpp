@@ -4,7 +4,7 @@
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/threads/job_system.hpp>
 
-#include "components.hpp"
+#include "ecs/components.hpp"
 #include "scene.hpp"
 
 namespace mag

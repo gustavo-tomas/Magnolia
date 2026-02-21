@@ -5,11 +5,5 @@
 #include <magnolia/platform/window.hpp>
 
 #include "../../assets/shaders/include/common.h"
-#include "../../src/components.hpp"
+#include "../../src/ecs/components.hpp"
 #include "../../src/scriptable_entity.hpp"
-
-// Enemy damage
-struct DamageData
-{
-        f32 damage = 1.0f;
-};

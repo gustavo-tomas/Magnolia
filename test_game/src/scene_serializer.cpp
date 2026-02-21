@@ -14,7 +14,7 @@
 #include <magnolia/resources/texture.hpp>
 #include <variant>
 
-#include "components.hpp"
+#include "ecs/components.hpp"
 #include "scene.hpp"
 
 namespace game
