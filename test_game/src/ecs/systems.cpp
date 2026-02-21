@@ -184,10 +184,12 @@ namespace game
         const f32 height = 0.0f;
         const f32 mass = 10.0f;
         const f32 impulse = 1000.0f;
+        const f32 time_to_live = 10.0f;
 
         const CapsuleCollider collider = CapsuleCollider(radius, height);
         ecs.add_component<TransformComponent>(bullet_id, bullet_transform);
         ecs.add_component<RigidBodyComponent>(bullet_id, collider, mass);
+        ecs.add_component<BulletComponent>(bullet_id, time_to_live);
 
         auto* bullet_rigid_body = ecs.get_component<RigidBodyComponent>(bullet_id);
 
@@ -231,5 +233,26 @@ namespace game
         }
 
         return entity_id;
+    }
+
+    void bullet_system(Scene& scene, const f32 dt)
+    {
+        auto& ecs = scene.get_ecs();
+
+        const std::vector<mag::EntityID>& entities_ids =
+            ecs.query<TransformComponent, RigidBodyComponent, BulletComponent>();
+
+        for (const u32 entity_id : entities_ids)
+        {
+            auto [transform, rigid_body, bullet] =
+                ecs.get_components<TransformComponent, RigidBodyComponent, BulletComponent>(entity_id);
+
+            bullet->time_to_live -= dt;
+
+            if (bullet->time_to_live <= 0.0f)
+            {
+                scene.remove_entity(entity_id);
+            }
+        }
     }
 };  // namespace game

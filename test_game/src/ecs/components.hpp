@@ -193,6 +193,13 @@ namespace game
             f32 yaw = 0.0f;
     };
 
+    struct BulletComponent
+    {
+            BulletComponent(const f32 time_to_live = 10.0f) : time_to_live(time_to_live) {}
+
+            f32 time_to_live;  // seconds
+    };
+
     // Debug
     struct DebugComponent
     {

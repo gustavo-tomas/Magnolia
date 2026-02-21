@@ -217,6 +217,7 @@ namespace game
 
         // Update systems
         player_system(*this, dt);
+        bullet_system(*this, dt);
     }
 
     void Scene::on_render(const f32 dt)
