@@ -17,6 +17,7 @@
 #include <Jolt/Renderer/DebugRenderer.h>
 
 #include <cstdarg>
+#include <unordered_set>
 
 // See the hello world example for nice explanations of the jolt structures
 // https://github.com/jrouwe/JoltPhysics/blob/master/HelloWorld/HelloWorld.cpp
@@ -327,10 +328,14 @@ namespace mag
                 void OnContactAdded(const JPH::Body& inBody1, const JPH::Body& inBody2,
                                     const JPH::ContactManifold& inManifold, JPH::ContactSettings& ioSettings) override
                 {
-                    (void)inBody1;
-                    (void)inBody2;
                     (void)inManifold;
                     (void)ioSettings;
+
+                    const JPH::BodyID& body_1_id = inBody1.GetID();
+                    const JPH::BodyID& body_2_id = inBody2.GetID();
+
+                    contacts[body_1_id].insert(body_2_id);
+                    contacts[body_2_id].insert(body_1_id);
                 }
 
                 void OnContactPersisted(const JPH::Body& inBody1, const JPH::Body& inBody2,
@@ -343,7 +348,22 @@ namespace mag
                     (void)ioSettings;
                 }
 
-                void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override { (void)inSubShapePair; }
+                void OnContactRemoved(const JPH::SubShapeIDPair& inSubShapePair) override
+                {
+                    const JPH::BodyID& body_1_id = inSubShapePair.GetBody1ID();
+                    const JPH::BodyID& body_2_id = inSubShapePair.GetBody2ID();
+
+                    contacts[body_1_id].erase(body_2_id);
+                    contacts[body_2_id].erase(body_1_id);
+                }
+
+                const std::unordered_map<JPH::BodyID, std::unordered_set<JPH::BodyID>>& get_active_contacts() const
+                {
+                    return contacts;
+                }
+
+            private:
+                std::unordered_map<JPH::BodyID, std::unordered_set<JPH::BodyID>> contacts;
         };
 
         class BodyActivationListener : public JPH::BodyActivationListener
