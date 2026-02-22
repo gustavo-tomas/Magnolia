@@ -1298,6 +1298,12 @@ namespace mag
                                     return VK_FALSE;
                                 })
                             .request_validation_layers()
+
+                            .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
+                        // .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
+                        // .add_validation_feature_enable(
+                        //     VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
+                        // .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
     #endif
                             .require_api_version(vulkan_major_version, vulkan_minor_version, vulkan_patch_version)
                             .build();

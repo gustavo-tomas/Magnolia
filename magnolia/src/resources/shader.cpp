@@ -337,7 +337,7 @@ namespace mag
             fs::create_directories(fs::path(output_file_path).parent_path());
 
             // @TODO: for now no optimizations
-            str compile_script_cmd = MAG_EXT_GLSLC " -O0";
+            str compile_script_cmd = MAG_EXT_GLSLC " -O0 -g";
 
             // Include paths
             compile_script_cmd = std::accumulate(include_paths.begin(), include_paths.end(), compile_script_cmd,

@@ -276,7 +276,7 @@ namespace mag
 
             // Transition swapchain image to present
             current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::Present,
-                                                           AccessMask::TransferWrite, AccessMask::MemoryRead,
+                                                           AccessMask::TransferWrite, AccessMask::None,
                                                            PipelineStage::Transfer, PipelineStage::BottomOfPipe);
 
             current_frame.command_buffer->end_recording();
