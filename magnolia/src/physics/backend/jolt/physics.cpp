@@ -132,10 +132,10 @@ namespace mag
                 {
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    for (const auto& [id, body_id] : rigid_bodies)
+                    for (const auto& [id, body] : rigid_bodies)
                     {
-                        body_interface.RemoveBody(body_id);
-                        body_interface.DestroyBody(body_id);
+                        body_interface.RemoveBody(body->GetID());
+                        body_interface.DestroyBody(body->GetID());
                     }
                 }
 
@@ -181,7 +181,7 @@ namespace mag
 
                     // Create the actual rigid body
                     // Note that if we run out of bodies this can return nullptr
-                    const JPH::Body* body = body_interface.CreateBody(creation_settings);
+                    JPH::Body* body = body_interface.CreateBody(creation_settings);
 
                     // Add it to the world
                     MAG_ASSERT(body != nullptr, "[Physics] Failed to create rigidbody");
@@ -191,7 +191,7 @@ namespace mag
                     }
 
                     body_interface.AddBody(body->GetID(), JPH::EActivation::Activate);
-                    rigid_bodies[handle] = body->GetID();
+                    rigid_bodies[handle] = body;
 
                     // Optimize the broad phase after adding N objects
                     constexpr u32 Body_Batch_Size = 10;
@@ -269,7 +269,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::BodyID id = it->second;
+                    const JPH::BodyID id = it->second->GetID();
 
                     body_interface.RemoveBody(id);
                     body_interface.DestroyBody(id);
@@ -330,7 +330,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    body_interface.AddForce(it->second, physics::from_mag(force));
+                    body_interface.AddForce(it->second->GetID(), physics::from_mag(force));
                 }
 
                 void apply_impulse(const RigidBodyHandle handle, const math::vec3& impulse) override
@@ -344,7 +344,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    body_interface.AddImpulse(it->second, physics::from_mag(impulse));
+                    body_interface.AddImpulse(it->second->GetID(), physics::from_mag(impulse));
                 }
 
                 void apply_torque(const RigidBodyHandle handle, const math::vec3& torque) override
@@ -358,7 +358,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    body_interface.AddTorque(it->second, physics::from_mag(torque));
+                    body_interface.AddTorque(it->second->GetID(), physics::from_mag(torque));
                 }
 
                 void apply_torque_impulse(const RigidBodyHandle handle, const math::vec3& torque) override
@@ -387,11 +387,11 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::EActivation activation = body_interface.IsActive(it->second)
+                    const JPH::EActivation activation = body_interface.IsActive(it->second->GetID())
                                                             ? JPH::EActivation::Activate
                                                             : JPH::EActivation::DontActivate;
 
-                    body_interface.SetPosition(it->second, from_mag(position), activation);
+                    body_interface.SetPosition(it->second->GetID(), from_mag(position), activation);
                 }
 
                 void set_rotation(const RigidBodyHandle handle, const math::quat& rotation) override
@@ -405,11 +405,11 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::EActivation activation = body_interface.IsActive(it->second)
+                    const JPH::EActivation activation = body_interface.IsActive(it->second->GetID())
                                                             ? JPH::EActivation::Activate
                                                             : JPH::EActivation::DontActivate;
 
-                    body_interface.SetRotation(it->second, from_mag(rotation), activation);
+                    body_interface.SetRotation(it->second->GetID(), from_mag(rotation), activation);
                 }
 
                 void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
@@ -423,7 +423,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    body_interface.SetLinearVelocity(it->second, physics::from_mag(velocity));
+                    body_interface.SetLinearVelocity(it->second->GetID(), physics::from_mag(velocity));
                 }
 
                 void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) override
@@ -437,7 +437,7 @@ namespace mag
 
                     JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    body_interface.SetAngularVelocity(it->second, physics::from_mag(velocity));
+                    body_interface.SetAngularVelocity(it->second->GetID(), physics::from_mag(velocity));
                 }
 
                 void set_angular_factor(const RigidBodyHandle handle, const math::vec3& axes) override
@@ -469,11 +469,11 @@ namespace mag
                     switch (activation_state)
                     {
                         case ActivationState::Activate:
-                            body_interface.ActivateBody(it->second);
+                            body_interface.ActivateBody(it->second->GetID());
                             break;
 
                         case ActivationState::Deactivate:
-                            body_interface.DeactivateBody(it->second);
+                            body_interface.DeactivateBody(it->second->GetID());
                             break;
 
                         default:
@@ -493,7 +493,7 @@ namespace mag
 
                     const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::Vec3 velocity = body_interface.GetLinearVelocity(it->second);
+                    const JPH::Vec3 velocity = body_interface.GetLinearVelocity(it->second->GetID());
 
                     return physics::to_mag(velocity);
                 }
@@ -509,7 +509,7 @@ namespace mag
 
                     const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::Vec3 velocity = body_interface.GetAngularVelocity(it->second);
+                    const JPH::Vec3 velocity = body_interface.GetAngularVelocity(it->second->GetID());
 
                     return physics::to_mag(velocity);
                 }
@@ -526,7 +526,7 @@ namespace mag
 
                     const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
 
-                    const JPH::BodyID& id = it->second;
+                    const JPH::BodyID& id = it->second->GetID();
                     JPH::RVec3 pos = {};
                     JPH::Quat rot = {};
                     body_interface.GetPositionAndRotation(id, pos, rot);
@@ -568,7 +568,7 @@ namespace mag
                 // Registering one is entirely optional.
                 unique<ContactListener> contact_listener = nullptr;
 
-                std::unordered_map<RigidBodyHandle, JPH::BodyID> rigid_bodies;
+                std::unordered_map<RigidBodyHandle, JPH::Body*> rigid_bodies;
         };
 
         unique<IPhysicsWorld> create_physics_world() { return create_unique<JoltPhysicsWorld>(); }
