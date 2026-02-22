@@ -31,7 +31,7 @@ namespace game
 
     struct TransformComponent
     {
-            TransformComponent(const vec3& translation = vec3(0), const quat& rotation = quat(),
+            TransformComponent(const vec3& translation = vec3(0), const quat& rotation = quat(1, 0, 0, 0),
                                const vec3& scale = vec3(1))
                 : rotation(rotation), translation(translation), scale(scale)
             {
