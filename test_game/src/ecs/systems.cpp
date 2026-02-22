@@ -270,9 +270,21 @@ namespace game
     void enemy_system(Scene& scene, const f32 dt)
     {
         auto& ecs = scene.get_ecs();
+        auto& physics = scene.get_physics_world();
 
         static b8 init = false;
         static mag::EntityID enemy_id = mag::Invalid_ID;
+
+        if (!ecs.entity_exists(enemy_id))
+        {
+            init = false;
+        }
+
+        if (scene.get_file_path() != "test_game/assets/scenes/Main.mag.json")
+        {
+            init = false;
+            return;
+        }
 
         if (!init)
         {
@@ -299,6 +311,37 @@ namespace game
                 false);
 
             init = true;
+        }
+
+        // Check for bullet hits
+
+        const auto* rigid_body = ecs.get_component<RigidBodyComponent>(enemy_id);
+        auto* enemy = ecs.get_component<EnemyComponent>(enemy_id);
+
+        std::vector<mag::RigidBodyHandle> collisions;
+        physics.get_rigid_body_collisions(rigid_body->rigid_body_handle, collisions);
+
+        // @TODO: inefficient, for testing only
+        auto bullets = ecs.get_all_components_of_types<RigidBodyComponent, BulletComponent>();
+        for (const mag::RigidBodyHandle& collision_handle : collisions)
+        {
+            for (const auto& [bullet_body, bullet] : bullets)
+            {
+                if (bullet_body->rigid_body_handle == collision_handle && bullet->time_to_live > 0.0f)
+                {
+                    enemy->hp -= bullet->damage;
+                    bullet->time_to_live = 0.0f;
+
+                    LOG_INFO("HP: {0}", enemy->hp);
+
+                    break;
+                }
+            }
+        }
+
+        if (enemy->hp <= 0.0f)
+        {
+            LOG_INFO("DEAD");
         }
     }
 };  // namespace game

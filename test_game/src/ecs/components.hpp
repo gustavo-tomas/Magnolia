@@ -195,8 +195,12 @@ namespace game
 
     struct BulletComponent
     {
-            BulletComponent(const f32 time_to_live = 10.0f) : time_to_live(time_to_live) {}
+            BulletComponent(const f32 damage = 10.0f, const f32 time_to_live = 10.0f)
+                : damage(damage), time_to_live(time_to_live)
+            {
+            }
 
+            f32 damage;
             f32 time_to_live;  // seconds
     };
 
