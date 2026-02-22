@@ -163,7 +163,7 @@ namespace game
 
                     mag::gfx::set_uniform("u_material_textures",
                                           texture_handles[material->textures.at(TextureSlot::Metalness)->file_path],
-                                          texture_offset + 2);  // ARM texture
+                                          texture_offset + 3);  // ARM texture
 
                     mesh_materials_bound++;
                     texture_offset += 4;
