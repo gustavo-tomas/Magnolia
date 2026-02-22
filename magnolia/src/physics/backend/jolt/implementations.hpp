@@ -11,6 +11,7 @@
 //
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
@@ -380,6 +381,22 @@ namespace mag
                     (void)inBodyID;
                     (void)inBodyUserData;
                 }
+        };
+
+        // Collectors
+
+        class CollideShapeCollector : public JPH::CollideShapeCollector
+        {
+            public:
+                const std::vector<JPH::BodyID>& get_collisions() const { return collisions; }
+
+            private:
+                void AddHit(const JPH::CollideShapeResult& inResult) override
+                {
+                    collisions.push_back(inResult.mBodyID2);
+                }
+
+                std::vector<JPH::BodyID> collisions;
         };
     };  // namespace physics
 };  // namespace mag

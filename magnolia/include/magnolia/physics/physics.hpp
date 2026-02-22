@@ -82,6 +82,9 @@ namespace mag
                 virtual void get_collision_object_transform(const RigidBodyHandle handle, math::vec3& position,
                                                             math::quat& rotation) const = 0;
 
+                virtual void get_rigid_body_collisions(const RigidBodyHandle handle,
+                                                       std::vector<RigidBodyHandle>& collisions) const = 0;
+
                 // Debug lines for visualization
                 virtual const math::LineList& get_debug_line_list() const = 0;
         };

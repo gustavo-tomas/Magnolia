@@ -14,6 +14,7 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
@@ -539,6 +540,56 @@ namespace mag
                 {
                     const math::vec3 gravity = to_mag(physics_system->GetGravity());
                     return gravity;
+                }
+
+                // @TODO: this is pretty slow. A better solution is to create a map between body id and rigidbody.
+                RigidBodyHandle find_body_with_id(const JPH::BodyID& body_id) const
+                {
+                    for (const auto& [handle, body] : rigid_bodies)
+                    {
+                        if (body->GetID() == body_id)
+                        {
+                            return handle;
+                        }
+                    }
+
+                    return Invalid_ID;
+                }
+
+                void get_rigid_body_collisions(const RigidBodyHandle handle,
+                                               std::vector<RigidBodyHandle>& collisions) const override
+                {
+                    const JPH::Body* body = rigid_bodies.at(handle);
+
+                    JPH::CollideShapeSettings settings = {};
+                    settings.mCollisionTolerance = 0.0f;
+                    settings.mMaxSeparationDistance = 0.0f;
+                    settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
+
+                    const JPH::Shape* shape = body->GetShape();
+
+                    const JPH::Vec3Arg shape_scale = JPH::Vec3Arg(1, 1, 1);
+                    // const JPH::Vec3Arg shape_scale = body->GetTransformedShape().GetShapeScale();
+
+                    const JPH::RVec3Arg base_offset = JPH::RVec3Arg(0, 0, 0);
+                    // const JPH::RVec3Arg base_offset = body->GetWorldTransform().GetTranslation();
+
+                    JPH::RMat44Arg center_of_mass_transform = body->GetCenterOfMassTransform();
+                    CollideShapeCollector collide_shape_collector;
+
+                    physics_system->GetNarrowPhaseQuery().CollideShape(shape, shape_scale, center_of_mass_transform,
+                                                                       settings, base_offset, collide_shape_collector);
+
+                    const std::vector<JPH::BodyID>& body_ids = collide_shape_collector.get_collisions();
+
+                    for (const JPH::BodyID& body_id : body_ids)
+                    {
+                        const RigidBodyHandle other_handle = find_body_with_id(body_id);
+                        if (other_handle != Invalid_ID && other_handle != handle)
+                        {
+                            collisions.push_back(other_handle);
+                        }
+                    }
                 }
 
                 const math::LineList& get_debug_line_list() const override
