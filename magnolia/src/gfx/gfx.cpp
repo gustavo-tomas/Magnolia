@@ -267,9 +267,9 @@ namespace mag
                 AccessMask::TransferRead, PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
             // Transition swapchain image to transfer
-            current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::TransferDst,
-                                                           AccessMask::None, AccessMask::TransferWrite,
-                                                           PipelineStage::TopOfPipe, PipelineStage::Transfer);
+            current_frame.command_buffer->pipeline_barrier(
+                swapchain_texture, TextureLayout::TransferDst, AccessMask::None, AccessMask::TransferWrite,
+                PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
             // Copy from the render target to the swapchain image
             current_frame.command_buffer->blit_texture(render_target.get(), swapchain_texture, Filter::Linear);
