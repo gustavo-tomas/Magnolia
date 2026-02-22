@@ -276,11 +276,16 @@ namespace game
 
         if (!init)
         {
-            const str file_path = "test_game/assets/models/enemy/native/Enemy.model.json";
-
             enemy_id = ecs.create_entity();
 
-            ecs.add_component<TransformComponent>(enemy_id, vec3(-40, 0, 0), quat(), vec3(10.0f));
+            const str file_path = "test_game/assets/models/enemy/native/Enemy.model.json";
+            const f32 mass = 1.0f;
+            const vec3 scale = vec3(10.0f);
+
+            Collider collider = BoxCollider(scale);
+
+            ecs.add_component<TransformComponent>(enemy_id, vec3(-40, scale.y, 0), quat(1, 0, 0, 0), scale);
+            ecs.add_component<RigidBodyComponent>(enemy_id, collider, mass);
             ecs.add_component<EnemyComponent>(enemy_id);
 
             mag::resource::get_model_async(
