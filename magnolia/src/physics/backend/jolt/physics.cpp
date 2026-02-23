@@ -140,12 +140,7 @@ namespace mag
                     }
                 }
 
-                static RigidBodyHandle create_handle()
-                {
-                    static RigidBodyHandle handle_counter = 0;
-
-                    return handle_counter++;
-                }
+                RigidBodyHandle create_handle() { return handle_counter++; }
 
                 RigidBodyHandle add_rigid_body_base(const JPH::ShapeSettings::ShapeResult& shape_result,
                                                     const math::vec3& position, const math::quat& rotation,
@@ -286,11 +281,6 @@ namespace mag
 
                 void on_update(const f32 dt) override
                 {
-                    // We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics
-                    // system.
-                    const f32 fixed_dt = 1.0f / 60.0f;
-                    static f32 accumulated_dt = 0.0f;
-
                     // Adjust collision steps according to the fixed dt
                     i32 collision_steps = 0;
 
@@ -312,7 +302,7 @@ namespace mag
                     }
 
                     // Render the world
-                    static JPH::BodyManager::DrawSettings settings = {};
+                    JPH::BodyManager::DrawSettings settings = {};
                     settings.mDrawShape = true;
                     settings.mDrawShapeWireframe = true;
 
@@ -536,6 +526,8 @@ namespace mag
                     rotation = physics::to_mag(rot);
                 }
 
+                f32 get_fixed_delta_time() const override { return fixed_dt; }
+
                 math::vec3 get_gravity() const override
                 {
                     const math::vec3 gravity = to_mag(physics_system->GetGravity());
@@ -598,6 +590,14 @@ namespace mag
                 }
 
             private:
+                // We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics
+                // system.
+                const f32 fixed_dt = 1.0f / 60.0f;
+
+                f32 accumulated_dt = 0.0f;
+
+                RigidBodyHandle handle_counter = 0;
+
                 unique<JPH::PhysicsSystem> physics_system = nullptr;
 
                 // Create mapping table from object layer to broadphase layer

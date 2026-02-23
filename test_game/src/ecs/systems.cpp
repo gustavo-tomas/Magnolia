@@ -55,11 +55,6 @@ namespace game
         {
             handle_movement(dt, scene, physics, *camera, *rigid_body);
             handle_shooting(scene, ecs, physics, *transform, dt);
-
-            if (mag::window::is_key_pressed(mag::Key::f))
-            {
-                mag::window::set_target_frame_rate(dt < 1.0f / 120.0f ? 120 : -1);
-            }
         }
     }
 
@@ -79,8 +74,9 @@ namespace game
     void handle_movement(const f32 dt, Scene& scene, mag::physics::IPhysicsWorld& physics,
                          PerspectiveCameraComponent& camera, RigidBodyComponent& rigid_body)
     {
-        // @TODO: this might return incorrect values if the user turns too fast (hit the edge of the window). A more
-        // precise solution might be needed to correctly calculate the mouse delta.
+        (void)dt;
+
+        const f32 physics_dt = physics.get_fixed_delta_time();
 
         // Handle mouse inputs first
         if (mag::window::is_key_pressed(mag::Key::Tab))
@@ -93,6 +89,9 @@ namespace game
             on_mouse_click(mag::Button::Right);
         }
 
+        // @TODO: this might return incorrect values if the user turns too fast (hit the edge of the window). A more
+        // precise solution might be needed to correctly calculate the mouse delta.
+
         if (mag::window::is_mouse_captured())
         {
             const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
@@ -100,8 +99,8 @@ namespace game
             const mag::math::vec2 mouse_delta = window_center - mouse_position;
 
             // Rotate
-            player.pitch += mouse_delta.y * player.mouse_sensitivity * dt;
-            player.yaw += mouse_delta.x * player.mouse_sensitivity * dt;
+            player.pitch += mouse_delta.y * player.mouse_sensitivity * physics_dt;
+            player.yaw += mouse_delta.x * player.mouse_sensitivity * physics_dt;
 
             mag::window::set_mouse_position(window_center.x, window_center.y);
         }
@@ -147,7 +146,7 @@ namespace game
             input_direction = normalize(input_direction);
 
             // Set horizontal velocity directly
-            mag::vec3 new_velocity = input_direction * player.walk_speed * dt;
+            mag::vec3 new_velocity = input_direction * player.walk_speed * physics_dt;
             new_velocity.y = velocity.y;  // Preserve vertical velocity
 
             physics.set_linear_velocity(rigid_body_handle, new_velocity);
@@ -269,6 +268,8 @@ namespace game
 
     void enemy_system(Scene& scene, const f32 dt)
     {
+        (void)dt;
+
         auto& ecs = scene.get_ecs();
         auto& physics = scene.get_physics_world();
 

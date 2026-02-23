@@ -70,6 +70,8 @@ namespace mag
                 virtual void set_activation_state(const RigidBodyHandle handle,
                                                   const ActivationState activation_state) = 0;
 
+                virtual f32 get_fixed_delta_time() const = 0;
+
                 virtual math::vec3 get_gravity() const = 0;
 
                 // Get linear velocity of a body
