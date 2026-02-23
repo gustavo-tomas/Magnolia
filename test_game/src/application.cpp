@@ -194,5 +194,15 @@ namespace game
                                                importer.import(file_path, out_file_path);
                                            }
                                        });
+
+        mag::console::register_command("set_fps",
+                                       [](const std::vector<str>& args)
+                                       {
+                                           for (const str& arg : args)
+                                           {
+                                               const i32 frame_rate = std::stoi(arg);
+                                               mag::window::set_target_frame_rate(frame_rate);
+                                           }
+                                       });
     }
 };  // namespace game
