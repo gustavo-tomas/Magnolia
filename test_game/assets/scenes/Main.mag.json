@@ -116,8 +116,9 @@
       },
       "RigidBodyComponent": {
         "Mass": 1.0,
-        "BoxCollider": {
-          "Dimensions": [10.0, 10.0, 5.0]
+        "CapsuleCollider": {
+          "Radius": 5.0,
+          "Height": 10.0
         }
       }
     }

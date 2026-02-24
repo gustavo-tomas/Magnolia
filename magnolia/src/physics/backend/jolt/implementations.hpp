@@ -87,16 +87,14 @@ namespace mag
                 {
                     (void)inLODScaleSq;
                     (void)inCullMode;
+                    (void)inWorldSpaceBounds;
 
                     // Figure out which LOD to use
                     const LOD* lod = inGeometry->mLODs.data();
 
-                    const JPH::Vec3 camera_position = JPH::Vec3(0.0f, 0.0f, 0.0f);
-
-                    // We don't care much about detail, so just set the lod scale to be as low as possible
-                    const f32 lod_scale = 0.0f;
-
-                    lod = &inGeometry->GetLOD(camera_position, inWorldSpaceBounds, lod_scale);
+                    // We don't care much about detail, so just get the lowest lod possible
+                    lod = &inGeometry->mLODs.back();
+                    // lod = &inGeometry->GetLOD(camera_position, inWorldSpaceBounds, inLODScaleSq);
 
                     // Draw the batch
                     const auto* batch = dynamic_cast<const BatchImpl*>(lod->mTriangleBatch.GetPtr());
