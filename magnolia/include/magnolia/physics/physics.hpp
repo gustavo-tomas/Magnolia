@@ -90,9 +90,12 @@ namespace mag
                 // Get angular velocity of a body
                 virtual math::vec3 get_angular_velocity(const RigidBodyHandle handle) const = 0;
 
-                // Get current transform of a collision object
-                virtual void get_collision_object_transform(const RigidBodyHandle handle, math::vec3& position,
-                                                            math::quat& rotation) const = 0;
+                virtual void get_position_and_rotation(const RigidBodyHandle handle, math::vec3& position,
+                                                       math::quat& rotation) const = 0;
+
+                virtual void get_position(const RigidBodyHandle handle, math::vec3& position) const = 0;
+
+                virtual void get_rotation(const RigidBodyHandle handle, math::quat& rotation) const = 0;
 
                 virtual void get_rigid_body_collisions(const RigidBodyHandle handle,
                                                        std::vector<RigidBodyHandle>& collisions) const = 0;

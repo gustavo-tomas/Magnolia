@@ -515,8 +515,8 @@ namespace mag
                     return physics::to_mag(velocity);
                 }
 
-                void get_collision_object_transform(const RigidBodyHandle handle, math::vec3& position,
-                                                    math::quat& rotation) const override
+                void get_position_and_rotation(const RigidBodyHandle handle, math::vec3& position,
+                                               math::quat& rotation) const override
                 {
                     auto it = rigid_bodies.find(handle);
                     if (it == rigid_bodies.end())
@@ -533,6 +533,40 @@ namespace mag
                     body_interface.GetPositionAndRotation(id, pos, rot);
 
                     position = physics::to_mag(pos);
+                    rotation = physics::to_mag(rot);
+                }
+
+                void get_position(const RigidBodyHandle handle, math::vec3& position) const override
+                {
+                    auto it = rigid_bodies.find(handle);
+                    if (it == rigid_bodies.end())
+                    {
+                        MAG_ASSERT(false, "Invalid rigidbody handle");
+                        return;
+                    }
+
+                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+
+                    const JPH::BodyID& id = it->second->GetID();
+                    const JPH::RVec3 pos = body_interface.GetPosition(id);
+
+                    position = physics::to_mag(pos);
+                }
+
+                void get_rotation(const RigidBodyHandle handle, math::quat& rotation) const override
+                {
+                    auto it = rigid_bodies.find(handle);
+                    if (it == rigid_bodies.end())
+                    {
+                        MAG_ASSERT(false, "Invalid rigidbody handle");
+                        return;
+                    }
+
+                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+
+                    const JPH::BodyID& id = it->second->GetID();
+                    const JPH::Quat rot = body_interface.GetRotation(id);
+
                     rotation = physics::to_mag(rot);
                 }
 

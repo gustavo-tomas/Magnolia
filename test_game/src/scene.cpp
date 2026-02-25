@@ -202,8 +202,8 @@ namespace game
         for (auto [transform, rigid_body] : objects)
         {
             // Object has default scale, so we don't copy it
-            physics_world->get_collision_object_transform(rigid_body->rigid_body_handle, transform->translation,
-                                                          transform->rotation);
+            physics_world->get_position_and_rotation(rigid_body->rigid_body_handle, transform->translation,
+                                                     transform->rotation);
         }
 
         // Update scripts

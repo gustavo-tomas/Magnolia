@@ -153,11 +153,11 @@ namespace game
         }
 
         // Update the camera transform
-        mag::quat new_rot = mag::quat();
-        mag::vec3 new_pos(0.0f);
-        physics.get_collision_object_transform(rigid_body_handle, new_pos, new_rot);
-        new_rot = vec3(player.pitch, player.yaw, 0.0f);
+        mag::quat new_rot = mag::quat({player.pitch, player.yaw, 0.0f});
         new_rot = mag::math::normalize(new_rot);
+
+        mag::vec3 new_pos(0.0f);
+        physics.get_position(rigid_body_handle, new_pos);
 
         camera.camera.set_rotation(new_rot);
         camera.camera.set_position(new_pos + forward * player.camera_offset);
