@@ -14,6 +14,7 @@
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Body/MotionProperties.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -431,9 +432,13 @@ namespace mag
                     body_interface.SetAngularVelocity(it->second->GetID(), physics::from_mag(velocity));
                 }
 
-                void set_angular_factor(const RigidBodyHandle handle, const math::vec3& axes) override
+                void set_degrees_of_freedom(const RigidBodyHandle handle, const DegreesOfFreedom dof) override
                 {
-                    (void)axes;
+                    MAG_ASSERT(dof != static_cast<DegreesOfFreedom>(0), "[Physics] DegreesOfFreedom can't be 0.");
+                    if (dof == static_cast<DegreesOfFreedom>(0))
+                    {
+                        return;
+                    }
 
                     auto it = rigid_bodies.find(handle);
                     if (it == rigid_bodies.end())
@@ -442,8 +447,13 @@ namespace mag
                         return;
                     }
 
-                    // @TODO: idk
-                    MAG_ASSERT(false, "@TODO");
+                    JPH::Body* body = it->second;
+
+                    JPH::MotionProperties* motion_properties = body->GetMotionProperties();
+
+                    JPH::MassProperties mass_properties;
+                    mass_properties.ScaleToMass(1.0f / motion_properties->GetInverseMass());
+                    motion_properties->SetMassProperties(from_mag(dof), mass_properties);
                 }
 
                 void set_activation_state(const RigidBodyHandle handle, const ActivationState activation_state) override

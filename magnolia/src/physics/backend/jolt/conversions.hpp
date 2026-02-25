@@ -4,10 +4,11 @@
 #include <Jolt/Jolt.h>
 //
 #include <Jolt/Core/Color.h>
+#include <Jolt/Physics/Body/MotionProperties.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
-#include "magnolia/core/assert.hpp"
 #include "magnolia/math/types.hpp"
+#include "magnolia/physics/physics.hpp"
 
 namespace mag
 {
@@ -66,6 +67,78 @@ namespace mag
                 out_triangles[i].mV[2].y = triangles[i].v2.y;
                 out_triangles[i].mV[2].z = triangles[i].v2.z;
             }
+        }
+
+        inline JPH::EAllowedDOFs from_mag(const DegreesOfFreedom dof)
+        {
+            JPH::EAllowedDOFs jolt_dof = {};
+
+            if (IS_BIT_SET(dof, DegreesOfFreedom::TranslationX))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::TranslationX;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::TranslationY))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::TranslationY;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::TranslationZ))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::TranslationZ;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::RotationX))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::RotationX;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::RotationY))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::RotationY;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::RotationZ))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::RotationZ;
+            }
+            if (IS_BIT_SET(dof, DegreesOfFreedom::All))
+            {
+                jolt_dof |= JPH::EAllowedDOFs::All;
+            }
+
+            return jolt_dof;
+        }
+
+        inline DegreesOfFreedom to_mag(const JPH::EAllowedDOFs dof)
+        {
+            DegreesOfFreedom mag_dof = {};
+
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::TranslationX))
+            {
+                mag_dof |= DegreesOfFreedom::TranslationX;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::TranslationY))
+            {
+                mag_dof |= DegreesOfFreedom::TranslationY;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::TranslationZ))
+            {
+                mag_dof |= DegreesOfFreedom::TranslationZ;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::RotationX))
+            {
+                mag_dof |= DegreesOfFreedom::RotationX;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::RotationY))
+            {
+                mag_dof |= DegreesOfFreedom::RotationY;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::RotationZ))
+            {
+                mag_dof |= DegreesOfFreedom::RotationZ;
+            }
+            if (IS_BIT_SET(dof, JPH::EAllowedDOFs::All))
+            {
+                mag_dof |= DegreesOfFreedom::All;
+            }
+
+            return mag_dof;
         }
     };  // namespace physics
 };  // namespace mag

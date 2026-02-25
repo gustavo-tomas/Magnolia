@@ -13,6 +13,17 @@ namespace mag
         Deactivate
     };
 
+    enum class DegreesOfFreedom : u8
+    {
+        TranslationX = 1 << 0,
+        TranslationY = 1 << 1,
+        TranslationZ = 1 << 2,
+        RotationX = 1 << 3,
+        RotationY = 1 << 4,
+        RotationZ = 1 << 5,
+        All = (1 << 6) - 1,
+    };
+
     namespace physics
     {
         b8 initialize();
@@ -64,7 +75,7 @@ namespace mag
                 virtual void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) = 0;
 
                 // Set body angular factor
-                virtual void set_angular_factor(const RigidBodyHandle handle, const math::vec3& axes) = 0;
+                virtual void set_degrees_of_freedom(const RigidBodyHandle handle, const DegreesOfFreedom dof) = 0;
 
                 // Set body activation state
                 virtual void set_activation_state(const RigidBodyHandle handle,
@@ -94,3 +105,5 @@ namespace mag
         MAG_API unique<IPhysicsWorld> create_physics_world();
     };  // namespace physics
 };  // namespace mag
+
+ENABLE_BITMASK_OPERATORS(mag::DegreesOfFreedom);
