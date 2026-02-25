@@ -74,7 +74,6 @@ namespace mag
                 // Set body angular velocity
                 virtual void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) = 0;
 
-                // Set body angular factor
                 virtual void set_degrees_of_freedom(const RigidBodyHandle handle, const DegreesOfFreedom dof) = 0;
 
                 // Set body activation state
