@@ -76,6 +76,19 @@ namespace game
     {
         (void)dt;
 
+        // @TODO: quick hack to set dof
+
+        static b8 init = false;
+        if (!init)
+        {
+            const mag::DegreesOfFreedom dof = mag::DegreesOfFreedom::TranslationX |
+                                              mag::DegreesOfFreedom::TranslationY | mag::DegreesOfFreedom::TranslationZ;
+
+            physics.set_degrees_of_freedom(rigid_body.rigid_body_handle, dof);
+
+            init = true;
+        }
+
         const f32 physics_dt = physics.get_fixed_delta_time();
 
         // Handle mouse inputs first
@@ -107,7 +120,7 @@ namespace game
 
         const mag::RigidBodyHandle rigid_body_handle = rigid_body.rigid_body_handle;
 
-        // Reset velocity for X and Z axes
+        // Reset linear velocity for X and Z axes
         vec3 new_velocity = physics.get_linear_velocity(rigid_body_handle);
         new_velocity.x = 0.0f;
         new_velocity.z = 0.0f;
