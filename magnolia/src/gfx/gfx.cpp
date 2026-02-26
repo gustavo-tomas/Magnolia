@@ -142,15 +142,15 @@ namespace mag
 
                 IDescriptorPoolSizeDesc size_desc_uniform = {};
                 size_desc_uniform.type = DescriptorType::Uniform;
-                size_desc_uniform.size = 64;
+                size_desc_uniform.count = 64;
 
                 IDescriptorPoolSizeDesc size_desc_storage = {};
                 size_desc_storage.type = DescriptorType::Storage;
-                size_desc_storage.size = 4 * 1024 * 1024;
+                size_desc_storage.count = 4 * 1024 * 1024;
 
                 IDescriptorPoolSizeDesc size_desc_combined_sampler = {};
                 size_desc_combined_sampler.type = DescriptorType::CombinedImageSampler;
-                size_desc_combined_sampler.size = 2 * 1024;
+                size_desc_combined_sampler.count = 2 * 1024;
 
                 descriptor_pool_desc.size_descs.push_back(size_desc_uniform);
                 descriptor_pool_desc.size_descs.push_back(size_desc_storage);

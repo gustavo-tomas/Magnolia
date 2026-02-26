@@ -132,7 +132,7 @@ namespace mag
 
         struct IDescriptorPoolSizeDesc
         {
-                u32 size;
+                u32 count;
                 DescriptorType type;
         };
 

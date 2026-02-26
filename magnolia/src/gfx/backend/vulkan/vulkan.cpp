@@ -433,7 +433,7 @@ namespace mag
                     {
                         VkDescriptorPoolSize pool_size = {};
                         pool_size.type = mag_to_vk(size_desc.type);
-                        pool_size.descriptorCount = size_desc.size;
+                        pool_size.descriptorCount = size_desc.count;
 
                         pool_sizes.push_back(pool_size);
                     }
