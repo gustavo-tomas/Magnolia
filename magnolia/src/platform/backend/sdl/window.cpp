@@ -317,10 +317,17 @@ namespace mag
                 return false;
             }
 
-            SDL_SetWindowIcon(state->handle, icon);
+            b8 result = true;
+
+            if (!SDL_SetWindowIcon(state->handle, icon))
+            {
+                LOG_ERROR("Failed to set application icon: '{0}'", SDL_GetError());
+                result = false;
+            }
+
             SDL_DestroySurface(icon);
 
-            return true;
+            return result;
         }
 
         void set_capture_mouse(const b8 capture)
