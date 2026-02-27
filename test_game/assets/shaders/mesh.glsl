@@ -13,26 +13,32 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 	uint light_count;
 } u_global;
 
+// Model buffer
+layout (std140, set = 0, binding = 1) readonly buffer ModelBuffer
+{
+	ModelData models[];
+} u_model;
+
 // Instance buffer
-layout (std140, set = 0, binding = 1) readonly buffer InstanceBuffer
+layout (std140, set = 0, binding = 2) readonly buffer InstanceBuffer
 {
     MeshData meshes[];
 } u_instance;
 
 // Light buffer
-layout (std140, set = 0, binding = 2) readonly buffer LightBuffer
+layout (std140, set = 0, binding = 3) readonly buffer LightBuffer
 {
     LightData lights[];
 } u_light;
 
 // Material buffer
-layout (std140, set = 0, binding = 3) readonly buffer MaterialBuffer
+layout (std140, set = 0, binding = 4) readonly buffer MaterialBuffer
 {
     MaterialData materials[];
 } u_material;
 
 // Material textures
-layout (set = 0, binding = 4) uniform sampler2D u_material_textures[];
+layout (set = 0, binding = 5) uniform sampler2D u_material_textures[];
 
 #define VIEW_MATRIX u_global.camera.view
 #define PROJ_MATRIX u_global.camera.projection
@@ -53,8 +59,9 @@ layout (location = 4) out mat3 out_tbn;
 
 void main()
 {
-	mat4 model_matrix = u_instance.meshes[gl_InstanceIndex].model;
+	uint model_idx = u_instance.meshes[gl_InstanceIndex].model_idx;
 	uint material_idx = u_instance.meshes[gl_InstanceIndex].material_idx;
+	mat4 model_matrix = u_model.models[model_idx].model;
 
 	gl_Position = PROJ_MATRIX * VIEW_MATRIX * model_matrix * vec4(in_position, 1.0);
 	out_frag_position = vec3(model_matrix * vec4(in_position, 1.0));

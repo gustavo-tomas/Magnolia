@@ -26,9 +26,14 @@ struct alignas(16) CameraData
         mat4 projection;  // 64 bytes (16 x 4)
 };
 
+struct alignas(16) ModelData
+{
+        mat4 model;
+};
+
 struct alignas(16) MeshData
 {
-        mat4 model;        // 64 bytes (16 x 4)
+        u32 model_idx;     // 4 bytes
         u32 material_idx;  // 4 bytes
 };
 
