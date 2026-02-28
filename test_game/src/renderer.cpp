@@ -106,6 +106,7 @@ namespace game
             mag::gfx::set_uniform("u_light", &light_data, light_num++);
         }
 
+        u32 model_offset = 0;
         u32 mesh_offset = 0;
         u32 material_offset = 0;
         u32 texture_offset = 0;
@@ -119,13 +120,18 @@ namespace game
             mag::gfx::bind_vertex_buffer(vertex_buffer_handles[model_name]);
             mag::gfx::bind_index_buffer(index_buffer_handles[model_name]);
 
+            ModelData model_data = {};
+            model_data.model = transform->get_transformation_matrix();
+
+            mag::gfx::set_uniform("u_model", &model_data, model_offset);
+
             u32 mesh_materials_bound = 0;
             u32 last_bound_material_idx = Max_U32;
             for (auto& mesh : model->meshes)
             {
                 // Instance
                 MeshData mesh_data = {};
-                mesh_data.model = transform->get_transformation_matrix();
+                mesh_data.model_idx = model_offset;
                 mesh_data.material_idx = mesh.material_index + material_offset;
 
                 // Set the material. The meshes are sorted by material index (see model loader), so we draw all
@@ -179,6 +185,7 @@ namespace game
             }
 
             material_offset += mesh_materials_bound;
+            model_offset++;
         }
     }
 
