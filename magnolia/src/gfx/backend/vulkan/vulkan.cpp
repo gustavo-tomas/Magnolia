@@ -1492,6 +1492,27 @@ namespace mag
                     return create_unique<VulkanSampler>(desc, &disp);
                 }
 
+                DescriptorLimits get_descriptor_limits() const override
+                {
+                    VkPhysicalDeviceProperties2 properties = {};
+                    properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+
+                    inst_disp.getPhysicalDeviceProperties2(device.physical_device, &properties);
+
+                    DescriptorLimits limits = {};
+
+                    limits.max_per_stage_combined_image_samplers =
+                        properties.properties.limits.maxPerStageDescriptorSamplers;
+
+                    limits.max_per_stage_storage_buffers =
+                        properties.properties.limits.maxPerStageDescriptorStorageBuffers;
+
+                    limits.max_per_stage_uniform_buffers =
+                        properties.properties.limits.maxPerStageDescriptorUniformBuffers;
+
+                    return limits;
+                }
+
             private:
                 vkb::Instance instance;
                 vkb::Device device;

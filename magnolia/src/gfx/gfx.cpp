@@ -140,17 +140,19 @@ namespace mag
                 IDescriptorPoolDesc descriptor_pool_desc = {};
                 descriptor_pool_desc.max_sets = 1024;
 
+                const DescriptorLimits limits = state->device->get_descriptor_limits();
+
                 IDescriptorPoolSizeDesc size_desc_uniform = {};
                 size_desc_uniform.type = DescriptorType::Uniform;
-                size_desc_uniform.count = 64;
+                size_desc_uniform.count = limits.max_per_stage_uniform_buffers * 4;
 
                 IDescriptorPoolSizeDesc size_desc_storage = {};
                 size_desc_storage.type = DescriptorType::Storage;
-                size_desc_storage.count = 4 * 1024 * 1024;
+                size_desc_storage.count = limits.max_per_stage_storage_buffers * 4;
 
                 IDescriptorPoolSizeDesc size_desc_combined_sampler = {};
                 size_desc_combined_sampler.type = DescriptorType::CombinedImageSampler;
-                size_desc_combined_sampler.count = 2 * 1024;
+                size_desc_combined_sampler.count = limits.max_per_stage_combined_image_samplers * 4;
 
                 descriptor_pool_desc.size_descs.push_back(size_desc_uniform);
                 descriptor_pool_desc.size_descs.push_back(size_desc_storage);

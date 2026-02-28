@@ -177,6 +177,13 @@ namespace mag
                 f32 max_anisotropy = 0.0f;
         };
 
+        struct DescriptorLimits
+        {
+                u32 max_per_stage_combined_image_samplers;
+                u32 max_per_stage_uniform_buffers;
+                u32 max_per_stage_storage_buffers;
+        };
+
         class ISampler
         {
             public:
@@ -435,6 +442,8 @@ namespace mag
                 virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) const = 0;
 
                 virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) const = 0;
+
+                virtual DescriptorLimits get_descriptor_limits() const = 0;
         };
 
         unique<IDevice> create_device();
