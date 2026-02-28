@@ -7,7 +7,7 @@
 
 // Including unbounded arrays
 // @TODO: these values should be retrieved from the renderer backend
-const u32 Max_Descriptor_Array_Size = 2 * 1024;  // maxPerStageDescriptorSamplers
+const u32 Max_Sampler_Array_Size = 1024;         // maxPerStageDescriptorSamplers
 const u32 Max_SSBO_Size_Byte = 4 * 1024 * 1024;  // maxPerStageDescriptorStorageBuffers
 
 namespace mag
@@ -47,11 +47,8 @@ namespace mag
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
         };
 
-        static const std::unordered_map<SpvReflectDescriptorType, u64> descriptor_type_array_size_map = {
-            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Descriptor_Array_Size},
-        };
-
-        static const std::unordered_map<SpvReflectDescriptorType, u64> descriptor_type_size_bytes_map = {
+        static const std::unordered_map<SpvReflectDescriptorType, u64> max_descriptor_count_map = {
+            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Sampler_Array_Size},
             {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Size_Byte},
         };
 
@@ -236,13 +233,13 @@ namespace mag
                             {
                                 binding.variable_count = true;
                             }
-                            binding.count = descriptor_type_array_size_map.at(spv_binding->descriptor_type);
+                            binding.count = max_descriptor_count_map.at(spv_binding->descriptor_type);
                         }
 
                         // Storage buffers count also needs to be set manually
                         if (binding.descriptor_type == ShaderResourceDescriptorType::Storage)
                         {
-                            const u64 size_bytes = descriptor_type_size_bytes_map.at(spv_binding->descriptor_type);
+                            const u64 size_bytes = max_descriptor_count_map.at(spv_binding->descriptor_type);
                             binding.count = size_bytes / binding.block_size_bytes;
                         }
 
