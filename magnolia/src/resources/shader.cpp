@@ -5,11 +5,6 @@
 #include "magnolia/platform/file_system.hpp"
 #include "spirv_reflect.h"
 
-// Including unbounded arrays
-// @TODO: these values should be retrieved from the renderer backend
-const u32 Max_Sampler_Array_Size = 1024;         // maxPerStageDescriptorSamplers
-const u32 Max_SSBO_Size_Byte = 4 * 1024 * 1024;  // maxPerStageDescriptorStorageBuffers
-
 namespace mag
 {
     namespace resource
@@ -45,11 +40,6 @@ namespace mag
             {SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ShaderResourceDescriptorType::Uniform},
             {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, ShaderResourceDescriptorType::Storage},
             {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
-        };
-
-        static const std::unordered_map<SpvReflectDescriptorType, u64> max_descriptor_count_map = {
-            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Max_Sampler_Array_Size},
-            {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, Max_SSBO_Size_Byte},
         };
 
         static const std::unordered_map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
@@ -219,28 +209,29 @@ namespace mag
                         binding.count = spv_binding->count;
                         binding.block_size_bytes = block_size;
                         binding.name = spv_binding->name;
+                        binding.variable_count = false;
+                        binding.unbounded = false;
                         binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
 
                         // Set the correct values for descriptor count and max binding size.
                         // We need to to this because spv is a little confused and can't process arrays
-                        // correctly
+                        // correctly. Unbounded arrays count will be decided on the gfx side.
 
-                        // Check if binding is an array
-                        if (spv_binding->array.dims_count > 0)
+                        // Assume that arrays with count = 1 are variable count (@TODO: this is just a fix)
+                        b8 is_unbounded_array = spv_binding->array.dims_count > 0;
+
+                        // Storage buffers are assume unbounded (@TODO: this assumes that bounded SSBO block members are
+                        // also unbounded)
+                        b8 is_ssbo = binding.descriptor_type == ShaderResourceDescriptorType::Storage;
+
+                        if (is_unbounded_array || is_ssbo)
                         {
-                            // Assume that arrays with count = 1 are variable count
-                            if (binding.count == 1)
-                            {
-                                binding.variable_count = true;
-                            }
-                            binding.count = max_descriptor_count_map.at(spv_binding->descriptor_type);
+                            binding.unbounded = true;
                         }
 
-                        // Storage buffers count also needs to be set manually
-                        if (binding.descriptor_type == ShaderResourceDescriptorType::Storage)
+                        if (is_unbounded_array && j == spv_descriptor_set.binding_count - 1)
                         {
-                            const u64 size_bytes = max_descriptor_count_map.at(spv_binding->descriptor_type);
-                            binding.count = size_bytes / binding.block_size_bytes;
+                            binding.variable_count = true;
                         }
 
                         descriptor.bindings.push_back(binding);

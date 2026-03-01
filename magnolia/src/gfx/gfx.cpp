@@ -70,6 +70,37 @@ namespace mag
                 ShaderHandle current_bound_shader = Invalid_ID;
         };
 
+        // @TODO: hardcoded values
+        static u64 get_descriptor_binding_count(const ShaderResourceBindingData& binding)
+        {
+            if (!binding.unbounded)
+            {
+                return binding.count;
+            }
+
+            switch (binding.descriptor_type)
+            {
+                case ShaderResourceDescriptorType::CombinedImageSampler:
+                {
+                    return 1024;
+                }
+                break;
+
+                case ShaderResourceDescriptorType::Storage:
+                {
+                    return (4ULL * 1024 * 1024) / binding.block_size_bytes;
+                }
+                break;
+
+                default:
+                {
+                    MAG_ASSERT(false, "Invalid descriptor type");
+                    return 0;
+                }
+                break;
+            }
+        }
+
         static GfxState* state = nullptr;
 
         b8 initialize(const GfxOptions& options)
@@ -559,15 +590,17 @@ namespace mag
             std::unordered_map<str, BindingData> bindings_map;
 
             // @TODO: this is hardcoded to make my life easier. this is assuming that a descriptor will be used both in
-            // the vertex and fragment shaders.
+            // the vertex and fragment shaders stages.
             for (const ShaderResourceDescriptorData& descriptor :
                  shader.stages.at(ShaderResourceStage::Vertex).descriptors)
             {
                 for (const ShaderResourceBindingData& binding : descriptor.bindings)
                 {
+                    const u32 binding_count = get_descriptor_binding_count(binding);
+
                     IDescriptorSetLayoutBindingDesc binding_desc = {};
                     binding_desc.binding = binding.binding;
-                    binding_desc.descriptor_count = binding.count;
+                    binding_desc.descriptor_count = binding_count;
                     binding_desc.variable_descriptor_count = binding.variable_count;
                     binding_desc.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
 
@@ -579,12 +612,12 @@ namespace mag
                     BindingData binding_data = {};
                     binding_data.binding = binding.binding;
                     binding_data.block_size = binding.block_size_bytes;
-                    binding_data.max_size_bytes = binding.count * binding.block_size_bytes;
+                    binding_data.max_size_bytes = binding_count * binding.block_size_bytes;
                     binding_data.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
 
                     if (binding.variable_count)
                     {
-                        max_variable_descriptor_count = math::max(max_variable_descriptor_count, binding.count);
+                        max_variable_descriptor_count = math::max(max_variable_descriptor_count, binding_count);
                     }
 
                     bindings_map[binding.name] = binding_data;

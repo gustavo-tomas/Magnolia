@@ -55,6 +55,7 @@ namespace mag
             u32 count;
             u64 block_size_bytes;
             b8 variable_count;
+            b8 unbounded;
             str name;
             ShaderResourceDescriptorType descriptor_type;
     };
