@@ -1002,7 +1002,7 @@ namespace mag
                     disp->cmdBeginRendering(command_buffer, rendering_info);
                 }
 
-                void end_rendering() const override { disp->cmdEndRenderingKHR(command_buffer); }
+                void end_rendering() const override { disp->cmdEndRendering(command_buffer); }
 
                 void bind_pipeline(const IGraphicsPipeline* const pipeline) const override
                 {
@@ -1315,9 +1315,9 @@ namespace mag
 
                     window::create_surface(static_cast<void*>(&instance.instance), static_cast<void*>(&surface));
 
-                    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_feature = {};
-                    dynamic_rendering_feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-                    dynamic_rendering_feature.dynamicRendering = 1u;
+                    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_features = {};
+                    dynamic_rendering_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+                    dynamic_rendering_features.dynamicRendering = 1u;
 
                     VkPhysicalDeviceDescriptorIndexingFeatures descriptor_indexing_features = {};
                     descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
@@ -1335,17 +1335,15 @@ namespace mag
                     const vkb::Result<vkb::PhysicalDevice> phys_device_ret =
                         phys_device_selector.set_minimum_version(vulkan_major_version, vulkan_minor_version)
                             .set_surface(surface)
-                            .add_required_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)
-                            .add_required_extension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)
                             .add_required_extension_features(descriptor_indexing_features)
+                            .add_required_extension_features(dynamic_rendering_features)
                             .select();
 
                     MAG_ASSERT(phys_device_ret, "{}", phys_device_ret.error().message());
 
                     const vkb::PhysicalDevice& physical_device = phys_device_ret.value();
                     vkb::DeviceBuilder device_builder{physical_device};
-                    const vkb::Result<vkb::Device> device_ret =
-                        device_builder.add_pNext(&dynamic_rendering_feature).build();
+                    const vkb::Result<vkb::Device> device_ret = device_builder.build();
 
                     MAG_ASSERT(device_ret, "{}", device_ret.error().message());
 

@@ -9,12 +9,16 @@ using namespace mag::math;
 
 #else
 
-// See this: https://developer.nvidia.com/vulkan-shader-resource-binding
+    // See this: https://developer.nvidia.com/vulkan-shader-resource-binding
     #extension GL_EXT_nonuniform_qualifier : require
+
+    // https://www.lunarg.com/how-to-use-vulkan-debug-printf/
+    #extension GL_EXT_debug_printf : enable
 
     #define f32 float
     #define u32 uint
     #define alignas(x)
+    #define printf debugPrintfEXT
 
 #endif
 
