@@ -35,7 +35,7 @@ class Debug : public ScriptableEntity
         void on_render(const f32 dt) override
         {
             draw_colliders(dt);
-            // draw_floor(dt);
+            draw_floor(dt);
             draw_text(dt);
         }
 

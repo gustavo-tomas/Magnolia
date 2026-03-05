@@ -52,7 +52,7 @@ namespace game
 
         render_sprites(scene);
         render_models(scene);
-        render_grass(scene);
+        // render_grass(scene);
         render_text(scene);
         scene.on_render(dt);
 
