@@ -4,19 +4,22 @@
 
 namespace mag
 {
-    // Keep this hidden from the user to avoid messing with pid values and allthat
-    struct Process;
+    using ProcessHandle = u32;
 
     namespace thread
     {
-        // Starts a process. Returns nullptr on error.
-        // The user is responsible to end the process and any allocated memory.
-        Process* start_process(const str& process_path);
+        b8 initialize_process_manager();
 
-        // Kills an existing process. The process will be deleted, so its advised to set the variable as null.
-        b8 kill_process(Process* process);
+        void shutdown_process_manager();
+
+        // Starts a process. Returns invalid id on error.
+        // The user is responsible to end the process.
+        MAG_API ProcessHandle start_process(const str& process_path);
+
+        // Kills an existing process.
+        MAG_API b8 kill_process(const ProcessHandle handle);
 
         // Checks if a process is running. Invalid process are considered to not be running.
-        b8 is_process_running(Process* process);
+        MAG_API b8 is_process_running(const ProcessHandle handle);
     };  // namespace thread
 };  // namespace mag

@@ -1,6 +1,9 @@
 #include "magnolia/threads/process_manager.hpp"
 
+#include <unordered_map>
+
 #include "magnolia/core/logger.hpp"
+#include "magnolia/core/types.hpp"
 #include "magnolia/platform/file_system.hpp"
 
 #if MAG_PLATFORM_LINUX
@@ -11,58 +14,84 @@
 
 namespace mag
 {
-    struct Process
-    {
-            pid_t pid = -1;
-            str path;
-    };
-
     namespace thread
     {
-        Process* start_process(const str& process_path)
+        struct Process
+        {
+                pid_t pid = -1;
+                str path;
+        };
+
+        struct ProcessManagerState
+        {
+                std::unordered_map<ProcessHandle, Process> processes;
+                ProcessHandle handle_counter = 0;
+        };
+
+        static ProcessManagerState* state = nullptr;
+
+        b8 initialize_process_manager()
+        {
+            state = new ProcessManagerState();
+
+            return state != nullptr;
+        }
+
+        void shutdown_process_manager() { delete state; }
+
+        static ProcessHandle create_handle() { return state->handle_counter++; }
+
+        ProcessHandle start_process(const str& process_path)
         {
             if (!fs::exists(process_path))
             {
                 LOG_ERROR("Process executable not found: '{0}'", process_path);
-                return nullptr;
+                return Invalid_ID;
             }
 
             const i32 pid = fork();
             if (pid < 0)
             {
                 LOG_ERROR("Fork failed when creating the process: '{0}'", process_path);
-                return nullptr;
+                return Invalid_ID;
             }
 
             // Child process
             if (pid == 0)
             {
                 // Child process
-                execl(process_path.c_str(), process_path.c_str(), nullptr);
+                execl(process_path.c_str(), process_path.c_str(), Invalid_ID);
 
                 // If execl returns, it failed
                 exit(EXIT_FAILURE);
             }
 
             // Parent process
-            Process* process = new Process();
-            process->pid = pid;
-            process->path = process_path;
+            Process process = {};
+            process.pid = pid;
+            process.path = process_path;
 
-            return process;
+            const ProcessHandle handle = create_handle();
+
+            state->processes[handle] = process;
+
+            return handle;
         }
 
-        b8 kill_process(Process* process)
+        b8 kill_process(const ProcessHandle handle)
         {
-            if (process == nullptr)
+            auto it = state->processes.find(handle);
+            if (it == state->processes.end())
             {
                 return false;
             }
 
-            const i32 pid = process->pid;
-            const str path = process->path;
+            Process& process = it->second;
 
-            delete process;
+            const i32 pid = process.pid;
+            const str path = process.path;
+
+            state->processes.erase(it);
 
             // Try to end the process
             if (pid < 0 || kill(pid, SIGKILL) != 0)
@@ -82,10 +111,18 @@ namespace mag
             return true;
         }
 
-        b8 is_process_running(Process* process)
+        b8 is_process_running(const ProcessHandle handle)
         {
+            auto it = state->processes.find(handle);
+            if (it == state->processes.end())
+            {
+                return false;
+            }
+
+            Process& process = it->second;
+
             // Send signal 0 to check if process exists
-            if ((process == nullptr) || kill(process->pid, 0) != 0)
+            if (kill(process.pid, 0) != 0)
             {
                 // Process doesn't exist anymore
                 return false;
@@ -93,10 +130,10 @@ namespace mag
 
             // Check if its a zombie process
             i32 status = -1;
-            const i32 result = waitpid(process->pid, &status, WNOHANG);
+            const i32 result = waitpid(process.pid, &status, WNOHANG);
 
             // Process has terminated
-            if (result == process->pid)
+            if (result == process.pid)
             {
                 return false;
             }
@@ -108,7 +145,7 @@ namespace mag
             }
 
             // Error occurred
-            LOG_ERROR("Error during process running check: Path: '{0}' - Error: {1}", process->path, errno);
+            LOG_ERROR("Error during process running check: Path: '{0}' - Error: {1}", process.path, errno);
             return false;
         }
     };  // namespace thread

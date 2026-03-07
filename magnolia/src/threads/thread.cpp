@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "magnolia/threads/job_system.hpp"
+#include "magnolia/threads/process_manager.hpp"
 
 namespace mag
 {
@@ -13,12 +14,19 @@ namespace mag
         b8 initialize()
         {
             const u32 max_number_of_threads = std::thread::hardware_concurrency();
-            const b8 initialized = initialize_job_system(max_number_of_threads);
+
+            b8 initialized = false;
+            initialized |= initialize_job_system(max_number_of_threads);
+            initialized |= initialize_process_manager();
 
             return initialized;
         }
 
-        void shutdown() { shutdown_job_system(); }
+        void shutdown()
+        {
+            shutdown_process_manager();
+            shutdown_job_system();
+        }
 
         u32 get_core_count() { return std::thread::hardware_concurrency(); }
 
