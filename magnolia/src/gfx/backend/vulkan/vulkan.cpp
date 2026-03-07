@@ -69,7 +69,7 @@ namespace mag
         class VulkanFence : public IFence
         {
             public:
-                VulkanFence(const IFenceDesc& desc, const vkb::DispatchTable* disp = nullptr) : disp(disp)
+                VulkanFence(const IFenceDesc& desc, const vkb::DispatchTable* disp) : disp(disp)
                 {
                     VkFenceCreateInfo fence_info = {};
                     fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -159,7 +159,7 @@ namespace mag
         class VulkanSampler : public ISampler
         {
             public:
-                VulkanSampler(const ISamplerDesc& desc, const vkb::DispatchTable* disp = nullptr) : disp(disp)
+                VulkanSampler(const ISamplerDesc& desc, const vkb::DispatchTable* disp) : disp(disp)
                 {
                     VkSamplerCreateInfo sampler_info = {};
                     sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -425,8 +425,7 @@ namespace mag
         class VulkanDescriptorPool : public IDescriptorPool
         {
             public:
-                VulkanDescriptorPool(const IDescriptorPoolDesc& desc, const vkb::DispatchTable* disp = nullptr)
-                    : disp(disp)
+                VulkanDescriptorPool(const IDescriptorPoolDesc& desc, const vkb::DispatchTable* disp) : disp(disp)
                 {
                     std::vector<VkDescriptorPoolSize> pool_sizes;
                     for (const IDescriptorPoolSizeDesc& size_desc : desc.size_descs)
@@ -462,8 +461,7 @@ namespace mag
         class VulkanDescriptorSetLayout : public IDescriptorSetLayout
         {
             public:
-                VulkanDescriptorSetLayout(const IDescriptorSetLayoutDesc& desc,
-                                          const vkb::DispatchTable* disp = nullptr)
+                VulkanDescriptorSetLayout(const IDescriptorSetLayoutDesc& desc, const vkb::DispatchTable* disp)
                     : disp(disp)
                 {
                     std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -517,7 +515,7 @@ namespace mag
         class VulkanDescriptorSet : public IDescriptorSet
         {
             public:
-                VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable* disp = nullptr)
+                VulkanDescriptorSet(const IDescriptorSetDesc& desc, const vkb::DispatchTable* disp)
                     : disp(disp),
                       parent_pool(dynamic_cast<const VulkanDescriptorPool* const>(desc.descriptor_pool)->get_pool())
                 {
