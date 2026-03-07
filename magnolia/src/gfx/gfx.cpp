@@ -579,6 +579,7 @@ namespace mag
             // -------------------------------------------------------------------------------------------------
 
             const ShaderHandle handle = create_handle();
+            ShaderData& shader_data = state->shaders[handle];
 
             // Descriptor set layout
             IDescriptorSetLayoutDesc descriptor_layout_desc = {};
@@ -621,22 +622,20 @@ namespace mag
                 }
             }
 
-            state->shaders[handle].descriptor_layout =
-                state->device->create_descriptor_set_layout(descriptor_layout_desc);
+            shader_data.descriptor_layout = state->device->create_descriptor_set_layout(descriptor_layout_desc);
 
-            const unique<IDescriptorSetLayout>& descriptor_layout = state->shaders[handle].descriptor_layout;
+            const unique<IDescriptorSetLayout>& descriptor_layout = shader_data.descriptor_layout;
 
             // Descriptor set
 
-            for (u32 i = 0; i < state->frames.size(); i++)
+            for (FrameData& frame : state->frames)
             {
                 IDescriptorSetDesc descriptor_desc = {};
                 descriptor_desc.descriptor_layout = descriptor_layout.get();
-                descriptor_desc.descriptor_pool = state->frames[i].descriptor_pool.get();
+                descriptor_desc.descriptor_pool = frame.descriptor_pool.get();
                 descriptor_desc.max_variable_descriptor_count = max_variable_descriptor_count;
 
-                state->frames[i].descriptor_set_map[handle].descriptor_set =
-                    state->device->create_descriptor_set(descriptor_desc);
+                frame.descriptor_set_map[handle].descriptor_set = state->device->create_descriptor_set(descriptor_desc);
 
                 // Allocate memory for buffer uniforms
 
@@ -656,14 +655,15 @@ namespace mag
                 }
 
                 // @TODO: this causes a bit of unecessary data duplication but its good enough for now
-                state->frames[i].descriptor_set_map[handle].bindings_map = bindings_map;
+                frame.descriptor_set_map[handle].bindings_map = bindings_map;
             }
 
             // Graphics Pipeline
             // -------------------------------------------------------------------------------------------------
-            const Format color_format = state->frames[state->current_frame].render_target_color->get_format();
-            const Format depth_format = state->frames[state->current_frame].render_target_depth->get_format();
-            const math::uvec2 extent = state->frames[state->current_frame].render_target_color->get_extent();
+            const FrameData& current_frame = state->frames[state->current_frame];
+            const Format color_format = current_frame.render_target_color->get_format();
+            const Format depth_format = current_frame.render_target_depth->get_format();
+            const math::uvec2 extent = current_frame.render_target_color->get_extent();
 
             IGraphicsPipelineDesc graphics_pipeline_desc = {};
             graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
@@ -717,7 +717,7 @@ namespace mag
                 graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
             }
 
-            state->shaders[handle].pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
+            shader_data.pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
 
             return handle;
         }
@@ -751,7 +751,7 @@ namespace mag
             // descriptors sets only once and later update them
 
             // Bind pipeline
-            current_frame.command_buffer->bind_pipeline(state->shaders[handle].pipeline.get());
+            current_frame.command_buffer->bind_pipeline(shader.pipeline.get());
 
             // Bind the descriptor sets
             current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
