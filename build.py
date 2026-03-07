@@ -82,6 +82,31 @@ def lint():
   os.system(f"{cmd} -Imagnolia/include magnolia/**") == 0
   return
 
+# ----- Profile (requires clang build analyzer) -----
+def profile(system, configuration):
+  
+  if not has_executable("ClangBuildAnalyzer"):
+    return
+
+  print(f"(Python) Starting compilation profile")
+
+  output_dir = "build"
+  profile_binary = "compilation_profile"
+  
+  # Clean first
+  clean(configuration)
+  
+  os.system(f"mkdir -p {output_dir}")
+  os.system(f"ClangBuildAnalyzer --start {output_dir}")
+  
+  # Then build
+  build(system, configuration)
+
+  os.system(f"ClangBuildAnalyzer --stop {output_dir} {output_dir}/{profile_binary}")
+  os.system(f"ClangBuildAnalyzer --analyze {output_dir}/{profile_binary}")
+
+  return
+
 def main():
 
   # Check for system support
@@ -109,6 +134,9 @@ def main():
 
     elif command == "lint":
       lint()
+    
+    elif command == "profile":
+      profile(system, configuration)
 
     else:
       print(f"Invalid command: '{command}'")
