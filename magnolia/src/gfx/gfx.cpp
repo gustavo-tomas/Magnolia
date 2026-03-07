@@ -84,20 +84,17 @@ namespace mag
                 {
                     return 1024;
                 }
-                break;
 
                 case ShaderResourceDescriptorType::Storage:
                 {
                     return (4ULL * 1024 * 1024) / binding.block_size_bytes;
                 }
-                break;
 
                 default:
                 {
                     MAG_ASSERT(false, "Invalid descriptor type");
                     return 0;
                 }
-                break;
             }
         }
 

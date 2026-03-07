@@ -1,5 +1,6 @@
 #include "magnolia/threads/job_system.hpp"
 
+#include <algorithm>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
@@ -131,7 +132,7 @@ namespace mag
 
             // Wait for pending jobs to finish
 
-            for (Worker& worker : state->workers)
+            for (const Worker& worker : state->workers)
             {
                 if (worker.job_group != group || !worker.busy)
                 {
@@ -173,10 +174,10 @@ namespace mag
                             break;
                         }
 
-                        std::unique_lock<std::mutex> lock(state->grab_job_mutex);
+                        std::unique_lock<std::mutex> grab_lock(state->grab_job_mutex);
                         Job job = grab_job(handle);
                         state->workers[handle].busy = true;
-                        lock.unlock();
+                        grab_lock.unlock();
 
                         // Execute the job
                         if (job.execute_fn)
@@ -210,21 +211,15 @@ namespace mag
                     continue;
                 }
 
-                b8 found_worker = false;
-                for (Worker& worker : state->workers)
-                {
-                    if (worker.handle == handle)
-                    {
-                        worker.job_group = job_group_handle;
-                        found_worker = true;
-                        break;
-                    }
-                }
+                const auto& worker = std::ranges::find_if(
+                    state->workers, [handle](const Worker& worker) { return worker.handle == handle; });
 
-                if (!found_worker)
+                if (worker == state->workers.end())
                 {
                     return {};
                 }
+
+                worker->job_group = job_group_handle;
 
                 return queue.pop();
             }

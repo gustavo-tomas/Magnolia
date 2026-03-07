@@ -27,16 +27,17 @@ namespace mag
             IMPL() : importer(new Assimp::Importer()) {}
             ~IMPL() = default;
 
-            b8 create_native_file(const str& output_directory, const ModelResource& model, str& imported_model_path);
+            static b8 create_native_file(const str& output_directory, const ModelResource& model,
+                                         str& imported_model_path);
 
-            b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
-            void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
+            static b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
+            static void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
+                                             ModelResource& model);
+            static void optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,
                                       ModelResource& model);
-            void optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,
-                               ModelResource& model);
 
-            str find_texture(const str& material_name, const aiMaterial* ai_material, aiTextureType ai_type,
-                             const str& directory) const;
+            static str find_texture(const str& material_name, const aiMaterial* ai_material, aiTextureType ai_type,
+                                    const str& directory);
 
             unique<Assimp::Importer> importer;
     };
@@ -331,7 +332,7 @@ namespace mag
     }
 
     str ModelImporter::IMPL::find_texture(const str& material_name, const aiMaterial* ai_material,
-                                          aiTextureType ai_type, const str& directory) const
+                                          aiTextureType ai_type, const str& directory)
     {
         // For some reason, assimp may identify normal textures as height textures
         u32 texture_count = ai_material->GetTextureCount(ai_type);

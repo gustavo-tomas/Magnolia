@@ -86,25 +86,22 @@ namespace mag
                 return false;
             }
 
-            Process& process = it->second;
-
-            const i32 pid = process.pid;
-            const str path = process.path;
+            const Process& process = it->second;
 
             state->processes.erase(it);
 
             // Try to end the process
-            if (pid < 0 || kill(pid, SIGKILL) != 0)
+            if (process.pid < 0 || kill(process.pid, SIGKILL) != 0)
             {
-                LOG_ERROR("Failed to terminate process: PID: {0} - Path: '{1}'", pid, path);
+                LOG_ERROR("Failed to terminate process: PID: {0} - Path: '{1}'", process.pid, process.path);
                 return false;
             }
 
             // Wait for the process to be fully terminated
             i32 status = -1;
-            if (waitpid(pid, &status, 0) < 0)
+            if (waitpid(process.pid, &status, 0) < 0)
             {
-                LOG_ERROR("Error when killing process: Path: '{0}' - Error: {1}", path, errno);
+                LOG_ERROR("Error when killing process: Path: '{0}' - Error: {1}", process.path, errno);
                 return false;
             }
 
@@ -119,7 +116,7 @@ namespace mag
                 return false;
             }
 
-            Process& process = it->second;
+            const Process& process = it->second;
 
             // Send signal 0 to check if process exists
             if (kill(process.pid, 0) != 0)
