@@ -82,7 +82,7 @@ def lint():
   os.system(f"{cmd} -Imagnolia/include magnolia/**") == 0
   return
 
-# ----- Profile (requires clang build analyzer) -----
+# ----- Profile -----
 def profile(system, configuration):
   
   if not has_executable("ClangBuildAnalyzer"):
@@ -107,6 +107,26 @@ def profile(system, configuration):
 
   return
 
+# ----- Setup -----
+def setup(configuration):
+
+  if not has_executable("bear"):
+    return
+
+  print(f"(Python) Starting clang setup")
+
+  output_dir = "build"
+  output_file = "compile_commands.json"
+  
+  # Clean first
+  clean(configuration)
+  
+  # Then build
+  os.system(f"mkdir -p {output_dir}")
+  os.system(f"bear -o {output_dir}/{output_file} -- python build.py {output_dir} {configuration}")
+
+  return
+
 def main():
 
   # Check for system support
@@ -126,7 +146,10 @@ def main():
     command = str(sys.argv[1])
     configuration = str(sys.argv[2])
 
-    if command == "build":
+    if command == "setup":
+      setup(configuration)
+
+    elif command == "build":
       build(system, configuration)
     
     elif command == "clean":
