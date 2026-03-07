@@ -708,10 +708,10 @@ namespace mag
                 graphics_pipeline_desc.vertex_binding_descs.push_back(vertex_binding_desc);
             }
 
-            for (const auto& [shader_stage, shader_data] : shader.stages)
+            for (const auto& [shader_stage, shader_resource_data] : shader.stages)
             {
                 IShaderModuleDesc shader_module_desc = {};
-                shader_module_desc.code = shader_data.code;
+                shader_module_desc.code = shader_resource_data.code;
                 shader_module_desc.stage = convert_resource_shader_stage.at(shader_stage);
 
                 graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
