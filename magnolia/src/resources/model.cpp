@@ -83,7 +83,7 @@ namespace mag
                 model->meshes.resize(num_meshes);
                 const u64 data_size = VEC_SIZE_BYTES(model->meshes);
                 mem::copy(model->meshes.data(), data_size, model_data, data_size, data_size);
-                model_data += VEC_SIZE_BYTES(model->meshes);
+                // model_data += VEC_SIZE_BYTES(model->meshes);
             }
 
             // Get dependencies

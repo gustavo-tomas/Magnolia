@@ -155,7 +155,7 @@ namespace mag
         {
             const u64 data_size = VEC_SIZE_BYTES(model.meshes);
             mem::copy(ptr, data_size, model.meshes.data(), data_size, data_size);
-            ptr += data_size;
+            // ptr += data_size;
         }
 
         // Write binary model data to file

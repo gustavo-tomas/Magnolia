@@ -1026,11 +1026,11 @@ namespace mag
                                          const std::vector<const IBuffer*>& buffers,
                                          const std::vector<u64>& offsets) const override
                 {
-                    std::vector<VkBuffer> vk_buffers;
-                    vk_buffers.reserve(buffers.size());
-                    for (const IBuffer* const buffer : buffers)
+                    std::vector<VkBuffer> vk_buffers(buffers.size());
+
+                    for (u64 i = 0; i < buffers.size(); i++)
                     {
-                        vk_buffers.push_back(dynamic_cast<const VulkanBuffer* const>(buffer)->get_buffer());
+                        vk_buffers[i] = dynamic_cast<const VulkanBuffer* const>(buffers[i])->get_buffer();
                     }
 
                     disp->cmdBindVertexBuffers(command_buffer, first_binding, binding_count, vk_buffers.data(),
