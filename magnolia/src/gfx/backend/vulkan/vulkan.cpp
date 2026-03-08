@@ -1,5 +1,4 @@
 #include "../backend.hpp"
-#include "magnolia/core/memory.hpp"
 
 #define MAG_CONFIG_GFX_VULKAN 1
 
@@ -15,6 +14,7 @@
     #include "conversions.hpp"
     #include "magnolia/core/assert.hpp"
     #include "magnolia/core/debug.hpp"
+    #include "magnolia/core/memory.hpp"
     #include "magnolia/platform/window.hpp"
 
     // Use to trace VMA allocations
