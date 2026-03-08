@@ -4,6 +4,7 @@
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/memory.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/platform/json.hpp"
 #include "magnolia/resources/material.hpp"
 #include "magnolia/resources/resource.hpp"
 

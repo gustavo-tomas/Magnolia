@@ -5,6 +5,7 @@
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
+#include <magnolia/platform/json.hpp>
 #include <magnolia/platform/serializer.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/audio.hpp>

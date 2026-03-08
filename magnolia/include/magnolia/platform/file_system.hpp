@@ -1,7 +1,9 @@
 #pragma once
 
+#include <filesystem>
+
 #include "magnolia/core/types.hpp"
-#include "nlohmann/json.hpp"
+#include "nlohmann/json_fwd.hpp"
 
 // @TODO: figure out how to handle file paths (see shader.cpp)
 

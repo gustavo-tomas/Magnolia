@@ -7,6 +7,7 @@
 
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
+#include "magnolia/platform/json.hpp"
 
 namespace mag
 {

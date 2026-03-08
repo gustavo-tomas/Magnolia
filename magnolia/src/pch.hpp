@@ -12,12 +12,6 @@
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
 
-// Third party headers
-#include <Jolt/Jolt.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_vulkan.h>
-#include <vulkan/vulkan.h>
-
 // STL headers
 #include <algorithm>
 #include <chrono>
@@ -31,6 +25,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <queue>
 #include <set>
 #include <source_location>

@@ -7,6 +7,7 @@
 #include "magnolia/gfx/gfx.hpp"
 #include "magnolia/physics/physics.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/platform/json.hpp"
 #include "magnolia/platform/platform.hpp"
 #include "magnolia/platform/window.hpp"
 #include "magnolia/resources/resource.hpp"

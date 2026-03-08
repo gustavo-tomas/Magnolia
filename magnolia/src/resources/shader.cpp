@@ -3,6 +3,7 @@
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/platform/json.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
