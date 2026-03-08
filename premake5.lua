@@ -21,6 +21,7 @@ workspace "magnolia"
     engine_libdir =
     {
         target_libdir .. "/sdl",
+        target_libdir .. "/vkbootstrap",
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
         target_libdir .. "/meshoptimizer",
@@ -55,6 +56,7 @@ workspace "magnolia"
     engine_lib_links = 
     {
         "vulkan",
+        "vk-bootstrap",
         "SDL3", 
         "assimp",
         "meshoptimizer",
@@ -95,10 +97,7 @@ project "magnolia"
         "%{prj.name}/include/**.hpp",
         "libs/spirv_reflect/spirv_reflect.h",
         "libs/spirv_reflect/spirv_reflect.cpp",
-        "libs/json/single_include/nlohmann/json.hpp",
-        "libs/vkbootstrap/src/VkBootstrap.h",
-        "libs/vkbootstrap/src/VkBootstrapDispatch.h",
-        "libs/vkbootstrap/src/VkBootstrap.cpp"
+        "libs/json/single_include/nlohmann/json.hpp"
     }
 
     includedirs
@@ -129,6 +128,7 @@ project "magnolia"
     {
         "sdl",
         "vulkan",
+        "vkbootstrap",
         "assimp",
         "meshoptimizer",
         "freetype",
@@ -313,6 +313,14 @@ project "sdl"
     }, 
     "-DSDL_SHARED=OFF -DSDL_STATIC=ON -DSDL_EXAMPLES=OFF -DSDL_TESTS=OFF -DSDL_TEST_LIBRARY=OFF " ..
     "-DSDL_INSTALL=OFF -DSDL_DISABLE_INSTALL_DOCS=OFF -DSDL_INSTALL_TESTS=OFF")
+
+-- vkbootstrap ---------------------------------------------------------------------------------------------------------
+project "vkbootstrap"
+    kind "none"
+    build_cmake_project("vkbootstrap", "", {
+        {name = "libvk-bootstrap.a", dir = ""}
+    },
+    "-DVK_BOOTSTRAP_POSITION_INDEPENDENT_CODE=ON -DVK_BOOTSTRAP_WERROR=ON -DVK_BOOTSTRAP_TEST=OFF")
 
 -- assimp --------------------------------------------------------------------------------------------------------------
 project "assimp"
