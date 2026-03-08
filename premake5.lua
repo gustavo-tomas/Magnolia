@@ -22,6 +22,7 @@ workspace "magnolia"
     {
         target_libdir .. "/sdl",
         target_libdir .. "/vkbootstrap",
+        target_libdir .. "/spirv_reflect",
         target_libdir .. "/vulkan",
         target_libdir .. "/assimp",
         target_libdir .. "/meshoptimizer",
@@ -57,6 +58,7 @@ workspace "magnolia"
     {
         "vulkan",
         "vk-bootstrap",
+        "spirv-reflect-static",
         "SDL3", 
         "assimp",
         "meshoptimizer",
@@ -95,8 +97,6 @@ project "magnolia"
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/include/**.hpp",
-        "libs/spirv_reflect/spirv_reflect.h",
-        "libs/spirv_reflect/spirv_reflect.cpp",
         "libs/json/single_include/nlohmann/json.hpp"
     }
 
@@ -129,6 +129,7 @@ project "magnolia"
         "sdl",
         "vulkan",
         "vkbootstrap",
+        "spirv_reflect",
         "assimp",
         "meshoptimizer",
         "freetype",
@@ -321,6 +322,15 @@ project "vkbootstrap"
         {name = "libvk-bootstrap.a", dir = ""}
     },
     "-DVK_BOOTSTRAP_POSITION_INDEPENDENT_CODE=ON -DVK_BOOTSTRAP_WERROR=ON -DVK_BOOTSTRAP_TEST=OFF")
+
+-- spirv_reflect -------------------------------------------------------------------------------------------------------
+project "spirv_reflect"
+    kind "none"
+    build_cmake_project("spirv_reflect", "", {
+        {name = "libspirv-reflect-static.a", dir = ""}
+    },
+    "-DSPIRV_REFLECT_STATIC_LIB=ON -DSPIRV_REFLECT_EXAMPLES=OFF -DSPIRV_REFLECT_BUILD_TESTS=OFF " ..
+    "-DSPIRV_REFLECT_INSTALL=OFF -DSPIRV_REFLECT_EXECUTABLE=OFF")
 
 -- assimp --------------------------------------------------------------------------------------------------------------
 project "assimp"
