@@ -96,8 +96,7 @@ project "magnolia"
     {
         "%{prj.name}/src/**.hpp",
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/include/**.hpp",
-        "libs/json/single_include/nlohmann/json.hpp"
+        "%{prj.name}/include/**.hpp"
     }
 
     includedirs
