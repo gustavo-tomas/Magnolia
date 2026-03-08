@@ -12,7 +12,6 @@
 #include <magnolia/resources/model.hpp>
 #include <magnolia/resources/resource.hpp>
 #include <magnolia/resources/texture.hpp>
-#include <variant>
 
 #include "ecs/components.hpp"
 #include "scene.hpp"

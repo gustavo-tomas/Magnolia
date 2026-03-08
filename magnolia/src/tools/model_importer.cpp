@@ -13,7 +13,6 @@
 #include "magnolia/resources/material.hpp"
 #include "magnolia/resources/model.hpp"
 #include "magnolia/resources/resource.hpp"
-#include "magnolia/resources/texture.hpp"
 #include "meshoptimizer.h"
 
 namespace mag

@@ -1,7 +1,6 @@
 #include "magnolia/resources/material.hpp"
 
 #include "magnolia/platform/file_system.hpp"
-#include "magnolia/resources/resource.hpp"
 #include "magnolia/resources/texture.hpp"
 
 namespace mag

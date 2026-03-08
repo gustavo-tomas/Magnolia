@@ -2,19 +2,10 @@
 
 #include <vector>
 
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/ext/quaternion_trigonometric.hpp"
 #include "glm/fwd.hpp"
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/string_cast.hpp"
-#include "glm/mat4x4.hpp"
-#include "glm/trigonometric.hpp"
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
-#include "glm/vec4.hpp"
 #include "magnolia/core/types.hpp"
 
 // Math definitions
