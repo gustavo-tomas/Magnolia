@@ -1,14 +1,14 @@
 #pragma once
 
 #include <any>
-#include <magnolia/core/event.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/threads/job_system.hpp>
 #include <vector>
 
 namespace mag
 {
-    class ECS;
+    struct Event;
+    struct WindowResizeEvent;
     class Camera;
 
     namespace physics

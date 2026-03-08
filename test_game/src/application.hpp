@@ -1,17 +1,19 @@
 #pragma once
 
-#include <magnolia/core/event.hpp>
 #include <magnolia/core/types.hpp>
-#include <magnolia/project/project.hpp>
-#include <magnolia/resources/resource.hpp>
 
-#include "scene.hpp"
+namespace mag
+{
+    struct Event;
+    struct QuitEvent;
+    struct WindowCloseEvent;
+    class Project;
+};  // namespace mag
 
 namespace game
 {
-    using namespace mag::math;
-
     class Renderer;
+    class Scene;
 
     class TestGame
     {
@@ -33,7 +35,7 @@ namespace game
             b8 running = false;
 
             mag::unique<Renderer> renderer;
-            mag::unique<Scene> scene = nullptr;
-            mag::unique<mag::Project> project = nullptr;
+            mag::unique<Scene> scene;
+            mag::unique<mag::Project> project;
     };
 };  // namespace game

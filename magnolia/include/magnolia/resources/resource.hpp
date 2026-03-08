@@ -6,7 +6,6 @@
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
-#include "magnolia/math/types.hpp"
 #include "magnolia/threads/containers.hpp"
 #include "magnolia/threads/job_system.hpp"
 

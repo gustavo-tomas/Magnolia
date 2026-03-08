@@ -1,19 +1,22 @@
 #pragma once
 
-#include <magnolia/core/event.hpp>
-#include <magnolia/core/types.hpp>
 #include <magnolia/gfx/types.hpp>
-#include <magnolia/resources/font.hpp>
-#include <magnolia/resources/model.hpp>
-#include <magnolia/resources/texture.hpp>
 #include <unordered_map>
-
-#include "scene.hpp"
 
 // This is the game renderer. It sits one layer above the gfx frontend and manages shaders, buffers and textures.
 
+namespace mag
+{
+    struct Event;
+    struct ModelResource;
+    struct TextureResource;
+    struct FontResource;
+};  // namespace mag
+
 namespace game
 {
+    class Scene;
+
     class Renderer
     {
         public:

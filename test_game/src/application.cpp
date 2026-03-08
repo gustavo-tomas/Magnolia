@@ -26,6 +26,8 @@
 
 namespace game
 {
+    using namespace mag::math;
+
     TestGame::TestGame()
     {
         const mag::EngineInitializeOptions options = mag::read_config_file("test_game/config.json");
