@@ -19,66 +19,6 @@
 
 namespace game
 {
-    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec2& v)
-    {
-        for (i32 i = 0; i < v.length(); i++)
-        {
-            out.push_back(v[i]);
-        }
-        return out;
-    }
-
-    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec3& v)
-    {
-        for (i32 i = 0; i < v.length(); i++)
-        {
-            out.push_back(v[i]);
-        }
-        return out;
-    }
-
-    static mag::fs::json& operator<<(mag::fs::json& out, const mag::vec4& v)
-    {
-        for (i32 i = 0; i < v.length(); i++)
-        {
-            out.push_back(v[i]);
-        }
-        return out;
-    }
-
-    static mag::fs::json& operator<<(mag::fs::json& out, const mag::quat& q)
-    {
-        for (i32 i = 0; i < q.length(); i++)
-        {
-            out.push_back(q[i]);
-        }
-        return out;
-    }
-
-    static void get_array_value(const mag::fs::json& data, mag::math::vec3& v)
-    {
-        for (i32 i = 0; i < mag::math::vec3::length(); i++)
-        {
-            v[i] = data[i].get<f32>();
-        }
-    }
-
-    static void get_array_value(const mag::fs::json& data, mag::math::vec4& v)
-    {
-        for (i32 i = 0; i < mag::math::vec4::length(); i++)
-        {
-            v[i] = data[i].get<f32>();
-        }
-    }
-
-    static void get_array_value(const mag::fs::json& data, mag::math::quat& v)
-    {
-        for (i32 i = 0; i < mag::math::quat::length(); i++)
-        {
-            v[i] = data[i].get<f32>();
-        }
-    }
-
     namespace scene
     {
         b8 save(const str& file_path, Scene& scene)
@@ -99,19 +39,19 @@ namespace game
                     {
                         mag::fs::json entity;
 
-                        if (auto component = ecs.get_component<NameComponent>(entity_id))
+                        if (auto* component = ecs.get_component<NameComponent>(entity_id))
                         {
                             entity["NameComponent"]["Name"] = component->name;
                         }
 
-                        if (auto component = ecs.get_component<TransformComponent>(entity_id))
+                        if (auto* component = ecs.get_component<TransformComponent>(entity_id))
                         {
                             entity["TransformComponent"]["Translation"] << component->translation;
                             entity["TransformComponent"]["Rotation"] << component->rotation;
                             entity["TransformComponent"]["Scale"] << component->scale;
                         }
 
-                        if (auto component = ecs.get_component<ModelComponent>(entity_id))
+                        if (auto* component = ecs.get_component<ModelComponent>(entity_id))
                         {
                             if (component->model->file_path.empty())
                             {
@@ -126,7 +66,7 @@ namespace game
                             }
                         }
 
-                        if (auto component = ecs.get_component<SpriteComponent>(entity_id))
+                        if (auto* component = ecs.get_component<SpriteComponent>(entity_id))
                         {
                             if (component->texture->file_path.empty())
                             {
@@ -141,14 +81,14 @@ namespace game
                             }
                         }
 
-                        if (auto component = ecs.get_component<TextComponent>(entity_id))
+                        if (auto* component = ecs.get_component<TextComponent>(entity_id))
                         {
                             entity["TextComponent"]["FilePath"] = component->font->file_path;
                             entity["TextComponent"]["Text"] = component->text;
                             entity["TextComponent"]["Color"] << component->color;
                         }
 
-                        if (auto component = ecs.get_component<AudioComponent>(entity_id))
+                        if (auto* component = ecs.get_component<AudioComponent>(entity_id))
                         {
                             entity["AudioComponent"]["FilePath"] = component->audio->file_path;
                             entity["AudioComponent"]["Volume"] = component->volume;
@@ -157,7 +97,7 @@ namespace game
                             entity["AudioComponent"]["Velocity"] << component->velocity;
                         }
 
-                        if (auto component = ecs.get_component<RigidBodyComponent>(entity_id))
+                        if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
                         {
                             if (auto* collider = std::get_if<BoxCollider>(&component->collider))
                             {
@@ -178,27 +118,27 @@ namespace game
                             entity["RigidBodyComponent"]["Mass"] = component->mass;
                         }
 
-                        if (auto component = ecs.get_component<LightComponent>(entity_id))
+                        if (auto* component = ecs.get_component<LightComponent>(entity_id))
                         {
                             entity["LightComponent"]["Color"] << component->color;
                             entity["LightComponent"]["Intensity"] = component->intensity;
                         }
 
-                        if (auto component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
+                        if (auto* component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
                         {
                             entity["PerspectiveCameraComponent"]["Fov"] = component->camera.get_fov();
                             entity["PerspectiveCameraComponent"]["Near"] = component->camera.get_near();
                             entity["PerspectiveCameraComponent"]["Far"] = component->camera.get_far();
                         }
 
-                        if (auto component = ecs.get_component<OrthographicCameraComponent>(entity_id))
+                        if (auto* component = ecs.get_component<OrthographicCameraComponent>(entity_id))
                         {
                             entity["OrthographicCameraComponent"]["Size"] = component->camera.get_size();
                             entity["OrthographicCameraComponent"]["Near"] = component->camera.get_near();
                             entity["OrthographicCameraComponent"]["Far"] = component->camera.get_far();
                         }
 
-                        if (auto component = ecs.get_component<ScriptComponent>(entity_id))
+                        if (auto* component = ecs.get_component<ScriptComponent>(entity_id))
                         {
                             entity["ScriptComponent"]["FilePath"] = component->file_path;
                         }
@@ -257,13 +197,9 @@ namespace game
                         {
                             const auto& component = entity["TransformComponent"];
 
-                            mag::vec3 translation = mag::vec3(0);
-                            mag::quat rotation = mag::quat(1.0f, 0.0f, 0.0f, 0.0f);
-                            mag::vec3 scale = mag::vec3(0);
-
-                            get_array_value(component["Translation"], translation);
-                            get_array_value(component["Rotation"], rotation);
-                            get_array_value(component["Scale"], scale);
+                            const vec3 translation = component["Translation"].get<vec3>();
+                            const quat rotation = component["Rotation"].get<quat>();
+                            const vec3 scale = component["Scale"].get<vec3>();
 
                             ecs.add_component<TransformComponent>(entity_id, translation, rotation, scale);
                         }
@@ -309,9 +245,7 @@ namespace game
                             const auto& component = entity["TextComponent"];
                             const str file_path = component["FilePath"];
                             const str text = component["Text"];
-                            mag::vec4 color = mag::vec4(0.0f);
-
-                            get_array_value(component["Color"], color);
+                            const vec4 color = component["Color"].get<vec4>();
 
                             const auto& font = mag::resource::get_font(file_path);
 
@@ -323,13 +257,10 @@ namespace game
                             const auto& component = entity["AudioComponent"];
                             const str file_path = component["FilePath"];
 
+                            const b8 play_on_load = component["PlayOnLoad"].get<b8>();
                             const f32 volume = component["Volume"].get<f32>();
-                            const b8 play_on_load = component["PlayOnLoad"].get<f32>();
-                            mag::vec3 position = mag::vec3(0.0f);
-                            mag::vec3 velocity = mag::vec3(0.0f);
-
-                            get_array_value(component["Position"], position);
-                            get_array_value(component["Velocity"], velocity);
+                            const vec3 position = component["Position"].get<vec3>();
+                            const vec3 velocity = component["Velocity"].get<vec3>();
 
                             const auto& audio = mag::resource::get_audio(file_path);
 
@@ -349,9 +280,7 @@ namespace game
                             {
                                 const auto& box_collider = component["BoxCollider"];
 
-                                mag::vec3 dimensions = mag::vec3(0);
-
-                                get_array_value(box_collider["Dimensions"], dimensions);
+                                const vec3 dimensions = box_collider["Dimensions"].get<vec3>();
 
                                 collider = BoxCollider(dimensions);
                             }
@@ -414,11 +343,8 @@ namespace game
                         {
                             const auto& component = entity["LightComponent"];
 
-                            mag::vec3 color = mag::vec3(0);
-                            f32 intensity = 0;
-
-                            get_array_value(component["Color"], color);
-                            intensity = component["Intensity"].get<f32>();
+                            const vec3 color = component["Color"].get<vec3>();
+                            const f32 intensity = component["Intensity"].get<f32>();
 
                             ecs.add_component<LightComponent>(entity_id, color, intensity);
                         }
