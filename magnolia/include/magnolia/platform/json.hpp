@@ -1,5 +1,6 @@
 #pragma once
 
+#include "magnolia/core/logger.hpp"
 #include "magnolia/math/types.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "nlohmann/json.hpp"
@@ -44,59 +45,51 @@ namespace nlohmann
         return out;
     }
 
-    template <>
-    struct adl_serializer<mag::math::vec2>
+    template <i32 L, typename T, glm::qualifier Q>
+    struct adl_serializer<glm::vec<L, T, Q>>
     {
-            static void from_json(const json& data, mag::math::vec2& v)
+            static void to_json(json& data, const glm::vec<L, T, Q>& v)
             {
-                for (i32 i = 0; i < mag::math::vec2::length(); i++)
+                data = json::array();
+
+                for (i32 i = 0; i < L; ++i)
                 {
-                    v[i] = data[i].get<f32>();
+                    data.push_back(v[i]);
                 }
             }
 
-            static void to_json(json& data, const mag::math::vec2& v) { data = json{v[0], v[1]}; }
-    };
-
-    template <>
-    struct adl_serializer<mag::math::vec3>
-    {
-            static void from_json(const json& data, mag::math::vec3& v)
+            static void from_json(const json& data, glm::vec<L, T, Q>& v)
             {
-                for (i32 i = 0; i < mag::math::vec3::length(); i++)
+                if (!data.is_array() || data.size() != L)
                 {
-                    v[i] = data[i].get<f32>();
+                    LOG_ERROR("Json and vec size mismatch");
+                    return;
+                }
+
+                for (i32 i = 0; i < L; ++i)
+                {
+                    v[i] = data.at(i).get<T>();
                 }
             }
-
-            static void to_json(json& data, const mag::math::vec3& v) { data = {v[0], v[1], v[2]}; }
-    };
-
-    template <>
-    struct adl_serializer<mag::math::vec4>
-    {
-            static void from_json(const json& data, mag::math::vec4& v)
-            {
-                for (i32 i = 0; i < mag::math::vec4::length(); i++)
-                {
-                    v[i] = data[i].get<f32>();
-                }
-            }
-
-            static void to_json(json& data, const mag::math::vec4& v) { data = {v[0], v[1], v[2], v[3]}; }
     };
 
     template <>
     struct adl_serializer<mag::math::quat>
     {
+            static void to_json(json& data, const mag::math::quat& v) { data = {v[0], v[1], v[2], v[3]}; }
+
             static void from_json(const json& data, mag::math::quat& v)
             {
+                if (!data.is_array() || data.size() != 4)
+                {
+                    LOG_ERROR("Json and quat size mismatch");
+                    return;
+                }
+
                 for (i32 i = 0; i < mag::math::quat::length(); i++)
                 {
                     v[i] = data[i].get<f32>();
                 }
             }
-
-            static void to_json(json& data, const mag::math::quat& v) { data = {v[0], v[1], v[2], v[3]}; }
     };
 };  // namespace nlohmann
