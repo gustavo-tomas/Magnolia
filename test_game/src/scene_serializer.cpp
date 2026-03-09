@@ -46,9 +46,9 @@ namespace game
 
                         if (auto* component = ecs.get_component<TransformComponent>(entity_id))
                         {
-                            entity["TransformComponent"]["Translation"] << component->translation;
-                            entity["TransformComponent"]["Rotation"] << component->rotation;
-                            entity["TransformComponent"]["Scale"] << component->scale;
+                            entity["TransformComponent"]["Translation"] = component->translation;
+                            entity["TransformComponent"]["Rotation"] = component->rotation;
+                            entity["TransformComponent"]["Scale"] = component->scale;
                         }
 
                         if (auto* component = ecs.get_component<ModelComponent>(entity_id))
@@ -85,7 +85,7 @@ namespace game
                         {
                             entity["TextComponent"]["FilePath"] = component->font->file_path;
                             entity["TextComponent"]["Text"] = component->text;
-                            entity["TextComponent"]["Color"] << component->color;
+                            entity["TextComponent"]["Color"] = component->color;
                         }
 
                         if (auto* component = ecs.get_component<AudioComponent>(entity_id))
@@ -93,15 +93,15 @@ namespace game
                             entity["AudioComponent"]["FilePath"] = component->audio->file_path;
                             entity["AudioComponent"]["Volume"] = component->volume;
                             entity["AudioComponent"]["PlayOnLoad"] = component->play_on_load;
-                            entity["AudioComponent"]["Position"] << component->position;
-                            entity["AudioComponent"]["Velocity"] << component->velocity;
+                            entity["AudioComponent"]["Position"] = component->position;
+                            entity["AudioComponent"]["Velocity"] = component->velocity;
                         }
 
                         if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
                         {
                             if (auto* collider = std::get_if<BoxCollider>(&component->collider))
                             {
-                                entity["BoxColliderComponent"]["Dimensions"] << collider->dimensions;
+                                entity["BoxColliderComponent"]["Dimensions"] = collider->dimensions;
                             }
 
                             if (auto* collider = std::get_if<CapsuleCollider>(&component->collider))
@@ -120,7 +120,7 @@ namespace game
 
                         if (auto* component = ecs.get_component<LightComponent>(entity_id))
                         {
-                            entity["LightComponent"]["Color"] << component->color;
+                            entity["LightComponent"]["Color"] = component->color;
                             entity["LightComponent"]["Intensity"] = component->intensity;
                         }
 
