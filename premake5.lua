@@ -220,6 +220,16 @@ project "test_game"
 
 -- Libs ----------------------------------------------------------------------------------------------------------------
 
+local colors = {
+    Reset = "\27[0m",
+    Red = "\27[1;31m",
+    Green = "\27[1;32m",
+    Yellow = "\27[1;33m",
+    Blue = "\27[1;34m",
+    Purple = "\27[1;35m",
+    White = "\27[1;37m"
+}
+
 -- Checks if a file exists
 function exists(filePath)
     local file = io.open(filePath, "r")
@@ -250,7 +260,7 @@ function build_cmake_project(project_name, cmake_dir, libs_info, flags)
     project_bin_dir = target_libdir .. "/" .. project_name
     project_obj_dir = obj_libdir .. "/" .. project_name
     
-    print("Building " .. project_name .. "...")
+    print(colors.Purple .. "Building " .. project_name .. colors.Reset)
 
     -- Check if any of the libraries need to be built
     local need_build = false
@@ -258,15 +268,15 @@ function build_cmake_project(project_name, cmake_dir, libs_info, flags)
         local project_bin_path = project_bin_dir .. "/" .. lib_info.name
         if not exists(project_bin_path) then
             need_build = true
-            print(project_bin_path .. " is missing, recompiling...")
+            print(colors.Yellow .. project_bin_path .. " is missing, recompiling." .. colors.Reset)
             break
         else
-            print("Found " .. project_bin_path)
+            print(colors.Blue .. "Found " .. project_bin_path .. colors.Reset)
         end
     end
     
     if not need_build then
-        os.execute("echo All libs available, skipping " .. project_name .. " compilation...")
+        print(colors.Green .. "All libs available, skipping " .. project_name .. " compilation." .. colors.Reset)
         return
     end
 
