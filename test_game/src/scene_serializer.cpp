@@ -22,15 +22,30 @@ namespace nlohmann
 {
     // @TODO: error/data/format checking when everything is stable
 
+    inline void to_json(mag::fs::json& data, const game::DebugComponent& component)
+    {
+        (void)component;
+        data = {};
+    }
+
     inline void from_json(const mag::fs::json& data, game::DebugComponent& component)
     {
         (void)data;
         (void)component;
     }
 
+    inline void to_json(mag::fs::json& data, const game::NameComponent& component) { data["Name"] = component.name; }
+
     inline void from_json(const mag::fs::json& data, game::NameComponent& component)
     {
         component.name = data["Name"].get<str>();
+    }
+
+    inline void to_json(mag::fs::json& data, const game::TransformComponent& component)
+    {
+        data["Translation"] = component.translation;
+        data["Rotation"] = component.rotation;
+        data["Scale"] = component.scale;
     }
 
     inline void from_json(const mag::fs::json& data, game::TransformComponent& component)
@@ -39,10 +54,24 @@ namespace nlohmann
         component.rotation = data["Rotation"].get<mag::math::quat>();
         component.scale = data["Scale"].get<mag::math::vec3>();
     }
+
+    inline void to_json(mag::fs::json& data, const game::LightComponent& component)
+    {
+        data["Color"] = component.color;
+        data["Intensity"] = component.intensity;
+    }
+
     inline void from_json(const mag::fs::json& data, game::LightComponent& component)
     {
         component.color = data["Color"].get<mag::math::vec3>();
         component.intensity = data["Intensity"].get<f32>();
+    }
+
+    inline void to_json(mag::fs::json& data, const game::PerspectiveCameraComponent& component)
+    {
+        data["Fov"] = component.camera.get_fov();
+        data["Near"] = component.camera.get_near();
+        data["Far"] = component.camera.get_far();
     }
 
     inline void from_json(const mag::fs::json& data, game::PerspectiveCameraComponent& component)
@@ -56,6 +85,13 @@ namespace nlohmann
         component.camera = mag::PerspectiveCamera(camera_desc);
     }
 
+    inline void to_json(mag::fs::json& data, const game::OrthographicCameraComponent& component)
+    {
+        data["Size"] = component.camera.get_size();
+        data["Near"] = component.camera.get_near();
+        data["Far"] = component.camera.get_far();
+    }
+
     inline void from_json(const mag::fs::json& data, game::OrthographicCameraComponent& component)
     {
         mag::OrthographicCameraDesc camera_desc = {};
@@ -65,6 +101,27 @@ namespace nlohmann
         camera_desc.viewport_size = mag::window::get_size();
 
         component.camera = mag::OrthographicCamera(camera_desc);
+    }
+
+    inline void to_json(mag::fs::json& data, const game::RigidBodyComponent& component)
+    {
+        data["Mass"] = component.mass;
+
+        if (const auto* collider = std::get_if<game::BoxCollider>(&component.collider))
+        {
+            data["BoxCollider"]["Dimensions"] = collider->dimensions;
+        }
+
+        if (const auto* collider = std::get_if<game::CapsuleCollider>(&component.collider))
+        {
+            data["CapsuleCollider"]["Radius"] = collider->radius;
+            data["CapsuleCollider"]["Height"] = collider->height;
+        }
+
+        if (const auto* collider = std::get_if<game::MeshCollider>(&component.collider))
+        {
+            data["MeshCollider"]["FilePath"] = collider->file_path;
+        }
     }
 
     inline void from_json(const mag::fs::json& data, game::RigidBodyComponent& component)
@@ -156,16 +213,39 @@ namespace game
                     {
                         mag::fs::json entity;
 
+                        if (auto* component = ecs.get_component<DebugComponent>(entity_id))
+                        {
+                            entity["DebugComponent"] = *component;
+                        }
+
                         if (auto* component = ecs.get_component<NameComponent>(entity_id))
                         {
-                            entity["NameComponent"]["Name"] = component->name;
+                            entity["NameComponent"] = *component;
                         }
 
                         if (auto* component = ecs.get_component<TransformComponent>(entity_id))
                         {
-                            entity["TransformComponent"]["Translation"] = component->translation;
-                            entity["TransformComponent"]["Rotation"] = component->rotation;
-                            entity["TransformComponent"]["Scale"] = component->scale;
+                            entity["TransformComponent"] = *component;
+                        }
+
+                        if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
+                        {
+                            entity["RigidBodyComponent"] = *component;
+                        }
+
+                        if (auto* component = ecs.get_component<LightComponent>(entity_id))
+                        {
+                            entity["LightComponent"] = *component;
+                        }
+
+                        if (auto* component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
+                        {
+                            entity["PerspectiveCameraComponent"] = *component;
+                        }
+
+                        if (auto* component = ecs.get_component<OrthographicCameraComponent>(entity_id))
+                        {
+                            entity["OrthographicCameraComponent"] = *component;
                         }
 
                         if (auto* component = ecs.get_component<ModelComponent>(entity_id))
@@ -214,55 +294,9 @@ namespace game
                             entity["AudioComponent"]["Velocity"] = component->velocity;
                         }
 
-                        if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
-                        {
-                            if (auto* collider = std::get_if<BoxCollider>(&component->collider))
-                            {
-                                entity["BoxColliderComponent"]["Dimensions"] = collider->dimensions;
-                            }
-
-                            if (auto* collider = std::get_if<CapsuleCollider>(&component->collider))
-                            {
-                                entity["CapsuleColliderComponent"]["Radius"] = collider->radius;
-                                entity["CapsuleColliderComponent"]["Height"] = collider->height;
-                            }
-
-                            if (auto* collider = std::get_if<MeshCollider>(&component->collider))
-                            {
-                                entity["MeshColliderComponent"]["FilePath"] = collider->file_path;
-                            }
-
-                            entity["RigidBodyComponent"]["Mass"] = component->mass;
-                        }
-
-                        if (auto* component = ecs.get_component<LightComponent>(entity_id))
-                        {
-                            entity["LightComponent"]["Color"] = component->color;
-                            entity["LightComponent"]["Intensity"] = component->intensity;
-                        }
-
-                        if (auto* component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
-                        {
-                            entity["PerspectiveCameraComponent"]["Fov"] = component->camera.get_fov();
-                            entity["PerspectiveCameraComponent"]["Near"] = component->camera.get_near();
-                            entity["PerspectiveCameraComponent"]["Far"] = component->camera.get_far();
-                        }
-
-                        if (auto* component = ecs.get_component<OrthographicCameraComponent>(entity_id))
-                        {
-                            entity["OrthographicCameraComponent"]["Size"] = component->camera.get_size();
-                            entity["OrthographicCameraComponent"]["Near"] = component->camera.get_near();
-                            entity["OrthographicCameraComponent"]["Far"] = component->camera.get_far();
-                        }
-
                         if (auto* component = ecs.get_component<ScriptComponent>(entity_id))
                         {
                             entity["ScriptComponent"]["FilePath"] = component->file_path;
-                        }
-
-                        if (ecs.get_component<DebugComponent>(entity_id) != nullptr)
-                        {
-                            entity["DebugComponent"] = {};
                         }
 
                         data["Entities"].push_back(entity);
