@@ -7,7 +7,6 @@
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/json.hpp>
-#include <magnolia/platform/serializer.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/audio.hpp>
 #include <magnolia/resources/font.hpp>
@@ -197,113 +196,93 @@ namespace game
     {
         b8 save(const str& file_path, Scene& scene)
         {
-            mag::fs::Serializer serializer;
+            LOG_INFO("Serializing scene '{0}'", scene.get_name());
 
-            serializer.register_on_save_handler<Scene>(
-                [](Scene& scene, mag::fs::Serializer& s)
+            mag::fs::json data;
+
+            data["Type"] = "Scene";
+            data["Name"] = scene.get_name();
+
+            mag::ECS& ecs = scene.get_ecs();
+            for (const mag::EntityID entity_id : ecs.get_entities_ids())
+            {
+                mag::fs::json entity;
+
+                if (auto* component = ecs.get_component<DebugComponent>(entity_id))
                 {
-                    mag::fs::json& data = s.json;
+                    entity["DebugComponent"] = *component;
+                }
 
-                    // Serialize scene data to file
-                    data["Type"] = "Scene";
-                    data["Name"] = scene.get_name();
+                if (auto* component = ecs.get_component<NameComponent>(entity_id))
+                {
+                    entity["NameComponent"] = *component;
+                }
 
-                    auto& ecs = scene.get_ecs();
-                    for (const auto entity_id : ecs.get_entities_ids())
-                    {
-                        mag::fs::json entity;
+                if (auto* component = ecs.get_component<TransformComponent>(entity_id))
+                {
+                    entity["TransformComponent"] = *component;
+                }
 
-                        if (auto* component = ecs.get_component<DebugComponent>(entity_id))
-                        {
-                            entity["DebugComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
+                {
+                    entity["RigidBodyComponent"] = *component;
+                }
 
-                        if (auto* component = ecs.get_component<NameComponent>(entity_id))
-                        {
-                            entity["NameComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<LightComponent>(entity_id))
+                {
+                    entity["LightComponent"] = *component;
+                }
 
-                        if (auto* component = ecs.get_component<TransformComponent>(entity_id))
-                        {
-                            entity["TransformComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
+                {
+                    entity["PerspectiveCameraComponent"] = *component;
+                }
 
-                        if (auto* component = ecs.get_component<RigidBodyComponent>(entity_id))
-                        {
-                            entity["RigidBodyComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<OrthographicCameraComponent>(entity_id))
+                {
+                    entity["OrthographicCameraComponent"] = *component;
+                }
 
-                        if (auto* component = ecs.get_component<LightComponent>(entity_id))
-                        {
-                            entity["LightComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<ModelComponent>(entity_id))
+                {
+                    entity["ModelComponent"]["Name"] = component->model->name;
+                    entity["ModelComponent"]["FilePath"] = component->model->file_path;
+                }
 
-                        if (auto* component = ecs.get_component<PerspectiveCameraComponent>(entity_id))
-                        {
-                            entity["PerspectiveCameraComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<SpriteComponent>(entity_id))
+                {
+                    entity["SpriteComponent"]["FilePath"] = component->texture->file_path;
+                    entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
+                    entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
+                }
 
-                        if (auto* component = ecs.get_component<OrthographicCameraComponent>(entity_id))
-                        {
-                            entity["OrthographicCameraComponent"] = *component;
-                        }
+                if (auto* component = ecs.get_component<TextComponent>(entity_id))
+                {
+                    entity["TextComponent"]["FilePath"] = component->font->file_path;
+                    entity["TextComponent"]["Text"] = component->text;
+                    entity["TextComponent"]["Color"] = component->color;
+                }
 
-                        if (auto* component = ecs.get_component<ModelComponent>(entity_id))
-                        {
-                            if (component->model->file_path.empty())
-                            {
-                                LOG_WARNING("Model {0} has no file path and will not be serialized",
-                                            component->model->name);
-                            }
+                if (auto* component = ecs.get_component<AudioComponent>(entity_id))
+                {
+                    entity["AudioComponent"]["FilePath"] = component->audio->file_path;
+                    entity["AudioComponent"]["Volume"] = component->volume;
+                    entity["AudioComponent"]["PlayOnLoad"] = component->play_on_load;
+                    entity["AudioComponent"]["Position"] = component->position;
+                    entity["AudioComponent"]["Velocity"] = component->velocity;
+                }
 
-                            else
-                            {
-                                entity["ModelComponent"]["Name"] = component->model->name;
-                                entity["ModelComponent"]["FilePath"] = component->model->file_path;
-                            }
-                        }
+                if (auto* component = ecs.get_component<ScriptComponent>(entity_id))
+                {
+                    entity["ScriptComponent"]["FilePath"] = component->file_path;
+                }
 
-                        if (auto* component = ecs.get_component<SpriteComponent>(entity_id))
-                        {
-                            if (component->texture->file_path.empty())
-                            {
-                                LOG_WARNING("Sprite has no file path and will not be serialized");
-                            }
+                data["Entities"].push_back(entity);
+            }
 
-                            else
-                            {
-                                entity["SpriteComponent"]["FilePath"] = component->texture->file_path;
-                                entity["SpriteComponent"]["ConstantSize"] = component->constant_size;
-                                entity["SpriteComponent"]["AlwaysFaceCamera"] = component->always_face_camera;
-                            }
-                        }
+            const b8 result = mag::fs::write_json_data(file_path, data);
 
-                        if (auto* component = ecs.get_component<TextComponent>(entity_id))
-                        {
-                            entity["TextComponent"]["FilePath"] = component->font->file_path;
-                            entity["TextComponent"]["Text"] = component->text;
-                            entity["TextComponent"]["Color"] = component->color;
-                        }
-
-                        if (auto* component = ecs.get_component<AudioComponent>(entity_id))
-                        {
-                            entity["AudioComponent"]["FilePath"] = component->audio->file_path;
-                            entity["AudioComponent"]["Volume"] = component->volume;
-                            entity["AudioComponent"]["PlayOnLoad"] = component->play_on_load;
-                            entity["AudioComponent"]["Position"] = component->position;
-                            entity["AudioComponent"]["Velocity"] = component->velocity;
-                        }
-
-                        if (auto* component = ecs.get_component<ScriptComponent>(entity_id))
-                        {
-                            entity["ScriptComponent"]["FilePath"] = component->file_path;
-                        }
-
-                        data["Entities"].push_back(entity);
-                    }
-                });
-
-            if (!serializer.save(file_path, scene))
+            if (!result)
             {
                 LOG_ERROR("Failed to save scene to file: '{0}'", file_path);
                 return false;
@@ -314,147 +293,138 @@ namespace game
 
         b8 load(const str& file_path, Scene& scene)
         {
-            mag::fs::Serializer serializer;
+            mag::fs::json data;
 
-            serializer.register_on_load_handler<Scene>(
-                [file_path](Scene& scene, mag::fs::Serializer& s)
-                {
-                    mag::fs::json& data = s.json;
+            const b8 result = mag::fs::read_json_data(file_path, data);
 
-                    const str scene_name = data["Name"];
-                    scene.set_name(scene_name);
-                    scene.set_file_path(file_path);
-
-                    LOG_INFO("Deserializing scene '{0}'", scene_name);
-
-                    if (!data.contains("Entities"))
-                    {
-                        LOG_WARNING("Scene '{0}' contains no entities", scene.get_name());
-                        return;
-                    }
-
-                    auto& ecs = scene.get_ecs();
-
-                    for (auto& entity : data["Entities"])
-                    {
-                        const mag::EntityID entity_id = ecs.create_entity();
-
-                        if (entity.contains("DebugComponent"))
-                        {
-                            ecs.add_component<DebugComponent>(entity_id, entity["DebugComponent"]);
-                        }
-
-                        if (entity.contains("NameComponent"))
-                        {
-                            ecs.add_component<NameComponent>(entity_id, entity["NameComponent"]);
-                        }
-
-                        if (entity.contains("TransformComponent"))
-                        {
-                            ecs.add_component<TransformComponent>(entity_id, entity["TransformComponent"]);
-                        }
-
-                        if (entity.contains("RigidBodyComponent"))
-                        {
-                            ecs.add_component<RigidBodyComponent>(entity_id, entity["RigidBodyComponent"]);
-                        }
-
-                        if (entity.contains("LightComponent"))
-                        {
-                            ecs.add_component<LightComponent>(entity_id, entity["LightComponent"]);
-                        }
-
-                        if (entity.contains("PerspectiveCameraComponent"))
-                        {
-                            ecs.add_component<PerspectiveCameraComponent>(entity_id,
-                                                                          entity["PerspectiveCameraComponent"]);
-                        }
-
-                        if (entity.contains("OrthographicCameraComponent"))
-                        {
-                            ecs.add_component<OrthographicCameraComponent>(entity_id,
-                                                                           entity["OrthographicCameraComponent"]);
-                        }
-
-                        if (entity.contains("ModelComponent"))
-                        {
-                            const auto& component = entity["ModelComponent"];
-                            const str file_path = component["FilePath"];
-
-                            mag::resource::get_model_async(
-                                file_path, scene.get_job_group(),
-                                [&ecs, file_path, entity_id](const mag::ref<mag::IResource>& resource)
-                                {
-                                    auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
-
-                                    ecs.add_component<ModelComponent>(entity_id, res);
-                                },
-                                false);
-                        }
-
-                        if (entity.contains("SpriteComponent"))
-                        {
-                            const auto& component = entity["SpriteComponent"];
-                            const str file_path = component["FilePath"];
-                            const b8 constant_size = component["ConstantSize"].get<b8>();
-                            const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
-
-                            mag::resource::get_texture_async(
-                                file_path, scene.get_job_group(),
-                                [&ecs, file_path, entity_id, constant_size,
-                                 always_face_camera](const mag::ref<mag::IResource>& resource)
-                                {
-                                    auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
-
-                                    ecs.add_component<SpriteComponent>(entity_id, res, constant_size,
-                                                                       always_face_camera);
-                                },
-                                false);
-                        }
-
-                        if (entity.contains("TextComponent"))
-                        {
-                            const auto& component = entity["TextComponent"];
-                            const str file_path = component["FilePath"];
-                            const str text = component["Text"];
-                            const vec4 color = component["Color"].get<vec4>();
-
-                            const auto& font = mag::resource::get_font(file_path);
-
-                            ecs.add_component<TextComponent>(entity_id, font, color, text);
-                        }
-
-                        if (entity.contains("AudioComponent"))
-                        {
-                            const auto& component = entity["AudioComponent"];
-                            const str file_path = component["FilePath"];
-
-                            const b8 play_on_load = component["PlayOnLoad"].get<b8>();
-                            const f32 volume = component["Volume"].get<f32>();
-                            const vec3 position = component["Position"].get<vec3>();
-                            const vec3 velocity = component["Velocity"].get<vec3>();
-
-                            const auto& audio = mag::resource::get_audio(file_path);
-
-                            ecs.add_component<AudioComponent>(entity_id, audio, volume, play_on_load, position,
-                                                              velocity);
-                        }
-
-                        if (entity.contains("ScriptComponent"))
-                        {
-                            const auto& component = entity["ScriptComponent"];
-
-                            const str file_path = component["FilePath"];
-
-                            ecs.add_component<ScriptComponent>(entity_id, file_path);
-                        }
-                    }
-                });
-
-            if (!serializer.load(file_path, scene))
+            if (!result)
             {
                 LOG_ERROR("Failed to load scene to file: '{0}'", file_path);
                 return false;
+            }
+
+            const str scene_name = data["Name"];
+            scene.set_name(scene_name);
+            scene.set_file_path(file_path);
+
+            mag::ECS& ecs = scene.get_ecs();
+
+            LOG_INFO("Deserializing scene '{0}'", scene_name);
+
+            if (!data.contains("Entities"))
+            {
+                LOG_WARNING("Scene '{0}' contains no entities", scene.get_name());
+            }
+
+            for (auto& entity : data["Entities"])
+            {
+                const mag::EntityID entity_id = ecs.create_entity();
+
+                if (entity.contains("DebugComponent"))
+                {
+                    ecs.add_component<DebugComponent>(entity_id, entity["DebugComponent"]);
+                }
+
+                if (entity.contains("NameComponent"))
+                {
+                    ecs.add_component<NameComponent>(entity_id, entity["NameComponent"]);
+                }
+
+                if (entity.contains("TransformComponent"))
+                {
+                    ecs.add_component<TransformComponent>(entity_id, entity["TransformComponent"]);
+                }
+
+                if (entity.contains("RigidBodyComponent"))
+                {
+                    ecs.add_component<RigidBodyComponent>(entity_id, entity["RigidBodyComponent"]);
+                }
+
+                if (entity.contains("LightComponent"))
+                {
+                    ecs.add_component<LightComponent>(entity_id, entity["LightComponent"]);
+                }
+
+                if (entity.contains("PerspectiveCameraComponent"))
+                {
+                    ecs.add_component<PerspectiveCameraComponent>(entity_id, entity["PerspectiveCameraComponent"]);
+                }
+
+                if (entity.contains("OrthographicCameraComponent"))
+                {
+                    ecs.add_component<OrthographicCameraComponent>(entity_id, entity["OrthographicCameraComponent"]);
+                }
+
+                if (entity.contains("ModelComponent"))
+                {
+                    const auto& component = entity["ModelComponent"];
+                    const str file_path = component["FilePath"];
+
+                    mag::resource::get_model_async(
+                        file_path, scene.get_job_group(),
+                        [&ecs, file_path, entity_id](const mag::ref<mag::IResource>& resource)
+                        {
+                            auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
+
+                            ecs.add_component<ModelComponent>(entity_id, res);
+                        },
+                        false);
+                }
+
+                if (entity.contains("SpriteComponent"))
+                {
+                    const auto& component = entity["SpriteComponent"];
+                    const str file_path = component["FilePath"];
+                    const b8 constant_size = component["ConstantSize"].get<b8>();
+                    const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
+
+                    mag::resource::get_texture_async(
+                        file_path, scene.get_job_group(),
+                        [&ecs, file_path, entity_id, constant_size,
+                         always_face_camera](const mag::ref<mag::IResource>& resource)
+                        {
+                            auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+
+                            ecs.add_component<SpriteComponent>(entity_id, res, constant_size, always_face_camera);
+                        },
+                        false);
+                }
+
+                if (entity.contains("TextComponent"))
+                {
+                    const auto& component = entity["TextComponent"];
+                    const str file_path = component["FilePath"];
+                    const str text = component["Text"];
+                    const vec4 color = component["Color"].get<vec4>();
+
+                    const auto& font = mag::resource::get_font(file_path);
+
+                    ecs.add_component<TextComponent>(entity_id, font, color, text);
+                }
+
+                if (entity.contains("AudioComponent"))
+                {
+                    const auto& component = entity["AudioComponent"];
+                    const str file_path = component["FilePath"];
+
+                    const b8 play_on_load = component["PlayOnLoad"].get<b8>();
+                    const f32 volume = component["Volume"].get<f32>();
+                    const vec3 position = component["Position"].get<vec3>();
+                    const vec3 velocity = component["Velocity"].get<vec3>();
+
+                    const auto& audio = mag::resource::get_audio(file_path);
+
+                    ecs.add_component<AudioComponent>(entity_id, audio, volume, play_on_load, position, velocity);
+                }
+
+                if (entity.contains("ScriptComponent"))
+                {
+                    const auto& component = entity["ScriptComponent"];
+
+                    const str file_path = component["FilePath"];
+
+                    ecs.add_component<ScriptComponent>(entity_id, file_path);
+                }
             }
 
             return true;
