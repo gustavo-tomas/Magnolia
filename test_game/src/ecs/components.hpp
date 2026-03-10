@@ -24,7 +24,7 @@ namespace game
 
     struct NameComponent
     {
-            NameComponent(const str& name) : name(name) {}
+            NameComponent(str name = "") : name(std::move(name)) {}
 
             str name;
     };
@@ -127,7 +127,10 @@ namespace game
 
     struct RigidBodyComponent
     {
-            RigidBodyComponent(const Collider& collider, const f32 mass) : mass(mass), collider(collider) {}
+            RigidBodyComponent(Collider collider = BoxCollider(), const f32 mass = 1.0f)
+                : mass(mass), collider(std::move(collider))
+            {
+            }
 
             f32 mass;
             Collider collider;
@@ -144,14 +147,20 @@ namespace game
 
     struct PerspectiveCameraComponent
     {
-            PerspectiveCameraComponent(const mag::PerspectiveCamera& camera) : camera(camera) {}
+            PerspectiveCameraComponent(const mag::PerspectiveCamera& camera = mag::PerspectiveCamera({}))
+                : camera(camera)
+            {
+            }
 
             mag::PerspectiveCamera camera;
     };
 
     struct OrthographicCameraComponent
     {
-            OrthographicCameraComponent(const mag::OrthographicCamera& camera) : camera(camera) {}
+            OrthographicCameraComponent(const mag::OrthographicCamera& camera = mag::OrthographicCamera({}))
+                : camera(camera)
+            {
+            }
 
             mag::OrthographicCamera camera;
     };

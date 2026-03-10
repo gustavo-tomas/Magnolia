@@ -2,6 +2,7 @@
 
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/assert.hpp>
+#include <magnolia/core/logger.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
@@ -16,6 +17,122 @@
 
 #include "ecs/components.hpp"
 #include "scene.hpp"
+
+namespace nlohmann
+{
+    // @TODO: error/data/format checking when everything is stable
+
+    inline void from_json(const mag::fs::json& data, game::DebugComponent& component)
+    {
+        (void)data;
+        (void)component;
+    }
+
+    inline void from_json(const mag::fs::json& data, game::NameComponent& component)
+    {
+        component.name = data["Name"].get<str>();
+    }
+
+    inline void from_json(const mag::fs::json& data, game::TransformComponent& component)
+    {
+        component.translation = data["Translation"].get<mag::math::vec3>();
+        component.rotation = data["Rotation"].get<mag::math::quat>();
+        component.scale = data["Scale"].get<mag::math::vec3>();
+    }
+    inline void from_json(const mag::fs::json& data, game::LightComponent& component)
+    {
+        component.color = data["Color"].get<mag::math::vec3>();
+        component.intensity = data["Intensity"].get<f32>();
+    }
+
+    inline void from_json(const mag::fs::json& data, game::PerspectiveCameraComponent& component)
+    {
+        mag::PerspectiveCameraDesc camera_desc = {};
+        camera_desc.near = data["Near"].get<f32>();
+        camera_desc.far = data["Far"].get<f32>();
+        camera_desc.fov = data["Fov"].get<f32>();
+        camera_desc.viewport_size = mag::window::get_size();
+
+        component.camera = mag::PerspectiveCamera(camera_desc);
+    }
+
+    inline void from_json(const mag::fs::json& data, game::OrthographicCameraComponent& component)
+    {
+        mag::OrthographicCameraDesc camera_desc = {};
+        camera_desc.near = data["Near"].get<f32>();
+        camera_desc.far = data["Far"].get<f32>();
+        camera_desc.size = data["Size"].get<f32>();
+        camera_desc.viewport_size = mag::window::get_size();
+
+        component.camera = mag::OrthographicCamera(camera_desc);
+    }
+
+    inline void from_json(const mag::fs::json& data, game::RigidBodyComponent& component)
+    {
+        component.mass = data["Mass"].get<f32>();
+
+        if (data.contains("BoxCollider"))
+        {
+            const auto& box_collider = data["BoxCollider"];
+
+            const mag::math::vec3 dimensions = box_collider["Dimensions"].get<mag::math::vec3>();
+
+            component.collider = game::BoxCollider(dimensions);
+        }
+
+        else if (data.contains("CapsuleCollider"))
+        {
+            const auto& capsule_collider = data["CapsuleCollider"];
+
+            const f32 radius = capsule_collider["Radius"].get<f32>();
+            const f32 height = capsule_collider["Height"].get<f32>();
+
+            component.collider = game::CapsuleCollider(radius, height);
+        }
+
+        else if (data.contains("MeshCollider"))
+        {
+            const auto& mesh_collider = data["MeshCollider"];
+
+            const str file_path = mesh_collider["FilePath"];
+
+            // @TODO: figure out how to make this async
+            const auto& res = mag::resource::get_model(file_path, false);
+
+            std::vector<mag::math::Triangle> triangles;
+
+            for (const auto& m : res->meshes)
+            {
+                const u32 base_vertex = m.base_vertex;
+                const u32 base_index = m.base_index;
+                const u32 index_count = m.index_count;
+
+                for (u32 i = base_index; i < base_index + index_count; i += 3)
+                {
+                    const u32 idx_0 = base_vertex + res->indices[i];
+                    const u32 idx_1 = base_vertex + res->indices[i + 1];
+                    const u32 idx_2 = base_vertex + res->indices[i + 2];
+
+                    mag::math::Triangle triangle = {};
+
+                    triangle.v0 = res->vertices[idx_0].position;
+                    triangle.v1 = res->vertices[idx_1].position;
+                    triangle.v2 = res->vertices[idx_2].position;
+
+                    triangles.push_back(triangle);
+                }
+            }
+
+            component.collider = game::MeshCollider(file_path, triangles);
+        }
+
+        else
+        {
+            MAG_ASSERT(false, "Entity has a rigidbody with no collider");
+            component.collider = game::BoxCollider();
+        }
+    }
+};  // namespace nlohmann
 
 namespace game
 {
@@ -178,6 +295,7 @@ namespace game
 
                     if (!data.contains("Entities"))
                     {
+                        LOG_WARNING("Scene '{0}' contains no entities", scene.get_name());
                         return;
                     }
 
@@ -187,21 +305,41 @@ namespace game
                     {
                         const mag::EntityID entity_id = ecs.create_entity();
 
+                        if (entity.contains("DebugComponent"))
+                        {
+                            ecs.add_component<DebugComponent>(entity_id, entity["DebugComponent"]);
+                        }
+
                         if (entity.contains("NameComponent"))
                         {
-                            const str entity_name = entity["NameComponent"]["Name"];
-                            ecs.add_component<NameComponent>(entity_id, entity_name);
+                            ecs.add_component<NameComponent>(entity_id, entity["NameComponent"]);
                         }
 
                         if (entity.contains("TransformComponent"))
                         {
-                            const auto& component = entity["TransformComponent"];
+                            ecs.add_component<TransformComponent>(entity_id, entity["TransformComponent"]);
+                        }
 
-                            const vec3 translation = component["Translation"].get<vec3>();
-                            const quat rotation = component["Rotation"].get<quat>();
-                            const vec3 scale = component["Scale"].get<vec3>();
+                        if (entity.contains("RigidBodyComponent"))
+                        {
+                            ecs.add_component<RigidBodyComponent>(entity_id, entity["RigidBodyComponent"]);
+                        }
 
-                            ecs.add_component<TransformComponent>(entity_id, translation, rotation, scale);
+                        if (entity.contains("LightComponent"))
+                        {
+                            ecs.add_component<LightComponent>(entity_id, entity["LightComponent"]);
+                        }
+
+                        if (entity.contains("PerspectiveCameraComponent"))
+                        {
+                            ecs.add_component<PerspectiveCameraComponent>(entity_id,
+                                                                          entity["PerspectiveCameraComponent"]);
+                        }
+
+                        if (entity.contains("OrthographicCameraComponent"))
+                        {
+                            ecs.add_component<OrthographicCameraComponent>(entity_id,
+                                                                           entity["OrthographicCameraComponent"]);
                         }
 
                         if (entity.contains("ModelComponent"))
@@ -268,125 +406,6 @@ namespace game
                                                               velocity);
                         }
 
-                        if (entity.contains("RigidBodyComponent"))
-                        {
-                            const auto& component = entity["RigidBodyComponent"];
-
-                            f32 mass = component["Mass"].get<f32>();
-
-                            Collider collider = BoxCollider();
-
-                            if (component.contains("BoxCollider"))
-                            {
-                                const auto& box_collider = component["BoxCollider"];
-
-                                const vec3 dimensions = box_collider["Dimensions"].get<vec3>();
-
-                                collider = BoxCollider(dimensions);
-                            }
-
-                            else if (component.contains("CapsuleCollider"))
-                            {
-                                const auto& capsule_collider = component["CapsuleCollider"];
-
-                                const f32 radius = capsule_collider["Radius"].get<f32>();
-                                const f32 height = capsule_collider["Height"].get<f32>();
-
-                                collider = CapsuleCollider(radius, height);
-                            }
-
-                            else if (component.contains("MeshCollider"))
-                            {
-                                const auto& mesh_collider = component["MeshCollider"];
-
-                                const str file_path = mesh_collider["FilePath"];
-
-                                // @TODO: figure out how to make this async
-                                const auto& res = mag::resource::get_model(file_path, false);
-
-                                std::vector<mag::math::Triangle> triangles;
-
-                                for (const auto& m : res->meshes)
-                                {
-                                    const u32 base_vertex = m.base_vertex;
-                                    const u32 base_index = m.base_index;
-                                    const u32 index_count = m.index_count;
-
-                                    for (u32 i = base_index; i < base_index + index_count; i += 3)
-                                    {
-                                        const u32 idx_0 = base_vertex + res->indices[i];
-                                        const u32 idx_1 = base_vertex + res->indices[i + 1];
-                                        const u32 idx_2 = base_vertex + res->indices[i + 2];
-
-                                        mag::math::Triangle triangle = {};
-
-                                        triangle.v0 = res->vertices[idx_0].position;
-                                        triangle.v1 = res->vertices[idx_1].position;
-                                        triangle.v2 = res->vertices[idx_2].position;
-
-                                        triangles.push_back(triangle);
-                                    }
-                                }
-
-                                collider = MeshCollider(file_path, triangles);
-                            }
-
-                            else
-                            {
-                                MAG_ASSERT(false, "Entity '{0}' has a rigidbody with no collider", entity_id);
-                            }
-
-                            ecs.add_component<RigidBodyComponent>(entity_id, collider, mass);
-                        }
-
-                        if (entity.contains("LightComponent"))
-                        {
-                            const auto& component = entity["LightComponent"];
-
-                            const vec3 color = component["Color"].get<vec3>();
-                            const f32 intensity = component["Intensity"].get<f32>();
-
-                            ecs.add_component<LightComponent>(entity_id, color, intensity);
-                        }
-
-                        if (entity.contains("PerspectiveCameraComponent"))
-                        {
-                            const auto& component = entity["PerspectiveCameraComponent"];
-
-                            const f32 fov = component["Fov"].get<f32>();
-                            const f32 near = component["Near"].get<f32>();
-                            const f32 far = component["Far"].get<f32>();
-
-                            mag::PerspectiveCameraDesc camera_desc = {};
-                            camera_desc.near = near;
-                            camera_desc.far = far;
-                            camera_desc.fov = fov;
-                            camera_desc.viewport_size = mag::window::get_size();
-
-                            mag::PerspectiveCamera camera = mag::PerspectiveCamera(camera_desc);
-
-                            ecs.add_component<PerspectiveCameraComponent>(entity_id, camera);
-                        }
-
-                        if (entity.contains("OrthographicCameraComponent"))
-                        {
-                            const auto& component = entity["OrthographicCameraComponent"];
-
-                            const f32 size = component["Size"].get<f32>();
-                            const f32 near = component["Near"].get<f32>();
-                            const f32 far = component["Far"].get<f32>();
-
-                            mag::OrthographicCameraDesc camera_desc = {};
-                            camera_desc.near = near;
-                            camera_desc.far = far;
-                            camera_desc.size = size;
-                            camera_desc.viewport_size = mag::window::get_size();
-
-                            mag::OrthographicCamera camera = mag::OrthographicCamera(camera_desc);
-
-                            ecs.add_component<OrthographicCameraComponent>(entity_id, camera);
-                        }
-
                         if (entity.contains("ScriptComponent"))
                         {
                             const auto& component = entity["ScriptComponent"];
@@ -394,11 +413,6 @@ namespace game
                             const str file_path = component["FilePath"];
 
                             ecs.add_component<ScriptComponent>(entity_id, file_path);
-                        }
-
-                        if (entity.contains("DebugComponent"))
-                        {
-                            ecs.add_component<DebugComponent>(entity_id);
                         }
                     }
                 });
