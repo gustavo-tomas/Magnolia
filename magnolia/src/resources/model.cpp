@@ -2,7 +2,6 @@
 
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
-#include "magnolia/core/memory.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/platform/json.hpp"
 #include "magnolia/resources/material.hpp"
@@ -40,10 +39,6 @@ namespace mag
             const str binary_file_path = data["File"];
             const std::vector<str> materials = data["Materials"];
 
-            const u32 num_vertices = data["NumVertices"].get<u32>();
-            const u32 num_indices = data["NumIndices"].get<u32>();
-            const u32 num_meshes = data["NumMeshes"].get<u32>();
-
             Buffer buffer;
             const b8 result = fs::read_binary_data(binary_file_path, buffer);
 
@@ -58,34 +53,7 @@ namespace mag
             model->name = model_name;
             model->file_path = file_path;
 
-            c8* model_data = buffer.cast<c8>();
-
-            // Read vertices
-            if (num_vertices > 0)
-            {
-                model->vertices.resize(num_vertices);
-                const u64 data_size = VEC_SIZE_BYTES(model->vertices);
-                mem::copy(model->vertices.data(), data_size, model_data, data_size, data_size);
-                model_data += data_size;
-            }
-
-            // Read indices
-            if (num_indices > 0)
-            {
-                model->indices.resize(num_indices);
-                const u64 data_size = VEC_SIZE_BYTES(model->indices);
-                mem::copy(model->indices.data(), data_size, model_data, data_size, data_size);
-                model_data += VEC_SIZE_BYTES(model->indices);
-            }
-
-            // Read meshes
-            if (num_meshes > 0)
-            {
-                model->meshes.resize(num_meshes);
-                const u64 data_size = VEC_SIZE_BYTES(model->meshes);
-                mem::copy(model->meshes.data(), data_size, model_data, data_size, data_size);
-                // model_data += VEC_SIZE_BYTES(model->meshes);
-            }
+            fs::deserialize(buffer, *model);
 
             // Get dependencies
             for (const str& material : materials)

@@ -8,7 +8,6 @@
 #include "assimp/scene.h"
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
-#include "magnolia/core/memory.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/platform/json.hpp"
 #include "magnolia/resources/material.hpp"
@@ -99,10 +98,6 @@ namespace mag
         const str native_model_file_path = output_directory + "/" + model.name + MODEL_FILE_EXTENSION;
         const str binary_file_path = output_directory + "/" + model.name + BINARY_FILE_EXTENSION;
 
-        const u32 num_vertices = model.vertices.size();
-        const u32 num_indices = model.indices.size();
-        const u32 num_meshes = model.meshes.size();
-
         fs::json data;
         data["Type"] = "Model";
         data["Name"] = model.name;
@@ -124,39 +119,7 @@ namespace mag
         }
 
         Buffer buffer;
-
-        u64 buffer_size = 0;
-        if (num_vertices > 0) buffer_size += VEC_SIZE_BYTES(model.vertices);
-        if (num_indices > 0) buffer_size += VEC_SIZE_BYTES(model.indices);
-        if (num_meshes > 0) buffer_size += VEC_SIZE_BYTES(model.meshes);
-
-        buffer.data.resize(buffer_size);
-
-        u8* ptr = buffer.data.data();
-
-        // Write vertices
-        if (num_vertices > 0)
-        {
-            const u64 data_size = VEC_SIZE_BYTES(model.vertices);
-            mem::copy(ptr, data_size, model.vertices.data(), data_size, data_size);
-            ptr += data_size;
-        }
-
-        // Write indices
-        if (num_indices > 0)
-        {
-            const u64 data_size = VEC_SIZE_BYTES(model.indices);
-            mem::copy(ptr, data_size, model.indices.data(), data_size, data_size);
-            ptr += data_size;
-        }
-
-        // Write meshes
-        if (num_meshes > 0)
-        {
-            const u64 data_size = VEC_SIZE_BYTES(model.meshes);
-            mem::copy(ptr, data_size, model.meshes.data(), data_size, data_size);
-            // ptr += data_size;
-        }
+        fs::serialize(buffer, model);
 
         // Write binary model data to file
         if (!fs::write_binary_data(binary_file_path, buffer))
