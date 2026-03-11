@@ -62,7 +62,7 @@ workspace "magnolia"
         "SDL3", 
         "assimp",
         "meshoptimizer",
-        "freetype",
+        "freetyped",
         "soloud",
         "imgui",
         "Jolt"
@@ -363,17 +363,19 @@ project "jolt"
     build_cmake_project("jolt", "Build", {
         {name = "libJolt.a", dir = ""}
     },
-    "-DCPP_RTTI_ENABLED=TRUE -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ " ..
+    "-DCMAKE_BUILD_TYPE=Debug -DCPP_RTTI_ENABLED=ON -DCMAKE_CXX_COMPILER=clang++ " ..
     "-DENABLE_INSTALL=OFF -DTARGET_UNIT_TESTS=OFF -DTARGET_HELLO_WORLD=OFF -DTARGET_PERFORMANCE_TEST=OFF " ..
-    "-DTARGET_SAMPLES=OFF -DTARGET_VIEWER=OFF")
+    "-DTARGET_SAMPLES=OFF -DTARGET_VIEWER=OFF -DFLOATING_POINT_EXCEPTIONS_ENABLED=OFF " ..
+    "-DJPH_USE_DX12=OFF -DJPH_USE_DXC=OFF -DJPH_USE_MTL=OFF -DJPH_USE_VK=ON -DJPH_USE_CPU_COMPUTE=ON")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
     kind "none"
     build_cmake_project("freetype", "", {
-        {name = "libfreetype.a", dir = ""}
+        {name = "libfreetyped.a", dir = ""} -- d means debug
     },
-    "")
+    "-DCMAKE_BUILD_TYPE=Debug -DSKIP_INSTALL_ALL=ON -DFT_DISABLE_ZLIB=ON -DFT_DISABLE_BZIP2=ON -DFT_DISABLE_PNG=ON " ..
+    "-DFT_DISABLE_HARFBUZZ=ON -DFT_DISABLE_BROTLI=ON -DFT_ENABLE_ERROR_STRINGS=ON")
 
 -- soloud --------------------------------------------------------------------------------------------------------------
 project "soloud"
