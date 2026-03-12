@@ -39,17 +39,7 @@ namespace mag
 
     namespace resource
     {
-        class ModelLoader : public IResourceLoader
-        {
-            public:
-                ModelLoader(ResourceManager* resource_manager);
-                ~ModelLoader() override;
-
-                IResource* load_sync(const str& file_path) override;
-
-            private:
-                ResourceManager* resource_manager = nullptr;
-        };
+        b8 load_sync(const str& file_path, ResourceManager* rm, ModelResource* resource);
     };  // namespace resource
 };  // namespace mag
 

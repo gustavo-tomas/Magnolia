@@ -13,43 +13,29 @@ namespace mag
 {
     namespace resource
     {
-        FontLoader::FontLoader() = default;
-
-        FontLoader::~FontLoader() = default;
-
-        IResource *FontLoader::load_sync(const str &file_path)
+        b8 load_sync(const str& file_path, ResourceManager* rm, FontResource* resource)
         {
-            FontResource *font = new FontResource();
-
-            if (font == nullptr)
-            {
-                LOG_ERROR("Invalid font ptr");
-                delete font;
-                return nullptr;
-            }
+            (void)rm;
 
             Buffer buffer;
             if (!fs::read_binary_data(file_path, buffer))
             {
                 LOG_ERROR("Failed to load font file: {0}", file_path);
-                delete font;
-                return nullptr;
+                return false;
             }
 
             FT_Library ft = nullptr;
             if (FT_Init_FreeType(&ft) != 0)
             {
                 LOG_ERROR("Failed to initialize FreeType Library");
-                delete font;
-                return nullptr;
+                return false;
             }
 
             FT_Face face = nullptr;
             if (FT_New_Memory_Face(ft, buffer.data.data(), static_cast<i64>(buffer.get_size()), 0, &face) != 0)
             {
                 LOG_ERROR("Failed to load font face: {0}", file_path);
-                delete font;
-                return nullptr;
+                return false;
             }
 
             // @TODO: hardcoded pixel height
@@ -66,7 +52,7 @@ namespace mag
                     continue;
                 }
 
-                Character &character = font->characters[static_cast<c8>(c)];
+                Character& character = resource->characters[static_cast<c8>(c)];
                 character.size = math::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
                 character.bearing = math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
                 character.advance = math::ivec2(face->glyph->advance.x, face->glyph->advance.y);
@@ -94,13 +80,13 @@ namespace mag
             }
 
             // Update font data
-            font->name = file_path;
-            font->file_path = file_path;
+            resource->name = file_path;
+            resource->file_path = file_path;
 
             FT_Done_Face(face);
             FT_Done_FreeType(ft);
 
-            return font;
+            return true;
         }
     };  // namespace resource
 };  // namespace mag

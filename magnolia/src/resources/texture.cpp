@@ -13,13 +13,9 @@ namespace mag
 {
     namespace resource
     {
-        TextureLoader::TextureLoader() = default;
-
-        TextureLoader::~TextureLoader() = default;
-
-        IResource* TextureLoader::load_sync(const str& file_path)
+        b8 load_sync(const str& file_path, ResourceManager* rm, TextureResource* resource)
         {
-            TextureResource* texture = new TextureResource();
+            (void)rm;
 
             Buffer buffer;
             fs::read_binary_data(file_path, buffer);
@@ -35,8 +31,7 @@ namespace mag
                 LOG_ERROR("Failed to load image file: {0}", file_path);
                 stbi_image_free(pixels);
 
-                delete texture;
-                return nullptr;
+                return false;
             }
 
             // @TODO: hardcoded channels
@@ -45,17 +40,17 @@ namespace mag
             const u64 image_size = static_cast<u64>(tex_width * tex_height) * tex_channels;
 
             // Update image data
-            texture->name = file_path;
-            texture->file_path = file_path;
-            texture->width = tex_width;
-            texture->height = tex_height;
-            texture->channels = tex_channels;
-            texture->mip_levels = static_cast<u32>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
-            texture->pixels = std::vector<u8>(pixels, pixels + image_size);
+            resource->name = file_path;
+            resource->file_path = file_path;
+            resource->width = tex_width;
+            resource->height = tex_height;
+            resource->channels = tex_channels;
+            resource->mip_levels = static_cast<u32>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
+            resource->pixels = std::vector<u8>(pixels, pixels + image_size);
 
             stbi_image_free(pixels);
 
-            return texture;
+            return true;
         }
 
         b8 get_image_info(const str& raw_file_path, u32* width, u32* height, u32* channels, u32* mip_levels)

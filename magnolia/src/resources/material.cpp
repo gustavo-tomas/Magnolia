@@ -8,43 +8,20 @@ namespace mag
 {
     namespace resource
     {
-        MaterialLoader::MaterialLoader(ResourceManager* resource_manager) : resource_manager(resource_manager)
+        b8 load_sync(const str& file_path, ResourceManager* rm, MaterialResource* resource)
         {
-            // materials[DEFAULT_MATERIAL_NAME] = create_ref<MaterialResource>();
-            // materials[DEFAULT_MATERIAL_NAME]->name = "Default";
-            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Albedo] = DEFAULT_ALBEDO_TEXTURE_NAME;
-            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Normal] = DEFAULT_NORMAL_TEXTURE_NAME;
-            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Roughness] = DEFAULT_ROUGHNESS_TEXTURE_NAME;
-            // materials[DEFAULT_MATERIAL_NAME]->textures[TextureSlot::Metalness] = DEFAULT_METALNESS_TEXTURE_NAME;
-        }
-
-        MaterialLoader::~MaterialLoader() = default;
-
-        IResource* MaterialLoader::load_sync(const str& file_path)
-        {
-            MaterialResource* material = new MaterialResource();
-
             fs::json data;
 
             if (!fs::read_json_data(file_path, data))
             {
                 LOG_ERROR("Failed to load material: '{0}'", file_path);
-                delete material;
-                return nullptr;
+                return false;
             }
 
-            if (!data.contains("Name"))
+            if (!data.contains("Name") || !data.contains("Textures"))
             {
-                LOG_ERROR("Material file '{0}' has no name", file_path);
-                delete material;
-                return nullptr;
-            }
-
-            if (!data.contains("Textures"))
-            {
-                LOG_ERROR("Material file '{0}' has no textures", file_path);
-                delete material;
-                return nullptr;
+                LOG_ERROR("Material file '{0}' has incomplete fields", file_path);
+                return false;
             }
 
             const str material_name = data["Name"];
@@ -54,13 +31,12 @@ namespace mag
             if (!textures.contains("Albedo") || !textures.contains("Normal"))
             {
                 LOG_ERROR("Material file '{0}' has missing textures", file_path);
-                delete material;
-                return nullptr;
+                return false;
             }
 
             // Set material data
-            material->name = material_name;
-            material->file_path = file_path;
+            resource->name = material_name;
+            resource->file_path = file_path;
 
             std::unordered_map<TextureSlot, str> textures_map;
 
@@ -72,11 +48,11 @@ namespace mag
             // Get dependencies
             for (const auto& [slot, texture] : textures_map)
             {
-                material->textures[slot] = resource_manager->get_sync<TextureResource>(texture);
+                resource->textures[slot] = rm->get_sync<TextureResource>(texture);
             }
 
             LOG_SUCCESS("Loaded material: {0}", file_path);
-            return material;
+            return true;
         }
     };  // namespace resource
 };  // namespace mag

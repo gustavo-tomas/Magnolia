@@ -25,13 +25,6 @@ namespace mag
 
     namespace resource
     {
-        class FontLoader : public IResourceLoader
-        {
-            public:
-                FontLoader();
-                ~FontLoader() override;
-
-                IResource* load_sync(const str& file_path) override;
-        };
+        b8 load_sync(const str& file_path, ResourceManager* rm, FontResource* resource);
     };  // namespace resource
 };  // namespace mag

@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <memory>
-#include <typeindex>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
@@ -45,6 +44,11 @@ namespace mag
         // Shutdown all resource subsystems
         void shutdown();
 
+        class ResourceManager;
+
+        // Base function to load a resource
+        b8 load_sync(const str& file_path, ResourceManager* rm, IResource* resource) = delete;
+
         MAG_API ref<TextureResource> get_texture(const str& file_path, const b8 reload = false);
         MAG_API ref<MaterialResource> get_material(const str& file_path, const b8 reload = false);
         MAG_API ref<ModelResource> get_model(const str& file_path, const b8 reload = false);
@@ -58,29 +62,17 @@ namespace mag
         MAG_API void get_texture_async(const str& file_path, const JobGroupHandle job_group,
                                        const ResourceLoadedCallbackFn& callback, const b8 reload = false);
 
-        // Interface for a resource loader
-        class IResourceLoader
-        {
-            public:
-                virtual ~IResourceLoader() = default;
-                virtual IResource* load_sync(const str& file_path) = 0;
-        };
-
         class ResourceManager
         {
             public:
-                ResourceManager();
-                ~ResourceManager();
+                ResourceManager() = default;
+                ~ResourceManager() = default;
 
                 // Synchronous loading. Returns nullptr on error.
                 template <typename T>
                 ref<T> get_sync(const str& name, const b8 reload = false)
                 {
                     static_assert(std::is_base_of_v<IResource, T>, "T must derive from IResource");
-
-                    const str resource_type_name = std::type_index(typeid(T)).name();
-                    MAG_ASSERT(loaders.contains(std::type_index(typeid(T))), "Loader for type '{}' is not registered",
-                               resource_type_name);
 
                     // Check if resource is already loaded
                     auto it = resources.find(name);
@@ -154,25 +146,22 @@ namespace mag
                     thread::add_job(job_group, job);
                 }
 
-                // Register a loader for a specific resource type
-                template <typename T>
-                void register_loader(unique<IResourceLoader> loader)
-                {
-                    static_assert(std::is_base_of_v<IResource, T>, "T must derive from IResource");
-                    loaders[std::type_index(typeid(T))] = std::move(loader);
-                }
-
             private:
                 // Shorthand to load a resource
                 template <typename T>
                 T* load_resource(const str& file_path)
                 {
-                    T* resource = reinterpret_cast<T*>(loaders[std::type_index(typeid(T))]->load_sync(file_path));
-                    return resource;
+                    T* resource = new T();
+                    if (load_sync(file_path, this, resource))
+                    {
+                        return resource;
+                    }
+
+                    delete resource;
+                    return nullptr;
                 }
 
                 thread::Map<str, ref<IResource>> resources;
-                thread::Map<std::type_index, unique<IResourceLoader>> loaders;
                 thread::Map<str, thread::Queue<ResourceLoadedCallbackFn>> loading_map;
         };
     };  // namespace resource

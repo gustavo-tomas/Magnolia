@@ -103,14 +103,7 @@ namespace mag
 
     namespace resource
     {
-        class ShaderLoader : public IResourceLoader
-        {
-            public:
-                ShaderLoader();
-                ~ShaderLoader() override;
-
-                IResource* load_sync(const str& file_path) override;
-        };
+        b8 load_sync(const str& file_path, ResourceManager* rm, ShaderResource* resource);
 
         MAG_API b8 compile_shader(const str& file_path);
     };  // namespace resource

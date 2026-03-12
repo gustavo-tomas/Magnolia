@@ -24,16 +24,6 @@ namespace mag
 
     namespace resource
     {
-        class MaterialLoader : public IResourceLoader
-        {
-            public:
-                MaterialLoader(ResourceManager* resource_manager);
-                ~MaterialLoader() override;
-
-                IResource* load_sync(const str& file_path) override;
-
-            private:
-                ResourceManager* resource_manager = nullptr;
-        };
+        b8 load_sync(const str& file_path, ResourceManager* rm, MaterialResource* resource);
     };  // namespace resource
 };  // namespace mag

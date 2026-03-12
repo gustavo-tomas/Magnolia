@@ -13,13 +13,6 @@ namespace mag
 
     namespace resource
     {
-        class AudioLoader : public IResourceLoader
-        {
-            public:
-                AudioLoader();
-                ~AudioLoader() override;
-
-                IResource* load_sync(const str& file_path) override;
-        };
+        b8 load_sync(const str& file_path, ResourceManager* rm, AudioResource* resource);
     };  // namespace resource
 };  // namespace mag

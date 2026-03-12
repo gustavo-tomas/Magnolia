@@ -9,45 +9,32 @@ namespace mag
 {
     namespace resource
     {
-        AudioLoader::AudioLoader() = default;
-
-        AudioLoader::~AudioLoader() = default;
-
-        IResource *AudioLoader::load_sync(const str &file_path)
+        b8 load_sync(const str& file_path, ResourceManager* rm, AudioResource* resource)
         {
-            AudioResource *audio = new AudioResource();
-
-            if (audio == nullptr)
-            {
-                LOG_ERROR("Invalid audio ptr");
-                delete audio;
-                return nullptr;
-            }
+            (void)rm;
 
             Buffer buffer;
             if (!fs::read_binary_data(file_path, buffer))
             {
                 LOG_ERROR("Failed to load audio file: {0}", file_path);
-                delete audio;
-                return nullptr;
+                return false;
             }
 
-            SoLoud::Wav *audio_source = new SoLoud::Wav();
+            auto* audio_source = new SoLoud::Wav();
 
             const SoLoud::result result = audio_source->loadMem(buffer.data.data(), buffer.get_size(), true);
             if (result != SoLoud::SOLOUD_ERRORS::SO_NO_ERROR)
             {
                 LOG_ERROR("Failed to load audio: '{0}'", file_path);
-                delete audio;
-                return nullptr;
+                return false;
             }
 
             // Update audio data
-            audio->name = file_path;
-            audio->file_path = file_path;
-            audio->source = audio_source;
+            resource->name = file_path;
+            resource->file_path = file_path;
+            resource->source = audio_source;
 
-            return audio;
+            return true;
         }
     };  // namespace resource
 };  // namespace mag

@@ -138,26 +138,21 @@ namespace mag
             return true;
         }
 
-        ShaderLoader::ShaderLoader() = default;
-
-        ShaderLoader::~ShaderLoader() = default;
-
-        IResource* ShaderLoader::load_sync(const str& file_path)
+        b8 load_sync(const str& file_path, ResourceManager* rm, ShaderResource* resource)
         {
-            ShaderResource* shader = new ShaderResource();
+            (void)rm;
 
-            if (!load_shader_description(file_path, shader))
+            if (!load_shader_description(file_path, resource))
             {
-                delete shader;
-                return nullptr;
+                return false;
             }
 
-            for (const auto& [stage, module_data] : shader->stages)
+            for (const auto& [stage, module_data] : resource->stages)
             {
                 // Build the binary name from the glsl name
                 const str extension = shader_stage_map.at(module_data.stage).extension;
                 const str binary_file_path =
-                    MAG_BUILD_SHADER_NAME(fs::get_file_name(shader->glsl_file_path) + extension);
+                    MAG_BUILD_SHADER_NAME(fs::get_file_name(resource->glsl_file_path) + extension);
 
                 Buffer buffer;
                 const b8 result = fs::read_binary_data(binary_file_path, buffer);
@@ -165,12 +160,11 @@ namespace mag
                 if (!result)
                 {
                     LOG_ERROR("Failed to load native model binary file: '{0}'", binary_file_path);
-                    delete shader;
-                    return nullptr;
+                    return false;
                 }
 
                 const ShaderResourceStage shader_stage = shader_stage_map.at(module_data.stage).stage;
-                shader->stages[shader_stage].code = buffer.data;
+                resource->stages[shader_stage].code = buffer.data;
 
                 SpvReflectShaderModule spv_module;
 
@@ -181,8 +175,7 @@ namespace mag
                 if (spv_result != SPV_REFLECT_RESULT_SUCCESS)
                 {
                     LOG_ERROR("Failed to load shader module reflection: {0}", binary_file_path);
-                    delete shader;
-                    return nullptr;
+                    return false;
                 }
 
                 // Descriptor sets
@@ -238,7 +231,7 @@ namespace mag
                         descriptor.bindings.push_back(binding);
                     }
 
-                    shader->stages[shader_stage].descriptors.push_back(descriptor);
+                    resource->stages[shader_stage].descriptors.push_back(descriptor);
                 }
 
                 // Vertex input attributes
@@ -270,7 +263,7 @@ namespace mag
                         vertex_input.location = location;
                         vertex_input.size = size;
 
-                        shader->vertex_inputs.push_back(vertex_input);
+                        resource->vertex_inputs.push_back(vertex_input);
 
                         offset += size;
                     }
@@ -278,7 +271,7 @@ namespace mag
             }
 
             LOG_SUCCESS("Loaded shader: {0}", file_path);
-            return shader;
+            return true;
         }
 
         b8 compile_shader(const str& input_file_path)
