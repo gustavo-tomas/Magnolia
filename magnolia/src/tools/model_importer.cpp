@@ -15,6 +15,9 @@
 #include "magnolia/resources/resource.hpp"
 #include "meshoptimizer.h"
 
+// Include after model definitions
+#include "magnolia/platform/serializer.hpp"
+
 namespace mag
 {
 #define MATERIAL_FILE_EXTENSION ".mat.json"

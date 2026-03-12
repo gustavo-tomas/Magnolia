@@ -1,12 +1,19 @@
 #pragma once
 
+#include <sstream>
+
 #include "magnolia/core/buffer.hpp"
-#include "magnolia/core/memory.hpp"
 #include "magnolia/core/types.hpp"
-#include "magnolia/platform/serializer_fwd.hpp"
+#include "magnolia/math/types.hpp"
+
+// This systems uses ADL (https://en.cppreference.com/w/cpp/language/adl.html) to find user implementations. Just
+// include this file after declaring functions and the ADL will search for functions in the same namespace.
 
 namespace mag::fs
 {
+    template <typename T>
+    concept basic_type = std::integral<T> || std::floating_point<T>;
+
     // Basic types
 
     template <basic_type T>

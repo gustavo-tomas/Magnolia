@@ -4,7 +4,6 @@
 
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
-#include "magnolia/platform/serializer_fwd.hpp"
 #include "magnolia/resources/resource.hpp"
 
 namespace mag
@@ -56,57 +55,12 @@ namespace mag
 
 namespace mag::fs
 {
-    inline void to_binary(std::ostringstream& ss, const Vertex& data)
-    {
-        to_binary(ss, data.position);
-        to_binary(ss, data.normal);
-        to_binary(ss, data.tex_coords);
-        to_binary(ss, data.tangent);
-        to_binary(ss, data.bitangent);
-    }
+    void to_binary(std::ostringstream& ss, const Vertex& data);
+    void from_binary(std::istringstream& ss, Vertex& data);
 
-    inline void from_binary(std::istringstream& ss, Vertex& data)
-    {
-        from_binary(ss, data.position);
-        from_binary(ss, data.normal);
-        from_binary(ss, data.tex_coords);
-        from_binary(ss, data.tangent);
-        from_binary(ss, data.bitangent);
-    }
+    void to_binary(std::ostringstream& ss, const Mesh& data);
+    void from_binary(std::istringstream& ss, Mesh& data);
 
-    inline void to_binary(std::ostringstream& ss, const Mesh& data)
-    {
-        to_binary(ss, data.base_vertex);
-        to_binary(ss, data.base_index);
-        to_binary(ss, data.index_count);
-        to_binary(ss, data.material_index);
-        to_binary(ss, data.aabb_min);
-        to_binary(ss, data.aabb_max);
-    }
-
-    inline void from_binary(std::istringstream& ss, Mesh& data)
-    {
-        from_binary(ss, data.base_vertex);
-        from_binary(ss, data.base_index);
-        from_binary(ss, data.index_count);
-        from_binary(ss, data.material_index);
-        from_binary(ss, data.aabb_min);
-        from_binary(ss, data.aabb_max);
-    }
-
-    inline void to_binary(std::ostringstream& ss, const ModelResource& data)
-    {
-        to_binary(ss, data.vertices);
-        to_binary(ss, data.indices);
-        to_binary(ss, data.meshes);
-    }
-
-    inline void from_binary(std::istringstream& ss, ModelResource& data)
-    {
-        from_binary(ss, data.vertices);
-        from_binary(ss, data.indices);
-        from_binary(ss, data.meshes);
-    }
+    void to_binary(std::ostringstream& ss, const ModelResource& data);
+    void from_binary(std::istringstream& ss, ModelResource& data);
 };  // namespace mag::fs
-
-#include "magnolia/platform/serializer.hpp"
