@@ -82,7 +82,7 @@ namespace game
             mag::window::on_update();
 
             // Called after window update
-            const f32 dt = mag::window::get_delta_time();
+            const f32 dt = static_cast<f32>(mag::window::get_delta_time());
 
             // Skip rendering if minimized or resizing
             if (mag::window::is_minimized())
