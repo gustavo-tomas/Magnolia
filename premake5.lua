@@ -330,7 +330,8 @@ project "vkbootstrap"
     build_cmake_project("vkbootstrap", "", {
         {name = "libvk-bootstrap.a", dir = ""}
     },
-    "-DVK_BOOTSTRAP_POSITION_INDEPENDENT_CODE=ON -DVK_BOOTSTRAP_WERROR=ON -DVK_BOOTSTRAP_TEST=OFF")
+    "-DVK_BOOTSTRAP_POSITION_INDEPENDENT_CODE=ON -DVK_BOOTSTRAP_WERROR=ON -DVK_BOOTSTRAP_TEST=OFF " ..
+    "-DVK_BOOTSTRAP_VULKAN_HEADER_DIR=libs/vulkan/include ")
 
 -- spirv_reflect -------------------------------------------------------------------------------------------------------
 project "spirv_reflect"
