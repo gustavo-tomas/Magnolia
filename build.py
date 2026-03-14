@@ -75,7 +75,7 @@ def lint():
     return
   
   cmd = "cppcheck --std=c++23 --check-level=exhaustive "
-  cmd += "--output-file=build/lint_cppcheck.txt "
+  cmd += "--output-file=build/clang/lint.txt "
   cmd += "--enable=all "
   cmd += "--suppress=missingInclude --suppress=missingIncludeSystem "
   cmd += "--suppress=noExplicitConstructor --suppress=unusedFunction --suppress=unknownMacro "
@@ -90,19 +90,18 @@ def profile(system, configuration):
 
   print(f"(Python) Starting compilation profile")
 
-  output_dir = "build"
+  output_dir = "build/clang"
+  obj_dir = f"build/{system}/{configuration}/obj"
   profile_binary = "compilation_profile"
   
   # Clean first
   clean(configuration)
   
-  os.system(f"mkdir -p {output_dir}")
-  os.system(f"ClangBuildAnalyzer --start {output_dir}")
-  
   # Then build
   build(system, configuration)
 
-  os.system(f"ClangBuildAnalyzer --stop {output_dir} {output_dir}/{profile_binary}")
+  os.system(f"mkdir -p {output_dir}")
+  os.system(f"ClangBuildAnalyzer --all {obj_dir} {output_dir}/{profile_binary}")
   os.system(f"ClangBuildAnalyzer --analyze {output_dir}/{profile_binary}")
 
   return
@@ -115,7 +114,7 @@ def setup(configuration):
 
   print(f"(Python) Starting clang setup")
 
-  output_dir = "build"
+  output_dir = "build/clang"
   output_file = "compile_commands.json"
   
   # Clean first
@@ -123,7 +122,7 @@ def setup(configuration):
   
   # Then build
   os.system(f"mkdir -p {output_dir}")
-  os.system(f"bear -o {output_dir}/{output_file} -- python build.py {output_dir} {configuration}")
+  os.system(f"bear -o {output_dir}/{output_file} -- python build.py build {configuration}")
 
   return
 
