@@ -41,39 +41,38 @@ namespace mag
             // Initialize file watcher
             state->fw.running = true;
 
-            state->fw.watcher_thread = std::thread(
-                []
+            state->fw.watcher_thread = std::thread([]
+            {
+                while (state->fw.running)
                 {
-                    while (state->fw.running)
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+                    std::vector<str> marked_for_removal;
+
+                    std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+                    for (auto& [file_path, file_status] : state->fw.files_on_watch)
                     {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
-                        std::vector<str> marked_for_removal;
-
-                        std::lock_guard<std::mutex> lock(state->fw.files_mutex);
-                        for (auto& [file_path, file_status] : state->fw.files_on_watch)
+                        // Remove files that have been deleted
+                        if (!fs::exists(file_path))
                         {
-                            // Remove files that have been deleted
-                            if (!fs::exists(file_path))
-                            {
-                                marked_for_removal.push_back(file_path);
-                                continue;
-                            }
-
-                            auto current_write_time = std::filesystem::last_write_time(file_path);
-                            if (current_write_time != file_status.last_write_time)
-                            {
-                                file_status.last_write_time = current_write_time;
-                                file_status.modified = true;
-                            }
+                            marked_for_removal.push_back(file_path);
+                            continue;
                         }
 
-                        for (const auto& file_path : marked_for_removal)
+                        auto current_write_time = std::filesystem::last_write_time(file_path);
+                        if (current_write_time != file_status.last_write_time)
                         {
-                            state->fw.files_on_watch.erase(file_path);
+                            file_status.last_write_time = current_write_time;
+                            file_status.modified = true;
                         }
                     }
-                });
+
+                    for (const auto& file_path : marked_for_removal)
+                    {
+                        state->fw.files_on_watch.erase(file_path);
+                    }
+                }
+            });
 
             return state != nullptr;
         }
@@ -205,8 +204,8 @@ namespace mag
             str fixed_path = file_path.string();
 
             // Replace backslashes
-            std::ranges::replace_if(
-                fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; }, '/');
+            std::ranges::replace_if(fixed_path.begin(), fixed_path.end(), [](const auto& ch) { return ch == '\\'; },
+                                    '/');
 
             return fixed_path;
         }

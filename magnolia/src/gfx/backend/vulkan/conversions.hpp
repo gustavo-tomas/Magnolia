@@ -58,7 +58,9 @@ namespace mag
 
         inline VkClearColorValue mag_to_vk(const math::vec4& clear_color)
         {
-            const VkClearColorValue vk_clear_color = {{clear_color[0], clear_color[1], clear_color[2], clear_color[3]}};
+            const VkClearColorValue vk_clear_color = {
+                {clear_color[0], clear_color[1], clear_color[2], clear_color[3]}
+            };
             return vk_clear_color;
         }
 

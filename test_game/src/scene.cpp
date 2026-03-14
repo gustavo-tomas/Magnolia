@@ -20,7 +20,7 @@ namespace game
 {
     Scene::Scene(Renderer* renderer)
         : ecs(mag::create_unique<mag::ECS>([this](const mag::EntityID id, std::any component)
-                                           { on_component_added(id, component); })),
+    { on_component_added(id, component); })),
           physics_world(mag::physics::create_physics_world()),
           renderer(renderer),
           job_group(mag::thread::create_job_group())

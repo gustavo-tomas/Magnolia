@@ -148,93 +148,88 @@ namespace game
 
     void TestGame::register_commands()
     {
-        mag::console::register_command("recompile_script",
-                                       [this](const std::vector<str>& args)
-                                       {
-                                           for (const str& arg : args)
-                                           {
-                                               mag::script::RecompileScriptParams params = {};
-                                               params.force_recompilation = true;
+        mag::console::register_command("recompile_script", [this](const std::vector<str>& args)
+        {
+            for (const str& arg : args)
+            {
+                mag::script::RecompileScriptParams params = {};
+                params.force_recompilation = true;
 
-                                               // We reuse the asset dir retrieved from the project to make things
-                                               // easier
-                                               params.file_path = project->get_asset_dir() / arg;
+                // We reuse the asset dir retrieved from the project to make things
+                // easier
+                params.file_path = project->get_asset_dir() / arg;
 
-                                               if (mag::script::compile_script(params))
-                                               {
-                                                   // @TODO: Reload the scene. Ideally we don't want to reload the whole
-                                                   // thing but this way avoids handling old state.
-                                                   scene->set_next_scene(scene->get_file_path());
-                                               }
-                                           }
-                                       });
+                if (mag::script::compile_script(params))
+                {
+                    // @TODO: Reload the scene. Ideally we don't want to reload the whole
+                    // thing but this way avoids handling old state.
+                    scene->set_next_scene(scene->get_file_path());
+                }
+            }
+        });
 
-        mag::console::register_command("recompile_shader",
-                                       [this](const std::vector<str>& args)
-                                       {
-                                           for (const str& arg : args)
-                                           {
-                                               // We reuse the asset dir retrieved from the project to make things
-                                               // easier
-                                               const str file_path = project->get_asset_dir() / arg;
+        mag::console::register_command("recompile_shader", [this](const std::vector<str>& args)
+        {
+            for (const str& arg : args)
+            {
+                // We reuse the asset dir retrieved from the project to make things
+                // easier
+                const str file_path = project->get_asset_dir() / arg;
 
-                                               renderer->build_shader(file_path, true);
-                                           }
-                                       });
+                renderer->build_shader(file_path, true);
+            }
+        });
 
-        mag::console::register_command("import_model",
-                                       [this](const std::vector<str>& args)
-                                       {
-                                           static const mag::JobGroupHandle job_group = mag::thread::create_job_group();
+        mag::console::register_command("import_model", [this](const std::vector<str>& args)
+        {
+            static const mag::JobGroupHandle job_group = mag::thread::create_job_group();
 
-                                           LOG_INFO("import_model job group: {}", job_group);
+            LOG_INFO("import_model job group: {}", job_group);
 
-                                           for (const str& arg : args)
-                                           {
-                                               mag::Job job = {};
-                                               job.execute_fn = [this, arg]()
-                                               {
-                                                   mag::ModelImporter importer;
+            for (const str& arg : args)
+            {
+                mag::Job job = {};
+                job.execute_fn = [this, arg]()
+                {
+                    mag::ModelImporter importer;
 
-                                                   // We reuse the asset dir retrieved from the project to make things
-                                                   // easier
-                                                   const str file_path = project->get_asset_dir() / arg;
+                    // We reuse the asset dir retrieved from the project to make things
+                    // easier
+                    const str file_path = project->get_asset_dir() / arg;
 
-                                                   str out_file_path;
-                                                   const b8 result = importer.import(file_path, out_file_path);
+                    str out_file_path;
+                    const b8 result = importer.import(file_path, out_file_path);
 
-                                                   mag::JobData job_data = {};
-                                                   job_data.result = result;
-                                                   job_data.data = out_file_path;
+                    mag::JobData job_data = {};
+                    job_data.result = result;
+                    job_data.data = out_file_path;
 
-                                                   return job_data;
-                                               };
-                                               job.callback_fn = [arg](const mag::JobData& data)
-                                               {
-                                                   if (data.result)
-                                                   {
-                                                       LOG_SUCCESS("Imported model '{0}' to '{1}'", arg,
-                                                                   std::any_cast<str>(data.data));
-                                                   }
+                    return job_data;
+                };
+                job.callback_fn = [arg](const mag::JobData& data)
+                {
+                    if (data.result)
+                    {
+                        LOG_SUCCESS("Imported model '{0}' to '{1}'", arg, std::any_cast<str>(data.data));
+                    }
 
-                                                   else
-                                                   {
-                                                       LOG_ERROR("Failed to import model '{0}'", arg);
-                                                   }
-                                               };
+                    else
+                    {
+                        LOG_ERROR("Failed to import model '{0}'", arg);
+                    }
+                };
 
-                                               mag::thread::add_job(job_group, job);
-                                           }
-                                       });
+                mag::thread::add_job(job_group, job);
+            }
+        });
 
-        mag::console::register_command("set_fps",
-                                       [](const std::vector<str>& args)
-                                       {
-                                           for (const str& arg : args)
-                                           {
-                                               const i32 frame_rate = std::stoi(arg);
-                                               mag::window::set_target_frame_rate(frame_rate);
-                                           }
-                                       });
+        mag::console::register_command("set_fps", [](const std::vector<str>& args)
+        {
+            for (const str& arg : args)
+            {
+                const i32 frame_rate = std::stoi(arg);
+                mag::window::set_target_frame_rate(frame_rate);
+            }
+        });
     }
 };  // namespace game

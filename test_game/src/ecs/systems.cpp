@@ -191,15 +191,13 @@ namespace game
         bullet_transform.translation -= forward_dir * player.bullet_offset;
 
         const str file_path = "test_game/assets/sprites/test_texture0.png";
-        mag::resource::get_texture_async(
-            file_path, scene.get_job_group(),
-            [&ecs, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
-            {
-                auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+        mag::resource::get_texture_async(file_path, scene.get_job_group(),
+                                         [&ecs, file_path, bullet_id](const mag::ref<mag::IResource>& resource)
+        {
+            auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-                ecs.add_component<SpriteComponent>(bullet_id, res);
-            },
-            false);
+            ecs.add_component<SpriteComponent>(bullet_id, res);
+        }, false);
 
         const f32 radius = 2.5f;
         const f32 height = 0.0f;
@@ -314,15 +312,13 @@ namespace game
             ecs.add_component<RigidBodyComponent>(enemy_id, collider, mass);
             ecs.add_component<EnemyComponent>(enemy_id);
 
-            mag::resource::get_model_async(
-                file_path, scene.get_job_group(),
-                [&ecs, file_path](const mag::ref<mag::IResource>& resource)
-                {
-                    auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
+            mag::resource::get_model_async(file_path, scene.get_job_group(),
+                                           [&ecs, file_path](const mag::ref<mag::IResource>& resource)
+            {
+                auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
 
-                    ecs.add_component<ModelComponent>(enemy_id, res);
-                },
-                false);
+                ecs.add_component<ModelComponent>(enemy_id, res);
+            }, false);
 
             init = true;
         }

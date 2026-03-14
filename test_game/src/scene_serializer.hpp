@@ -11,4 +11,4 @@ namespace game
         b8 load(const str& file_path, Scene& scene);
         b8 save(const str& file_path, Scene& scene);
     };  // namespace scene
-};      // namespace game
+};  // namespace game

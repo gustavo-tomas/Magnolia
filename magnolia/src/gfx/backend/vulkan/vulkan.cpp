@@ -271,21 +271,20 @@ namespace mag
 
                     // @TODO: use KTX to generate mip maps: https://www.khronos.org/ktx/
 
-                    device->submit_commands_immediate(
-                        [&](const ICommandBuffer& cmd)
-                        {
-                            // Transition image layout to transfer dst
-                            cmd.pipeline_barrier(this, TextureLayout::TransferDst, AccessMask::None,
-                                                 AccessMask::TransferWrite, PipelineStage::TopOfPipe,
-                                                 PipelineStage::Transfer);
+                    device->submit_commands_immediate([&](const ICommandBuffer& cmd)
+                    {
+                        // Transition image layout to transfer dst
+                        cmd.pipeline_barrier(this, TextureLayout::TransferDst, AccessMask::None,
+                                             AccessMask::TransferWrite, PipelineStage::TopOfPipe,
+                                             PipelineStage::Transfer);
 
-                            cmd.copy_buffer_to_texture(staging_buffer.get(), this);
+                        cmd.copy_buffer_to_texture(staging_buffer.get(), this);
 
-                            // Transition image layout to shader read only
-                            cmd.pipeline_barrier(this, TextureLayout::ShaderReadOnly, AccessMask::TransferWrite,
-                                                 AccessMask::ShaderRead, PipelineStage::Transfer,
-                                                 PipelineStage::FragmentShader);
-                        });
+                        // Transition image layout to shader read only
+                        cmd.pipeline_barrier(this, TextureLayout::ShaderReadOnly, AccessMask::TransferWrite,
+                                             AccessMask::ShaderRead, PipelineStage::Transfer,
+                                             PipelineStage::FragmentShader);
+                    });
                 }
 
                 const math::uvec3& get_extent() const override { return extent; }
@@ -1274,28 +1273,28 @@ namespace mag
                                    VkDebugUtilsMessageTypeFlagsEXT message_type,
                                    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
                                    void* user_data) -> VkBool32
-                                {
-                                    (void)message_type;
-                                    (void)user_data;
+                    {
+                        (void)message_type;
+                        (void)user_data;
 
-                                    if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-                                    {
-                                        LOG_WARNING("{0}\n", callback_data->pMessage);
-                                    }
+                        if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+                        {
+                            LOG_WARNING("{0}\n", callback_data->pMessage);
+                        }
 
-                                    else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-                                    {
-                                        LOG_ERROR("{0}\n", callback_data->pMessage);
-                                        DEBUG_BREAK();
-                                    }
+                        else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+                        {
+                            LOG_ERROR("{0}\n", callback_data->pMessage);
+                            DEBUG_BREAK();
+                        }
 
-                                    else
-                                    {
-                                        LOG_INFO("{0}\n", callback_data->pMessage);
-                                    }
+                        else
+                        {
+                            LOG_INFO("{0}\n", callback_data->pMessage);
+                        }
 
-                                    return VK_FALSE;
-                                })
+                        return VK_FALSE;
+                    })
                             .request_validation_layers()
 
                             .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)

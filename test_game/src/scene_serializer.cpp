@@ -363,12 +363,11 @@ namespace game
                     mag::resource::get_model_async(
                         file_path, scene.get_job_group(),
                         [&ecs, file_path, entity_id](const mag::ref<mag::IResource>& resource)
-                        {
-                            auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
+                    {
+                        auto res = std::dynamic_pointer_cast<mag::ModelResource>(resource);
 
-                            ecs.add_component<ModelComponent>(entity_id, res);
-                        },
-                        false);
+                        ecs.add_component<ModelComponent>(entity_id, res);
+                    }, false);
                 }
 
                 if (entity.contains("SpriteComponent"))
@@ -378,16 +377,15 @@ namespace game
                     const b8 constant_size = component["ConstantSize"].get<b8>();
                     const b8 always_face_camera = component["AlwaysFaceCamera"].get<b8>();
 
-                    mag::resource::get_texture_async(
-                        file_path, scene.get_job_group(),
-                        [&ecs, file_path, entity_id, constant_size,
-                         always_face_camera](const mag::ref<mag::IResource>& resource)
-                        {
-                            auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
+                    mag::resource::get_texture_async(file_path, scene.get_job_group(),
+                                                     [&ecs, file_path, entity_id, constant_size,
+                                                      always_face_camera](const mag::ref<mag::IResource>& resource)
+                    {
+                        auto res = std::dynamic_pointer_cast<mag::TextureResource>(resource);
 
-                            ecs.add_component<SpriteComponent>(entity_id, res, constant_size, always_face_camera);
-                        },
-                        false);
+                        ecs.add_component<SpriteComponent>(entity_id, res, constant_size, always_face_camera);
+                    },
+                                                     false);
                 }
 
                 if (entity.contains("TextComponent"))

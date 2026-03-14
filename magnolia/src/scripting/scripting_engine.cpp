@@ -33,13 +33,12 @@ namespace mag
 
         void shutdown()
         {
-            std::erase_if(state->scripts,
-                          [](const auto& item)
-                          {
-                              const auto& [key, value] = item;
-                              dlclose(value);
-                              return true;
-                          });
+            std::erase_if(state->scripts, [](const auto& item)
+            {
+                const auto& [key, value] = item;
+                dlclose(value);
+                return true;
+            });
 
             delete state;
         }

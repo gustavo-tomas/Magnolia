@@ -130,28 +130,25 @@ namespace mag
 
             // Mag commands are blue to distinguish from user commands
 
-            register_command("HELP",
-                             [](const std::vector<str>&)
-                             {
-                                 add_log({.color = COLOR_BLUE, .text = "Commands:"});
-                                 for (const auto& [command, function] : state->commands)
-                                 {
-                                     add_log({.color = COLOR_BLUE, .text = "- {0}"}, command.c_str());
-                                 }
-                             });
+            register_command("HELP", [](const std::vector<str>&)
+            {
+                add_log({.color = COLOR_BLUE, .text = "Commands:"});
+                for (const auto& [command, function] : state->commands)
+                {
+                    add_log({.color = COLOR_BLUE, .text = "- {0}"}, command.c_str());
+                }
+            });
 
             register_command("CLEAR", [](const std::vector<str>&) { clear_log(); });
 
-            register_command("HISTORY",
-                             [](const std::vector<str>&)
-                             {
-                                 const i64 first =
-                                     static_cast<i64>(state->history.size()) - state->history_display_size;
-                                 for (u64 i = first > 0 ? first : 0; i < state->history.size(); i++)
-                                 {
-                                     add_log({.color = COLOR_BLUE, .text = "{0:3}: {1}"}, i, state->history[i].c_str());
-                                 }
-                             });
+            register_command("HISTORY", [](const std::vector<str>&)
+            {
+                const i64 first = static_cast<i64>(state->history.size()) - state->history_display_size;
+                for (u64 i = first > 0 ? first : 0; i < state->history.size(); i++)
+                {
+                    add_log({.color = COLOR_BLUE, .text = "{0:3}: {1}"}, i, state->history[i].c_str());
+                }
+            });
 
             add_log({.text = "Command console. Enter 'HELP' for more information."});
         }

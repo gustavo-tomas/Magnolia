@@ -124,24 +124,24 @@ namespace mag
 
                     Job job(
                         [this, name, reload]()
-                        {
-                            JobData data = {};
-                            data.data = get_sync<T>(name, reload);
-                            data.result = data.data.has_value();
+                    {
+                        JobData data = {};
+                        data.data = get_sync<T>(name, reload);
+                        data.result = data.data.has_value();
 
-                            return data;
-                        },
+                        return data;
+                    },
 
                         [this, name](const JobData data)
+                    {
+                        while (!loading_map[name].empty())
                         {
-                            while (!loading_map[name].empty())
-                            {
-                                ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
-                                queued_callback(std::any_cast<ref<T>>(data.data));
-                            }
+                            ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
+                            queued_callback(std::any_cast<ref<T>>(data.data));
+                        }
 
-                            loading_map.erase(name);
-                        });
+                        loading_map.erase(name);
+                    });
 
                     thread::add_job(job_group, job);
                 }

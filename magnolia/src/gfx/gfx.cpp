@@ -334,28 +334,28 @@ namespace mag
         }
 
         static const std::unordered_map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
-            {ShaderResourceStage::Vertex, gfx::ShaderStage::Vertex},
+            {ShaderResourceStage::Vertex,   gfx::ShaderStage::Vertex  },
             {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment},
         };
 
         static const std::unordered_map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
-            {ShaderResourceTopology::TriangleList, gfx::PrimitiveTopology::TriangleList},
+            {ShaderResourceTopology::TriangleList,  gfx::PrimitiveTopology::TriangleList },
             {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip},
-            {ShaderResourceTopology::LineList, gfx::PrimitiveTopology::LineList},
+            {ShaderResourceTopology::LineList,      gfx::PrimitiveTopology::LineList     },
         };
 
         static const std::unordered_map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
-            {ShaderResourceDescriptorType::Uniform, gfx::DescriptorType::Uniform},
-            {ShaderResourceDescriptorType::Storage, gfx::DescriptorType::Storage},
+            {ShaderResourceDescriptorType::Uniform,              gfx::DescriptorType::Uniform             },
+            {ShaderResourceDescriptorType::Storage,              gfx::DescriptorType::Storage             },
             {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler},
         };
 
         static const std::unordered_map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
-            {ShaderResourceFormat::Undefined, gfx::Format::Undefined},
-            {ShaderResourceFormat::R32_UINT, gfx::Format::R32_UINT},
-            {ShaderResourceFormat::R32_SFLOAT, gfx::Format::R32_SFLOAT},
-            {ShaderResourceFormat::R32G32_SFLOAT, gfx::Format::R32G32_SFLOAT},
-            {ShaderResourceFormat::R32G32B32_SFLOAT, gfx::Format::R32G32B32_SFLOAT},
+            {ShaderResourceFormat::Undefined,           gfx::Format::Undefined          },
+            {ShaderResourceFormat::R32_UINT,            gfx::Format::R32_UINT           },
+            {ShaderResourceFormat::R32_SFLOAT,          gfx::Format::R32_SFLOAT         },
+            {ShaderResourceFormat::R32G32_SFLOAT,       gfx::Format::R32G32_SFLOAT      },
+            {ShaderResourceFormat::R32G32B32_SFLOAT,    gfx::Format::R32G32B32_SFLOAT   },
             {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
         };
 
@@ -364,8 +364,8 @@ namespace mag
         };
 
         static const std::unordered_map<ShaderResourceBlendFactor, gfx::BlendFactor> convert_blend_factor = {
-            {ShaderResourceBlendFactor::One, gfx::BlendFactor::One},
-            {ShaderResourceBlendFactor::SrcAlpha, gfx::BlendFactor::SrcAlpha},
+            {ShaderResourceBlendFactor::One,              gfx::BlendFactor::One             },
+            {ShaderResourceBlendFactor::SrcAlpha,         gfx::BlendFactor::SrcAlpha        },
             {ShaderResourceBlendFactor::OneMinusSrcAlpha, gfx::BlendFactor::OneMinusSrcAlpha},
         };
 
