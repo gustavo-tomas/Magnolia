@@ -3,28 +3,28 @@ import os
 import platform
 import shutil
 import multiprocessing
+import subprocess
+import glob
+from pathlib import Path
 
-# @TODO: lord have mercy
 system = ""
-bar = ""
 executable_extension = ""
 
 def check_system():
   global system
-  global bar
   global executable_extension
 
   supported_systems = ["windows", "linux"]
   system = platform.system().lower()
 
-  assert system in supported_systems, f"System '{system}' is not supported\n"
+  if system not in supported_systems:
+    print(f"System '{system}' is not supported. Supported systems: {supported_systems}")
+    sys.exit(1)
 
   if system == "linux":
-    bar = "/"
     executable_extension = ""
 
   elif system == "windows":
-    bar = "\\"
     executable_extension = ".exe"
 
   return
@@ -38,17 +38,39 @@ def has_executable(executable):
 
 # ----- Build -----
 def build(system, configuration):
-  executable = f"premake5" + executable_extension
+  executable = Path("ext") / system / f"premake5{executable_extension}"
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
-  assert os.system(f"ext{bar}{system}{bar}{executable} gmake && cd build && make config={configuration} -j{number_of_cores}") == 0
+
+  # Run premake
+  result = subprocess.run([
+    executable,
+    "gmake"
+  ], 
+  check = True)
+
+  # Run make
+  result = subprocess.run([
+    "make",
+    f"config={configuration}",
+    f"-j{number_of_cores}"
+  ],
+  cwd = "build",
+  check = True)
 
   return
 
 # ----- Clean -----
 def clean(configuration):
-  assert os.system(f"cd build && make clean config={configuration}") == 0
+  result = subprocess.run([
+    "make",
+    "clean",
+    f"config={configuration}"
+  ],
+  cwd = "build",
+  check = True)
+
   return
 
 # ----- Format -----
@@ -57,15 +79,16 @@ def format_files():
   if not has_executable("clang-format"):
     return
 
-  directory = "magnolia/"
+  sources = list(Path("magnolia/").rglob("*.*"))
 
-  # I dislike python
-  file_paths = [os.path.join(dirpath, f) for (dirpath, dirnames, filenames) in os.walk(directory) for f in filenames]
-  file_paths_str = str()
-  for path in file_paths:
-    file_paths_str += " " + path
+  subprocess.run([
+    "clang-format",
+    "-i",
+    "-style=file",
+    *sources
+  ],
+  check = True)
 
-  os.system(f"clang-format {file_paths_str} -i -style=file")
   return
 
 # ----- Lint -----
@@ -74,12 +97,21 @@ def lint():
   if not has_executable("cppcheck"):
     return
   
-  cmd = "cppcheck --std=c++23 --check-level=exhaustive "
-  cmd += "--output-file=build/clang/lint.txt "
-  cmd += "--enable=all "
-  cmd += "--suppress=missingInclude --suppress=missingIncludeSystem "
-  cmd += "--suppress=noExplicitConstructor --suppress=unusedFunction --suppress=unknownMacro "
-  os.system(f"{cmd} -Imagnolia/include magnolia/**") == 0
+  sources = list(Path("magnolia/").rglob("*.*"))
+
+  result = subprocess.run([
+    "cppcheck",
+    "--std=c++23",
+    "--check-level=exhaustive",
+    "--output-file=build/clang/lint.txt",
+    "--enable=all",
+    "--suppress=missingInclude", "--suppress=missingIncludeSystem", "--suppress=noExplicitConstructor",
+    "--suppress=unusedFunction", "--suppress=unknownMacro",
+    "-Imagnolia/include",
+    *sources
+  ], 
+  check = True)
+
   return
 
 # ----- Profile -----
@@ -90,9 +122,12 @@ def profile(system, configuration):
 
   print(f"(Python) Starting compilation profile")
 
-  output_dir = "build/clang"
-  obj_dir = f"build/{system}/{configuration}/obj"
+  output_dir = Path("build/clang")
+  obj_dir = Path("build") / system / configuration / "obj"
   profile_binary = "compilation_profile"
+  result_dir = output_dir / profile_binary
+
+  output_dir.mkdir(parents = True, exist_ok = True)
   
   # Clean first
   clean(configuration)
@@ -100,9 +135,20 @@ def profile(system, configuration):
   # Then build
   build(system, configuration)
 
-  os.system(f"mkdir -p {output_dir}")
-  os.system(f"ClangBuildAnalyzer --all {obj_dir} {output_dir}/{profile_binary}")
-  os.system(f"ClangBuildAnalyzer --analyze {output_dir}/{profile_binary}")
+  result = subprocess.run([
+    "ClangBuildAnalyzer",
+    "--all",
+    obj_dir,
+    result_dir
+  ],
+  check = True)
+
+  result = subprocess.run([
+    "ClangBuildAnalyzer", 
+    "--analyze", 
+    result_dir
+  ],
+  check = True)
 
   return
 
@@ -114,15 +160,21 @@ def setup(configuration):
 
   print(f"(Python) Starting clang setup")
 
-  output_dir = "build/clang"
+  output_dir = Path("build/clang")
+  output_dir.mkdir(parents = True, exist_ok = True)
   output_file = "compile_commands.json"
   
   # Clean first
   clean(configuration)
   
   # Then build
-  os.system(f"mkdir -p {output_dir}")
-  os.system(f"bear -o {output_dir}/{output_file} -- python build.py build {configuration}")
+  subprocess.run([
+    "bear",
+    "-o", output_dir / output_file,
+    "--",
+    "python", "build.py", "build", configuration
+  ],
+  check = True)
 
   return
 
@@ -133,34 +185,29 @@ def main():
 
   format_files()
 
-  if len(sys.argv) == 2:
-    configuration = str(sys.argv[1])
-    lint()
+  if len(sys.argv) != 3:
+    print("(Python) Usage: <command> <configuration>")
+    return
+
+  command = str(sys.argv[1])
+  configuration = str(sys.argv[2])
+
+  if command == "setup":
+    setup(configuration)
+
+  elif command == "build":
     build(system, configuration)
   
-  elif len(sys.argv) < 3:
-    print("Usage: <command> <configuration>")
+  elif command == "clean":
+    clean(configuration)
+
+  elif command == "lint":
+    lint()
+  
+  elif command == "profile":
+    profile(system, configuration)
 
   else:
-    command = str(sys.argv[1])
-    configuration = str(sys.argv[2])
-
-    if command == "setup":
-      setup(configuration)
-
-    elif command == "build":
-      build(system, configuration)
-    
-    elif command == "clean":
-      clean(configuration)
-
-    elif command == "lint":
-      lint()
-    
-    elif command == "profile":
-      profile(system, configuration)
-
-    else:
-      print(f"Invalid command: '{command}'")
+    print(f"(Python) Invalid command: '{command}'")
 
 main()
