@@ -80,8 +80,9 @@ workspace "magnolia"
 
     linkoptions
     {
-        -- Change your preferred linker here (or comment this line to use the system default)
-        "-fuse-ld=mold -Wl,-v"
+        -- Change your preferred linker here
+        "-fuse-ld=mold -Wl,-v",
+        -- "-fuse-ld=gold -Wl,-v"
     }
 
 -- Engine --------------------------------------------------------------------------------------------------------------
