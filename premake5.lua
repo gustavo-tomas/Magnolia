@@ -7,6 +7,7 @@ workspace "magnolia"
     configurations { "debug", "release" }
     location "build"
     staticruntime "on"
+    systemversion "latest"
     
     -- Output directories
     targetdir ("build/%{cfg.system}/%{cfg.buildcfg}/bin/%{prj.name}")
@@ -85,6 +86,12 @@ workspace "magnolia"
         -- "-fuse-ld=gold -Wl,-v"
     }
 
+    filter "system:linux"
+        pic "on"
+    
+    filter "system:windows"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+
 -- Engine --------------------------------------------------------------------------------------------------------------
 project "magnolia"
     targetname ("%{prj.name}")
@@ -137,17 +144,6 @@ project "magnolia"
         "imgui",
         "jolt"
     }
-
-    filter "system:linux"
-        pic "on"
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines
-        {
-            "_CRT_SECURE_NO_WARNINGS"
-        }
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions", "-fvisibility=hidden" }
@@ -192,17 +188,6 @@ project "test_game"
     {
         "magnolia"
     }
-
-    filter "system:linux"
-        pic "on"
-
-    filter "system:windows"
-        systemversion "latest"
-
-        defines
-        {
-            "_CRT_SECURE_NO_WARNINGS"
-        }
         
     filter "configurations:debug"
         buildoptions { "-Wall", "-Wextra", "-ftime-trace", "-fno-exceptions" }
@@ -279,7 +264,13 @@ end
 project "vulkan"
     kind "none"
 
-    vulkan_libs = { "libvulkan.so", "libvulkan.so.1", "libvulkan.so.1.3.268" }
+    local vulkan_libs = {}
+
+    if os.host() == "windows" then
+        vulkan_libs = { "vulkan.dll" }
+    else
+        vulkan_libs = { "libvulkan.so", "libvulkan.so.1", "libvulkan.so.1.3.268" }
+    end
 
     local vulkan_dir = target_libdir .. "/vulkan"
 
@@ -287,7 +278,7 @@ project "vulkan"
 
     -- Simply copy vulkan libs to the build folder
     for _, vulkan_lib in ipairs(vulkan_libs) do
-        local src = "ext/linux/" .. vulkan_lib
+        local src = "ext/" .. os.host() .. "/" .. vulkan_lib
         local dst = vulkan_dir .. "/" .. vulkan_lib
 
         if not os.isfile(dst) then
@@ -389,11 +380,6 @@ project "soloud"
         "WITH_MINIAUDIO"
     }
 
-    filter "system:linux"
-        pic "on"
-        systemversion "latest"
-        staticruntime "on"
-
 -- imgui ---------------------------------------------------------------------------------------------------------------
 project "imgui"
 	kind "staticlib"
@@ -421,8 +407,3 @@ project "imgui"
         "libs/imgui/backends/imgui_impl_sdlrenderer3.h",
         "libs/imgui/backends/imgui_impl_sdlrenderer3.cpp"
 	}
-
-	filter "system:linux"
-		pic "on"
-		systemversion "latest"
-		staticruntime "on"
