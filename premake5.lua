@@ -231,49 +231,6 @@ local colors = {
     White = "\27[1;37m"
 }
 
--- Checks if a file exists
-function exists(filePath)
-    local file = io.open(filePath, "r")
-    if file then
-        file:close()
-        return true
-    else
-        return false
-    end
-end
-
--- Execute a shell command
-function execute_command(command)
-    local file = io.popen(command)
-    local output = file:read("*a")
-    file:close()
-    return output
-end
-
--- Create a directory
-function mkdir(path)
-    if os.host() == "windows" then
-        os.execute(string.format("mkdir %s", path))
-    else
-        os.execute(string.format("mkdir -p %s", path))
-    end
-end
-
--- Copy files
-function copy(src, dst)
-    if os.host() == "windows" then
-        os.execute(string.format("copy %s %s", src, dst))
-    else
-        os.execute(string.format("cp %s %s", src, dst))
-    end
-end
-
--- Get number of cores (linux only)
-function number_of_cores()
-    result = tonumber(execute_command("nproc"))
-    return result
-end
-
 -- Build a cmake project
 function build_cmake_project(project_name, cmake_dir, libs_info, flags)
     project_bin_dir = target_libdir .. "/" .. project_name
@@ -285,7 +242,7 @@ function build_cmake_project(project_name, cmake_dir, libs_info, flags)
     local need_build = false
     for _, lib_info in ipairs(libs_info) do
         local project_bin_path = project_bin_dir .. "/" .. lib_info.name
-        if not exists(project_bin_path) then
+        if not os.isfile(project_bin_path) then
             need_build = true
             print(string.format("%s%s is missing, recompiling%s", colors.Yellow, project_bin_path, colors.Reset))
             break
@@ -301,20 +258,20 @@ function build_cmake_project(project_name, cmake_dir, libs_info, flags)
         return
     end
 
-    mkdir(project_bin_dir)
-    mkdir(project_obj_dir)
+    os.mkdir(project_bin_dir)
+    os.mkdir(project_obj_dir)
 
     os.execute(string.format(
         "cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON %s -S libs/%s/%s -B %s",
         flags, project_name, cmake_dir, project_obj_dir))
 
-    os.execute(string.format("make -C %s -j %s", project_obj_dir, number_of_cores()))
+    os.execute(string.format("make -C %s -j %s", project_obj_dir, os.getnumcpus()))
     
     -- Copy all libraries to the bin directory
     for _, lib_info in ipairs(libs_info) do
         local project_obj_path = project_obj_dir .. "/" .. lib_info.dir .. "/" .. lib_info.name
         local project_bin_path = project_bin_dir .. "/" .. lib_info.name
-        copy(project_obj_path, project_bin_path)
+        os.copyfile(project_obj_path, project_bin_path)
     end
 end
 
@@ -326,15 +283,15 @@ project "vulkan"
 
     local vulkan_dir = target_libdir .. "/vulkan"
 
-    mkdir(vulkan_dir)
+    os.mkdir(vulkan_dir)
 
     -- Simply copy vulkan libs to the build folder
     for _, vulkan_lib in ipairs(vulkan_libs) do
         local src = "ext/linux/" .. vulkan_lib
         local dst = vulkan_dir .. "/" .. vulkan_lib
 
-        if not exists(dst) then
-            copy(src, dst)
+        if not os.isfile(dst) then
+            os.copyfile(src, dst)
         end
     end
     
