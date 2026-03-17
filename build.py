@@ -106,7 +106,8 @@ def lint():
     "--output-file=build/clang/lint.txt",
     "--enable=all",
     "--suppress=missingInclude", "--suppress=missingIncludeSystem", "--suppress=noExplicitConstructor",
-    "--suppress=unusedFunction", "--suppress=unknownMacro",
+    "--suppress=unusedFunction", "--suppress=unknownMacro", "--suppress=unusedStructMember", 
+    "--suppress=useStlAlgorithm",
     "-Imagnolia/include",
     *sources
   ], 

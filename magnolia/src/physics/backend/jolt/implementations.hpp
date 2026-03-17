@@ -90,10 +90,8 @@ namespace mag
                     (void)inWorldSpaceBounds;
 
                     // Figure out which LOD to use
-                    const LOD* lod = inGeometry->mLODs.data();
-
                     // We don't care much about detail, so just get the lowest lod possible
-                    lod = &inGeometry->mLODs.back();
+                    const LOD* lod = &inGeometry->mLODs.back();
                     // lod = &inGeometry->GetLOD(camera_position, inWorldSpaceBounds, inLODScaleSq);
 
                     // Draw the batch

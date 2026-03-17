@@ -129,10 +129,10 @@ namespace mag
             template <typename... Components>
             std::vector<std::tuple<Components*...>> get_all_components_of_types()
             {
-                std::vector<EntityID> entities_ids = query<Components...>();
+                const std::vector<EntityID> ids = query<Components...>();
                 std::vector<std::tuple<Components*...>> components;
 
-                for (const EntityID entity_id : entities_ids)
+                for (const EntityID entity_id : ids)
                 {
                     components.push_back(get_components<Components...>(entity_id));
                 }
