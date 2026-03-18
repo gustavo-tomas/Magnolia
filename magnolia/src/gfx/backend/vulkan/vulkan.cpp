@@ -809,7 +809,7 @@ namespace mag
         class VulkanRenderingAttachment : public IRenderingAttachment
         {
             public:
-                VulkanRenderingAttachment(const IRenderingAttachmentDesc& desc)
+                explicit VulkanRenderingAttachment(const IRenderingAttachmentDesc& desc)
                 {
                     VkClearValue clear_value = {};
 
@@ -857,7 +857,7 @@ namespace mag
         class VulkanRenderPass : public IRenderPass
         {
             public:
-                VulkanRenderPass(const IRenderPassDesc& desc)
+                explicit VulkanRenderPass(const IRenderPassDesc& desc)
                 {
                     VkRect2D render_area = {};
                     render_area.extent = mag_to_vk(desc.extent);

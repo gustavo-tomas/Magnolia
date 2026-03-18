@@ -14,7 +14,7 @@ namespace mag
     {
         public:
             Frustum();
-            Frustum(mat4 m);  // m = ProjectionMatrix * ViewMatrix
+            explicit Frustum(mat4 m);  // m = ProjectionMatrix * ViewMatrix
             Frustum(const Frustum& other);
             Frustum& operator=(const Frustum& other);
             ~Frustum();

@@ -68,7 +68,7 @@ namespace mag
     class MAG_API PerspectiveCamera : public Camera
     {
         public:
-            PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
+            explicit PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
             ~PerspectiveCamera() override;
 
             void set_fov(const f32 fov);
@@ -94,7 +94,7 @@ namespace mag
     class MAG_API OrthographicCamera : public Camera
     {
         public:
-            OrthographicCamera(const OrthographicCameraDesc& camera_desc);
+            explicit OrthographicCamera(const OrthographicCameraDesc& camera_desc);
             ~OrthographicCamera() override;
 
             void set_size(const f32 size);

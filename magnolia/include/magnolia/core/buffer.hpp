@@ -9,7 +9,7 @@ namespace mag
     struct Buffer
     {
             Buffer();
-            Buffer(const u64 size);
+            explicit Buffer(const u64 size);
 
             template <typename T>
             T* cast()
