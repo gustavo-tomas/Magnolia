@@ -71,12 +71,8 @@ workspace "magnolia"
 
     defines
     {
-        "VULKAN_HPP_NAMESPACE=vk",
         "GLM_FORCE_QUAT_DATA_WXYZ",
-        "GLM_ENABLE_EXPERIMENTAL",
-        "JPH_PROFILE_ENABLED",
-        "JPH_DEBUG_RENDERER",
-        "JPH_OBJECT_STREAM"
+        "GLM_ENABLE_EXPERIMENTAL"
     }
 
     linkoptions
@@ -117,7 +113,11 @@ project "magnolia"
 
     defines
     {
+        "VULKAN_HPP_NAMESPACE=vk",
         "VULKAN_HPP_NO_EXCEPTIONS",
+        "JPH_PROFILE_ENABLED",
+        "JPH_DEBUG_RENDERER",
+        "JPH_OBJECT_STREAM",
         "MAG_BUILD_SHARED"
     }
 
