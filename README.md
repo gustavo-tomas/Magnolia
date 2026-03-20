@@ -11,7 +11,7 @@
 <!-- Add links -->
 
 - C++23
-- Gcc 15.2.1
+- Gcc 13.3.0
 - Clang 21.1.6
 - Python 3.14.2
 - Cmake 4.2.2

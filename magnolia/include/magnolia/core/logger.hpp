@@ -1,7 +1,7 @@
 #pragma once
 
 #include <format>
-#include <print>
+#include <iostream>
 #include <source_location>
 
 #include "magnolia/core/types.hpp"
@@ -22,21 +22,6 @@ namespace mag
         };  // namespace color
 
         template <typename... Args>
-        MAG_API void log_message(const str& level, const str& color, const std::source_location& loc,
-                                 const std::format_string<Args...> fmt, Args&&... args)
-        {
-            // Remove '../' for prettier printing
-            const str location = loc.file_name();
-            const u64 location_start = location.find_first_not_of("../");
-            const str pretty_location = location.substr(location_start);
-
-            std::print("{}[{}:{}]\n{}", color::Blue, pretty_location, loc.line(), color::Reset);
-            std::print("{}[{}] ", color, level);
-            std::print(fmt, std::forward<Args>(args)...);
-            std::print("\n{}", color::Reset);
-        }
-
-        template <typename... Args>
         MAG_API str get_formatted_str(const std::string_view fmt, Args... args)
         {
             const str formatted_str = std::vformat(fmt, std::make_format_args(args...));
@@ -50,6 +35,25 @@ namespace mag
             const str formatted_str = get_formatted_str(fmt, args...) + "\n";
 
             return formatted_str;
+        }
+
+        template <typename... Args>
+        MAG_API void log_message(const str& level, const str& color, const std::source_location& loc,
+                                 const std::format_string<Args...> fmt, Args&&... args)
+        {
+            // Remove '../' for prettier printing
+            const str location = loc.file_name();
+            const u64 location_start = location.find_first_not_of("../");
+            const str pretty_location = location.substr(location_start);
+
+            const str formatted_loc =
+                get_formatted_str("{}[{}:{}]\n{}", color::Blue, pretty_location, loc.line(), color::Reset);
+
+            const str formatted_level = get_formatted_str("{}[{}] ", color, level);
+
+            const str formatted_log = get_formatted_log(fmt.get(), std::forward<Args>(args)...);
+
+            std::cout << formatted_loc << formatted_level << formatted_log << color::Reset;
         }
     };  // namespace log
 };  // namespace mag
