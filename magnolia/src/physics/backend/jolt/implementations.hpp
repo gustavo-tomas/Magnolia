@@ -39,7 +39,7 @@ namespace mag
             vsnprintf(buffer.data(), sizeof(buffer), fmt, list);
             va_end(list);
 
-            LOG_INFO("[Physics] {}", buffer);
+            LOG_INFO("[Physics] {}", buffer.data());
         }
 
 #ifdef JPH_ENABLE_ASSERTS
