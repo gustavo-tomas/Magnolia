@@ -338,7 +338,14 @@ project "jolt"
     "-DCMAKE_BUILD_TYPE=Debug -DCPP_RTTI_ENABLED=ON -DCMAKE_CXX_COMPILER=clang++ " ..
     "-DENABLE_INSTALL=OFF -DTARGET_UNIT_TESTS=OFF -DTARGET_HELLO_WORLD=OFF -DTARGET_PERFORMANCE_TEST=OFF " ..
     "-DTARGET_SAMPLES=OFF -DTARGET_VIEWER=OFF -DFLOATING_POINT_EXCEPTIONS_ENABLED=OFF " ..
-    "-DJPH_USE_DX12=OFF -DJPH_USE_DXC=OFF -DJPH_USE_MTL=OFF -DJPH_USE_VK=OFF -DJPH_USE_CPU_COMPUTE=ON")
+    
+    -- Use CPU compute
+    "-DJPH_USE_DX12=OFF -DJPH_USE_DXC=OFF -DJPH_USE_MTL=OFF -DJPH_USE_VK=OFF -DJPH_USE_CPU_COMPUTE=ON "..
+    
+    -- Only enables widely available instruction sets
+    "-DUSE_SSE4_1=ON -DUSE_SSE4_2=ON " ..
+    "-DUSE_AVX=OFF -DUSE_AVX2=OFF -DUSE_AVX512=OFF " .. 
+    "-DUSE_LZCNT=OFF -DUSE_TZCNT=OFF -DUSE_F16C=OFF -DUSE_FMADD=OFF")
 
 -- freetype ------------------------------------------------------------------------------------------------------------
 project "freetype"
