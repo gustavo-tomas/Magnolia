@@ -370,10 +370,8 @@ namespace game
         const f32 mouse_sensitivity = 0.2f;
         const f32 speed = 50.0f;
 
-        static b8 init = false;
         static f32 pitch = 0.0f;
         static f32 yaw = mag::math::radians(-90.0f);
-        static vec3 initial_position = vec3(-900.0f, 450.0f, -175.0f);
 
         if (mag::window::is_key_pressed(mag::Key::Tab))
         {
@@ -415,18 +413,6 @@ namespace game
 
         for (PerspectiveCameraComponent* camera_c : cameras)
         {
-            // @TODO: add initial camera transform to the ECS component
-            if (!init)
-            {
-                mag::quat initial_rotation = mag::vec3(pitch, yaw, 0.0f);
-                initial_rotation = mag::math::normalize(initial_rotation);
-
-                camera_c->camera.set_rotation(initial_rotation);
-                camera_c->camera.set_position(initial_position);
-
-                init = true;
-            }
-
             vec3 position = camera_c->camera.get_position();
             mag::quat rotation = mag::vec3(pitch, yaw, 0.0f);
 

@@ -71,6 +71,8 @@ namespace nlohmann
         data["Fov"] = component.camera.get_fov();
         data["Near"] = component.camera.get_near();
         data["Far"] = component.camera.get_far();
+        data["Position"] = component.camera.get_position();
+        data["Rotation"] = component.camera.get_rotation();
     }
 
     inline void from_json(const mag::fs::json& data, game::PerspectiveCameraComponent& component)
@@ -79,6 +81,8 @@ namespace nlohmann
         camera_desc.near = data["Near"].get<f32>();
         camera_desc.far = data["Far"].get<f32>();
         camera_desc.fov = data["Fov"].get<f32>();
+        camera_desc.position = data["Position"].get<mag::math::vec3>();
+        camera_desc.rotation = data["Rotation"].get<mag::math::quat>();
         camera_desc.viewport_size = mag::window::get_size();
 
         component.camera = mag::PerspectiveCamera(camera_desc);
@@ -89,6 +93,8 @@ namespace nlohmann
         data["Size"] = component.camera.get_size();
         data["Near"] = component.camera.get_near();
         data["Far"] = component.camera.get_far();
+        data["Position"] = component.camera.get_position();
+        data["Rotation"] = component.camera.get_rotation();
     }
 
     inline void from_json(const mag::fs::json& data, game::OrthographicCameraComponent& component)
@@ -97,6 +103,8 @@ namespace nlohmann
         camera_desc.near = data["Near"].get<f32>();
         camera_desc.far = data["Far"].get<f32>();
         camera_desc.size = data["Size"].get<f32>();
+        camera_desc.position = data["Position"].get<mag::math::vec3>();
+        camera_desc.rotation = data["Rotation"].get<mag::math::quat>();
         camera_desc.viewport_size = mag::window::get_size();
 
         component.camera = mag::OrthographicCamera(camera_desc);

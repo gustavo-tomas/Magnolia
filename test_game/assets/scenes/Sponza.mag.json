@@ -9,7 +9,9 @@
       "PerspectiveCameraComponent": {
         "Fov": 1.0471980571746826,
         "Near": 1.0,
-        "Far": 10000.0
+        "Far": 10000.0,
+        "Position": [-900.0, 450.0, -175.0],
+        "Rotation": [1.0, 0.0, 0.0, 0.0]
       }
     },
     {
