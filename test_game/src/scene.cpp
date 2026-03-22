@@ -12,6 +12,7 @@
 #include <magnolia/threads/job_system.hpp>
 
 #include "ecs/components.hpp"
+#include "ecs/debug.hpp"
 #include "ecs/systems.hpp"
 #include "renderer.hpp"
 #include "scriptable_entity.hpp"
@@ -40,13 +41,6 @@ namespace game
 
     void Scene::on_start()
     {
-#if MAG_CONFIG_DEBUG
-        // Add debug scripts
-        const mag::EntityID id = ecs->create_entity();
-        ecs->add_component<DebugComponent>(id);
-        ecs->add_component<ScriptComponent>(id, "test_game/assets/scripts/debug.cpp");
-#endif
-
         // Instantiate scripts
         for (const mag::EntityID id : ecs->query<ScriptComponent>())
         {
@@ -221,13 +215,9 @@ namespace game
 
     void Scene::on_render(const f32 dt)
     {
-        for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            if (script->entity != nullptr)
-            {
-                script->entity->on_render(dt);
-            }
-        }
+#if MAG_CONFIG_DEBUG
+        debug_system(*this, dt);
+#endif
     }
 
     void Scene::on_component_added(const mag::EntityID id, std::any& component)
