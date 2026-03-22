@@ -280,11 +280,6 @@ namespace game
                     entity["AudioComponent"]["Velocity"] = component->velocity;
                 }
 
-                if (auto* component = ecs.get_component<ScriptComponent>(entity_id))
-                {
-                    entity["ScriptComponent"]["FilePath"] = component->file_path;
-                }
-
                 data["Entities"].push_back(entity);
             }
 
@@ -421,15 +416,6 @@ namespace game
                     const auto& audio = mag::resource::get_audio(file_path);
 
                     ecs.add_component<AudioComponent>(entity_id, audio, volume, play_on_load, position, velocity);
-                }
-
-                if (entity.contains("ScriptComponent"))
-                {
-                    const auto& component = entity["ScriptComponent"];
-
-                    const str file_path = component["FilePath"];
-
-                    ecs.add_component<ScriptComponent>(entity_id, file_path);
                 }
             }
 

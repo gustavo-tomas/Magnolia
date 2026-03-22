@@ -19,7 +19,6 @@ namespace mag
 
 namespace game
 {
-    struct ScriptComponent;
     class Renderer;
 
     class Scene
@@ -62,8 +61,6 @@ namespace game
 
         private:
             void on_component_added(const mag::EntityID id, std::any& component);
-            void create_script(const mag::EntityID id);
-            void destroy_script(ScriptComponent* script);
 
             Renderer* renderer = nullptr;
             std::vector<mag::EntityID> entity_deletion_queue;

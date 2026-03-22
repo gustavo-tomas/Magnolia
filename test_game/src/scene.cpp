@@ -15,7 +15,6 @@
 #include "ecs/debug.hpp"
 #include "ecs/systems.hpp"
 #include "renderer.hpp"
-#include "scriptable_entity.hpp"
 
 namespace game
 {
@@ -41,12 +40,6 @@ namespace game
 
     void Scene::on_start()
     {
-        // Instantiate scripts
-        for (const mag::EntityID id : ecs->query<ScriptComponent>())
-        {
-            create_script(id);
-        }
-
         // Play audios
         for (const AudioComponent* audio_c : ecs->get_all_components_of_type<AudioComponent>())
         {
@@ -58,70 +51,6 @@ namespace game
         }
 
         running = true;
-    }
-
-    void Scene::create_script(const mag::EntityID id)
-    {
-        ScriptComponent* script = ecs->get_component<ScriptComponent>(id);
-
-        // Already instantiated
-        if (script->entity != nullptr)
-        {
-            return;
-        }
-
-        mag::script::RecompileScriptParams script_params = {};
-        script_params.file_path = script->file_path;
-
-        // Recompile if necessary
-        if (!mag::script::compile_script(script_params))
-        {
-            return;
-        }
-
-        // Now we can safely load
-        const mag::script::ScriptHandle handle = mag::script::load_script(script_params.file_path);
-        if (handle == mag::Invalid_ID)
-        {
-            return;
-        }
-
-        void* raw_create_script_fn = mag::script::get_symbol(handle, "create_script");
-        void* raw_destroy_script_fn = mag::script::get_symbol(handle, "destroy_script");
-
-        if ((raw_create_script_fn == nullptr) || (raw_destroy_script_fn == nullptr))
-        {
-            return;
-        }
-
-        using CreateScriptFnPtr = ScriptableEntity* (*)();
-        using DestroyScriptFnPtr = void (*)(ScriptableEntity*);
-
-        CreateScriptFn create_script_fn = reinterpret_cast<CreateScriptFnPtr>(raw_create_script_fn);
-        DestroyScriptFn destroy_script_fn = reinterpret_cast<DestroyScriptFnPtr>(raw_destroy_script_fn);
-
-        script->handle = handle;
-        script->create_entity = create_script_fn;
-        script->destroy_entity = destroy_script_fn;
-
-        script->entity = script->create_entity();
-        script->entity->entity_id = id;
-        script->entity->ecs = ecs.get();
-        script->entity->physics_world = physics_world.get();
-        script->entity->scene = this;
-        script->entity->on_create();
-    }
-
-    void Scene::destroy_script(ScriptComponent* script)
-    {
-        if (script->entity == nullptr)
-        {
-            return;
-        }
-
-        script->entity->on_destroy();
-        script->destroy_entity(script->entity);
-        script->entity = nullptr;
     }
 
     void Scene::on_stop()
@@ -138,23 +67,8 @@ namespace game
             mag::audio::stop(audio->audio);
         }
 
-        std::vector<ScriptComponent> scripts;
-
-        // Copy script data before ECS deletion
-        for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            scripts.push_back(*script);
-        }
-
         // Destroy the ECS
         ecs.reset();
-
-        // Destroy instantiated scripts and unload dlls
-        for (auto& script : scripts)
-        {
-            destroy_script(&script);
-            mag::script::unload_script(script.handle);
-        }
 
         running = false;
     }
@@ -172,14 +86,6 @@ namespace game
             if (rigid_body != nullptr)
             {
                 physics_world->remove_rigid_body(rigid_body->rigid_body_handle);
-            }
-
-            // Delete script instance if entity has a script component
-            ScriptComponent* script = ecs->get_component<ScriptComponent>(entity_id);
-
-            if (script != nullptr)
-            {
-                destroy_script(script);
             }
 
             ecs->erase_entity(entity_id);
@@ -200,15 +106,6 @@ namespace game
                                                      transform->rotation);
         }
 
-        // Update scripts
-        for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            if (script->entity != nullptr)
-            {
-                script->entity->on_update(dt);
-            }
-        }
-
         // Update systems
         execute_systems(*this, dt);
     }
@@ -224,7 +121,6 @@ namespace game
     {
         const b8 is_transform = component.type() == typeid(TransformComponent);
         const b8 is_rigid_body = component.type() == typeid(RigidBodyComponent);
-        const b8 is_script = component.type() == typeid(ScriptComponent);
         const b8 is_model = component.type() == typeid(ModelComponent);
         const b8 is_sprite = component.type() == typeid(SpriteComponent);
         const b8 is_text = component.type() == typeid(TextComponent);
@@ -296,13 +192,6 @@ namespace game
             }
         }
 
-        // Instantiate scripts during runtime
-        if (is_script && is_running())
-        {
-            create_script(id);
-            return;
-        }
-
         // Upload model data to the GPU
         if (is_model)
         {
@@ -331,15 +220,6 @@ namespace game
     void Scene::on_event(const mag::Event& e)
     {
         dispatch_event<mag::WindowResizeEvent>(e, [this](const mag::WindowResizeEvent& e) { on_resize(e); });
-
-        // Emit events to the native scripts
-        for (auto* script : ecs->get_all_components_of_type<ScriptComponent>())
-        {
-            if (script->entity != nullptr)
-            {
-                script->entity->on_event(e);
-            }
-        }
     }
 
     void Scene::on_resize(const mag::WindowResizeEvent& e)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/types.hpp>
 #include <magnolia/math/types.hpp>
@@ -163,29 +162,6 @@ namespace game
             }
 
             mag::OrthographicCamera camera;
-    };
-
-    class ScriptableEntity;
-    using CreateScriptFn = std::function<ScriptableEntity*()>;
-    using DestroyScriptFn = std::function<void(ScriptableEntity*)>;
-
-    struct ScriptComponent
-    {
-            ScriptComponent(str file_path, const mag::script::ScriptHandle handle = mag::Invalid_ID,
-                            CreateScriptFn create_entity = nullptr, DestroyScriptFn destroy_entity = nullptr)
-                : create_entity(std::move(create_entity)),
-                  destroy_entity(std::move(destroy_entity)),
-                  file_path(std::move(file_path)),
-                  handle(handle)
-            {
-            }
-
-            CreateScriptFn create_entity;
-            DestroyScriptFn destroy_entity;
-
-            str file_path;
-            mag::script::ScriptHandle handle = mag::Invalid_ID;
-            ScriptableEntity* entity = nullptr;
     };
 
     struct PlayerComponent
