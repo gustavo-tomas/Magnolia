@@ -10,9 +10,6 @@
         "Fov": 1.0471980571746826,
         "Near": 1.0,
         "Far": 10000.0
-      },
-      "ScriptComponent": {
-        "FilePath": "test_game/assets/scripts/camera_controller.cpp"
       }
     },
     {

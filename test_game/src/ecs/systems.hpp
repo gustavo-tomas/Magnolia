@@ -11,4 +11,5 @@ namespace game
     void player_system(Scene& scene, const f32 dt);
     void bullet_system(Scene& scene, const f32 dt);
     void enemy_system(Scene& scene, const f32 dt);
+    void camera_system(Scene& scene, const f32 dt);
 };  // namespace game

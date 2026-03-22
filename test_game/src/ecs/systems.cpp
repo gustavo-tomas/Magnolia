@@ -40,6 +40,7 @@ namespace game
         player_system(scene, dt);
         bullet_system(scene, dt);
         enemy_system(scene, dt);
+        camera_system(scene, dt);
     }
 
     void player_system(Scene& scene, const f32 dt)
@@ -352,6 +353,128 @@ namespace game
         if (enemy->hp <= 0.0f)
         {
             LOG_INFO("DEAD");
+        }
+    }
+
+    // @TODO: quick hack
+    // @TODO: separate systems according to the scene
+
+    void camera_system(Scene& scene, const f32 dt)
+    {
+        // @TODO: hack hack hack
+        if (scene.get_file_path() != "test_game/assets/scenes/Sponza.mag.json")
+        {
+            return;
+        }
+
+        const f32 mouse_sensitivity = 0.2f;
+        const f32 speed = 50.0f;
+
+        static b8 init = false;
+        static f32 pitch = 0.0f;
+        static f32 yaw = mag::math::radians(-90.0f);
+        static vec3 initial_position = vec3(-900.0f, 450.0f, -175.0f);
+
+        if (mag::window::is_key_pressed(mag::Key::Tab))
+        {
+            // Swap scenes
+            scene.set_next_scene("test_game/assets/scenes/Main.mag.json");
+        }
+
+        if (mag::window::is_button_pressed(mag::Button::Right))
+        {
+            // Capture/Release the cursor
+            const b8 capture = !mag::window::is_mouse_captured();
+
+            mag::window::set_capture_mouse(capture);
+
+            // Keep mouse button centered
+            if (capture)
+            {
+                const mag::math::ivec2 window_center = mag::window::get_window_center();
+                mag::window::set_mouse_position(window_center.x, window_center.y);
+            }
+        }
+
+        if (mag::window::is_mouse_captured())
+        {
+            const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
+            const mag::math::ivec2 window_center = mag::window::get_window_center();
+            const mag::math::vec2 mouse_delta = window_center - mouse_position;
+
+            // Rotate
+            pitch += mouse_delta.y * mouse_sensitivity * dt;
+            yaw += mouse_delta.x * mouse_sensitivity * dt;
+
+            mag::window::set_mouse_position(window_center.x, window_center.y);
+        }
+
+        auto& ecs = scene.get_ecs();
+
+        auto cameras = ecs.get_all_components_of_type<PerspectiveCameraComponent>();
+
+        for (PerspectiveCameraComponent* camera_c : cameras)
+        {
+            // @TODO: add initial camera transform to the ECS component
+            if (!init)
+            {
+                mag::quat initial_rotation = mag::vec3(pitch, yaw, 0.0f);
+                initial_rotation = mag::math::normalize(initial_rotation);
+
+                camera_c->camera.set_rotation(initial_rotation);
+                camera_c->camera.set_position(initial_position);
+
+                init = true;
+            }
+
+            vec3 position = camera_c->camera.get_position();
+            mag::quat rotation = mag::vec3(pitch, yaw, 0.0f);
+
+            rotation = mag::math::normalize(rotation);
+
+            // Calculate desired movement direction
+            const mat4 rotation_mat = toMat4(rotation);
+            const mag::vec3& right = rotation_mat[0];
+            const mag::vec3& up = rotation_mat[1];
+            const mag::vec3& forward = rotation_mat[2];
+
+            mag::vec3 input_direction(0.0f);
+
+            if (mag::window::is_key_down(mag::Key::w))
+            {
+                input_direction -= forward;
+            }
+            if (mag::window::is_key_down(mag::Key::s))
+            {
+                input_direction += forward;
+            }
+            if (mag::window::is_key_down(mag::Key::a))
+            {
+                input_direction -= right;
+            }
+            if (mag::window::is_key_down(mag::Key::d))
+            {
+                input_direction += right;
+            }
+            if (mag::window::is_key_down(mag::Key::Space))
+            {
+                input_direction += up;
+            }
+            if (mag::window::is_key_down(mag::Key::Lctrl))
+            {
+                input_direction -= up;
+            }
+
+            // Prevent nan values
+            if (length(input_direction) > 0.0f)
+            {
+                input_direction = normalize(input_direction);
+                position += input_direction * speed * dt;
+            }
+
+            // Update the camera transform
+            camera_c->camera.set_rotation(rotation);
+            camera_c->camera.set_position(position);
         }
     }
 };  // namespace game
