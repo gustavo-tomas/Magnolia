@@ -24,7 +24,7 @@ vec3 phong_shading(vec3 surface_normal, vec3 frag_position, vec3 view_position, 
 	float specular_strength = 0.5;
 	vec3 view_dir = normalize(view_position - frag_position);
 	vec3 reflect_dir = reflect(-light_dir, normal);  
-	float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
+	float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
 	vec3 specular_color = specular_strength * spec * light.color;
 
 	// Attenuation
