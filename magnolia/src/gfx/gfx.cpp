@@ -432,7 +432,7 @@ namespace mag::gfx
 
         std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
-        BindingData& binding = bindings_map[uniform_name];
+        const BindingData& binding = bindings_map[uniform_name];
 
         const BufferHandle buffer_handle = binding.buffer_handle;
         const unique<IBuffer>& buffer = state->buffers[buffer_handle];
@@ -448,9 +448,9 @@ namespace mag::gfx
 
     void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
     {
-        FrameData& current_frame = state->frames[state->current_frame];
+        const FrameData& current_frame = state->frames[state->current_frame];
 
-        DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+        const DescriptorData& descriptor_data = current_frame.descriptor_set_map.at(state->current_bound_shader);
 
         const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
@@ -475,7 +475,7 @@ namespace mag::gfx
 
             std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
-            BindingData& binding = bindings_map[uniform_name];
+            const BindingData& binding = bindings_map[uniform_name];
 
             const BufferHandle buffer_handle = binding.buffer_handle;
             const unique<IBuffer>& buffer = state->buffers[buffer_handle];
@@ -495,9 +495,9 @@ namespace mag::gfx
     {
         for (u32 i = 0; i < state->frames.size(); i++)
         {
-            FrameData& current_frame = state->frames[i];
+            const FrameData& current_frame = state->frames[i];
 
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+            const DescriptorData& descriptor_data = current_frame.descriptor_set_map.at(state->current_bound_shader);
 
             const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
