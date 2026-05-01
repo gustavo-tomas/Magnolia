@@ -40,6 +40,10 @@ def build(system, configuration):
     "-S .",
     "-B build",
     f"-DCMAKE_BUILD_TYPE={configuration}",
+
+    # Change the linker here
+    f"-DCMAKE_CXX_FLAGS=\"-fuse-ld=mold\"",
+    # f"-DCMAKE_CXX_FLAGS=\"-fuse-ld=gold\"",
   ], 
   check = True)
 

@@ -1,6 +1,4 @@
 # @TODO: finish debug configuration
-# @TODO: update python script
-# @TODO: update readme
 # @TODO: release configuration
 # @TODO: dist configuration
 # @TODO: windows version
