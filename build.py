@@ -8,11 +8,9 @@ import glob
 from pathlib import Path
 
 system = ""
-executable_extension = ""
 
 def check_system():
   global system
-  global executable_extension
 
   supported_systems = ["windows", "linux"]
   system = platform.system().lower()
@@ -20,12 +18,6 @@ def check_system():
   if system not in supported_systems:
     print(f"System '{system}' is not supported. Supported systems: {supported_systems}")
     sys.exit(1)
-
-  if system == "linux":
-    executable_extension = ""
-
-  elif system == "windows":
-    executable_extension = ".exe"
 
   return
 
@@ -38,22 +30,22 @@ def has_executable(executable):
 
 # ----- Build -----
 def build(system, configuration):
-  executable = Path("ext") / system / f"premake5{executable_extension}"
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
 
-  # Run premake
+  # Run cmake
   result = subprocess.run([
-    executable,
-    "gmake"
+    "cmake",
+    "-S .",
+    "-B build",
+    f"-DCMAKE_BUILD_TYPE={configuration}",
   ], 
   check = True)
 
   # Run make
   result = subprocess.run([
     "make",
-    f"config={configuration}",
     f"-j{number_of_cores}"
   ],
   cwd = "build",
@@ -62,11 +54,10 @@ def build(system, configuration):
   return
 
 # ----- Clean -----
-def clean(configuration):
+def clean():
   result = subprocess.run([
     "make",
-    "clean",
-    f"config={configuration}"
+    "clean"
   ],
   cwd = "build",
   check = True)
@@ -123,14 +114,14 @@ def profile(system, configuration):
   print(f"(Python) Starting compilation profile")
 
   output_dir = Path("build/clang")
-  obj_dir = Path("build") / system / configuration / "obj"
+  obj_dir = Path("build")
   profile_binary = "compilation_profile"
   result_dir = output_dir / profile_binary
 
   output_dir.mkdir(parents = True, exist_ok = True)
   
   # Clean first
-  clean(configuration)
+  clean()
   
   # Then build
   build(system, configuration)
@@ -163,10 +154,7 @@ def setup(configuration):
   output_dir = Path("build/clang")
   output_dir.mkdir(parents = True, exist_ok = True)
   output_file = "compile_commands.json"
-  
-  # Clean first
-  clean(configuration)
-  
+
   # Then build
   subprocess.run([
     "bear",
@@ -199,7 +187,7 @@ def main():
     build(system, configuration)
   
   elif command == "clean":
-    clean(configuration)
+    clean()
 
   elif command == "lint":
     lint()
