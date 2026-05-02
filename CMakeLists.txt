@@ -1,5 +1,3 @@
-# @TODO: finish debug configuration
-# @TODO: release configuration
 # @TODO: dist configuration
 # @TODO: windows version
 
@@ -131,35 +129,51 @@ set(MAG_LIB_INCLUDES
     "${CMAKE_SOURCE_DIR}/libs/vulkan/include"
 )
 
-add_compile_definitions(
-    "GLM_FORCE_QUAT_DATA_WXYZ"
-    "GLM_ENABLE_EXPERIMENTAL"
-    "JPH_PROFILE_ENABLED"
-    "JPH_DEBUG_RENDERER"
-    "JPH_OBJECT_STREAM"
-    "MAG_BUILD_SHARED"
-    "MAG_CONFIG_DEBUG"
-    "MAG_ASSERTIONS_ENABLED"
-    "MAG_PROFILE_ENABLED"
-    "VULKAN_HPP_NAMESPACE=vk"
-    "VULKAN_HPP_NO_EXCEPTIONS"
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    # All configurations
+    GLM_FORCE_QUAT_DATA_WXYZ
+    GLM_ENABLE_EXPERIMENTAL
+    JPH_PROFILE_ENABLED
+    JPH_DEBUG_RENDERER
+    JPH_OBJECT_STREAM
+    MAG_BUILD_SHARED
+    MAG_PROFILE_ENABLED
+    VULKAN_HPP_NAMESPACE=vk
+    VULKAN_HPP_NO_EXCEPTIONS
+    
+    # Debug
+    $<$<CONFIG:debug>:MAG_CONFIG_DEBUG MAG_ASSERTIONS_ENABLED>
+
+    # Release
+    $<$<CONFIG:release>:MAG_CONFIG_RELEASE>
+)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    # ALL configurations
+    -Wall -Wextra -fno-exceptions -fvisibility=hidden -ftime-trace
+    
+    # Debug
+    $<$<CONFIG:debug>:-DDEBUG -O0 -g>
+
+    # Release
+    $<$<CONFIG:release>:-DNDEBUG -O2>
 )
 
 # path to include
-target_include_directories(${PROJECT_NAME}
-    PRIVATE "${PROJECT_NAME}/src"
-    PRIVATE "${PROJECT_NAME}/include"
-    PRIVATE "${MAG_LIB_INCLUDES}"
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${PROJECT_NAME}/src"
+    "${PROJECT_NAME}/include"
+    "${MAG_LIB_INCLUDES}"
 )
 
 # pch
-target_precompile_headers(${PROJECT_NAME}
-    PRIVATE "${PROJECT_NAME}/src/pch.hpp"
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+    "${PROJECT_NAME}/src/pch.hpp"
 )
 
 # path to lib
-target_link_directories(${PROJECT_NAME}
-    PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/scripts/imgui" "imgui")
@@ -226,17 +240,17 @@ set(USE_FMADD OFF CACHE BOOL "")
 add_subdirectory("${CMAKE_SOURCE_DIR}/libs/jolt/Build" "jolt")
 
 # links
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE vulkan
-    PRIVATE vk-bootstrap
-    PRIVATE spirv-reflect-static
-    PRIVATE SDL3
-    PRIVATE assimp
-    PRIVATE meshoptimizer
-    PRIVATE freetype
-    PRIVATE soloud
-    PRIVATE imgui
-    PRIVATE Jolt
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    vulkan
+    vk-bootstrap
+    spirv-reflect-static
+    SDL3
+    assimp
+    meshoptimizer
+    freetype
+    soloud
+    imgui
+    Jolt
 )
 
 ################################################################################
@@ -264,28 +278,44 @@ set(TEST_GAME_SOURCES
 
 add_executable(${PROJECT_NAME} ${TEST_GAME_SOURCES})
 
-add_compile_definitions(
-    "GLM_FORCE_QUAT_DATA_WXYZ"
-    "GLM_ENABLE_EXPERIMENTAL"
-    "MAG_CONFIG_DEBUG"
-    "MAG_ASSERTIONS_ENABLED"
-    "MAG_PROFILE_ENABLED"
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    # All configurations
+    GLM_FORCE_QUAT_DATA_WXYZ
+    GLM_ENABLE_EXPERIMENTAL
+    MAG_PROFILE_ENABLED
+    
+    # Debug
+    $<$<CONFIG:debug>:MAG_CONFIG_DEBUG MAG_ASSERTIONS_ENABLED>
+
+    # Release
+    $<$<CONFIG:release>:MAG_CONFIG_RELEASE>
+)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    # ALL configurations
+    -Wall -Wextra -fno-exceptions -ftime-trace
+    
+    # Debug
+    $<$<CONFIG:debug>:-DDEBUG -O0 -g>
+
+    # Release
+    $<$<CONFIG:release>:-DNDEBUG -O2>
 )
 
 # path to include
-target_include_directories(${PROJECT_NAME}
-    PRIVATE "${PROJECT_NAME}/src"
-    PRIVATE "${CMAKE_SOURCE_DIR}/magnolia/include"
-    PRIVATE "${CMAKE_SOURCE_DIR}/libs/json/single_include"
-    PRIVATE "${CMAKE_SOURCE_DIR}/libs/glm"
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${PROJECT_NAME}/src"
+    "${CMAKE_SOURCE_DIR}/magnolia/include"
+    "${CMAKE_SOURCE_DIR}/libs/json/single_include"
+    "${CMAKE_SOURCE_DIR}/libs/glm"
 )
 
 # path to lib
-target_link_directories(${PROJECT_NAME}
-    PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
 # links
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE magnolia
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    magnolia
 )

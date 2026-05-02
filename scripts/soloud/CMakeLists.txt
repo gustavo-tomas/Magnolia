@@ -81,10 +81,22 @@ set(SOLOUD_SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${SOLOUD_SOURCES})
 
-add_compile_definitions(
-    "WITH_MINIAUDIO"
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    # All configurations
+    WITH_MINIAUDIO
 )
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE "${CMAKE_SOURCE_DIR}/libs/${PROJECT_NAME}/include"
+target_compile_options(${PROJECT_NAME} PRIVATE
+    # ALL configurations
+    # -Wall -Wextra
+    
+    # Debug
+    $<$<CONFIG:debug>:-DDEBUG -O0 -g>
+
+    # Release
+    $<$<CONFIG:release>:-DNDEBUG -O2>
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/libs/${PROJECT_NAME}/include"
 )

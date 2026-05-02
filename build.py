@@ -39,11 +39,13 @@ def build(system, configuration):
     "cmake",
     "-S .",
     "-B build",
+    f"-DCMAKE_C_COMPILER=clang",
+    f"-DCMAKE_CXX_COMPILER=clang++",
     f"-DCMAKE_BUILD_TYPE={configuration}",
 
     # Change the linker here
-    f"-DCMAKE_CXX_FLAGS=\"-fuse-ld=mold\"",
-    # f"-DCMAKE_CXX_FLAGS=\"-fuse-ld=gold\"",
+    f"-DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
+    f"-DCMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
   ], 
   check = True)
 

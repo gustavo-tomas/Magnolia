@@ -26,7 +26,18 @@ set(IMGUI_SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCES})
 
-target_include_directories(${PROJECT_NAME}
-    PRIVATE "${CMAKE_SOURCE_DIR}/libs/${PROJECT_NAME}"
-    PRIVATE "${CMAKE_SOURCE_DIR}/libs/sdl/include"
+target_compile_options(${PROJECT_NAME} PRIVATE
+    # ALL configurations
+    # -Wall -Wextra
+    
+    # Debug
+    $<$<CONFIG:debug>:-DDEBUG -O0 -g>
+
+    # Release
+    $<$<CONFIG:release>:-DNDEBUG -O2>
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "${CMAKE_SOURCE_DIR}/libs/${PROJECT_NAME}"
+    "${CMAKE_SOURCE_DIR}/libs/sdl/include"
 )
