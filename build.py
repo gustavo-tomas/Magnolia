@@ -37,7 +37,7 @@ def build(system, configuration):
   # Run cmake
   result = subprocess.run([
     "cmake",
-    "-S .",
+    "-S scripts",
     "-B build",
     f"-DCMAKE_C_COMPILER=clang",
     f"-DCMAKE_CXX_COMPILER=clang++",
