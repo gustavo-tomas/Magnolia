@@ -46,7 +46,7 @@ def build(system, configuration):
     # Change the linker here
     f"-DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
     f"-DCMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
-  ], 
+  ],
   check = True)
 
   # Run make
@@ -166,7 +166,7 @@ def setup(configuration):
     "bear",
     "-o", output_dir / output_file,
     "--",
-    "python", "build.py", "build", configuration
+    "python", "scripts/build.py", "build", configuration
   ],
   check = True)
 
