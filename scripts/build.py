@@ -29,16 +29,18 @@ def has_executable(executable):
   return shutil.which(executable) != None
 
 # ----- Build -----
-def build(system, configuration):
+def build(configuration):
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
+
+  cmake_build_dir = f"build/{system}/{configuration}/obj"
 
   # Run cmake
   result = subprocess.run([
     "cmake",
     "-S scripts",
-    "-B build",
+    f"-B {cmake_build_dir}",
     f"-DCMAKE_C_COMPILER=clang",
     f"-DCMAKE_CXX_COMPILER=clang++",
     f"-DCMAKE_BUILD_TYPE={configuration}",
@@ -54,18 +56,20 @@ def build(system, configuration):
     "make",
     f"-j{number_of_cores}"
   ],
-  cwd = "build",
+  cwd = cmake_build_dir,
   check = True)
 
   return
 
 # ----- Clean -----
-def clean():
+def clean(configuration):
+  cmake_build_dir = f"build/{system}/{configuration}/obj"
+
   result = subprocess.run([
     "make",
     "clean"
   ],
-  cwd = "build",
+  cwd = cmake_build_dir,
   check = True)
 
   return
@@ -112,7 +116,7 @@ def lint():
   return
 
 # ----- Profile -----
-def profile(system, configuration):
+def profile(configuration):
   
   if not has_executable("ClangBuildAnalyzer"):
     return
@@ -127,10 +131,10 @@ def profile(system, configuration):
   output_dir.mkdir(parents = True, exist_ok = True)
   
   # Clean first
-  clean()
+  clean(configuration)
   
   # Then build
-  build(system, configuration)
+  build(configuration)
 
   result = subprocess.run([
     "ClangBuildAnalyzer",
@@ -190,16 +194,16 @@ def main():
     setup(configuration)
 
   elif command == "build":
-    build(system, configuration)
+    build(configuration)
   
   elif command == "clean":
-    clean()
+    clean(configuration)
 
   elif command == "lint":
     lint()
   
   elif command == "profile":
-    profile(system, configuration)
+    profile(configuration)
 
   else:
     print(f"(Python) Invalid command: '{command}'")
