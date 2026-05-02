@@ -16,14 +16,14 @@
 - Python 3.14.2
 - Cmake 4.2.2
 - Vulkan SDK 1.3.268
-- [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `-fuse-ld` field in the [`build.py`](build.py) file)
+- [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `-fuse-ld` field in the [`build.py`](scripts/build.py) file)
 
 ## Build
 
 To build the program use
 
 ```
-python3 build.py build debug
+python3 scripts/build.py build debug
 ```
 
 The executables for your system can be found in the `build` folder
