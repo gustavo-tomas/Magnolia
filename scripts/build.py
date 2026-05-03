@@ -41,19 +41,25 @@ def get_number_of_cores():
 def has_executable(executable):
   return shutil.which(executable) != None
 
+def get_cmake_build_dir():
+  cmake_build_dir = f"build/{system}/{configuration}/obj"
+  return cmake_build_dir
+
+def get_clang_build_dir():
+  clang_build_dir = "build/clang"
+  return clang_build_dir
+
 # ----- Build -----
 def build():
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
 
-  cmake_build_dir = f"build/{system}/{configuration}/obj"
-
   # Run cmake
   result = subprocess.run([
     "cmake",
     "-S scripts",
-    f"-B {cmake_build_dir}",
+    f"-B {get_cmake_build_dir()}",
     f"-DCMAKE_C_COMPILER=clang",
     f"-DCMAKE_CXX_COMPILER=clang++",
     f"-DCMAKE_BUILD_TYPE={configuration}",
@@ -69,20 +75,18 @@ def build():
     "make",
     f"-j{number_of_cores}"
   ],
-  cwd = cmake_build_dir,
+  cwd = get_cmake_build_dir(),
   check = True)
 
   return
 
 # ----- Clean -----
 def clean():
-  cmake_build_dir = f"build/{system}/{configuration}/obj"
-
   result = subprocess.run([
     "make",
     "clean"
   ],
-  cwd = cmake_build_dir,
+  cwd = get_cmake_build_dir(),
   check = True)
 
   return
@@ -117,7 +121,7 @@ def lint():
     "cppcheck",
     "--std=c++23",
     "--check-level=exhaustive",
-    "--output-file=build/clang/lint.txt",
+    f"--output-file={get_clang_build_dir()}/lint.txt",
     "--enable=all",
     "--suppress=missingInclude", "--suppress=missingIncludeSystem", "--suppress=useStlAlgorithm",
     "--suppress=unusedFunction", "--suppress=unknownMacro", "--suppress=unusedStructMember", 
@@ -136,7 +140,7 @@ def profile():
 
   print(f"(Python) Starting compilation profile")
 
-  output_dir = Path("build/clang")
+  output_dir = Path(get_clang_build_dir())
   obj_dir = Path("build")
   profile_binary = "compilation_profile"
   result_dir = output_dir / profile_binary
@@ -174,7 +178,7 @@ def setup():
 
   print(f"(Python) Starting clang setup")
 
-  output_dir = Path("build/clang")
+  output_dir = Path(get_clang_build_dir())
   output_dir.mkdir(parents = True, exist_ok = True)
   output_file = "compile_commands.json"
 
