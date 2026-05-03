@@ -178,6 +178,8 @@ target_link_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
 
+# Libs
+
 add_subdirectory("${MAG_ROOT_DIR}/scripts/imgui" "imgui")
 
 add_subdirectory("${MAG_ROOT_DIR}/scripts/soloud" "soloud")
@@ -210,7 +212,17 @@ set(SPIRV_REFLECT_EXAMPLES OFF CACHE BOOL "")
 set(SPIRV_REFLECT_BUILD_TESTS OFF CACHE BOOL "")
 set(SPIRV_REFLECT_INSTALL OFF CACHE BOOL "")
 set(SPIRV_REFLECT_EXECUTABLE OFF CACHE BOOL "")
-add_subdirectory("${MAG_ROOT_DIR}/libs/spirv_reflect" "spirv")
+add_subdirectory("${MAG_ROOT_DIR}/libs/spirv_reflect" "spirv-reflect")
+
+set(SDL_SHARED OFF CACHE BOOL "") 
+set(SDL_STATIC ON CACHE BOOL "") 
+set(SDL_EXAMPLES OFF CACHE BOOL "") 
+set(SDL_TESTS OFF CACHE BOOL "") 
+set(SDL_TEST_LIBRARY OFF CACHE BOOL "")
+set(SDL_INSTALL OFF CACHE BOOL "") 
+set(SDL_DISABLE_INSTALL_DOCS OFF CACHE BOOL "") 
+set(SDL_INSTALL_TESTS OFF CACHE BOOL "")
+add_subdirectory("${MAG_ROOT_DIR}/libs/sdl" "sdl")
 
 set(CPP_RTTI_ENABLED ON CACHE BOOL "")
 set(CMAKE_CXX_COMPILER "clang++" CACHE BOOL "")
