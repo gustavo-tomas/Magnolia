@@ -8,11 +8,10 @@ import glob
 from pathlib import Path
 
 system = ""
-executable_extension = ""
+configuration = ""
 
 def check_system():
   global system
-  global executable_extension
 
   supported_systems = ["windows", "linux"]
   system = platform.system().lower()
@@ -21,11 +20,17 @@ def check_system():
     print(f"System '{system}' is not supported. Supported systems: {supported_systems}")
     sys.exit(1)
 
-  if system == "linux":
-    executable_extension = ""
+  return
 
-  elif system == "windows":
-    executable_extension = ".exe"
+def check_configuration():
+  global configuration
+
+  supported_configurations = ["debug", "release"]
+  configuration = configuration.lower()
+
+  if configuration not in supported_configurations:
+    print(f"Configuration '{configuration}' is not supported. Supported configurations: {supported_configurations}")
+    sys.exit(1)
 
   return
 
@@ -36,39 +41,55 @@ def get_number_of_cores():
 def has_executable(executable):
   return shutil.which(executable) != None
 
+def get_cmake_build_dir():
+  cmake_build_dir = f"build/{system}/{configuration}/obj"
+  return cmake_build_dir
+
+def get_clang_build_dir():
+  clang_build_dir = "build/clang"
+  return clang_build_dir
+
+# ----- Configure -----
+def configure():
+  result = subprocess.run([
+    "cmake",
+    "-S scripts",
+    f"-B {get_cmake_build_dir()}",
+    f"-DCMAKE_C_COMPILER=clang",
+    f"-DCMAKE_CXX_COMPILER=clang++",
+    f"-DCMAKE_BUILD_TYPE={configuration}",
+
+    # Change the linker here
+    f"-DCMAKE_EXE_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
+    f"-DCMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
+  ],
+  check = True)
+
+  return
+
 # ----- Build -----
-def build(system, configuration):
-  executable = Path("ext") / system / f"premake5{executable_extension}"
+def build():
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
 
-  # Run premake
-  result = subprocess.run([
-    executable,
-    "gmake"
-  ], 
-  check = True)
-
   # Run make
   result = subprocess.run([
     "make",
-    f"config={configuration}",
     f"-j{number_of_cores}"
   ],
-  cwd = "build",
+  cwd = get_cmake_build_dir(),
   check = True)
 
   return
 
 # ----- Clean -----
-def clean(configuration):
+def clean():
   result = subprocess.run([
     "make",
-    "clean",
-    f"config={configuration}"
+    "clean"
   ],
-  cwd = "build",
+  cwd = get_cmake_build_dir(),
   check = True)
 
   return
@@ -103,7 +124,7 @@ def lint():
     "cppcheck",
     "--std=c++23",
     "--check-level=exhaustive",
-    "--output-file=build/clang/lint.txt",
+    f"--output-file={get_clang_build_dir()}/lint.txt",
     "--enable=all",
     "--suppress=missingInclude", "--suppress=missingIncludeSystem", "--suppress=useStlAlgorithm",
     "--suppress=unusedFunction", "--suppress=unknownMacro", "--suppress=unusedStructMember", 
@@ -115,25 +136,25 @@ def lint():
   return
 
 # ----- Profile -----
-def profile(system, configuration):
+def profile():
   
   if not has_executable("ClangBuildAnalyzer"):
     return
 
   print(f"(Python) Starting compilation profile")
 
-  output_dir = Path("build/clang")
-  obj_dir = Path("build") / system / configuration / "obj"
+  output_dir = Path(get_clang_build_dir())
+  obj_dir = Path("build")
   profile_binary = "compilation_profile"
   result_dir = output_dir / profile_binary
 
   output_dir.mkdir(parents = True, exist_ok = True)
   
   # Clean first
-  clean(configuration)
+  clean()
   
   # Then build
-  build(system, configuration)
+  build()
 
   result = subprocess.run([
     "ClangBuildAnalyzer",
@@ -153,32 +174,33 @@ def profile(system, configuration):
   return
 
 # ----- Setup -----
-def setup(configuration):
+def setup():
 
   if not has_executable("bear"):
     return
 
   print(f"(Python) Starting clang setup")
 
-  output_dir = Path("build/clang")
+  output_dir = Path(get_clang_build_dir())
   output_dir.mkdir(parents = True, exist_ok = True)
   output_file = "compile_commands.json"
-  
-  # Clean first
-  clean(configuration)
-  
+
+  # Configure first
+  configure()
+
   # Then build
   subprocess.run([
     "bear",
     "-o", output_dir / output_file,
     "--",
-    "python", "build.py", "build", configuration
+    "python", "scripts/build.py", "build", configuration
   ],
   check = True)
 
   return
 
 def main():
+  global configuration 
 
   # Check for system support
   check_system()
@@ -192,20 +214,26 @@ def main():
   command = str(sys.argv[1])
   configuration = str(sys.argv[2])
 
+  # Check configuration
+  check_configuration()
+
   if command == "setup":
-    setup(configuration)
+    setup()
+
+  elif command == "configure":
+    configure()
 
   elif command == "build":
-    build(system, configuration)
+    build()
   
   elif command == "clean":
-    clean(configuration)
+    clean()
 
   elif command == "lint":
     lint()
   
   elif command == "profile":
-    profile(system, configuration)
+    profile()
 
   else:
     print(f"(Python) Invalid command: '{command}'")

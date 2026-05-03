@@ -11,19 +11,25 @@
 <!-- Add links -->
 
 - C++23
-- Gcc 13.3.0
+- GCC 13.3.0
 - Clang 21.1.6
 - Python 3.14.2
 - Cmake 4.2.2
 - Vulkan SDK 1.3.268
-- [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `linkoptions` field in the [`premake5.lua`](premake5.lua) file)
+- [Mold linker](https://github.com/rui314/mold) (Optional, can be removed/swapped by changing the `-fuse-ld` field in the [`build.py`](scripts/build.py) file)
 
 ## Build
 
-To build the program use
+First configure the project for your platform
 
 ```
-python3 build.py build debug
+python3 scripts/build.py configure debug
+```
+
+Then build the program with
+
+```
+python3 scripts/build.py build debug
 ```
 
 The executables for your system can be found in the `build` folder
