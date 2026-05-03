@@ -8,6 +8,7 @@ import glob
 from pathlib import Path
 
 system = ""
+configuration = ""
 
 def check_system():
   global system
@@ -21,6 +22,18 @@ def check_system():
 
   return
 
+def check_configuration():
+  global configuration
+
+  supported_configurations = ["debug", "release"]
+  configuration = configuration.lower()
+
+  if configuration not in supported_configurations:
+    print(f"Configuration '{configuration}' is not supported. Supported configurations: {supported_configurations}")
+    sys.exit(1)
+
+  return
+
 # ----- Helpers -----
 def get_number_of_cores():
   return multiprocessing.cpu_count()
@@ -29,7 +42,7 @@ def has_executable(executable):
   return shutil.which(executable) != None
 
 # ----- Build -----
-def build(configuration):
+def build():
   number_of_cores = get_number_of_cores()
 
   print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
@@ -62,7 +75,7 @@ def build(configuration):
   return
 
 # ----- Clean -----
-def clean(configuration):
+def clean():
   cmake_build_dir = f"build/{system}/{configuration}/obj"
 
   result = subprocess.run([
@@ -116,7 +129,7 @@ def lint():
   return
 
 # ----- Profile -----
-def profile(configuration):
+def profile():
   
   if not has_executable("ClangBuildAnalyzer"):
     return
@@ -131,10 +144,10 @@ def profile(configuration):
   output_dir.mkdir(parents = True, exist_ok = True)
   
   # Clean first
-  clean(configuration)
+  clean()
   
   # Then build
-  build(configuration)
+  build()
 
   result = subprocess.run([
     "ClangBuildAnalyzer",
@@ -154,7 +167,7 @@ def profile(configuration):
   return
 
 # ----- Setup -----
-def setup(configuration):
+def setup():
 
   if not has_executable("bear"):
     return
@@ -177,6 +190,7 @@ def setup(configuration):
   return
 
 def main():
+  global configuration 
 
   # Check for system support
   check_system()
@@ -190,20 +204,23 @@ def main():
   command = str(sys.argv[1])
   configuration = str(sys.argv[2])
 
+  # Check configuration
+  check_configuration()
+
   if command == "setup":
-    setup(configuration)
+    setup()
 
   elif command == "build":
-    build(configuration)
+    build()
   
   elif command == "clean":
-    clean(configuration)
+    clean()
 
   elif command == "lint":
     lint()
   
   elif command == "profile":
-    profile(configuration)
+    profile()
 
   else:
     print(f"(Python) Invalid command: '{command}'")
