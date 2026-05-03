@@ -20,7 +20,13 @@
 
 ## Build
 
-To build the program use
+First configure the project for your platform
+
+```
+python3 scripts/build.py configure debug
+```
+
+Then build the program with
 
 ```
 python3 scripts/build.py build debug

@@ -49,13 +49,8 @@ def get_clang_build_dir():
   clang_build_dir = "build/clang"
   return clang_build_dir
 
-# ----- Build -----
-def build():
-  number_of_cores = get_number_of_cores()
-
-  print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
-
-  # Run cmake
+# ----- Configure -----
+def configure():
   result = subprocess.run([
     "cmake",
     "-S scripts",
@@ -69,6 +64,14 @@ def build():
     f"-DCMAKE_SHARED_LINKER_FLAGS=\"-fuse-ld=mold\"", # \"-fuse-ld=gold\"
   ],
   check = True)
+
+  return
+
+# ----- Build -----
+def build():
+  number_of_cores = get_number_of_cores()
+
+  print(f"(Python) Number of cores: {number_of_cores} - Building {system} ({configuration})")
 
   # Run make
   result = subprocess.run([
@@ -182,6 +185,9 @@ def setup():
   output_dir.mkdir(parents = True, exist_ok = True)
   output_file = "compile_commands.json"
 
+  # Configure first
+  configure()
+
   # Then build
   subprocess.run([
     "bear",
@@ -213,6 +219,9 @@ def main():
 
   if command == "setup":
     setup()
+
+  elif command == "configure":
+    configure()
 
   elif command == "build":
     build()
