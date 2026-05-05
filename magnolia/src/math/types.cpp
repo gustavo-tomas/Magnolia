@@ -101,7 +101,6 @@ namespace mag
 
         void LineList::append(const Line& line) { lines.push_back(line); }
 
-        // @TODO: DRY helper methods
         BoundingBox BoundingBox::get_transformed_bounding_box(const mat4& transform) const
         {
             BoundingBox transformed_aabb = {};
@@ -120,7 +119,7 @@ namespace mag
                                           this->max};
 
             // Transform all vertices
-            for (auto& vertex : vertices)
+            for (vec3& vertex : vertices)
             {
                 vertex = model_without_transform * vec4(vertex, 1.0f);
             }
@@ -129,7 +128,7 @@ namespace mag
             transformed_aabb.min = vertices[0];
             transformed_aabb.max = vertices[0];
 
-            for (const auto& vertex : vertices)
+            for (const vec3& vertex : vertices)
             {
                 transformed_aabb.min = math::min(transformed_aabb.min, vertex);
                 transformed_aabb.max = math::max(transformed_aabb.max, vertex);

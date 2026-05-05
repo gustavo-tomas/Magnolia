@@ -268,7 +268,7 @@ namespace game
 
     mag::Camera& Scene::get_camera()
     {
-        // @TODO: for now we assume the active camera is the first entity with a camera component
+        // @NOTE: we assume the active camera is the first entity with a camera component
         auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent>();
         for (auto [camera_c] : perspective_cameras)
         {

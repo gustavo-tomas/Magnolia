@@ -367,7 +367,6 @@ namespace mag::gfx
 
     static u32 create_handle()
     {
-        // @TODO: this is a pretty simple way to create handles, but it works
         static u32 handle_counter = 0;
 
         return handle_counter++;
