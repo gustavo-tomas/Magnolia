@@ -189,6 +189,7 @@ add_subdirectory("${MAG_ROOT_DIR}/libs/meshoptimizer" "meshoptimizer")
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "")
 set(ASSIMP_INSTALL OFF CACHE BOOL "")
+set(ASSIMP_BUILD_MINIZIP ON CACHE BOOL "")
 add_subdirectory("${MAG_ROOT_DIR}/libs/assimp" "assimp")
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
