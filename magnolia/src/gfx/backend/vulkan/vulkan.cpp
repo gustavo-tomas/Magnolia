@@ -320,7 +320,7 @@ namespace mag
                 VkImage image = {};
                 VkImageView image_view = {};
                 VmaAllocation allocation = nullptr;
-                math::uvec3 extent = {1.0f, 1.0f, 1.0f};
+                math::uvec3 extent = {1, 1, 1};
                 Format format = Format::B8G8R8A8_SRGB;
                 TextureType type = TextureType::Texture2D;
                 TextureViewType view_type = TextureViewType::Texture2D;
@@ -983,7 +983,7 @@ namespace mag
                     disp->cmdSetViewport(command_buffer, 0, 1, &viewport);
                 }
 
-                void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) const override
+                void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0, 0}) const override
                 {
                     VkRect2D scissor = {};
                     scissor.extent = mag_to_vk(extent);

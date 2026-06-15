@@ -53,9 +53,9 @@ namespace mag
                 }
 
                 Character& character = resource->characters[static_cast<c8>(c)];
-                character.size = math::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
+                character.size = math::uvec2(face->glyph->bitmap.width, face->glyph->bitmap.rows);
                 character.bearing = math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
-                character.advance = math::ivec2(face->glyph->advance.x, face->glyph->advance.y);
+                character.advance = math::uvec2(face->glyph->advance.x, face->glyph->advance.y);
 
                 // Some glyphs have no bitmpa data (i.e. space)
                 if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0 &&
