@@ -8,117 +8,6 @@ namespace mag
 {
     namespace math
     {
-        /////////////
-        // @TODO: separate .hpp and .cpp when finished
-
-        template <typename T>
-        struct vector2
-        {
-                vector2() = default;
-                vector2(const T scalar) : x(scalar), y(scalar) {}
-                vector2(const T x, const T y) : x(x), y(y) {}
-
-                union
-                {
-                        T x, r, s;
-                };
-                union
-                {
-                        T y, g, t;
-                };
-
-                T& operator[](const u64 i)
-                {
-                    MAG_ASSERT(i < 2, "Out of bounds index: {0}", i);
-
-                    switch (i)
-                    {
-                        default:
-                        case 0:
-                            return x;
-                        case 1:
-                            return y;
-                    };
-                }
-
-                const T& operator[](const u64 i) const
-                {
-                    MAG_ASSERT(i < 2, "Out of bounds index: {0}", i);
-
-                    switch (i)
-                    {
-                        default:
-                        case 0:
-                            return x;
-                        case 1:
-                            return y;
-                    };
-                }
-        };
-
-        template <typename T>
-        constexpr vector2<T> operator+(const vector2<T>& v1, const vector2<T>& v2)
-        {
-            return vector2<T>(v1.x + v2.x, v1.y + v2.y);
-        }
-
-        // Shortcuts
-
-        using vec2 = vector2<f32>;
-        using ivec2 = vector2<i32>;
-        using uvec2 = vector2<u32>;
-
-        template <typename T>
-        constexpr str to_string(const vector2<T>& v, const u8 precision = 3)
-        {
-            if constexpr (std::is_floating_point_v<T>)
-            {
-                return log::get_formatted_str("(x: {0:.{2}f}, y: {1:.{2}f})", v.x, v.y, precision);
-            }
-            else
-            {
-                return log::get_formatted_str("(x: {0}, y: {1})", v.x, v.y);
-            }
-        }
-
-        // @TODO: temp
-        void test()
-        {
-            // Vec2
-            {
-                vec2 v = {};
-                MAG_ASSERT(v.x == v[0], "Component mismatch: {0}", v.x);
-                MAG_ASSERT(v.y == v[1], "Component mismatch: {0}", v.y);
-                // v[2]; // out of bounds
-
-                {
-                    vec2 v0(1.2, 2.3);
-                    vec2 v1(3.2, 4.3);
-                    vec2 v3 = v0 + v1;
-
-                    LOG_INFO("RES: {0}", to_string(v3));
-                }
-
-                {
-                    ivec2 v0(1, -2);
-                    ivec2 v1(-3, 4);
-                    ivec2 v3 = v0 + v1;
-
-                    LOG_INFO("RES: {0}", to_string(v3));
-                }
-
-                {
-                    uvec2 v0(1, 2);
-                    uvec2 v1(3, 4);
-                    uvec2 v3 = v0 + v1;
-
-                    LOG_INFO("RES: {0}", to_string(v3));
-                }
-            }
-        }
-
-        /////////////
-
         struct State
         {
                 std::mt19937 random_engine;
@@ -129,8 +18,6 @@ namespace mag
 
         b8 initialize()
         {
-            test();
-
             state = new State();
 
             state->random_engine.seed(std::random_device()());
@@ -161,18 +48,6 @@ namespace mag
         i32 random(const i32 begin, const i32 end)
         {
             return static_cast<i32>(random(static_cast<f32>(begin), static_cast<f32>(end)));
-        }
-
-        b8 decompose_simple(const mat4& model_matrix, vec3& scale, quat& rotation, vec3& translation)
-        {
-            quat orientation;
-            vec3 skew;
-            vec4 perspective;
-
-            const b8 result = glm::decompose(model_matrix, scale, orientation, translation, skew, perspective);
-            rotation = orientation;
-
-            return result;
         }
 
         mat4 calculate_rotation_mat(const vec3& rotation)
