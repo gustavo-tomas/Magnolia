@@ -369,23 +369,23 @@ namespace mag
         MAG_API struct matrix3x3
         {
                 matrix3x3() = default;
-                matrix3x3(const T s) : data(vector3<T>(s, 0, 0), vector3<T>(0, s, 0), vector3<T>(0, 0, s)) {}
-                matrix3x3(const vector3<T>& v0, const vector3<T>& v1, const vector3<T>& v2) : data{v0, v1, v2} {}
+                matrix3x3(const T s) : columns(vector3<T>(s, 0, 0), vector3<T>(0, s, 0), vector3<T>(0, 0, s)) {}
+                matrix3x3(const vector3<T>& v0, const vector3<T>& v1, const vector3<T>& v2) : columns{v0, v1, v2} {}
 
                 vector3<T>& operator[](const u8 i)
                 {
                     MAG_ASSERT(i < 3, "Out of bounds index: {0}", i);
-                    return data[i];
+                    return columns[i];
                 }
 
                 const vector3<T>& operator[](const u8 i) const
                 {
                     MAG_ASSERT(i < 3, "Out of bounds index: {0}", i);
-                    return data[i];
+                    return columns[i];
                 }
 
             private:
-                std::array<vector3<T>, 3> data;
+                std::array<vector3<T>, 3> columns;
         };
 
         template <typename T>
@@ -401,25 +401,25 @@ namespace mag
         {
                 matrix4x4() = default;
                 matrix4x4(const T s)
-                    : data{vector4<T>(s, 0, 0, 0), vector4<T>(0, s, 0, 0), vector4<T>(0, 0, s, 0),
-                           vector4<T>(0, 0, 0, s)}
+                    : columns{vector4<T>(s, 0, 0, 0), vector4<T>(0, s, 0, 0), vector4<T>(0, 0, s, 0),
+                              vector4<T>(0, 0, 0, s)}
                 {
                 }
 
                 vector4<T>& operator[](const u8 i)
                 {
                     MAG_ASSERT(i < 4, "Out of bounds index: {0}", i);
-                    return data[i];
+                    return columns[i];
                 }
 
                 const vector4<T>& operator[](const u8 i) const
                 {
                     MAG_ASSERT(i < 4, "Out of bounds index: {0}", i);
-                    return data[i];
+                    return columns[i];
                 }
 
             private:
-                std::array<vector4<T>, 4> data;
+                std::array<vector4<T>, 4> columns;
         };
 
         template <typename T>
