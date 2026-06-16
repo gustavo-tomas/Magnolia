@@ -15,6 +15,7 @@
     #include "magnolia/core/assert.hpp"
     #include "magnolia/core/debug.hpp"
     #include "magnolia/core/memory.hpp"
+    #include "magnolia/math/functions.hpp"
     #include "magnolia/platform/window.hpp"
 
     // Use to trace VMA allocations

@@ -1,7 +1,7 @@
 #include "magnolia/camera/camera.hpp"
 
 #include "magnolia/camera/frustum.hpp"
-#include "magnolia/math/types.hpp"
+#include "magnolia/math/functions.hpp"
 
 namespace mag
 {
@@ -24,7 +24,7 @@ namespace mag
 
     void Camera::set_rotation(const quat& rotation)
     {
-        rotation_mat = toMat4(math::normalize(rotation));
+        rotation_mat = to_mat4(math::normalize(rotation));
         calculate_view();
     }
 
@@ -46,7 +46,7 @@ namespace mag
     const mat4& Camera::get_view() const { return view; }
     const mat4& Camera::get_projection() const { return projection; }
     const vec3& Camera::get_position() const { return position; }
-    quat Camera::get_rotation() const { return toQuat(rotation_mat); }
+    quat Camera::get_rotation() const { return to_quat(rotation_mat); }
     const mat4& Camera::get_rotation_mat() const { return rotation_mat; }
     const Frustum& Camera::get_frustum() const { return frustum; }
 

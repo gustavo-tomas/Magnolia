@@ -30,11 +30,10 @@ namespace mag
                 str file_path;
                 b8 force_recompilation = false;
                 str compilation_flags = "-std=c++23 -fPIC -shared -O0";
-                std::vector<str> include_paths = {"magnolia/include", "libs/glm"};
+                std::vector<str> include_paths = {"magnolia/include"};
                 std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "magnolia"};
                 std::vector<str> link_libs = {"magnolia"};
-                std::vector<str> defines = {"MAG_CONFIG_DEBUG", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1",
-                                            "GLM_ENABLE_EXPERIMENTAL", "GLM_FORCE_QUAT_DATA_WXYZ"};
+                std::vector<str> defines = {"MAG_CONFIG_DEBUG", "MAG_ASSERTIONS_ENABLED=1", "MAG_PROFILE_ENABLED=1"};
         };
 
         // Skips compilation if scripts exists, or recompile if force recompilation is true

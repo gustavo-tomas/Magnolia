@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "magnolia/math/functions.hpp"
 #include "magnolia/math/types.hpp"
 
 namespace mag
