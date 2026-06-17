@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "magnolia/core/logger.hpp"
 #include "magnolia/math/types.hpp"
 
@@ -58,6 +60,30 @@ namespace mag
         MAG_API vec3 get_forward_dir(const f32 pitch, const f32 yaw);
 
         MAG_API vec3 get_up_dir(const f32 pitch, const f32 yaw);
+
+        template <typename T>
+        MAG_API inline T sin(const T x)
+        {
+            return std::sin(x);
+        }
+
+        template <typename T>
+        MAG_API inline vector3<T> sin(const vector3<T>& v)
+        {
+            return {std::sin(v.x), std::sin(v.y), std::sin(v.z)};
+        }
+
+        template <typename T>
+        MAG_API inline T cos(const T x)
+        {
+            return std::cos(x);
+        }
+
+        template <typename T>
+        MAG_API inline vector3<T> cos(const vector3<T>& v)
+        {
+            return {std::cos(v.x), std::cos(v.y), std::cos(v.z)};
+        }
 
         template <typename T>
         MAG_API inline T min(const T v1, const T v2)

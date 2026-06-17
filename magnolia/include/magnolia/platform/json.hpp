@@ -7,27 +7,79 @@
 
 namespace nlohmann
 {
-    template <i32 L, typename T, mag::math::qualifier Q>
-    inline void to_json(mag::fs::json& data, const mag::math::vec<L, T, Q>& v)
+    template <typename T>
+    inline void to_json(mag::fs::json& data, const mag::math::vector2<T>& v)
     {
         data = mag::fs::json::array();
 
-        for (i32 i = 0; i < L; ++i)
+        for (u32 i = 0; i < 2; i++)
         {
             data.push_back(v[i]);
         }
     }
 
-    template <i32 L, typename T, mag::math::qualifier Q>
-    inline void from_json(const mag::fs::json& data, mag::math::vec<L, T, Q>& v)
+    template <typename T>
+    inline void to_json(mag::fs::json& data, const mag::math::vector3<T>& v)
     {
-        if (!data.is_array() || data.size() != L)
+        data = mag::fs::json::array();
+
+        for (u32 i = 0; i < 3; i++)
+        {
+            data.push_back(v[i]);
+        }
+    }
+
+    template <typename T>
+    inline void to_json(mag::fs::json& data, const mag::math::vector4<T>& v)
+    {
+        data = mag::fs::json::array();
+
+        for (u32 i = 0; i < 4; i++)
+        {
+            data.push_back(v[i]);
+        }
+    }
+
+    template <typename T>
+    inline void from_json(const mag::fs::json& data, mag::math::vector2<T>& v)
+    {
+        if (!data.is_array() || data.size() != 2)
         {
             LOG_ERROR("Json and vec size mismatch");
             return;
         }
 
-        for (i32 i = 0; i < L; ++i)
+        for (u32 i = 0; i < 2; i++)
+        {
+            v[i] = data.at(i).get<T>();
+        }
+    }
+
+    template <typename T>
+    inline void from_json(const mag::fs::json& data, mag::math::vector3<T>& v)
+    {
+        if (!data.is_array() || data.size() != 3)
+        {
+            LOG_ERROR("Json and vec size mismatch");
+            return;
+        }
+
+        for (u32 i = 0; i < 3; i++)
+        {
+            v[i] = data.at(i).get<T>();
+        }
+    }
+
+    template <typename T>
+    inline void from_json(const mag::fs::json& data, mag::math::vector4<T>& v)
+    {
+        if (!data.is_array() || data.size() != 4)
+        {
+            LOG_ERROR("Json and vec size mismatch");
+            return;
+        }
+
+        for (u32 i = 0; i < 4; i++)
         {
             v[i] = data.at(i).get<T>();
         }
@@ -43,7 +95,7 @@ namespace nlohmann
             return;
         }
 
-        for (i32 i = 0; i < mag::math::quat::length(); i++)
+        for (u32 i = 0; i < 4; i++)
         {
             v[i] = data[i].get<f32>();
         }

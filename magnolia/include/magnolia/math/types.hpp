@@ -47,30 +47,6 @@ namespace mag
         using mat3 = matrix3x3<f32>;
         using mat4 = matrix4x4<f32>;
 
-        template <typename T>
-        T sin(const T x)
-        {
-            return std::sin(x);
-        }
-
-        template <typename T>
-        vector3<T> sin(const vector3<T>& v)
-        {
-            return {std::sin(v.x), std::sin(v.y), std::sin(v.z)};
-        }
-
-        template <typename T>
-        T cos(const T x)
-        {
-            return std::cos(x);
-        }
-
-        template <typename T>
-        vector3<T> cos(const vector3<T>& v)
-        {
-            return {std::cos(v.x), std::cos(v.y), std::cos(v.z)};
-        }
-
         // Vector2
 
         template <typename T>
