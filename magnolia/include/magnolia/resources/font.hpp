@@ -12,7 +12,7 @@ namespace mag
     struct Character
     {
             TextureResource texture;  // Texture with glyph bitmap data
-            math::ivec2 size;         // Size of glyph
+            math::uvec2 size;         // Size of glyph
             math::ivec2 bearing;      // Offset from baseline to left/top of glyph
             math::uvec2 advance;      // Offset to advance to next glyph
             std::vector<u8> data;     // Char data

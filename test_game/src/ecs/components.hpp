@@ -2,6 +2,7 @@
 
 #include <magnolia/camera/camera.hpp>
 #include <magnolia/core/types.hpp>
+#include <magnolia/math/functions.hpp>
 #include <magnolia/math/types.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/scripting/scripting_engine.hpp>
@@ -38,7 +39,7 @@ namespace game
 
             mat4 get_transformation_matrix() const
             {
-                const mat4 rotation_mat = mag::math::toMat4(rotation);
+                const mat4 rotation_mat = mag::math::to_mat4(rotation);
 
                 return translate(mat4(1.0f), translation) * rotation_mat * mag::math::scale(mat4(1.0f), scale);
             }

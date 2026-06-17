@@ -30,19 +30,55 @@ namespace mag::fs
 
     // Maths
 
-    template <i32 L, typename T, math::qualifier Q>
-    inline void to_binary(std::ostringstream& ss, const math::vec<L, T, Q>& data)
+    template <typename T>
+    inline void to_binary(std::ostringstream& ss, const math::vector2<T>& data)
     {
-        for (i32 i = 0; i < L; i++)
+        for (u32 i = 0; i < 2; i++)
         {
             to_binary(ss, data[i]);
         }
     }
 
-    template <i32 L, typename T, mag::math::qualifier Q>
-    inline void from_binary(std::istringstream& ss, mag::math::vec<L, T, Q>& data)
+    template <typename T>
+    inline void to_binary(std::ostringstream& ss, const math::vector3<T>& data)
     {
-        for (i32 i = 0; i < L; i++)
+        for (u32 i = 0; i < 3; i++)
+        {
+            to_binary(ss, data[i]);
+        }
+    }
+
+    template <typename T>
+    inline void to_binary(std::ostringstream& ss, const math::vector4<T>& data)
+    {
+        for (u32 i = 0; i < 4; i++)
+        {
+            to_binary(ss, data[i]);
+        }
+    }
+
+    template <typename T>
+    inline void from_binary(std::istringstream& ss, mag::math::vector2<T>& data)
+    {
+        for (u32 i = 0; i < 2; i++)
+        {
+            from_binary(ss, data[i]);
+        }
+    }
+
+    template <typename T>
+    inline void from_binary(std::istringstream& ss, mag::math::vector3<T>& data)
+    {
+        for (u32 i = 0; i < 3; i++)
+        {
+            from_binary(ss, data[i]);
+        }
+    }
+
+    template <typename T>
+    inline void from_binary(std::istringstream& ss, mag::math::vector4<T>& data)
+    {
+        for (u32 i = 0; i < 4; i++)
         {
             from_binary(ss, data[i]);
         }

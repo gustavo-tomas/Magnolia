@@ -1,6 +1,7 @@
 #include "magnolia/physics/physics.hpp"
 
 #include "magnolia/core/types.hpp"
+#include "magnolia/math/functions.hpp"
 #include "magnolia/threads/thread.hpp"
 #include "physics/backend/jolt/conversions.hpp"
 #include "physics/backend/jolt/implementations.hpp"

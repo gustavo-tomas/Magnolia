@@ -4,7 +4,7 @@
 #include <magnolia/core/types.hpp>
 #include <magnolia/ecs/ecs.hpp>
 #include <magnolia/gfx/gfx.hpp>
-#include <magnolia/math/types.hpp>
+#include <magnolia/math/functions.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/file_system.hpp>
 #include <magnolia/platform/platform.hpp>

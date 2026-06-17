@@ -3,6 +3,7 @@
 #include <magnolia/core/keys.hpp>
 #include <magnolia/core/logger.hpp>
 #include <magnolia/ecs/ecs.hpp>
+#include <magnolia/math/functions.hpp>
 #include <magnolia/physics/physics.hpp>
 #include <magnolia/platform/window.hpp>
 #include <magnolia/resources/model.hpp>
@@ -419,7 +420,7 @@ namespace game
             rotation = mag::math::normalize(rotation);
 
             // Calculate desired movement direction
-            const mat4 rotation_mat = toMat4(rotation);
+            const mat4 rotation_mat = to_mat4(rotation);
             const mag::vec3& right = rotation_mat[0];
             const mag::vec3& up = rotation_mat[1];
             const mag::vec3& forward = rotation_mat[2];

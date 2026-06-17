@@ -5,6 +5,7 @@
 #include "magnolia/core/event.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/types.hpp"
+#include "magnolia/math/functions.hpp"
 #include "magnolia/platform/window.hpp"
 #include "magnolia/resources/shader.hpp"
 

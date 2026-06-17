@@ -5,6 +5,7 @@
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/gfx.hpp"
+#include "magnolia/math/functions.hpp"
 #include "magnolia/physics/physics.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/platform/json.hpp"
@@ -86,7 +87,7 @@ namespace mag
             i32 count = 0;
             for (const auto& num : config["WindowSize"])
             {
-                if (count >= window_options.size.length())
+                if (count >= 2)
                 {
                     break;
                 }
@@ -96,7 +97,7 @@ namespace mag
             count = 0;
             for (const auto& num : config["WindowPosition"])
             {
-                if (count >= window_options.position.length())
+                if (count >= 2)
                 {
                     break;
                 }
@@ -106,7 +107,7 @@ namespace mag
             count = 0;
             for (const auto& num : config["ScreenResolution"])
             {
-                if (count >= gfx_options.resolution.length())
+                if (count >= 2)
                 {
                     break;
                 }

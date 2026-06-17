@@ -347,7 +347,7 @@ namespace mag
                 virtual void set_viewport(const math::vec2& extent, const math::vec2& offset = {0.0f, 0.0f},
                                           const f32 min_depth = 0.0f, const f32 max_depth = 1.0f) const = 0;
 
-                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0.0f, 0.0f}) const = 0;
+                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0, 0}) const = 0;
 
                 virtual void begin_rendering(const IRenderPass* const render_pass) const = 0;
 
