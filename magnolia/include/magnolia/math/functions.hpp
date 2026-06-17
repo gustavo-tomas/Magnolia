@@ -1,5 +1,6 @@
 #pragma once
 
+#include "magnolia/core/logger.hpp"
 #include "magnolia/math/types.hpp"
 
 namespace mag
@@ -10,55 +11,46 @@ namespace mag
 
         void shutdown();
 
-        MAG_API inline f32 radians(const f32 angle_deg) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 radians(const f32 angle_deg);
 
-        MAG_API inline f32 length(const vec3& v) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 dot(const vec3& v1, const vec3& v2);
 
-        MAG_API inline vec3 normalize(const vec3& v) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 dot(const vec4& v1, const vec4& v2);
 
-        MAG_API inline quat normalize(const quat& q) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 dot(const quat& q1, const quat& q2);
 
-        MAG_API inline mat4 translate(const mat4& m, const vec3& position) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 length(const vec3& v);
 
-        MAG_API inline mat4 translate(const vec3& position) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API f32 length(const quat& q);
 
-        MAG_API inline mat4 scale(const mat4& m, const vec3& s) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API vec3 normalize(const vec3& v);
 
-        MAG_API inline mat4 scale(const vec3& s) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API quat normalize(const quat& q);
 
-        MAG_API inline mat4 inverse(const mat4& m) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 translate(const mat4& m, const vec3& position);
 
-        MAG_API inline mat4 transpose(const mat4& m) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 translate(const vec3& position);
 
-        MAG_API inline vec3 cross(const vec3& v1, const vec3& v2) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 scale(const mat4& m, const vec3& v);
 
-        MAG_API inline f32 dot(const vec3& v1, const vec3& v2) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 inverse(mat4 m);
 
-        MAG_API inline f32 dot(const vec4& v1, const vec4& v2) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 transpose(const mat4& m);
 
-        MAG_API inline quat angle_axis(const f32 angle, const vec3& axis) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API vec3 cross(const vec3& v1, const vec3& v2);
 
-        MAG_API inline quat to_quat(const mat4& m) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API quat to_quat(const mat4& m);
 
-        MAG_API inline mat4 to_mat4(const quat& q) { MAG_ASSERT(false, "@TODO"); }
+        MAG_API mat4 to_mat4(const quat& q);
 
-        MAG_API inline mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far)
-        {
-            MAG_ASSERT(false, "@TODO");
-        }
+        MAG_API mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far);
 
-        MAG_API inline mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near,
-                                  const f32 far)
-        {
-            MAG_ASSERT(false, "@TODO");
-        }
+        MAG_API mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near,
+                           const f32 far);
 
         MAG_API f32 random(const f32 begin = 0.0f, const f32 end = 1.0f);
 
         MAG_API i32 random(const i32 begin = 0, const i32 end = 1);
-
-        // Calculate a rotation mat from XYZ rotation
-        MAG_API mat4 calculate_rotation_mat(const vec3& rotation);
 
         // Get direction from angles
         MAG_API vec3 get_right_dir(const f32 yaw);
@@ -68,21 +60,16 @@ namespace mag
         MAG_API vec3 get_up_dir(const f32 pitch, const f32 yaw);
 
         template <typename T>
-        MAG_API inline vector3<T> min(const vector3<T>& v1, const vector3<T>& v2)
-        {
-            MAG_ASSERT(false, "@TODO");
-        }
-
-        template <typename T>
         MAG_API inline T min(const T v1, const T v2)
         {
             return v1 < v2 ? v1 : v2;
         }
 
+        // Returns the minimum value for each pair
         template <typename T>
-        MAG_API inline vector3<T> max(const vector3<T>& v1, const vector3<T>& v2)
+        MAG_API inline vector3<T> min(const vector3<T>& v1, const vector3<T>& v2)
         {
-            MAG_ASSERT(false, "@TODO");
+            return vector3<T>(min(v1.x, v2.x), min(v1.y, v2.y), min(v1.z, v2.z));
         }
 
         template <typename T>
@@ -91,8 +78,14 @@ namespace mag
             return v1 > v2 ? v1 : v2;
         }
 
-        // String conversions
+        // Returns the maximum value for each pair
+        template <typename T>
+        MAG_API inline vector3<T> max(const vector3<T>& v1, const vector3<T>& v2)
+        {
+            return vector3<T>(max(v1.x, v2.x), max(v1.y, v2.y), max(v1.z, v2.z));
+        }
 
+        // String conversions
         template <typename T>
         MAG_API inline constexpr str to_string(const vector2<T>& v, const u8 precision = 3)
         {
