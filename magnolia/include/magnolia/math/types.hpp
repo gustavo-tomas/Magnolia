@@ -3,15 +3,6 @@
 #include <cmath>
 #include <vector>
 
-#define GLM_FORCE_QUAT_DATA_WXYZ
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/ext/matrix_clip_space.hpp"
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/ext/matrix_transform.hpp"
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/glm.hpp"
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/gtx/extended_min_max.hpp"
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/gtx/quaternion.hpp"
-#include "/home/guga/Projects/Magnolia/libs/glm/glm/gtx/string_cast.hpp"
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/types.hpp"
 
@@ -55,70 +46,6 @@ namespace mag
 
         using mat3 = matrix3x3<f32>;
         using mat4 = matrix4x4<f32>;
-
-        // @TODO: temp
-        const f32 epsilon = 0;
-
-        template <typename T>
-        glm::vec3 mag_to_glm(vector3<T> v)
-        {
-            return {v.x, v.y, v.z};
-        }
-
-        template <typename T>
-        glm::vec4 mag_to_glm(vector4<T> v)
-        {
-            return {v.x, v.y, v.z, v.w};
-        }
-
-        template <typename T>
-        glm::quat mag_to_glm(quaternion<T> v)
-        {
-            return {v.w, v.x, v.y, v.z};
-        }
-
-        template <typename T>
-        glm::mat3 mag_to_glm(matrix3x3<T> v)
-        {
-            return {mag_to_glm(v[0]), mag_to_glm(v[1]), mag_to_glm(v[2])};
-        }
-
-        template <typename T>
-        glm::mat4 mag_to_glm(matrix4x4<T> v)
-        {
-            return {mag_to_glm(v[0]), mag_to_glm(v[1]), mag_to_glm(v[2]), mag_to_glm(v[3])};
-        }
-
-        inline b8 equal(const f32 v1, const f32 v2) { return std::fabs(v1 - v2) <= epsilon; }
-
-        template <typename T>
-        b8 equal(glm::vec3 glm_v, vector3<T> mag_v)
-        {
-            return std::fabs(glm_v.x - mag_v.x) <= epsilon && std::fabs(glm_v.y - mag_v.y) <= epsilon &&
-                   std::fabs(glm_v.z - mag_v.z) <= epsilon;
-        }
-
-        template <typename T>
-        b8 equal(glm::vec4 glm_v, vector4<T> mag_v)
-        {
-            return std::fabs(glm_v.x - mag_v.x) <= epsilon && std::fabs(glm_v.y - mag_v.y) <= epsilon &&
-                   std::fabs(glm_v.z - mag_v.z) <= epsilon && std::fabs(glm_v.w - mag_v.w) <= epsilon;
-        }
-
-        template <typename T>
-        b8 equal(glm::quat glm_v, quaternion<T> mag_v)
-        {
-            return std::fabs(glm_v.x - mag_v.x) <= epsilon && std::fabs(glm_v.y - mag_v.y) <= epsilon &&
-                   std::fabs(glm_v.z - mag_v.z) <= epsilon && std::fabs(glm_v.w - mag_v.w) <= epsilon;
-        }
-
-        template <typename T>
-        b8 equal(glm::mat4 glm_v, matrix4x4<T> mag_v)
-        {
-            return equal(glm_v[0], mag_v[0]) && equal(glm_v[1], mag_v[1]) && equal(glm_v[2], mag_v[2]) &&
-                   equal(glm_v[3], mag_v[3]);
-        }
-        // @TODO: temp
 
         template <typename T>
         T sin(const T x)
@@ -357,13 +284,9 @@ namespace mag
                 template <typename U>
                 constexpr vector3<T>& operator*=(const vector3<U>& v)
                 {
-                    glm::vec3 v3 = mag_to_glm(*this) * mag_to_glm(v);
-
                     x *= static_cast<T>(v.x);
                     y *= static_cast<T>(v.y);
                     z *= static_cast<T>(v.z);
-
-                    MAG_ASSERT(equal(v3, *this), "Mismatch");
 
                     return *this;
                 }
@@ -390,14 +313,7 @@ namespace mag
         template <typename T>
         MAG_API constexpr vector3<T> operator*(const vector3<T>& v1, const vector3<T>& v2)
         {
-            glm::vec3 v3 = mag_to_glm(v1) * mag_to_glm(v2);
-
-            vector3<T> res = v1;
-            res *= v2;
-
-            MAG_ASSERT(equal(v3, res), "Mismatch");
-
-            return res;
+            return vector3<T>(v1) *= v2;
         }
 
         // Vector 4
@@ -471,14 +387,10 @@ namespace mag
                 template <typename U>
                 constexpr vector4<T>& operator+=(const vector4<U>& v)
                 {
-                    glm::vec4 v3 = mag_to_glm(*this) + mag_to_glm(v);
-
                     x += static_cast<T>(v.x);
                     y += static_cast<T>(v.y);
                     z += static_cast<T>(v.z);
                     w += static_cast<T>(v.w);
-
-                    MAG_ASSERT(equal(v3, *this), "Mismatch");
 
                     return *this;
                 }
@@ -486,14 +398,10 @@ namespace mag
                 template <typename U>
                 constexpr vector4<T>& operator-=(const vector4<U>& v)
                 {
-                    glm::vec4 v3 = mag_to_glm(*this) - mag_to_glm(v);
-
                     x -= static_cast<T>(v.x);
                     y -= static_cast<T>(v.y);
                     z -= static_cast<T>(v.z);
                     w -= static_cast<T>(v.w);
-
-                    MAG_ASSERT(equal(v3, *this), "Mismatch");
 
                     return *this;
                 }
@@ -501,14 +409,10 @@ namespace mag
                 template <typename U>
                 constexpr vector4<T>& operator*=(const U s)
                 {
-                    glm::vec4 v3 = mag_to_glm(*this) * s;
-
                     x *= static_cast<T>(s);
                     y *= static_cast<T>(s);
                     z *= static_cast<T>(s);
                     w *= static_cast<T>(s);
-
-                    MAG_ASSERT(equal(v3, *this), "Mismatch");
 
                     return *this;
                 }
@@ -516,14 +420,10 @@ namespace mag
                 template <typename U>
                 constexpr vector4<T>& operator*=(const vector4<U>& v)
                 {
-                    glm::vec4 v3 = mag_to_glm(*this) * mag_to_glm(v);
-
                     x *= static_cast<T>(v.x);
                     y *= static_cast<T>(v.y);
                     z *= static_cast<T>(v.z);
                     w *= static_cast<T>(v.w);
-
-                    MAG_ASSERT(equal(v3, *this), "Mismatch");
 
                     return *this;
                 }
@@ -565,19 +465,10 @@ namespace mag
                     const vec3 c = cos(euler_angle * static_cast<T>(0.5));
                     const vec3 s = sin(euler_angle * static_cast<T>(0.5));
 
-                    glm::vec3 r = glm::cos(mag_to_glm(euler_angle) * static_cast<T>(0.5));
-                    glm::vec3 t = glm::sin(mag_to_glm(euler_angle) * static_cast<T>(0.5));
-
-                    MAG_ASSERT(equal(r, c), "Mismatch");
-                    MAG_ASSERT(equal(t, s), "Mismatch");
-
                     w = (c.x * c.y * c.z) + (s.x * s.y * s.z);
                     x = (s.x * c.y * c.z) - (c.x * s.y * s.z);
                     y = (c.x * s.y * c.z) + (s.x * c.y * s.z);
                     z = (c.x * c.y * s.z) - (s.x * s.y * c.z);
-
-                    glm::quat q(mag_to_glm(euler_angle));
-                    MAG_ASSERT(equal(q, *this), "Mismatch");
                 }
 
                 T w, x, y, z;
@@ -665,8 +556,6 @@ namespace mag
                 {
                     vector3<T> res(0);
 
-                    glm::vec3 res2 = mag_to_glm(*this) * mag_to_glm(v);
-
                     for (u32 j = 0; j < 3; j++)
                     {
                         for (u32 i = 0; i < 3; i++)
@@ -674,8 +563,6 @@ namespace mag
                             res[i] += (*this)[j][i] * static_cast<T>(v[j]);
                         }
                     }
-
-                    MAG_ASSERT(equal(res2, res), "Mismatch");
 
                     return res;
                 }
@@ -722,8 +609,6 @@ namespace mag
                 template <typename U>
                 constexpr matrix4x4<T>& operator*=(const U s)
                 {
-                    glm::mat4 res2 = mag_to_glm(*this) * s;
-
                     for (u32 j = 0; j < 4; j++)
                     {
                         for (u32 i = 0; i < 4; i++)
@@ -731,8 +616,6 @@ namespace mag
                             (*this)[j][i] *= static_cast<T>(s);
                         }
                     }
-
-                    MAG_ASSERT(equal(res2, *this), "Mismatch");
 
                     return *this;
                 }
@@ -742,8 +625,6 @@ namespace mag
                 {
                     vector4<T> res(0);
 
-                    glm::vec4 res2 = mag_to_glm(*this) * mag_to_glm(v);
-
                     for (u32 j = 0; j < 4; j++)
                     {
                         for (u32 i = 0; i < 4; i++)
@@ -751,8 +632,6 @@ namespace mag
                             res[i] += (*this)[j][i] * static_cast<T>(v[j]);
                         }
                     }
-
-                    MAG_ASSERT(equal(res2, res), "Mismatch");
 
                     return res;
                 }
@@ -772,10 +651,6 @@ namespace mag
                             }
                         }
                     }
-
-                    glm::mat4 res2 = mag_to_glm(res);
-
-                    MAG_ASSERT(equal(res2, res), "Mismatch");
 
                     return res;
                 }

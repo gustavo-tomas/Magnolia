@@ -29,35 +29,23 @@ namespace mag
 
         f32 dot(const vec3& v1, const vec3& v2)
         {
-            f32 res2 = glm::dot(mag_to_glm(v1), mag_to_glm(v2));
-
-            vec3 prod = v1 * v2;
+            const vec3 prod = v1 * v2;
             const f32 res = prod.x + prod.y + prod.z;
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
 
         f32 dot(const vec4& v1, const vec4& v2)
         {
-            f32 res2 = glm::dot(mag_to_glm(v1), mag_to_glm(v2));
-
             const f32 res = (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z) + (v1.w * v2.w);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
 
         f32 dot(const quat& q1, const quat& q2)
         {
-            f32 res2 = glm::dot(mag_to_glm(q1), mag_to_glm(q2));
-
             const vec4 prod(q1.w * q2.w, q1.x * q2.x, q1.y * q2.y, q1.z * q2.z);
             const f32 res = (prod.x + prod.y) + (prod.z + prod.w);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -65,9 +53,6 @@ namespace mag
         f32 length(const vec3& v)
         {
             const f32 res = std::sqrt(dot(v, v));
-            f32 res2 = glm::length(mag_to_glm(v));
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -75,9 +60,6 @@ namespace mag
         f32 length(const quat& q)
         {
             const f32 res = std::sqrt(dot(q, q));
-            f32 res2 = glm::length(mag_to_glm(q));
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -93,13 +75,7 @@ namespace mag
             }
 
             const f32 inv_d = 1.0f / d;
-
             const vec3 res = {v.x * inv_d, v.y * inv_d, v.z * inv_d};
-
-            glm::vec3 q2 = mag_to_glm(v);
-            glm::vec3 res2 = glm::normalize(q2);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -115,27 +91,15 @@ namespace mag
             }
 
             const f32 inv_d = 1.0f / d;
-
             const quat res = {q.w * inv_d, q.x * inv_d, q.y * inv_d, q.z * inv_d};
-
-            glm::quat q2 = mag_to_glm(q);
-            glm::quat res2 = glm::normalize(q2);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
 
         mat4 translate(const mat4& m, const vec3& position)
         {
-            glm::mat4 m2 = mag_to_glm(m);
-            glm::vec3 v2 = mag_to_glm(position);
-            glm::mat4 res2 = glm::translate(m2, v2);
-
             mat4 res = m;
             res[3] += vec4(position, 0.0f);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -143,14 +107,7 @@ namespace mag
         mat4 translate(const vec3& position)
         {
             mat4 res(1.0f);
-
-            glm::mat4 m2 = mag_to_glm(res);
-            glm::vec3 v2 = mag_to_glm(position);
-            glm::mat4 res2 = glm::translate(m2, v2);
-
             res[3] += vec4(position, 0.0f);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -158,15 +115,10 @@ namespace mag
         mat4 scale(const mat4& m, const vec3& v)
         {
             mat4 res(0.0f);
-
             res[0] = m[0] * v[0];
             res[1] = m[1] * v[1];
             res[2] = m[2] * v[2];
             res[3] = m[3];
-
-            glm::mat4 res2 = glm::scale(mag_to_glm(m), mag_to_glm(v));
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -227,17 +179,11 @@ namespace mag
 
             res *= one_over_d;
 
-            glm::mat4 m2 = mag_to_glm(m);
-            glm::mat4 res2 = glm::inverse(m2);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
-
             return res;
         }
 
         mat4 transpose(const mat4& m)
         {
-            glm::mat4 res2 = glm::transpose(mag_to_glm(m));
             mat4 res(0.0f);
 
             for (u32 i = 0; i < 4; i++)
@@ -248,18 +194,13 @@ namespace mag
                 }
             }
 
-            MAG_ASSERT(equal(res2, res), "Mismatch");
-
             return res;
         }
 
         vec3 cross(const vec3& v1, const vec3& v2)
         {
-            glm::vec3 res2 = glm::cross(mag_to_glm(v1), mag_to_glm(v2));
             const vec3 res = {(v1.y * v2.z) - (v2.y * v1.z), (v1.z * v2.x) - (v2.z * v1.x),
                               (v1.x * v2.y) - (v2.x * v1.y)};
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -294,7 +235,6 @@ namespace mag
             const f32 mult = 0.25f / biggest_val;
 
             quat res;
-            glm::quat res2 = glm::toQuat(mag_to_glm(m));
 
             switch (biggest_index)
             {
@@ -323,8 +263,6 @@ namespace mag
                     res = {1, 0, 0, 0};
                     break;
             }
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -370,25 +308,17 @@ namespace mag
             res[3][2] = 0.0f;
             res[3][3] = 1.0f;
 
-            glm::mat4 res2 = glm::toMat4(mag_to_glm(q));
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
-
             return res;
         }
 
         mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far)
         {
             mat4 res(0.0f);
-            glm::mat4 res2 = glm::perspective(fov, aspect, near, far);
-
             res[0][0] = 1.0f / (aspect * std::tan(fov / 2.0f));
             res[1][1] = 1.0f / std::tan(fov / 2.0f);
             res[2][2] = -(far + near) / (far - near);
             res[2][3] = -1.0f;
             res[3][2] = (-2.0f * far * near) / (far - near);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
@@ -396,16 +326,12 @@ namespace mag
         mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near, const f32 far)
         {
             mat4 res(1.0f);
-            glm::mat4 res2 = glm::ortho(left, right, bottom, top, near, far);
-
             res[0][0] = 2.0f / (right - left);
             res[1][1] = 2.0f / (top - bottom);
             res[2][2] = 2.0f / (near - far);
             res[3][0] = -(right + left) / (right - left);
             res[3][1] = -(top + bottom) / (top - bottom);
             res[3][2] = (near + far) / (near - far);
-
-            MAG_ASSERT(equal(res2, res), "Mismatch");
 
             return res;
         }
