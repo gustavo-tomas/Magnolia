@@ -8,11 +8,11 @@ namespace mag
     Project::Project() = default;
     Project::~Project() = default;
 
-    void Project::set_name(const str& name) { this->name = name; }
-    void Project::set_asset_dir(const str& asset_dir) { this->asset_dir = asset_dir; }
-    void Project::set_relative_start_scene_path(const str& start_scene_path)
+    void Project::set_name(const str& project_name) { this->name = project_name; }
+    void Project::set_asset_dir(const str& project_asset_dir) { this->asset_dir = project_asset_dir; }
+    void Project::set_relative_start_scene_path(const str& project_start_scene_path)
     {
-        this->start_scene_path = start_scene_path;
+        this->start_scene_path = project_start_scene_path;
     }
 
     const fs::path& Project::get_name() const { return name; }

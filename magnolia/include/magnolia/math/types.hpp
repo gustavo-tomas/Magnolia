@@ -52,8 +52,8 @@ namespace mag
         template <typename T>
         struct MAG_API vector2
         {
-                vector2() = default;
-                vector2(const T scalar) : x(scalar), y(scalar) {}
+                vector2() : x(0), y(0) {}
+                explicit vector2(const T scalar) : x(scalar), y(scalar) {}
 
                 template <typename X, typename Y>
                 vector2(const X x, const Y y) : x(static_cast<T>(x)), y(static_cast<T>(y))
@@ -61,12 +61,12 @@ namespace mag
                 }
 
                 template <typename U>
-                constexpr vector2(const vector2<U>& other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y))
+                explicit vector2(const vector2<U>& other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y))
                 {
                 }
 
                 template <typename U>
-                constexpr vector2(const vector3<U>& other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y))
+                explicit vector2(const vector3<U>& other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y))
                 {
                 }
 
@@ -144,10 +144,10 @@ namespace mag
                 }
 
                 template <typename U>
-                constexpr vector2<T>& operator/=(const U s)
+                constexpr vector2<T>& operator/=(const U scalar)
                 {
-                    x /= static_cast<T>(s);
-                    y /= static_cast<T>(s);
+                    x /= static_cast<T>(scalar);
+                    y /= static_cast<T>(scalar);
 
                     return *this;
                 }
@@ -176,11 +176,11 @@ namespace mag
         template <typename T>
         struct MAG_API vector3
         {
-                vector3() = default;
-                vector3(const T scalar) : x(scalar), y(scalar), z(scalar) {}
+                vector3() : x(0), y(0), z(0) {}
+                explicit vector3(const T scalar) : x(scalar), y(scalar), z(scalar) {}
                 vector3(const T x, const T y, const T z) : x(x), y(y), z(z) {}
                 vector3(const vector2<T>& v, const T z) : x(v.x), y(v.y), z(z) {}
-                vector3(const vector4<T>& v) : x(v.x), y(v.y), z(v.z) {}
+                explicit vector3(const vector4<T>& v) : x(v.x), y(v.y), z(v.z) {}
 
                 union
                 {
@@ -248,11 +248,11 @@ namespace mag
                 }
 
                 template <typename U>
-                constexpr vector3<T>& operator*=(const U s)
+                constexpr vector3<T>& operator*=(const U scalar)
                 {
-                    x *= static_cast<T>(s);
-                    y *= static_cast<T>(s);
-                    z *= static_cast<T>(s);
+                    x *= static_cast<T>(scalar);
+                    y *= static_cast<T>(scalar);
+                    z *= static_cast<T>(scalar);
 
                     return *this;
                 }
@@ -297,8 +297,8 @@ namespace mag
         template <typename T>
         struct MAG_API vector4
         {
-                vector4() = default;
-                vector4(const T scalar) : x(scalar), y(scalar), z(scalar), w(scalar) {}
+                vector4() : x(0), y(0), z(0), w(0) {}
+                explicit vector4(const T scalar) : x(scalar), y(scalar), z(scalar), w(scalar) {}
                 vector4(const vector3<T>& v, const T w) : x(v.x), y(v.y), z(v.z), w(w) {}
 
                 template <typename X, typename Y, typename Z, typename W>
@@ -383,12 +383,12 @@ namespace mag
                 }
 
                 template <typename U>
-                constexpr vector4<T>& operator*=(const U s)
+                constexpr vector4<T>& operator*=(const U scalar)
                 {
-                    x *= static_cast<T>(s);
-                    y *= static_cast<T>(s);
-                    z *= static_cast<T>(s);
-                    w *= static_cast<T>(s);
+                    x *= static_cast<T>(scalar);
+                    y *= static_cast<T>(scalar);
+                    z *= static_cast<T>(scalar);
+                    w *= static_cast<T>(scalar);
 
                     return *this;
                 }
@@ -434,9 +434,9 @@ namespace mag
         template <typename T>
         struct MAG_API quaternion
         {
-                quaternion() = default;
+                quaternion() : w(1), x(0), y(0), z(0) {}
                 quaternion(const T w, const T x, const T y, const T z) : w(w), x(x), y(y), z(z) {}
-                quaternion(const vector3<T>& euler_angle)
+                explicit quaternion(const vector3<T>& euler_angle)
                 {
                     const vec3 c = cos(euler_angle * static_cast<T>(0.5));
                     const vec3 s = sin(euler_angle * static_cast<T>(0.5));
@@ -512,7 +512,9 @@ namespace mag
         struct MAG_API matrix3x3
         {
                 matrix3x3() = default;
-                matrix3x3(const T s) : columns(vector3<T>(s, 0, 0), vector3<T>(0, s, 0), vector3<T>(0, 0, s)) {}
+                explicit matrix3x3(const T s) : columns(vector3<T>(s, 0, 0), vector3<T>(0, s, 0), vector3<T>(0, 0, s))
+                {
+                }
                 matrix3x3(const vector3<T>& v0, const vector3<T>& v1, const vector3<T>& v2) : columns{v0, v1, v2} {}
 
                 vector3<T>& operator[](const u8 i)
@@ -559,7 +561,7 @@ namespace mag
         struct MAG_API matrix4x4
         {
                 matrix4x4() = default;
-                matrix4x4(const T s)
+                explicit matrix4x4(const T s)
                     : columns{vector4<T>(s, 0, 0, 0), vector4<T>(0, s, 0, 0), vector4<T>(0, 0, s, 0),
                               vector4<T>(0, 0, 0, s)}
                 {

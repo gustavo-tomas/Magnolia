@@ -14,7 +14,7 @@ namespace mag
             Camera() = default;
             virtual ~Camera() = default;
 
-            void set_position(const vec3& position);
+            void set_position(const vec3& camera_position);
             void set_rotation(const quat& rotation);
             void set_near_far(const vec2& near_far);
             void set_viewport_size(const vec2& size);
@@ -71,7 +71,7 @@ namespace mag
             explicit PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
             ~PerspectiveCamera() override;
 
-            void set_fov(const f32 fov);
+            void set_fov(const f32 camera_fov);
             const f32& get_fov() const;
 
         protected:
@@ -97,7 +97,7 @@ namespace mag
             explicit OrthographicCamera(const OrthographicCameraDesc& camera_desc);
             ~OrthographicCamera() override;
 
-            void set_size(const f32 size);
+            void set_size(const f32 camera_size);
             f32 get_size() const;
 
         protected:

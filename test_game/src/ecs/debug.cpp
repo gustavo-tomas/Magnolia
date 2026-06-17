@@ -151,9 +151,9 @@ namespace game
         ortho_camera_desc.near = -100.0f;
         ortho_camera_desc.far = 100.0f;
         ortho_camera_desc.position = vec3(0.0f);
-        ortho_camera_desc.rotation = vec3(0.0f);
+        ortho_camera_desc.rotation = quat(vec3(0.0f));
         ortho_camera_desc.size = 1000.0f;
-        ortho_camera_desc.viewport_size = window::get_size();
+        ortho_camera_desc.viewport_size = vec2(window::get_size());
 
         const mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
 

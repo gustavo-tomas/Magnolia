@@ -10,9 +10,9 @@ namespace mag
             Project();
             ~Project();
 
-            void set_name(const str& name);
-            void set_asset_dir(const str& asset_dir);
-            void set_relative_start_scene_path(const str& start_scene_path);
+            void set_name(const str& project_name);
+            void set_asset_dir(const str& project_asset_dir);
+            void set_relative_start_scene_path(const str& project_start_scene_path);
 
             const fs::path& get_name() const;
             const fs::path& get_asset_dir() const;

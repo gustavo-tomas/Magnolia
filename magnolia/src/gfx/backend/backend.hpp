@@ -19,7 +19,7 @@ namespace mag
 
         struct IShaderModuleDesc
         {
-                ShaderStage stage;
+                ShaderStage stage = ShaderStage::Vertex;
                 std::vector<u8> code;
         };
 
@@ -71,13 +71,13 @@ namespace mag
 
         struct IGraphicsPipelineDesc
         {
-                PrimitiveTopology primitive_topology;
+                PrimitiveTopology primitive_topology = PrimitiveTopology::TriangleList;
                 std::vector<IShaderModuleDesc> shader_modules;
                 std::vector<const IDescriptorSetLayout*> descriptor_layouts;
                 std::vector<IVertexAttributeDesc> vertex_attribute_descs;
                 std::vector<IVertexBindingDesc> vertex_binding_descs;
-                Format color_attachment_format;
-                Format depth_attachment_format;
+                Format color_attachment_format = Format::Undefined;
+                Format depth_attachment_format = Format::Undefined;
                 math::uvec2 extent;
                 IGraphicsPipelineColorBlend color_blend;
         };
@@ -96,15 +96,15 @@ namespace mag
         struct IRenderingAttachmentDesc
         {
                 math::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f};
-                f32 clear_depth;
-                u32 clear_stencil;
-                RenderingAttachmentType type;
+                f32 clear_depth = 0.0f;
+                u32 clear_stencil = 0;
+                RenderingAttachmentType type = RenderingAttachmentType::Color;
                 const ITexture* texture = nullptr;
         };
 
         struct IRenderPassDesc
         {
-                math::uvec2 extent;
+                math::uvec2 extent = {0, 0};
                 math::ivec2 offset = {0, 0};
                 std::vector<const IRenderingAttachment*> color_attachments;
                 const IRenderingAttachment* depth_attachment = nullptr;
@@ -139,7 +139,7 @@ namespace mag
         struct IDescriptorPoolDesc
         {
                 std::vector<IDescriptorPoolSizeDesc> size_descs;
-                u32 max_sets;
+                u32 max_sets = 0;
         };
 
         struct IDescriptorSetLayoutBindingDesc

@@ -224,7 +224,7 @@ namespace game
 
     void Scene::on_resize(const mag::WindowResizeEvent& e)
     {
-        const uvec2 size = {e.width, e.height};
+        const vec2 size = {e.width, e.height};
 
         for (auto* camera_c : ecs->get_all_components_of_type<PerspectiveCameraComponent>())
         {

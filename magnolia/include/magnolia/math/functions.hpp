@@ -35,7 +35,7 @@ namespace mag
 
         MAG_API mat4 scale(const mat4& m, const vec3& v);
 
-        MAG_API mat4 inverse(mat4 m);
+        MAG_API mat4 inverse(const mat4& m);
 
         MAG_API mat4 transpose(const mat4& m);
 

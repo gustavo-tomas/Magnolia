@@ -16,9 +16,9 @@ namespace mag
         calculate_frustum();
     }
 
-    void Camera::set_position(const vec3& position)
+    void Camera::set_position(const vec3& camera_position)
     {
-        this->position = position;
+        this->position = camera_position;
         calculate_view();
     }
 
@@ -54,9 +54,9 @@ namespace mag
     f32 Camera::get_far() const { return far; }
     f32 Camera::get_aspect_ratio() const { return aspect_ratio; }
 
-    vec3 Camera::get_side() const { return rotation_mat[0]; }
-    vec3 Camera::get_up() const { return rotation_mat[1]; }
-    vec3 Camera::get_forward() const { return rotation_mat[2]; }
+    vec3 Camera::get_side() const { return vec3(rotation_mat[0]); }
+    vec3 Camera::get_up() const { return vec3(rotation_mat[1]); }
+    vec3 Camera::get_forward() const { return vec3(rotation_mat[2]); }
     vec2 Camera::get_near_far() const { return {near, far}; }
 
     // PerspectiveCamera
@@ -73,9 +73,9 @@ namespace mag
 
     PerspectiveCamera::~PerspectiveCamera() = default;
 
-    void PerspectiveCamera::set_fov(const f32 fov)
+    void PerspectiveCamera::set_fov(const f32 camera_fov)
     {
-        this->fov = fov;
+        this->fov = camera_fov;
         calculate_projection();
     }
 
@@ -101,9 +101,9 @@ namespace mag
 
     OrthographicCamera::~OrthographicCamera() = default;
 
-    void OrthographicCamera::set_size(const f32 size)
+    void OrthographicCamera::set_size(const f32 camera_size)
     {
-        this->size = size;
+        this->size = camera_size;
         calculate_projection();
     }
 

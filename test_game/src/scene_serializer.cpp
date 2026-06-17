@@ -83,7 +83,7 @@ namespace nlohmann
         camera_desc.fov = data["Fov"].get<f32>();
         camera_desc.position = data["Position"].get<mag::math::vec3>();
         camera_desc.rotation = data["Rotation"].get<mag::math::quat>();
-        camera_desc.viewport_size = mag::window::get_size();
+        camera_desc.viewport_size = mag::math::vec2(mag::window::get_size());
 
         component.camera = mag::PerspectiveCamera(camera_desc);
     }
@@ -105,7 +105,7 @@ namespace nlohmann
         camera_desc.size = data["Size"].get<f32>();
         camera_desc.position = data["Position"].get<mag::math::vec3>();
         camera_desc.rotation = data["Rotation"].get<mag::math::quat>();
-        camera_desc.viewport_size = mag::window::get_size();
+        camera_desc.viewport_size = mag::math::vec2(mag::window::get_size());
 
         component.camera = mag::OrthographicCamera(camera_desc);
     }

@@ -18,7 +18,7 @@ namespace mag::gfx
             u32 binding = 0;
             u64 block_size = 0;
             u64 max_size_bytes = 0;
-            DescriptorType descriptor_type;
+            DescriptorType descriptor_type = DescriptorType::Uniform;
             BufferHandle buffer_handle = Invalid_ID;
     };
 
@@ -218,7 +218,7 @@ namespace mag::gfx
             return false;
         }
 
-        const math::uvec2 extent = render_target_color->get_extent();
+        const math::uvec2 extent = math::uvec2(render_target_color->get_extent());
 
         // Render Passes
         // -------------------------------------------------------------------------------------------------
@@ -265,7 +265,7 @@ namespace mag::gfx
 
         // Flip the viewport to correct vulkan coordinate system
         math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
-        math::vec2 viewport_extent = extent;
+        auto viewport_extent = math::vec2(extent);
         viewport_extent.y = -viewport_extent.y;
 
         current_frame.command_buffer->set_viewport(viewport_extent, viewport_offset);
@@ -632,7 +632,7 @@ namespace mag::gfx
         const FrameData& current_frame = state->frames[state->current_frame];
         const Format color_format = current_frame.render_target_color->get_format();
         const Format depth_format = current_frame.render_target_depth->get_format();
-        const math::uvec2 extent = current_frame.render_target_color->get_extent();
+        const math::uvec2 extent = math::uvec2(current_frame.render_target_color->get_extent());
 
         IGraphicsPipelineDesc graphics_pipeline_desc = {};
         graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);

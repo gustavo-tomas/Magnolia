@@ -305,7 +305,7 @@ namespace game
             for (Vertex& v : grass_model->vertices)
             {
                 GrassVertex grass_vertex = {};
-                grass_vertex.position = model_matrix * vec4(v.position, 1.0f);
+                grass_vertex.position = vec3(model_matrix * vec4(v.position, 1.0f));
                 grass_vertex.normal = v.normal;
 
                 grass_vertices.push_back(grass_vertex);

@@ -64,7 +64,7 @@ namespace mag
                     math::Line line = {};
                     line.start = to_mag(inFrom);
                     line.end = to_mag(inTo);
-                    line.color = to_mag(inColor);
+                    line.color = math::vec3(to_mag(inColor));
 
                     line_list.append(line);
                 }

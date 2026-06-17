@@ -28,7 +28,7 @@ namespace mag
             // Transform all vertices
             for (vec3& vertex : vertices)
             {
-                vertex = model_without_transform * vec4(vertex, 1.0f);
+                vertex = vec3(model_without_transform * vec4(vertex, 1.0f));
             }
 
             // Recalculate min and max
@@ -42,8 +42,8 @@ namespace mag
             }
 
             // Re-apply translation
-            transformed_aabb.min = translate(vec3(transform[3])) * vec4(transformed_aabb.min, 1.0f);
-            transformed_aabb.max = translate(vec3(transform[3])) * vec4(transformed_aabb.max, 1.0f);
+            transformed_aabb.min = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.min, 1.0f));
+            transformed_aabb.max = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.max, 1.0f));
 
             return transformed_aabb;
         }

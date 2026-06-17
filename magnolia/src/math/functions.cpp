@@ -123,7 +123,7 @@ namespace mag
             return res;
         }
 
-        mat4 inverse(mat4 m)
+        mat4 inverse(const mat4& m)
         {
             const f32 coef00 = (m[2][2] * m[3][3]) - (m[3][2] * m[2][3]);
             const f32 coef02 = (m[1][2] * m[3][3]) - (m[3][2] * m[1][3]);

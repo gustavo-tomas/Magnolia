@@ -110,8 +110,8 @@ namespace game
         if (mag::window::is_mouse_captured())
         {
             const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
-            const mag::math::ivec2 window_center = mag::window::get_window_center();
-            const mag::math::vec2 mouse_delta = window_center - mouse_position;
+            const mag::math::ivec2 window_center(mag::window::get_window_center());
+            const mag::math::vec2 mouse_delta(window_center - mouse_position);
 
             // Rotate
             player.pitch += mouse_delta.y * player.mouse_sensitivity * physics_dt;
@@ -238,7 +238,7 @@ namespace game
             // Keep mouse button centered
             if (capture)
             {
-                const mag::math::ivec2 window_center = mag::window::get_window_center();
+                const mag::math::ivec2 window_center(mag::window::get_window_center());
                 mag::window::set_mouse_position(window_center.x, window_center.y);
             }
         }
@@ -390,7 +390,7 @@ namespace game
             // Keep mouse button centered
             if (capture)
             {
-                const mag::math::ivec2 window_center = mag::window::get_window_center();
+                const mag::math::ivec2 window_center(mag::window::get_window_center());
                 mag::window::set_mouse_position(window_center.x, window_center.y);
             }
         }
@@ -398,8 +398,8 @@ namespace game
         if (mag::window::is_mouse_captured())
         {
             const mag::math::ivec2 mouse_position = mag::window::get_mouse_position();
-            const mag::math::ivec2 window_center = mag::window::get_window_center();
-            const mag::math::vec2 mouse_delta = window_center - mouse_position;
+            const mag::math::ivec2 window_center(mag::window::get_window_center());
+            const mag::math::vec2 mouse_delta(window_center - mouse_position);
 
             // Rotate
             pitch += mouse_delta.y * mouse_sensitivity * dt;
@@ -415,15 +415,15 @@ namespace game
         for (PerspectiveCameraComponent* camera_c : cameras)
         {
             vec3 position = camera_c->camera.get_position();
-            mag::quat rotation = mag::vec3(pitch, yaw, 0.0f);
+            mag::quat rotation = quat(mag::vec3(pitch, yaw, 0.0f));
 
             rotation = mag::math::normalize(rotation);
 
             // Calculate desired movement direction
             const mat4 rotation_mat = to_mat4(rotation);
-            const mag::vec3& right = rotation_mat[0];
-            const mag::vec3& up = rotation_mat[1];
-            const mag::vec3& forward = rotation_mat[2];
+            const mag::vec3 right = vec3(rotation_mat[0]);
+            const mag::vec3 up = vec3(rotation_mat[1]);
+            const mag::vec3 forward = vec3(rotation_mat[2]);
 
             mag::vec3 input_direction(0.0f);
 

@@ -51,18 +51,18 @@ namespace mag
 
     struct ShaderResourceBindingData
     {
-            u32 binding;
-            u32 count;
-            u64 block_size_bytes;
-            b8 variable_count;
-            b8 unbounded;
+            u32 binding = 0;
+            u32 count = 0;
+            u64 block_size_bytes = 0;
+            b8 variable_count = false;
+            b8 unbounded = false;
             str name;
-            ShaderResourceDescriptorType descriptor_type;
+            ShaderResourceDescriptorType descriptor_type = ShaderResourceDescriptorType::Uniform;
     };
 
     struct ShaderResourceDescriptorData
     {
-            u32 set;
+            u32 set = 0;
             std::vector<ShaderResourceBindingData> bindings;
     };
 
@@ -95,8 +95,8 @@ namespace mag
     struct ShaderResource : public IResource
     {
             str glsl_file_path;
-            ShaderResourceTopology topology;
-            ShaderResourceColorBlend color_blend;
+            ShaderResourceTopology topology = ShaderResourceTopology::TriangleList;
+            ShaderResourceColorBlend color_blend = {};
             std::vector<ShaderResourceVertexInputData> vertex_inputs;
             std::unordered_map<ShaderResourceStage, ShaderResourceModuleData> stages;
     };

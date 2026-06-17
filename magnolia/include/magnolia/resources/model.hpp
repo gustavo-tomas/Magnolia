@@ -21,10 +21,10 @@ namespace mag
 
     struct Mesh
     {
-            u32 base_vertex;
-            u32 base_index;
-            u32 index_count;
-            u32 material_index;
+            u32 base_vertex = 0;
+            u32 base_index = 0;
+            u32 index_count = 0;
+            u32 material_index = 0;
             vec3 aabb_min;
             vec3 aabb_max;
     };

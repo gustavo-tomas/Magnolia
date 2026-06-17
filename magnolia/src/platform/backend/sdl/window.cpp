@@ -366,7 +366,7 @@ namespace mag
         {
             math::vec2 mouse_pos;
             SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
-            return mouse_pos;
+            return math::ivec2(mouse_pos);
         }
 
         math::uvec2 get_window_center()
