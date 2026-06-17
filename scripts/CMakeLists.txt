@@ -53,6 +53,7 @@ set(MAG_SOURCES
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/tools/profiler.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/pch.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/math/types.cpp"
+    "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/math/functions.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/gfx/gfx.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/gfx/backend/backend.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/gfx/backend/vulkan/conversions.hpp"
@@ -95,6 +96,7 @@ set(MAG_SOURCES
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/tools/model_importer.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/tools/console.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/math/types.hpp"
+    "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/math/functions.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/gfx/gfx.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/gfx/types.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/physics/physics.hpp"
@@ -117,7 +119,6 @@ set(MAG_LIB_INCLUDES
     "${MAG_ROOT_DIR}/libs"
     "${MAG_ROOT_DIR}/libs/assimp/include"
     "${MAG_ROOT_DIR}/libs/freetype/include"
-    "${MAG_ROOT_DIR}/libs/glm"
     "${MAG_ROOT_DIR}/libs/imgui"
     "${MAG_ROOT_DIR}/libs/jolt"
     "${MAG_ROOT_DIR}/libs/json/single_include"
@@ -133,8 +134,6 @@ set(MAG_LIB_INCLUDES
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     # All configurations
-    GLM_FORCE_QUAT_DATA_WXYZ
-    GLM_ENABLE_EXPERIMENTAL
     JPH_PROFILE_ENABLED
     JPH_DEBUG_RENDERER
     JPH_OBJECT_STREAM
@@ -295,8 +294,6 @@ add_executable(${PROJECT_NAME} ${TEST_GAME_SOURCES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     # All configurations
-    GLM_FORCE_QUAT_DATA_WXYZ
-    GLM_ENABLE_EXPERIMENTAL
     MAG_PROFILE_ENABLED
     
     # Debug
@@ -322,7 +319,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src"
     "${MAG_ROOT_DIR}/magnolia/include"
     "${MAG_ROOT_DIR}/libs/json/single_include"
-    "${MAG_ROOT_DIR}/libs/glm"
 )
 
 # path to lib
