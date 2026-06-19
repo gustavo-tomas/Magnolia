@@ -121,6 +121,7 @@ def lint():
         return
 
     sources = list(Path("magnolia/").rglob("*.*"))
+    sources += list(Path("test_game/src/").rglob("*.*"))
 
     subprocess.run(
         [

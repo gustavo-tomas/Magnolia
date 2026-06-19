@@ -52,7 +52,7 @@ namespace game
             struct FontData
             {
                     std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
-                    u32 idx;
+                    u32 idx = 0;
             };
 
             std::unordered_map<str, FontData> fonts;

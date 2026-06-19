@@ -24,7 +24,7 @@ namespace game
     class Scene
     {
         public:
-            Scene(Renderer* renderer);
+            explicit Scene(Renderer* renderer);
             virtual ~Scene();
 
             void on_start();
