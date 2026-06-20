@@ -612,6 +612,8 @@ namespace mag
                         VkShaderModuleCreateInfo shader_module_info = {};
                         shader_module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                         shader_module_info.codeSize = shader_module_desc.code.size();
+
+                        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                         shader_module_info.pCode = reinterpret_cast<const u32* const>(shader_module_desc.code.data());
 
                         shader_modules[i] = {};

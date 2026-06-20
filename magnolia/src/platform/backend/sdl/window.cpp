@@ -253,8 +253,8 @@ namespace mag
 
         void create_surface(const void* instance, void* surface)
         {
-            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *reinterpret_cast<const VkInstance*>(instance), nullptr,
-                                                reinterpret_cast<VkSurfaceKHR*>(surface)),
+            MAG_ASSERT(SDL_Vulkan_CreateSurface(state->handle, *static_cast<const VkInstance*>(instance), nullptr,
+                                                static_cast<VkSurfaceKHR*>(surface)),
                        "Failed to create surface: '{}'", SDL_GetError());
         }
 
@@ -379,9 +379,9 @@ namespace mag
 
         math::uvec2 get_size()
         {
-            math::uvec2 size;
-            SDL_GetWindowSizeInPixels(state->handle, reinterpret_cast<i32*>(&size.x), reinterpret_cast<i32*>(&size.y));
-            return size;
+            math::ivec2 size;
+            SDL_GetWindowSizeInPixels(state->handle, &size.x, &size.y);
+            return math::uvec2(size);
         }
 
         const std::vector<const c8*>& get_instance_extensions() { return state->extensions; }
