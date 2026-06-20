@@ -68,6 +68,8 @@ namespace mag
 
         static void draw_console();
 
+        static void scrolling_region(const b8 copy_to_clipboard);
+
         static void handle_text_history(ImGuiInputTextCallbackData* data);
 
         static void handle_text_completion(ImGuiInputTextCallbackData* data);
@@ -250,6 +252,58 @@ namespace mag
             SDL_RenderPresent(renderer);
         }
 
+        void scrolling_region(const b8 copy_to_clipboard)
+        {
+            if (ImGui::BeginPopupContextWindow())
+            {
+                if (ImGui::Selectable("Clear"))
+                {
+                    clear_log();
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));  // Tighten spacing
+            if (copy_to_clipboard)
+            {
+                ImGui::LogToClipboard();
+            }
+
+            for (const LogData& item : state->items)
+            {
+                const c8* text = item.text.c_str();
+
+                if (!state->filter.PassFilter(text))
+                {
+                    continue;
+                }
+
+                const ImVec4 color = ImVec4(item.color.r, item.color.g, item.color.b, item.color.a);
+
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+
+                ImGui::TextUnformatted(text);
+
+                ImGui::PopStyleColor();
+            }
+
+            if (copy_to_clipboard)
+            {
+                ImGui::LogFinish();
+            }
+
+            // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning
+            // of the frame. Using a scrollbar or mouse-wheel will take away from the bottom edge.
+            if (state->scroll_to_bottom || (state->auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+            {
+                ImGui::SetScrollHereY(1.0f);
+            }
+
+            state->scroll_to_bottom = false;
+
+            ImGui::PopStyleVar();
+        }
+
         void draw_console()
         {
             if (!ImGui::Begin("Console"))
@@ -295,54 +349,7 @@ namespace mag
             if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened,
                                   ImGuiWindowFlags_HorizontalScrollbar))
             {
-                if (ImGui::BeginPopupContextWindow())
-                {
-                    if (ImGui::Selectable("Clear"))
-                    {
-                        clear_log();
-                    }
-                    ImGui::EndPopup();
-                }
-
-                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));  // Tighten spacing
-                if (copy_to_clipboard)
-                {
-                    ImGui::LogToClipboard();
-                }
-
-                for (const LogData& item : state->items)
-                {
-                    const c8* text = item.text.c_str();
-
-                    if (!state->filter.PassFilter(text))
-                    {
-                        continue;
-                    }
-
-                    const ImVec4 color = ImVec4(item.color.r, item.color.g, item.color.b, item.color.a);
-
-                    ImGui::PushStyleColor(ImGuiCol_Text, color);
-
-                    ImGui::TextUnformatted(text);
-
-                    ImGui::PopStyleColor();
-                }
-
-                if (copy_to_clipboard)
-                {
-                    ImGui::LogFinish();
-                }
-
-                // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning
-                // of the frame. Using a scrollbar or mouse-wheel will take away from the bottom edge.
-                if (state->scroll_to_bottom || (state->auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
-                {
-                    ImGui::SetScrollHereY(1.0f);
-                }
-
-                state->scroll_to_bottom = false;
-
-                ImGui::PopStyleVar();
+                scrolling_region(copy_to_clipboard);
             }
 
             ImGui::EndChild();
