@@ -59,10 +59,22 @@ namespace mag
             // Child process
             if (pid == 0)
             {
-                // Child process
-                execl(process_path.c_str(), process_path.c_str(), Invalid_ID);
+                std::vector<std::string> args = {process_path, "Invalid_ID"};
 
-                // If execl returns, it failed
+                std::vector<c8*> argv;
+                argv.reserve(args.size());
+
+                for (str& arg : args)
+                {
+                    argv.push_back(arg.data());
+                }
+
+                argv.push_back(nullptr);  // argv must be null-terminated
+
+                // Child process
+                execv(process_path.c_str(), argv.data());
+
+                // If execv returns, it failed
                 exit(EXIT_FAILURE);
             }
 
