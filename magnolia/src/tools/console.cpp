@@ -462,59 +462,57 @@ namespace mag
             if (candidates.empty())
             {
                 add_log({.color = COLOR_RED, .text = "No match for '{0}'!"}, word_start);
+                return;
             }
 
             // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing.
-            else if (candidates.size() == 1)
+            if (candidates.size() == 1)
             {
                 data->DeleteChars(static_cast<i32>(word_start - data->Buf), static_cast<i32>(word_end - word_start));
                 data->InsertChars(data->CursorPos, candidates[0].c_str());
                 data->InsertChars(data->CursorPos, " ");
+                return;
             }
 
             // Multiple matches. Complete as much as we can.
-            else
+            i32 match_len = static_cast<i32>(word_end - word_start);
+            b8 all_candidates_matches = true;
+
+            while (all_candidates_matches)
             {
-                i32 match_len = static_cast<i32>(word_end - word_start);
-                b8 all_candidates_matches = true;
+                i32 c = 0;
 
-                while (all_candidates_matches)
+                for (u64 i = 0; i < candidates.size() && all_candidates_matches; i++)
                 {
-                    i32 c = 0;
-
-                    for (u64 i = 0; i < candidates.size() && all_candidates_matches; i++)
+                    const i32 candidate_c = std::toupper(candidates[i][match_len]);
+                    if (i == 0)
                     {
-                        const i32 candidate_c = std::toupper(candidates[i][match_len]);
-                        if (i == 0)
-                        {
-                            c = candidate_c;
-                        }
-                        else if (c == 0 || c != candidate_c)
-                        {
-                            all_candidates_matches = false;
-                        }
+                        c = candidate_c;
                     }
-
-                    if (all_candidates_matches)
+                    else if (c == 0 || c != candidate_c)
                     {
-                        match_len++;
+                        all_candidates_matches = false;
                     }
                 }
 
-                if (match_len > 0)
+                if (all_candidates_matches)
                 {
-                    data->DeleteChars(static_cast<i32>(word_start - data->Buf),
-                                      static_cast<i32>(word_end - word_start));
-                    data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
+                    match_len++;
                 }
+            }
 
-                // List matches
-                add_log({.text = "Possible matches:"});
+            if (match_len > 0)
+            {
+                data->DeleteChars(static_cast<i32>(word_start - data->Buf), static_cast<i32>(word_end - word_start));
+                data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
+            }
 
-                for (const str& candidate : candidates)
-                {
-                    add_log({.text = "- {0}"}, candidate);
-                }
+            // List matches
+            add_log({.text = "Possible matches:"});
+
+            for (const str& candidate : candidates)
+            {
+                add_log({.text = "- {0}"}, candidate);
             }
         }
 
