@@ -29,10 +29,6 @@ Checks: >
   -readability-identifier-length,
   -readability-avoid-const-params-in-decls
 
-CheckOptions:
-  - key:   cppcoreguidelines-macro-usage.CheckCapsOnly
-    value: true
-
 FormatStyle: "file"
 HeaderFilterRegex: "*.hpp$"
 WarningsAsErrors: ""

@@ -1,47 +1,44 @@
 #include "../backend.hpp"
+// This one comes first
 
-#define MAG_CONFIG_GFX_VULKAN 1
+#include <vulkan/vulkan.h>
 
-#if MAG_CONFIG_GFX_VULKAN
+#include <string>
+#include <vector>
 
-    #include <vulkan/vulkan.h>
+#include "VkBootstrap.h"
+#include "VkBootstrapDispatch.h"
+#include "conversions.hpp"
+#include "magnolia/core/assert.hpp"
+#include "magnolia/core/debug.hpp"
+#include "magnolia/core/memory.hpp"
+#include "magnolia/math/functions.hpp"
+#include "magnolia/platform/window.hpp"
 
-    #include <string>
-    #include <vector>
+// Use to trace VMA allocations
+#if MAG_CONFIG_DEBUG_TRACE
+    #define VMA_DEBUG_LOG_FORMAT(format, ...) \
+        do                                    \
+        {                                     \
+            printf((format), __VA_ARGS__);    \
+            printf("\n");                     \
+        } while (false)
 
-    #include "VkBootstrap.h"
-    #include "VkBootstrapDispatch.h"
-    #include "conversions.hpp"
-    #include "magnolia/core/assert.hpp"
-    #include "magnolia/core/debug.hpp"
-    #include "magnolia/core/memory.hpp"
-    #include "magnolia/math/functions.hpp"
-    #include "magnolia/platform/window.hpp"
+    #define VMA_DEBUG_LOG(str) VMA_DEBUG_LOG_FORMAT("%s", (str))
+#endif
 
-    // Use to trace VMA allocations
-    #if MAG_CONFIG_DEBUG_TRACE
-        #define VMA_DEBUG_LOG_FORMAT(format, ...) \
-            do                                    \
-            {                                     \
-                printf((format), __VA_ARGS__);    \
-                printf("\n");                     \
-            } while (false)
-
-        #define VMA_DEBUG_LOG(str) VMA_DEBUG_LOG_FORMAT("%s", (str))
-    #endif
-
-    #define VMA_IMPLEMENTATION
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Weverything"
-    #include "vk_mem_alloc.h"
-    #pragma clang diagnostic pop
+#define VMA_IMPLEMENTATION
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+#include "vk_mem_alloc.h"
+#pragma clang diagnostic pop
 
 namespace mag
 {
-    #define VK_CHECK(result, message)                                             \
-        {                                                                         \
-            MAG_ASSERT((result) == VK_SUCCESS, "Vk check failed: '{}'", message); \
-        }
+    constexpr void vk_check(const VkResult result, const str& message)
+    {
+        MAG_ASSERT((result) == VK_SUCCESS, "Vk check failed: '{}'", message);
+    }
 
     namespace gfx
     {
@@ -55,7 +52,7 @@ namespace mag
                     VkSemaphoreCreateInfo semaphore_info = {};
                     semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-                    VK_CHECK(disp->createSemaphore(&semaphore_info, nullptr, &semaphore), "Failed to create semaphore");
+                    vk_check(disp->createSemaphore(&semaphore_info, nullptr, &semaphore), "Failed to create semaphore");
                 }
 
                 ~VulkanSemaphore() override { disp->destroySemaphore(semaphore, nullptr); }
@@ -80,7 +77,7 @@ namespace mag
                         fence_info.flags |= VK_FENCE_CREATE_SIGNALED_BIT;
                     }
 
-                    VK_CHECK(disp->createFence(&fence_info, nullptr, &fence), "Failed to create fence");
+                    vk_check(disp->createFence(&fence_info, nullptr, &fence), "Failed to create fence");
                 }
 
                 ~VulkanFence() override { disp->destroyFence(fence, nullptr); }
@@ -112,7 +109,7 @@ namespace mag
                     allocation_create_info.flags =
                         VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-                    VK_CHECK(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &buffer,
+                    vk_check(vmaCreateBuffer(allocator, &buffer_create_info, &allocation_create_info, &buffer,
                                              &allocation, nullptr),
                              "Failed to create buffer");
 
@@ -128,7 +125,7 @@ namespace mag
 
                 void* map() override
                 {
-                    VK_CHECK(vmaMapMemory(allocator, allocation, &mapped_region), "Failed to map buffer memory");
+                    vk_check(vmaMapMemory(allocator, allocation, &mapped_region), "Failed to map buffer memory");
                     return mapped_region;
                 }
 
@@ -221,7 +218,7 @@ namespace mag
                     vma_alloc_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
                     vma_alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-                    VK_CHECK(
+                    vk_check(
                         vmaCreateImage(allocator, &image_create_info, &vma_alloc_info, &image, &allocation, nullptr),
                         "Failed to create image");
 
@@ -236,7 +233,7 @@ namespace mag
                     view_create_info.subresourceRange.layerCount = 1;
                     view_create_info.subresourceRange.levelCount = 1;
 
-                    VK_CHECK(disp->createImageView(&view_create_info, nullptr, &image_view),
+                    vk_check(disp->createImageView(&view_create_info, nullptr, &image_view),
                              "Failed to create image view");
                 }
 
@@ -446,7 +443,7 @@ namespace mag
                     pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT |
                                       VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-                    VK_CHECK(disp->createDescriptorPool(&pool_info, nullptr, &descriptor_pool),
+                    vk_check(disp->createDescriptorPool(&pool_info, nullptr, &descriptor_pool),
                              "Failed to create descriptor pool");
                 }
 
@@ -500,7 +497,7 @@ namespace mag
                     layout_info.pNext = &binding_flags;
                     layout_info.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
 
-                    VK_CHECK(disp->createDescriptorSetLayout(&layout_info, nullptr, &descriptor_layout),
+                    vk_check(disp->createDescriptorSetLayout(&layout_info, nullptr, &descriptor_layout),
                              "Failed to create descriptor set layout");
                 }
 
@@ -536,7 +533,7 @@ namespace mag
                     alloc_info.pSetLayouts = &descriptor_layout;
                     alloc_info.pNext = &variable_count_info;
 
-                    VK_CHECK(disp->allocateDescriptorSets(&alloc_info, &descriptor_set),
+                    vk_check(disp->allocateDescriptorSets(&alloc_info, &descriptor_set),
                              "Failed to allocate descriptor sets");
                 }
 
@@ -619,7 +616,7 @@ namespace mag
 
                         shader_modules[i] = {};
 
-                        VK_CHECK(disp->createShaderModule(&shader_module_info, nullptr, &shader_modules[i]),
+                        vk_check(disp->createShaderModule(&shader_module_info, nullptr, &shader_modules[i]),
                                  "Failed to create shader module");
 
                         shader_stages[i] = {};
@@ -919,7 +916,7 @@ namespace mag
                     pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
                     pool_info.queueFamilyIndex = device.get_queue_index(mag_to_vk(desc.queue_type)).value();
 
-                    VK_CHECK(disp->createCommandPool(&pool_info, nullptr, &pool), "Failed to create command pool");
+                    vk_check(disp->createCommandPool(&pool_info, nullptr, &pool), "Failed to create command pool");
                 }
 
                 ~VulkanCommandPool() override { disp->destroyCommandPool(pool, nullptr); }
@@ -945,7 +942,7 @@ namespace mag
                     alloc_info.level = mag_to_vk(desc.command_buffer_level);
                     alloc_info.commandBufferCount = 1;
 
-                    VK_CHECK(disp->allocateCommandBuffers(&alloc_info, &command_buffer),
+                    vk_check(disp->allocateCommandBuffers(&alloc_info, &command_buffer),
                              "Failed to allocate command buffer");
                 }
 
@@ -960,13 +957,13 @@ namespace mag
                     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                     begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-                    VK_CHECK(disp->beginCommandBuffer(command_buffer, &begin_info),
+                    vk_check(disp->beginCommandBuffer(command_buffer, &begin_info),
                              "Failed to begin command buffer recording");
                 }
 
                 void end_recording() const override
                 {
-                    VK_CHECK(disp->endCommandBuffer(command_buffer), "Failed to record command buffer");
+                    vk_check(disp->endCommandBuffer(command_buffer), "Failed to record command buffer");
                 }
 
                 void reset() const override { disp->resetCommandBuffer(command_buffer, 0); }
@@ -1225,7 +1222,7 @@ namespace mag
 
                     fence->reset();
 
-                    VK_CHECK(disp->queueSubmit(queue, 1, &submit_info,
+                    vk_check(disp->queueSubmit(queue, 1, &submit_info,
                                                dynamic_cast<const VulkanFence* const>(fence)->get_fence()),
                              "Failed to submit draw command buffer");
                 }
@@ -1269,7 +1266,7 @@ namespace mag
                     const vkb::Result<vkb::Instance> instance_ret =
                         instance_builder
 
-    #if MAG_CONFIG_DEBUG
+#if MAG_CONFIG_DEBUG
                             .set_debug_callback(
                                 [](VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                    VkDebugUtilsMessageTypeFlagsEXT message_type,
@@ -1301,10 +1298,10 @@ namespace mag
 
                             .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT)
                             .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT)
-                        // .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
-                        // .add_validation_feature_enable(
-                        //     VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
-    #endif
+                    // .add_validation_feature_enable(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT)
+                    // .add_validation_feature_enable(
+                    //     VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT)
+#endif
                             .require_api_version(vulkan_major_version, vulkan_minor_version, vulkan_patch_version)
                             .build();
 
@@ -1358,7 +1355,7 @@ namespace mag
                     allocator_create_info.vulkanApiVersion = instance.api_version;
                     // allocator_create_info.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
-                    VK_CHECK(vmaCreateAllocator(&allocator_create_info, &allocator),
+                    vk_check(vmaCreateAllocator(&allocator_create_info, &allocator),
                              "Failed to create memory allocator");
 
                     // Immediate submission resources
@@ -1528,5 +1525,3 @@ namespace mag
         unique<IDevice> create_device() { return create_unique<VulkanDevice>(); }
     };  // namespace gfx
 };  // namespace mag
-
-#endif

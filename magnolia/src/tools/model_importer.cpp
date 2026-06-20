@@ -20,9 +20,9 @@
 
 namespace mag
 {
-#define MATERIAL_FILE_EXTENSION ".mat.json"
-#define MODEL_FILE_EXTENSION ".model.json"
-#define BINARY_FILE_EXTENSION ".model.bin"
+    constexpr str Material_File_Extension = ".mat.json";
+    constexpr str Model_File_Extension = ".model.json";
+    constexpr str Binary_File_Extension = ".model.bin";
 
     struct ModelImporter::IMPL
     {
@@ -98,8 +98,8 @@ namespace mag
     b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const ModelResource& model,
                                                str& imported_model_path)
     {
-        const str native_model_file_path = output_directory + "/" + model.name + MODEL_FILE_EXTENSION;
-        const str binary_file_path = output_directory + "/" + model.name + BINARY_FILE_EXTENSION;
+        const str native_model_file_path = output_directory + "/" + model.name + Model_File_Extension;
+        const str binary_file_path = output_directory + "/" + model.name + Binary_File_Extension;
 
         fs::json data;
         data["Type"] = "Model";
@@ -267,7 +267,7 @@ namespace mag
             }
 
             const str material_file_path =
-                str(output_directory).append("/").append(material_name).append(MATERIAL_FILE_EXTENSION);
+                str(output_directory).append("/").append(material_name).append(Material_File_Extension);
 
             model.materials[i] = create_ref<MaterialResource>();
             model.materials[i]->name = material_name;
