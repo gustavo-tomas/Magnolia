@@ -529,6 +529,9 @@ namespace mag
                         data->InsertChars(0, history_str.c_str());
                     }
                 }
+
+                default:
+                    break;
             }
 
             return 0;
@@ -546,7 +549,7 @@ namespace mag
 
         void on_event(const void* event)
         {
-            const SDL_Event* e = static_cast<const SDL_Event*>(event);
+            const auto* e = static_cast<const SDL_Event*>(event);
             ImGui_ImplSDL3_ProcessEvent(e);
         }
 

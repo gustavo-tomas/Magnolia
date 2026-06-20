@@ -13,7 +13,7 @@ namespace mag
             ModelImporter();
             ~ModelImporter();
 
-            b8 import(const str& name, str& imported_model_path);
+            b8 import(const str& file_path, str& imported_model_path);
             b8 is_extension_supported(const str& extension_with_dot);
 
         private:

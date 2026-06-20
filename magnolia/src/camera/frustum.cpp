@@ -64,21 +64,21 @@ namespace mag
         impl->planes[Near] = m[3] + m[2];
         impl->planes[Far] = m[3] - m[2];
 
-        std::array<vec3, Combinations> crosses = {cross(vec3(impl->planes[Left]), vec3(impl->planes[Right])),
-                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Bottom])),
-                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Top])),
-                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Near])),
-                                                  cross(vec3(impl->planes[Left]), vec3(impl->planes[Far])),
-                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Bottom])),
-                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Top])),
-                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Near])),
-                                                  cross(vec3(impl->planes[Right]), vec3(impl->planes[Far])),
-                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Top])),
-                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Near])),
-                                                  cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Far])),
-                                                  cross(vec3(impl->planes[Top]), vec3(impl->planes[Near])),
-                                                  cross(vec3(impl->planes[Top]), vec3(impl->planes[Far])),
-                                                  cross(vec3(impl->planes[Near]), vec3(impl->planes[Far]))};
+        const std::array<vec3, Combinations> crosses = {cross(vec3(impl->planes[Left]), vec3(impl->planes[Right])),
+                                                        cross(vec3(impl->planes[Left]), vec3(impl->planes[Bottom])),
+                                                        cross(vec3(impl->planes[Left]), vec3(impl->planes[Top])),
+                                                        cross(vec3(impl->planes[Left]), vec3(impl->planes[Near])),
+                                                        cross(vec3(impl->planes[Left]), vec3(impl->planes[Far])),
+                                                        cross(vec3(impl->planes[Right]), vec3(impl->planes[Bottom])),
+                                                        cross(vec3(impl->planes[Right]), vec3(impl->planes[Top])),
+                                                        cross(vec3(impl->planes[Right]), vec3(impl->planes[Near])),
+                                                        cross(vec3(impl->planes[Right]), vec3(impl->planes[Far])),
+                                                        cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Top])),
+                                                        cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Near])),
+                                                        cross(vec3(impl->planes[Bottom]), vec3(impl->planes[Far])),
+                                                        cross(vec3(impl->planes[Top]), vec3(impl->planes[Near])),
+                                                        cross(vec3(impl->planes[Top]), vec3(impl->planes[Far])),
+                                                        cross(vec3(impl->planes[Near]), vec3(impl->planes[Far]))};
 
         impl->points[0] = impl->intersection<Left, Bottom, Near>(crosses);
         impl->points[1] = impl->intersection<Left, Top, Near>(crosses);
@@ -119,7 +119,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].x > maxp.x) ? 1 : 0);
+            out += ((impl->points.at(i).x > maxp.x) ? 1 : 0);
         }
         if (out == 8)
         {
@@ -129,7 +129,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].x < minp.x) ? 1 : 0);
+            out += ((impl->points.at(i).x < minp.x) ? 1 : 0);
         }
         if (out == 8)
         {
@@ -139,7 +139,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].y > maxp.y) ? 1 : 0);
+            out += ((impl->points.at(i).y > maxp.y) ? 1 : 0);
         }
         if (out == 8)
         {
@@ -149,7 +149,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].y < minp.y) ? 1 : 0);
+            out += ((impl->points.at(i).y < minp.y) ? 1 : 0);
         }
         if (out == 8)
         {
@@ -159,7 +159,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].z > maxp.z) ? 1 : 0);
+            out += ((impl->points.at(i).z > maxp.z) ? 1 : 0);
         }
         if (out == 8)
         {
@@ -169,7 +169,7 @@ namespace mag
         out = 0;
         for (u32 i = 0; i < 8; i++)
         {
-            out += ((impl->points[i].z < minp.z) ? 1 : 0);
+            out += ((impl->points.at(i).z < minp.z) ? 1 : 0);
         }
 
         return out != 8;

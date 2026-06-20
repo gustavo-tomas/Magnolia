@@ -54,8 +54,8 @@ namespace mag
 
             SDL_WindowFlags flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
-            i32 width = static_cast<i32>(options.size.x);
-            i32 height = static_cast<i32>(options.size.y);
+            const i32 width = static_cast<i32>(options.size.x);
+            const i32 height = static_cast<i32>(options.size.y);
             i32 position_x = options.position.x;
             i32 position_y = options.position.y;
 

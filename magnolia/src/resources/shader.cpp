@@ -82,7 +82,7 @@ namespace mag
             }
 
             b8 incomplete = false;
-            std::vector<str> mandatory_params = {"Name", "Stages", "File", "Topology"};
+            const std::vector<str> mandatory_params = {"Name", "Stages", "File", "Topology"};
             for (const str& param : mandatory_params)
             {
                 if (!data.contains(param))

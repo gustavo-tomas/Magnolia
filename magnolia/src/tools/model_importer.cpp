@@ -54,7 +54,7 @@ namespace mag
                           aiProcess_RemoveRedundantMaterials;
 
         const aiScene* scene = impl->importer->ReadFile(file_path, flags);
-        if (!scene || !scene->mRootNode || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE))
+        if ((scene == nullptr) || (scene->mRootNode == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0u))
         {
             LOG_ERROR("Failed to import model '{0}': {1}", file_path, impl->importer->GetErrorString());
             return false;
@@ -74,7 +74,7 @@ namespace mag
         for (u32 m = 0; m < scene->mNumMeshes; m++)
         {
             const aiMesh* mesh = scene->mMeshes[m];
-            if (!impl->initialize_mesh(m, mesh, model))
+            if (!mag::ModelImporter::IMPL::initialize_mesh(m, mesh, model))
             {
                 return false;
             }
@@ -91,8 +91,8 @@ namespace mag
             return false;
         }
 
-        impl->initialize_materials(scene, file_path, output_directory, model);
-        return impl->create_native_file(output_directory, model, imported_model_path);
+        mag::ModelImporter::IMPL::initialize_materials(scene, file_path, output_directory, model);
+        return mag::ModelImporter::IMPL::create_native_file(output_directory, model, imported_model_path);
     }
 
     b8 ModelImporter::IMPL::create_native_file(const str& output_directory, const ModelResource& model,
@@ -174,7 +174,7 @@ namespace mag
         model.meshes[mesh_idx].aabb_min = {ai_mesh->mAABB.mMin.x, ai_mesh->mAABB.mMin.y, ai_mesh->mAABB.mMin.z};
         model.meshes[mesh_idx].aabb_max = {ai_mesh->mAABB.mMax.x, ai_mesh->mAABB.mMax.y, ai_mesh->mAABB.mMax.z};
 
-        std::vector<u32> indices(ai_mesh->mNumFaces * 3);
+        std::vector<u32> indices(ai_mesh->mNumFaces * 3ULL);
 
         // Indices
         for (u32 i = 0; i < ai_mesh->mNumFaces; i++)
@@ -186,9 +186,9 @@ namespace mag
                 return false;
             }
 
-            indices[i * 3 + 0] = face.mIndices[0];
-            indices[i * 3 + 1] = face.mIndices[1];
-            indices[i * 3 + 2] = face.mIndices[2];
+            indices[(i * 3) + 0] = face.mIndices[0];
+            indices[(i * 3) + 1] = face.mIndices[1];
+            indices[(i * 3) + 2] = face.mIndices[2];
         }
 
         std::vector<Vertex> vertices(indices.size());
@@ -266,7 +266,8 @@ namespace mag
                 material_name = log::get_formatted_str("__Material_{0}_{1}__", i, ai_scene->mNumMaterials - 1);
             }
 
-            const str material_file_path = output_directory + "/" + material_name + MATERIAL_FILE_EXTENSION;
+            const str material_file_path =
+                str(output_directory).append("/").append(material_name).append(MATERIAL_FILE_EXTENSION);
 
             model.materials[i] = create_ref<MaterialResource>();
             model.materials[i]->name = material_name;

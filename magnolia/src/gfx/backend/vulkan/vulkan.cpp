@@ -221,8 +221,9 @@ namespace mag
                     vma_alloc_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
                     vma_alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-                    VK_CHECK(vmaCreateImage(allocator, &image_create_info, &vma_alloc_info, &image, &allocation, 0),
-                             "Failed to create image");
+                    VK_CHECK(
+                        vmaCreateImage(allocator, &image_create_info, &vma_alloc_info, &image, &allocation, nullptr),
+                        "Failed to create image");
 
                     VkImageViewCreateInfo view_create_info = {};
                     view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -406,7 +407,7 @@ namespace mag
 
                     for (u32 i = 0; i < swapchain.image_count; i++)
                     {
-                        VulkanTexture* const texture =
+                        auto* const texture =
                             new VulkanTexture(disp, nullptr, math::uvec3(vk_to_mag(swapchain.extent), 1),
                                               swapchain_images[i], swapchain_image_views[i]);
 
@@ -746,7 +747,7 @@ namespace mag
                     dynamic_info.dynamicStateCount = static_cast<u32>(dynamic_states.size());
                     dynamic_info.pDynamicStates = dynamic_states.data();
 
-                    VkFormat swapchain_format = mag_to_vk(desc.color_attachment_format);
+                    const VkFormat swapchain_format = mag_to_vk(desc.color_attachment_format);
 
                     VkPipelineRenderingCreateInfoKHR pipeline_rendering_create_info = {};
                     pipeline_rendering_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
@@ -1095,8 +1096,8 @@ namespace mag
                 void blit_texture(const ITexture* const src_texture, const ITexture* const dst_texture,
                                   const Filter filter) const override
                 {
-                    const VulkanTexture* const vk_src = dynamic_cast<const VulkanTexture*>(src_texture);
-                    const VulkanTexture* const vk_dst = dynamic_cast<const VulkanTexture*>(dst_texture);
+                    const auto* const vk_src = dynamic_cast<const VulkanTexture*>(src_texture);
+                    const auto* const vk_dst = dynamic_cast<const VulkanTexture*>(dst_texture);
 
                     VkImageBlit image_blit = {};
 
@@ -1131,8 +1132,8 @@ namespace mag
 
                 void copy_texture(const ITexture* const src_texture, const ITexture* const dst_texture) const override
                 {
-                    const VulkanTexture* const vk_src = dynamic_cast<const VulkanTexture*>(src_texture);
-                    const VulkanTexture* const vk_dst = dynamic_cast<const VulkanTexture*>(dst_texture);
+                    const auto* const vk_src = dynamic_cast<const VulkanTexture*>(src_texture);
+                    const auto* const vk_dst = dynamic_cast<const VulkanTexture*>(dst_texture);
 
                     const math::uvec3& extent = math::min(vk_src->get_extent(), vk_dst->get_extent());
 
@@ -1153,8 +1154,8 @@ namespace mag
 
                 void copy_buffer_to_texture(const IBuffer* const buffer, const ITexture* const texture) const override
                 {
-                    const VulkanBuffer* const vk_buffer = dynamic_cast<const VulkanBuffer*>(buffer);
-                    const VulkanTexture* const vk_texture = dynamic_cast<const VulkanTexture*>(texture);
+                    const auto* const vk_buffer = dynamic_cast<const VulkanBuffer*>(buffer);
+                    const auto* const vk_texture = dynamic_cast<const VulkanTexture*>(texture);
 
                     VkBufferImageCopy buffer_image_copy = {};
                     buffer_image_copy.bufferImageHeight = texture->get_extent().y;
@@ -1341,7 +1342,7 @@ namespace mag
                     MAG_ASSERT(phys_device_ret, "{}", phys_device_ret.error().message());
 
                     const vkb::PhysicalDevice& physical_device = phys_device_ret.value();
-                    vkb::DeviceBuilder device_builder{physical_device};
+                    const vkb::DeviceBuilder device_builder{physical_device};
                     const vkb::Result<vkb::Device> device_ret = device_builder.build();
 
                     MAG_ASSERT(device_ret, "{}", device_ret.error().message());
@@ -1375,7 +1376,7 @@ namespace mag
                     queue_desc.queue_type = QueueType::Graphics;
                     immediate_queue = this->create_queue(queue_desc);
 
-                    IFenceDesc fence_desc = {};
+                    const IFenceDesc fence_desc = {};
                     immediate_fence = this->create_fence(fence_desc);
                 }
 
@@ -1383,10 +1384,10 @@ namespace mag
                 {
                     disp.deviceWaitIdle();
 
-                    immediate_fence.reset();
-                    immediate_queue.reset();
-                    immediate_command_buffer.reset();
-                    immediate_command_pool.reset();
+                    immediate_fence = nullptr;
+                    immediate_queue = nullptr;
+                    immediate_command_buffer = nullptr;
+                    immediate_command_pool = nullptr;
 
                     vmaDestroyAllocator(allocator);
 
@@ -1408,8 +1409,8 @@ namespace mag
                     immediate_queue->submit(nullptr, nullptr, immediate_fence.get(), immediate_command_buffer.get());
                     immediate_fence->wait();
 
-                    immediate_fence->reset();
-                    immediate_command_pool->reset();
+                    (*immediate_fence).reset();
+                    (*immediate_command_pool).reset();
                 }
 
                 unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) const override

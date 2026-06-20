@@ -32,7 +32,7 @@ namespace mag
 
         void sleep(const f64 ms)
         {
-            std::chrono::duration<f64, std::milli> duration(ms);
+            const std::chrono::duration<f64, std::milli> duration(ms);
             std::this_thread::sleep_for(duration);
         }
     };  // namespace thread

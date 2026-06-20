@@ -49,7 +49,7 @@ namespace mag
 
                     std::vector<str> marked_for_removal;
 
-                    std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+                    const std::scoped_lock<std::mutex> lock(state->fw.files_mutex);
                     for (auto& [file_path, file_status] : state->fw.files_on_watch)
                     {
                         // Remove files that have been deleted
@@ -91,7 +91,7 @@ namespace mag
 
         b8 read_binary_data(const fs::path& raw_file_path, Buffer& buffer)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
 
             std::ifstream file(file_path, std::ios::binary | std::ios::ate);
 
@@ -102,12 +102,12 @@ namespace mag
                 return false;
             }
 
-            std::streampos end = file.tellg();
+            const std::streampos end = file.tellg();
             file.seekg(0, std::ios::beg);
             const i64 size = end - file.tellg();
 
             // File is empty
-            if (size == 0)
+            if (size <= 0)
             {
                 LOG_ERROR("File is empty: '{0}'", file_path.string());
                 return false;
@@ -123,7 +123,7 @@ namespace mag
 
         b8 write_binary_data(const fs::path& raw_file_path, Buffer& buffer)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
 
             std::ofstream file(file_path, std::ios::binary);
 
@@ -147,7 +147,7 @@ namespace mag
 
         b8 read_json_data(const fs::path& raw_file_path, fs::json& data)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
 
             // Parse data from the json file
             std::ifstream file(file_path);
@@ -171,7 +171,7 @@ namespace mag
 
         b8 write_json_data(const fs::path& raw_file_path, const fs::json& data)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
 
             std::ofstream file(file_path);
 
@@ -189,7 +189,7 @@ namespace mag
 
         b8 create_directories(const fs::path& raw_file_path)
         {
-            const auto path = get_fixed_path(raw_file_path);
+            const fs::path path = get_fixed_path(raw_file_path);
 
             if (fs::exists(path))
             {
@@ -236,7 +236,7 @@ namespace mag
 
         void watch_file(const fs::path& file_path)
         {
-            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            const std::scoped_lock<std::mutex> lock(state->fw.files_mutex);
             if (!fs::exists(file_path) || state->fw.files_on_watch.contains(file_path))
             {
                 return;
@@ -248,7 +248,7 @@ namespace mag
 
         void stop_watching_file(const fs::path& file_path)
         {
-            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            const std::scoped_lock<std::mutex> lock(state->fw.files_mutex);
             if (state->fw.files_on_watch.contains(file_path))
             {
                 state->fw.files_on_watch.erase(file_path);
@@ -269,7 +269,7 @@ namespace mag
 
         b8 was_file_modified(const fs::path& file_path)
         {
-            std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            const std::lock_guard<std::mutex> lock(state->fw.files_mutex);
             return state->fw.files_on_watch.contains(file_path) && state->fw.files_on_watch[file_path].modified;
         }
     };  // namespace fs

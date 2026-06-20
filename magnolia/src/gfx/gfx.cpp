@@ -116,7 +116,7 @@ namespace mag::gfx
 
         // Command Pool, Command Buffers and Sync Objects
         // -------------------------------------------------------------------------------------------------
-        ISemaphoreDesc submit_semaphore_desc = {};
+        const ISemaphoreDesc submit_semaphore_desc = {};
 
         state->submit_semaphores.resize(state->swapchain->get_image_count());
 
@@ -145,7 +145,7 @@ namespace mag::gfx
             IFenceDesc fence_desc = {};
             fence_desc.signaled = true;
 
-            ISemaphoreDesc sem_desc = {};
+            const ISemaphoreDesc sem_desc = {};
 
             state->frames[i].available_semaphore = state->device->create_semaphore(sem_desc);
             state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
