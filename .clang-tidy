@@ -6,7 +6,6 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-type-union-access,
   -cppcoreguidelines-special-member-functions,
-  -cppcoreguidelines-explicit-virtual-functions,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   bugprone-*,
