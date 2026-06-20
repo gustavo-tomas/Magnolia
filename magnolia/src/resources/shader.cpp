@@ -66,6 +66,11 @@ namespace mag
                                            const std::vector<str>& include_paths, const std::vector<str>& defines,
                                            const str& shader_stage);
 
+        static void read_descriptor_sets(const SpvReflectShaderModule& spv_module,
+                                         const ShaderResourceStage shader_stage, ShaderResource* resource);
+
+        static void read_vertex_input_attributes(const SpvReflectShaderModule& spv_module, ShaderResource* resource);
+
         static u64 get_aligned_size(const u64 original_size, const u64 alignment)
         {
             return (original_size + alignment - 1) & ~(alignment - 1);
@@ -138,6 +143,98 @@ namespace mag
             return true;
         }
 
+        void read_descriptor_sets(const SpvReflectShaderModule& spv_module, const ShaderResourceStage shader_stage,
+                                  ShaderResource* resource)
+        {
+            for (u32 i = 0; i < spv_module.descriptor_set_count; i++)
+            {
+                const SpvReflectDescriptorSet spv_descriptor_set = spv_module.descriptor_sets[i];
+
+                ShaderResourceDescriptorData descriptor = {};
+                descriptor.set = spv_descriptor_set.set;
+
+                for (u32 j = 0; j < spv_descriptor_set.binding_count; j++)
+                {
+                    const SpvReflectDescriptorBinding* spv_binding = spv_descriptor_set.bindings[j];
+
+                    u64 block_size = 0;
+                    for (u32 k = 0; k < spv_binding->block.member_count; k++)
+                    {
+                        // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
+                        // https://github.com/KhronosGroup/SPIRV-Reflect/issues/280
+                        block_size += get_aligned_size(spv_binding->block.members[k].size, 16);
+                    }
+
+                    ShaderResourceBindingData binding = {};
+                    binding.binding = spv_binding->binding;
+                    binding.count = spv_binding->count;
+                    binding.block_size_bytes = block_size;
+                    binding.name = spv_binding->name;
+                    binding.variable_count = false;
+                    binding.unbounded = false;
+                    binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
+
+                    // Set the correct values for descriptor count and max binding size.
+                    // We need to to this because spv is a little confused and can't process arrays
+                    // correctly. Unbounded arrays count will be decided on the gfx side.
+
+                    // Assume that arrays with count = 1 are variable count (@TODO: this is just a fix)
+                    const b8 is_unbounded_array = spv_binding->array.dims_count > 0;
+
+                    // Storage buffers are assume unbounded (@TODO: this assumes that bounded SSBO block members are
+                    // also unbounded)
+                    const b8 is_ssbo = binding.descriptor_type == ShaderResourceDescriptorType::Storage;
+
+                    if (is_unbounded_array || is_ssbo)
+                    {
+                        binding.unbounded = true;
+                    }
+
+                    if (is_unbounded_array && j == spv_descriptor_set.binding_count - 1)
+                    {
+                        binding.variable_count = true;
+                    }
+
+                    descriptor.bindings.push_back(binding);
+                }
+
+                resource->stages[shader_stage].descriptors.push_back(descriptor);
+            }
+        }
+
+        void read_vertex_input_attributes(const SpvReflectShaderModule& spv_module, ShaderResource* resource)
+        {
+            // Add vertex attributes sorted by location
+            std::map<u32, const SpvReflectInterfaceVariable*> sorted_input_variables;
+            for (u32 i = 0; i < spv_module.input_variable_count; i++)
+            {
+                const SpvReflectInterfaceVariable* const variable = spv_module.input_variables[i];
+
+                // Filter built-in variables
+                if (variable->location < Max_U32)
+                {
+                    sorted_input_variables[variable->location] = variable;
+                }
+            }
+
+            u32 offset = 0;
+            for (const auto& [location, variable] : sorted_input_variables)
+            {
+                u32 size = variable->numeric.scalar.width / 8;
+                size *= variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
+
+                ShaderResourceVertexInputData vertex_input = {};
+                vertex_input.format = format_type_map.at(variable->format);
+                vertex_input.offset = offset;
+                vertex_input.location = location;
+                vertex_input.size = size;
+
+                resource->vertex_inputs.push_back(vertex_input);
+
+                offset += size;
+            }
+        }
+
         b8 load_sync(const str& file_path, ResourceManager* rm, ShaderResource* resource)
         {
             (void)rm;
@@ -179,94 +276,12 @@ namespace mag
                 }
 
                 // Descriptor sets
-                for (u32 i = 0; i < spv_module.descriptor_set_count; i++)
-                {
-                    const SpvReflectDescriptorSet spv_descriptor_set = spv_module.descriptor_sets[i];
-
-                    ShaderResourceDescriptorData descriptor = {};
-                    descriptor.set = spv_descriptor_set.set;
-
-                    for (u32 j = 0; j < spv_descriptor_set.binding_count; j++)
-                    {
-                        const SpvReflectDescriptorBinding* spv_binding = spv_descriptor_set.bindings[j];
-
-                        u64 block_size = 0;
-                        for (u32 k = 0; k < spv_binding->block.member_count; k++)
-                        {
-                            // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
-                            // https://github.com/KhronosGroup/SPIRV-Reflect/issues/280
-                            block_size += get_aligned_size(spv_binding->block.members[k].size, 16);
-                        }
-
-                        ShaderResourceBindingData binding = {};
-                        binding.binding = spv_binding->binding;
-                        binding.count = spv_binding->count;
-                        binding.block_size_bytes = block_size;
-                        binding.name = spv_binding->name;
-                        binding.variable_count = false;
-                        binding.unbounded = false;
-                        binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
-
-                        // Set the correct values for descriptor count and max binding size.
-                        // We need to to this because spv is a little confused and can't process arrays
-                        // correctly. Unbounded arrays count will be decided on the gfx side.
-
-                        // Assume that arrays with count = 1 are variable count (@TODO: this is just a fix)
-                        const b8 is_unbounded_array = spv_binding->array.dims_count > 0;
-
-                        // Storage buffers are assume unbounded (@TODO: this assumes that bounded SSBO block members are
-                        // also unbounded)
-                        const b8 is_ssbo = binding.descriptor_type == ShaderResourceDescriptorType::Storage;
-
-                        if (is_unbounded_array || is_ssbo)
-                        {
-                            binding.unbounded = true;
-                        }
-
-                        if (is_unbounded_array && j == spv_descriptor_set.binding_count - 1)
-                        {
-                            binding.variable_count = true;
-                        }
-
-                        descriptor.bindings.push_back(binding);
-                    }
-
-                    resource->stages[shader_stage].descriptors.push_back(descriptor);
-                }
+                read_descriptor_sets(spv_module, shader_stage, resource);
 
                 // Vertex input attributes
                 if (shader_stage == ShaderResourceStage::Vertex)
                 {
-                    // Add vertex attributes sorted by location
-                    std::map<u32, const SpvReflectInterfaceVariable*> sorted_input_variables;
-                    for (u32 i = 0; i < spv_module.input_variable_count; i++)
-                    {
-                        const SpvReflectInterfaceVariable* const variable = spv_module.input_variables[i];
-
-                        // Filter built-in variables
-                        if (variable->location < Max_U32)
-                        {
-                            sorted_input_variables[variable->location] = variable;
-                        }
-                    }
-
-                    u32 offset = 0;
-                    for (const auto& [location, variable] : sorted_input_variables)
-                    {
-                        u32 size = variable->numeric.scalar.width / 8;
-                        size *=
-                            variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
-
-                        ShaderResourceVertexInputData vertex_input = {};
-                        vertex_input.format = format_type_map.at(variable->format);
-                        vertex_input.offset = offset;
-                        vertex_input.location = location;
-                        vertex_input.size = size;
-
-                        resource->vertex_inputs.push_back(vertex_input);
-
-                        offset += size;
-                    }
+                    read_vertex_input_attributes(spv_module, resource);
                 }
             }
 
