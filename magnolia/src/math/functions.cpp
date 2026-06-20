@@ -8,7 +8,7 @@ namespace mag
     {
         struct State
         {
-                std::mt19937 random_engine;
+                std::mt19937 random_engine = std::mt19937(std::random_device()());
                 std::uniform_int_distribution<std::mt19937::result_type> distribution;
         };
 
@@ -17,8 +17,6 @@ namespace mag
         b8 initialize()
         {
             state = new State();
-
-            state->random_engine.seed(std::random_device()());
 
             return state != nullptr;
         }
