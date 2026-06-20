@@ -199,7 +199,7 @@ namespace mag
 
                 virtual void unmap() const = 0;
 
-                virtual void set_data(const void* const data, const u64 size, const u64 offset = 0) const = 0;
+                virtual void set_data(const void* const data, const u64 size, const u64 offset) const = 0;
 
                 virtual u64 get_size() const = 0;
 
@@ -290,7 +290,7 @@ namespace mag
                 virtual ITexture* get_texture(const u32 index) const = 0;
 
                 virtual Result acquire_next_image(const ISemaphore* const signal_semaphore,
-                                                  const IFence* const fence = nullptr) = 0;
+                                                  const IFence* const fence) = 0;
 
                 virtual void resize(const math::uvec2& extent) = 0;
         };
@@ -344,10 +344,10 @@ namespace mag
 
                 virtual void reset() const = 0;
 
-                virtual void set_viewport(const math::vec2& extent, const math::vec2& offset = {0.0f, 0.0f},
-                                          const f32 min_depth = 0.0f, const f32 max_depth = 1.0f) const = 0;
+                virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, const f32 min_depth,
+                                          const f32 max_depth) const = 0;
 
-                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0, 0}) const = 0;
+                virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset) const = 0;
 
                 virtual void begin_rendering(const IRenderPass* const render_pass) const = 0;
 

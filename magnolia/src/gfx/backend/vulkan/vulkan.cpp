@@ -131,7 +131,7 @@ namespace mag
 
                 void unmap() const override { vmaUnmapMemory(allocator, allocation); }
 
-                void set_data(const void* const data, const u64 data_size, const u64 offset = 0) const override
+                void set_data(const void* const data, const u64 data_size, const u64 offset) const override
                 {
                     MAG_ASSERT(offset + data_size <= size, "Size limit exceeded");
                     mem::copy(static_cast<c8*>(mapped_region) + offset, size, data, data_size, data_size);
@@ -266,7 +266,7 @@ namespace mag
                     staging_buffer_desc.size_bytes = size;
 
                     unique<IBuffer> staging_buffer = device->create_buffer(staging_buffer_desc);
-                    staging_buffer->set_data(data, size);
+                    staging_buffer->set_data(data, size, 0);
 
                     // @TODO: use KTX to generate mip maps: https://www.khronos.org/ktx/
 
@@ -356,8 +356,7 @@ namespace mag
 
                 ITexture* get_texture(const u32 index) const override { return swapchain_textures[index].get(); }
 
-                Result acquire_next_image(const ISemaphore* const signal_semaphore,
-                                          const IFence* const fence = nullptr) override
+                Result acquire_next_image(const ISemaphore* const signal_semaphore, const IFence* const fence) override
                 {
                     VkSemaphore vk_sem = dynamic_cast<const VulkanSemaphore* const>(signal_semaphore)->get_semaphore();
                     VkFence vk_fen = nullptr;
@@ -984,7 +983,7 @@ namespace mag
                     disp->cmdSetViewport(command_buffer, 0, 1, &viewport);
                 }
 
-                void set_scissor(const math::uvec2& extent, const math::ivec2& offset = {0, 0}) const override
+                void set_scissor(const math::uvec2& extent, const math::ivec2& offset) const override
                 {
                     VkRect2D scissor = {};
                     scissor.extent = mag_to_vk(extent);
@@ -1050,8 +1049,8 @@ namespace mag
                     disp->cmdDraw(command_buffer, vertex_count, instance_count, first_vertex, first_instance);
                 }
 
-                void draw_indexed(const u32 index_count, const u32 instance_count = 1, const u32 first_index = 0,
-                                  const i32 vertex_offset = 0, const u32 first_instance = 0) const override
+                void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index,
+                                  const i32 vertex_offset, const u32 first_instance) const override
                 {
                     disp->cmdDrawIndexed(command_buffer, index_count, instance_count, first_index, vertex_offset,
                                          first_instance);

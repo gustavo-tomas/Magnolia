@@ -1,31 +1,48 @@
 ---
 Checks: >
   -*,
+
+  bugprone-*,
+  -bugprone-command-processor,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-invalid-enum-default-initialization,
+
+  clang-*,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  
   cppcoreguidelines-*,
-  -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-type-union-access,
-  -cppcoreguidelines-special-member-functions,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-non-private-member-variables-in-classes,
-  bugprone-*,
-  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-use-enum-class,
+
+  google-*,
+
+  misc-*,
+  -misc-include-cleaner,
+  -misc-header-include-cycle,
+  -misc-use-anonymous-namespace,
+  -misc-use-internal-linkage,
+  -misc-non-private-member-variables-in-classes,
+
   modernize-*,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
-  cert-err33-c,
-  clang-analyzer-core.*,
-  clang-analyzer-valist.*,
-  clang-analyzer-unix.Malloc,
-  clang-diagnostic-*,
-  google-readability-casting,
-  misc-*,
-  -misc-non-private-member-variables-in-classes,
+
   performance-*,
+
+  portability-*,
+
   readability-*,
-  -readability-magic-numbers,
+  -readability-avoid-const-params-in-decls,
   -readability-identifier-length,
-  -readability-avoid-const-params-in-decls
+  -readability-magic-numbers,
 
 FormatStyle: "file"
 HeaderFilterRegex: "*.hpp$"

@@ -204,7 +204,7 @@ namespace mag::gfx
 
         current_frame.in_flight_fence->wait();
 
-        const Result result = state->swapchain->acquire_next_image(current_frame.available_semaphore.get());
+        const Result result = state->swapchain->acquire_next_image(current_frame.available_semaphore.get(), nullptr);
 
         if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
         {
@@ -268,8 +268,8 @@ namespace mag::gfx
         auto viewport_extent = math::vec2(extent);
         viewport_extent.y = -viewport_extent.y;
 
-        current_frame.command_buffer->set_viewport(viewport_extent, viewport_offset);
-        current_frame.command_buffer->set_scissor(extent);
+        current_frame.command_buffer->set_viewport(viewport_extent, viewport_offset, 0.0F, 1.0F);
+        current_frame.command_buffer->set_scissor(extent, {0.0F, 0.0F});
 
         current_frame.command_buffer->begin_rendering(render_pass.get());
 
@@ -391,7 +391,7 @@ namespace mag::gfx
 
         if (data != nullptr)
         {
-            state->buffers[handle]->set_data(data, size);
+            state->buffers[handle]->set_data(data, size, 0);
         }
 
         return handle;
