@@ -98,14 +98,14 @@ namespace mag
         // check box outside/inside of frustum
         const b8 inside = std::any_of(impl->planes.begin(), impl->planes.end(), [&maxp, &minp](const vec4& plane)
         {
-            return (dot(plane, vec4(minp.x, minp.y, minp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(maxp.x, minp.y, minp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(minp.x, maxp.y, minp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(maxp.x, maxp.y, minp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(minp.x, minp.y, maxp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(maxp.x, minp.y, maxp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(minp.x, maxp.y, maxp.z, 1.0f)) >= 0.0) ||
-                   (dot(plane, vec4(maxp.x, maxp.y, maxp.z, 1.0f)) >= 0.0);
+            return (dot(plane, vec4(minp.x, minp.y, minp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(maxp.x, minp.y, minp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(minp.x, maxp.y, minp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(maxp.x, maxp.y, minp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(minp.x, minp.y, maxp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(maxp.x, minp.y, maxp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(minp.x, maxp.y, maxp.z, 1.0F)) >= 0.0) ||
+                   (dot(plane, vec4(maxp.x, maxp.y, maxp.z, 1.0F)) >= 0.0);
         });
 
         if (!inside)
@@ -182,7 +182,7 @@ namespace mag
         const vec3 res = mat3(crosses[ij2k<b, c>::k], -crosses[ij2k<a, c>::k], crosses[ij2k<a, b>::k]) *
                          vec3(planes[a].w, planes[b].w, planes[c].w);
 
-        return res * (-1.0f / D);
+        return res * (-1.0F / D);
     }
 
     std::vector<vec3> Frustum::get_points() const

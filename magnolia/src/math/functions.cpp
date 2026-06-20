@@ -23,7 +23,7 @@ namespace mag
 
         void shutdown() { delete state; }
 
-        f32 radians(const f32 angle_deg) { return angle_deg * 0.01745329251994329576923690768489f; }
+        f32 radians(const f32 angle_deg) { return angle_deg * 0.01745329251994329576923690768489F; }
 
         f32 dot(const vec3& v1, const vec3& v2)
         {
@@ -67,12 +67,12 @@ namespace mag
             const f32 d = length(v);
 
             // Return zero if length is invalid
-            if (d <= 0.0f)
+            if (d <= 0.0F)
             {
-                return {0.0f, 0.0f, 0.0f};
+                return {0.0F, 0.0F, 0.0F};
             }
 
-            const f32 inv_d = 1.0f / d;
+            const f32 inv_d = 1.0F / d;
             const vec3 res = {v.x * inv_d, v.y * inv_d, v.z * inv_d};
 
             return res;
@@ -83,12 +83,12 @@ namespace mag
             const f32 d = length(q);
 
             // Return identity if length is invalid
-            if (d <= 0.0f)
+            if (d <= 0.0F)
             {
-                return {1.0f, 0.0f, 0.0f, 0.0f};
+                return {1.0F, 0.0F, 0.0F, 0.0F};
             }
 
-            const f32 inv_d = 1.0f / d;
+            const f32 inv_d = 1.0F / d;
             const quat res = {q.w * inv_d, q.x * inv_d, q.y * inv_d, q.z * inv_d};
 
             return res;
@@ -97,22 +97,22 @@ namespace mag
         mat4 translate(const mat4& m, const vec3& position)
         {
             mat4 res = m;
-            res[3] += vec4(position, 0.0f);
+            res[3] += vec4(position, 0.0F);
 
             return res;
         }
 
         mat4 translate(const vec3& position)
         {
-            mat4 res(1.0f);
-            res[3] += vec4(position, 0.0f);
+            mat4 res(1.0F);
+            res[3] += vec4(position, 0.0F);
 
             return res;
         }
 
         mat4 scale(const mat4& m, const vec3& v)
         {
-            mat4 res(0.0f);
+            mat4 res(0.0F);
             res[0] = m[0] * v[0];
             res[1] = m[1] * v[1];
             res[2] = m[2] * v[2];
@@ -173,7 +173,7 @@ namespace mag
             const vec4 dot0(m[0] * row0);
             const f32 dot1 = (dot0.x + dot0.y) + (dot0.z + dot0.w);
 
-            const f32 one_over_d = 1.0f / dot1;
+            const f32 one_over_d = 1.0F / dot1;
 
             res *= one_over_d;
 
@@ -182,7 +182,7 @@ namespace mag
 
         mat4 transpose(const mat4& m)
         {
-            mat4 res(0.0f);
+            mat4 res(0.0F);
 
             for (u32 i = 0; i < 4; i++)
             {
@@ -229,8 +229,8 @@ namespace mag
                 biggest_index = 3;
             }
 
-            const f32 biggest_val = std::sqrt(four_biggest_squared_minus1 + 1.0f) * 0.5f;
-            const f32 mult = 0.25f / biggest_val;
+            const f32 biggest_val = std::sqrt(four_biggest_squared_minus1 + 1.0F) * 0.5F;
+            const f32 mult = 0.25F / biggest_val;
 
             quat res;
 
@@ -267,7 +267,7 @@ namespace mag
 
         mat4 to_mat4(const quat& q)
         {
-            mat4 res(0.0f);
+            mat4 res(0.0F);
 
             const f32 w = q.w;
             const f32 x = q.x;
@@ -286,47 +286,47 @@ namespace mag
             const f32 wy = w * y;
             const f32 wz = w * z;
 
-            res[0][0] = 1.0f - (2.0f * (yy + zz));
-            res[0][1] = 2.0f * (xy + wz);
-            res[0][2] = 2.0f * (xz - wy);
-            res[0][3] = 0.0f;
+            res[0][0] = 1.0F - (2.0F * (yy + zz));
+            res[0][1] = 2.0F * (xy + wz);
+            res[0][2] = 2.0F * (xz - wy);
+            res[0][3] = 0.0F;
 
-            res[1][0] = 2.0f * (xy - wz);
-            res[1][1] = 1.0f - (2.0f * (xx + zz));
-            res[1][2] = 2.0f * (yz + wx);
-            res[1][3] = 0.0f;
+            res[1][0] = 2.0F * (xy - wz);
+            res[1][1] = 1.0F - (2.0F * (xx + zz));
+            res[1][2] = 2.0F * (yz + wx);
+            res[1][3] = 0.0F;
 
-            res[2][0] = 2.0f * (xz + wy);
-            res[2][1] = 2.0f * (yz - wx);
-            res[2][2] = 1.0f - (2.0f * (xx + yy));
-            res[2][3] = 0.0f;
+            res[2][0] = 2.0F * (xz + wy);
+            res[2][1] = 2.0F * (yz - wx);
+            res[2][2] = 1.0F - (2.0F * (xx + yy));
+            res[2][3] = 0.0F;
 
-            res[3][0] = 0.0f;
-            res[3][1] = 0.0f;
-            res[3][2] = 0.0f;
-            res[3][3] = 1.0f;
+            res[3][0] = 0.0F;
+            res[3][1] = 0.0F;
+            res[3][2] = 0.0F;
+            res[3][3] = 1.0F;
 
             return res;
         }
 
         mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far)
         {
-            mat4 res(0.0f);
-            res[0][0] = 1.0f / (aspect * std::tan(fov / 2.0f));
-            res[1][1] = 1.0f / std::tan(fov / 2.0f);
+            mat4 res(0.0F);
+            res[0][0] = 1.0F / (aspect * std::tan(fov / 2.0F));
+            res[1][1] = 1.0F / std::tan(fov / 2.0F);
             res[2][2] = -(far + near) / (far - near);
-            res[2][3] = -1.0f;
-            res[3][2] = (-2.0f * far * near) / (far - near);
+            res[2][3] = -1.0F;
+            res[3][2] = (-2.0F * far * near) / (far - near);
 
             return res;
         }
 
         mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near, const f32 far)
         {
-            mat4 res(1.0f);
-            res[0][0] = 2.0f / (right - left);
-            res[1][1] = 2.0f / (top - bottom);
-            res[2][2] = 2.0f / (near - far);
+            mat4 res(1.0F);
+            res[0][0] = 2.0F / (right - left);
+            res[1][1] = 2.0F / (top - bottom);
+            res[2][2] = 2.0F / (near - far);
             res[3][0] = -(right + left) / (right - left);
             res[3][1] = -(top + bottom) / (top - bottom);
             res[3][2] = (near + far) / (near - far);
@@ -359,7 +359,7 @@ namespace mag
 
         vec3 get_right_dir(const f32 yaw)
         {
-            vec3 right(0.0f);
+            vec3 right(0.0F);
             right.x = cos(yaw);
             right.y = 0;
             right.z = -sin(yaw);
@@ -369,7 +369,7 @@ namespace mag
 
         vec3 get_forward_dir(const f32 pitch, const f32 yaw)
         {
-            vec3 forward(0.0f);
+            vec3 forward(0.0F);
             forward.x = cos(-pitch) * sin(yaw);
             forward.y = sin(-pitch);
             forward.z = cos(-pitch) * cos(yaw);

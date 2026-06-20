@@ -9,7 +9,7 @@ namespace mag
 
     void Camera::calculate_view()
     {
-        const mat4 translation = translate(mat4(1.0f), position);
+        const mat4 translation = translate(mat4(1.0F), position);
 
         view = inverse(translation * rotation_mat);
 
@@ -109,10 +109,10 @@ namespace mag
 
     void OrthographicCamera::calculate_projection()
     {
-        const f32 left = -size * aspect_ratio * 0.5f;
-        const f32 right = size * aspect_ratio * 0.5f;
-        const f32 bottom = -size * 0.5f;
-        const f32 top = size * 0.5f;
+        const f32 left = -size * aspect_ratio * 0.5F;
+        const f32 right = size * aspect_ratio * 0.5F;
+        const f32 bottom = -size * 0.5F;
+        const f32 top = size * 0.5F;
 
         projection = ortho(left, right, bottom, top, near, far);
 

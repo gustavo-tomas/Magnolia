@@ -372,7 +372,7 @@ namespace mag
         math::uvec2 get_window_center()
         {
             const math::uvec2 window_size = get_size();
-            const math::uvec2 window_center = window_size / 2u;
+            const math::uvec2 window_center = window_size / 2U;
 
             return window_center;
         }

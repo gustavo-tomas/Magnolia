@@ -167,7 +167,7 @@ namespace mag
 
                     // @TODO: also check kinematic motion type
                     const JPH::EMotionType motion_type =
-                        (mass > 0.0f) ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static;
+                        (mass > 0.0F) ? JPH::EMotionType::Dynamic : JPH::EMotionType::Static;
 
                     JPH::BodyCreationSettings creation_settings(shape, pos, rot, motion_type, Layers::Moving);
 
@@ -288,7 +288,7 @@ namespace mag
 
                     // Cap the collision steps (if we ever hit this stage it will be a miserable experience anyways)
                     accumulated_dt += dt;
-                    accumulated_dt = math::min(accumulated_dt, 1.0f / 4.0f);
+                    accumulated_dt = math::min(accumulated_dt, 1.0F / 4.0F);
 
                     while (accumulated_dt >= fixed_dt)
                     {
@@ -453,7 +453,7 @@ namespace mag
                     JPH::MotionProperties* motion_properties = body->GetMotionProperties();
 
                     JPH::MassProperties mass_properties;
-                    mass_properties.ScaleToMass(1.0f / motion_properties->GetInverseMass());
+                    mass_properties.ScaleToMass(1.0F / motion_properties->GetInverseMass());
                     motion_properties->SetMassProperties(from_mag(dof), mass_properties);
                 }
 
@@ -490,7 +490,7 @@ namespace mag
                     if (it == rigid_bodies.end())
                     {
                         MAG_ASSERT(false, "Invalid rigidbody handle");
-                        return math::vec3(0.0f);
+                        return math::vec3(0.0F);
                     }
 
                     const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
@@ -506,7 +506,7 @@ namespace mag
                     if (it == rigid_bodies.end())
                     {
                         MAG_ASSERT(false, "Invalid rigidbody handle");
-                        return math::vec3(0.0f);
+                        return math::vec3(0.0F);
                     }
 
                     const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
@@ -599,8 +599,8 @@ namespace mag
                     const JPH::Body* body = rigid_bodies.at(handle);
 
                     JPH::CollideShapeSettings settings = {};
-                    settings.mCollisionTolerance = 0.0f;
-                    settings.mMaxSeparationDistance = 0.0f;
+                    settings.mCollisionTolerance = 0.0F;
+                    settings.mMaxSeparationDistance = 0.0F;
                     settings.mActiveEdgeMode = JPH::EActiveEdgeMode::CollideWithAll;
 
                     const JPH::Shape* shape = body->GetShape();
@@ -637,9 +637,9 @@ namespace mag
             private:
                 // We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics
                 // system.
-                const f32 fixed_dt = 1.0f / 60.0f;
+                const f32 fixed_dt = 1.0F / 60.0F;
 
-                f32 accumulated_dt = 0.0f;
+                f32 accumulated_dt = 0.0F;
 
                 RigidBodyHandle handle_counter = 0;
 

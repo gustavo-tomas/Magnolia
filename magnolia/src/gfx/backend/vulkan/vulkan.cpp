@@ -678,12 +678,12 @@ namespace mag
                     input_assembly.primitiveRestartEnable = VK_FALSE;
 
                     VkViewport viewport = {};
-                    viewport.x = 0.0f;
-                    viewport.y = 0.0f;
+                    viewport.x = 0.0F;
+                    viewport.y = 0.0F;
                     viewport.width = static_cast<f32>(desc.extent.x);
                     viewport.height = static_cast<f32>(desc.extent.y);
-                    viewport.minDepth = 0.0f;
-                    viewport.maxDepth = 1.0f;
+                    viewport.minDepth = 0.0F;
+                    viewport.maxDepth = 1.0F;
 
                     VkRect2D scissor = {};
                     scissor.offset = {.x = 0, .y = 0};
@@ -701,7 +701,7 @@ namespace mag
                     rasterizer.depthClampEnable = VK_FALSE;
                     rasterizer.rasterizerDiscardEnable = VK_FALSE;
                     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-                    rasterizer.lineWidth = 1.0f;
+                    rasterizer.lineWidth = 1.0F;
                     rasterizer.cullMode = VK_CULL_MODE_NONE;
                     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
                     rasterizer.depthBiasEnable = VK_FALSE;
@@ -756,11 +756,11 @@ namespace mag
                     pipeline_rendering_create_info.pColorAttachmentFormats = &swapchain_format;
 
                     VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
-                    depth_stencil_create_info.depthTestEnable = 1u;
-                    depth_stencil_create_info.depthWriteEnable = 1u;
+                    depth_stencil_create_info.depthTestEnable = 1U;
+                    depth_stencil_create_info.depthWriteEnable = 1U;
                     depth_stencil_create_info.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-                    depth_stencil_create_info.minDepthBounds = 0.0f;
-                    depth_stencil_create_info.maxDepthBounds = 1.0f;
+                    depth_stencil_create_info.minDepthBounds = 0.0F;
+                    depth_stencil_create_info.maxDepthBounds = 1.0F;
 
                     VkGraphicsPipelineCreateInfo pipeline_info = {};
                     pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1317,19 +1317,19 @@ namespace mag
 
                     VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_features = {};
                     dynamic_rendering_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-                    dynamic_rendering_features.dynamicRendering = 1u;
+                    dynamic_rendering_features.dynamicRendering = 1U;
 
                     VkPhysicalDeviceDescriptorIndexingFeatures descriptor_indexing_features = {};
                     descriptor_indexing_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-                    descriptor_indexing_features.descriptorBindingPartiallyBound = 1u;
-                    descriptor_indexing_features.descriptorBindingVariableDescriptorCount = 1u;
-                    descriptor_indexing_features.descriptorBindingUniformBufferUpdateAfterBind = 1u;
-                    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = 1u;
-                    descriptor_indexing_features.descriptorBindingStorageBufferUpdateAfterBind = 1u;
-                    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = 1u;
-                    descriptor_indexing_features.shaderStorageBufferArrayNonUniformIndexing = 1u;
-                    descriptor_indexing_features.shaderUniformBufferArrayNonUniformIndexing = 1u;
-                    descriptor_indexing_features.runtimeDescriptorArray = 1u;
+                    descriptor_indexing_features.descriptorBindingPartiallyBound = 1U;
+                    descriptor_indexing_features.descriptorBindingVariableDescriptorCount = 1U;
+                    descriptor_indexing_features.descriptorBindingUniformBufferUpdateAfterBind = 1U;
+                    descriptor_indexing_features.descriptorBindingSampledImageUpdateAfterBind = 1U;
+                    descriptor_indexing_features.descriptorBindingStorageBufferUpdateAfterBind = 1U;
+                    descriptor_indexing_features.shaderSampledImageArrayNonUniformIndexing = 1U;
+                    descriptor_indexing_features.shaderStorageBufferArrayNonUniformIndexing = 1U;
+                    descriptor_indexing_features.shaderUniformBufferArrayNonUniformIndexing = 1U;
+                    descriptor_indexing_features.runtimeDescriptorArray = 1U;
 
                     vkb::PhysicalDeviceSelector phys_device_selector(instance);
                     const vkb::Result<vkb::PhysicalDevice> phys_device_ret =

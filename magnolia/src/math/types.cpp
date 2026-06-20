@@ -14,7 +14,7 @@ namespace mag
 
             // Remove translation influence
             mat4 model_without_transform = transform;
-            model_without_transform[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            model_without_transform[3] = vec4(0.0F, 0.0F, 0.0F, 1.0F);
 
             std::vector<vec3> vertices = {this->min,
                                           vec3(this->min.x, this->min.y, this->max.z),
@@ -28,7 +28,7 @@ namespace mag
             // Transform all vertices
             for (vec3& vertex : vertices)
             {
-                vertex = vec3(model_without_transform * vec4(vertex, 1.0f));
+                vertex = vec3(model_without_transform * vec4(vertex, 1.0F));
             }
 
             // Recalculate min and max
@@ -42,8 +42,8 @@ namespace mag
             }
 
             // Re-apply translation
-            transformed_aabb.min = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.min, 1.0f));
-            transformed_aabb.max = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.max, 1.0f));
+            transformed_aabb.min = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.min, 1.0F));
+            transformed_aabb.max = vec3(translate(vec3(transform[3])) * vec4(transformed_aabb.max, 1.0F));
 
             return transformed_aabb;
         }

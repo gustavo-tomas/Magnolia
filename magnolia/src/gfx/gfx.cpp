@@ -126,7 +126,7 @@ namespace mag::gfx
         }
 
         // Triple buffering if the device supports it
-        const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3u);
+        const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3U);
         const math::uvec3 render_target_extent = math::uvec3(options.resolution, 1);
 
         state->frames.resize(max_frames_in_flight);
@@ -228,13 +228,13 @@ namespace mag::gfx
 
         IRenderingAttachmentDesc color_attachment_desc = {};
         color_attachment_desc.type = RenderingAttachmentType::Color;
-        color_attachment_desc.clear_color = {0.4f, 0.6f, 0.8f, 1.0f};
+        color_attachment_desc.clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
         color_attachment_desc.texture = render_target_color.get();
         color_attachment = state->device->create_render_attachment(color_attachment_desc);
 
         IRenderingAttachmentDesc depth_attachment_desc = {};
         depth_attachment_desc.type = RenderingAttachmentType::Depth;
-        depth_attachment_desc.clear_depth = 1.0f;
+        depth_attachment_desc.clear_depth = 1.0F;
         depth_attachment_desc.texture = render_target_depth.get();
         depth_attachment = state->device->create_render_attachment(depth_attachment_desc);
 
@@ -264,7 +264,7 @@ namespace mag::gfx
                                                        PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
         // Flip the viewport to correct vulkan coordinate system
-        const math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
+        const math::vec2 viewport_offset = math::vec2(0.0F, extent.y);
         auto viewport_extent = math::vec2(extent);
         viewport_extent.y = -viewport_extent.y;
 
@@ -524,7 +524,7 @@ namespace mag::gfx
         texture_desc.format = format;
 
         ISamplerDesc sampler_desc = {};
-        sampler_desc.min_lod = 0.0f;
+        sampler_desc.min_lod = 0.0F;
         sampler_desc.max_lod = static_cast<f32>(texture_desc.mip_levels);
 
         state->textures[handle].sampler = state->device->create_sampler(sampler_desc);

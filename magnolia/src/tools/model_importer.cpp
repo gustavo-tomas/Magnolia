@@ -54,7 +54,7 @@ namespace mag
                           aiProcess_RemoveRedundantMaterials;
 
         const aiScene* scene = impl->importer->ReadFile(file_path, flags);
-        if ((scene == nullptr) || (scene->mRootNode == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0u))
+        if ((scene == nullptr) || (scene->mRootNode == nullptr) || ((scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0U))
         {
             LOG_ERROR("Failed to import model '{0}': {1}", file_path, impl->importer->GetErrorString());
             return false;
@@ -237,7 +237,7 @@ namespace mag
 
         // Reduce pixel overdraw
         meshopt_optimizeOverdraw(optimized_indices.data(), optimized_indices.data(), index_count,
-                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex), 1.05f);
+                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex), 1.05F);
 
         // Optimize vertex buffer access
         meshopt_optimizeVertexFetch(optimized_vertices.data(), optimized_indices.data(), index_count,

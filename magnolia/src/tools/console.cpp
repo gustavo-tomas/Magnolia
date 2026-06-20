@@ -226,7 +226,7 @@ namespace mag
             SDL_Window* window = state->window;
             SDL_Renderer* renderer = state->renderer;
 
-            if ((SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) != 0u)
+            if ((SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) != 0U)
             {
                 return;
             }
@@ -296,7 +296,7 @@ namespace mag
             // of the frame. Using a scrollbar or mouse-wheel will take away from the bottom edge.
             if (state->scroll_to_bottom || (state->auto_scroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
             {
-                ImGui::SetScrollHereY(1.0f);
+                ImGui::SetScrollHereY(1.0F);
             }
 
             state->scroll_to_bottom = false;
