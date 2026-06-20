@@ -67,6 +67,7 @@ def configure():
             f"-B {get_cmake_build_dir()}",
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
             f"-DCMAKE_BUILD_TYPE={configuration}",
             # Change the linker here
             '-DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold"',  # \"-fuse-ld=gold\"
@@ -172,39 +173,6 @@ def profile():
     return
 
 
-# ----- Setup -----
-def setup():
-
-    if not has_executable("bear"):
-        return
-
-    print("(Python) Starting clang setup")
-
-    output_dir = Path(get_clang_build_dir())
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_file = "compile_commands.json"
-
-    # Configure first
-    configure()
-
-    # Then build
-    subprocess.run(
-        [
-            "bear",
-            "-o",
-            output_dir / output_file,
-            "--",
-            "python",
-            "scripts/build.py",
-            "build",
-            configuration,
-        ],
-        check=True,
-    )
-
-    return
-
-
 def main():
     global configuration
 
@@ -223,10 +191,7 @@ def main():
     # Check configuration
     check_configuration()
 
-    if command == "setup":
-        setup()
-
-    elif command == "configure":
+    if command == "configure":
         configure()
 
     elif command == "build":

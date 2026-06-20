@@ -20,6 +20,7 @@ string(TOLOWER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME)
 
 set(MAG_ROOT_DIR "${CMAKE_SOURCE_DIR}/..")
 set(MAG_BIN_DIR "${CMAKE_BINARY_DIR}/../bin")
+set(CLANG_BUILD_DIR "${MAG_ROOT_DIR}/build/clang")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${MAG_BIN_DIR})       # .exe, .dll
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAG_BIN_DIR}/lib)   # .so
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${MAG_BIN_DIR}/lib)   # .a, .lib
@@ -330,3 +331,11 @@ target_link_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE
     magnolia
 )
+
+# Exports compile_commands.json file to the proper directory
+if(EXISTS "${CMAKE_BINARY_DIR}/compile_commands.json")
+  file(COPY_FILE
+    "${CMAKE_BINARY_DIR}/compile_commands.json"
+    "${CLANG_BUILD_DIR}/compile_commands.json"
+  )
+endif()
