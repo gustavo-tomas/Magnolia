@@ -40,22 +40,22 @@ namespace mag
 
         struct IQueueDesc
         {
-                QueueType queue_type;
+                QueueType queue_type = QueueType::Graphics;
         };
 
         struct IVertexAttributeDesc
         {
-                Format format;
-                u32 binding;
-                u32 location;
-                u32 offset;
+                Format format = Format::Undefined;
+                u32 binding = 0;
+                u32 location = 0;
+                u32 offset = 0;
         };
 
         struct IVertexBindingDesc
         {
-                u32 binding;
-                u32 stride;
-                VertexInputRate input_rate;
+                u32 binding = 0;
+                u32 stride = 0;
+                VertexInputRate input_rate = VertexInputRate::Vertex;
         };
 
         struct IGraphicsPipelineColorBlend
@@ -78,13 +78,13 @@ namespace mag
                 std::vector<IVertexBindingDesc> vertex_binding_descs;
                 Format color_attachment_format = Format::Undefined;
                 Format depth_attachment_format = Format::Undefined;
-                math::uvec2 extent;
+                math::uvec2 extent = {0, 0};
                 IGraphicsPipelineColorBlend color_blend;
         };
 
         struct ICommandPoolDesc
         {
-                QueueType queue_type;
+                QueueType queue_type = QueueType::Graphics;
         };
 
         struct ICommandBufferDesc
@@ -125,15 +125,15 @@ namespace mag
 
         struct IBufferDesc
         {
-                u64 size_bytes;
-                BufferUsage buffer_usage;
-                MemoryUsage memory_usage;
+                u64 size_bytes = 0;
+                BufferUsage buffer_usage = BufferUsage::Vertex;
+                MemoryUsage memory_usage = MemoryUsage::Auto;
         };
 
         struct IDescriptorPoolSizeDesc
         {
-                u32 count;
-                DescriptorType type;
+                u32 count = 0;
+                DescriptorType type = DescriptorType::Uniform;
         };
 
         struct IDescriptorPoolDesc
@@ -144,11 +144,11 @@ namespace mag
 
         struct IDescriptorSetLayoutBindingDesc
         {
-                u32 binding;
-                u32 descriptor_count;
-                b8 variable_descriptor_count;
-                DescriptorType descriptor_type;
-                ShaderStage stages;
+                u32 binding = 0;
+                u32 descriptor_count = 0;
+                b8 variable_descriptor_count = false;
+                DescriptorType descriptor_type = DescriptorType::Uniform;
+                ShaderStage stages = ShaderStage::Vertex;
         };
 
         struct IDescriptorSetLayoutDesc
@@ -179,9 +179,9 @@ namespace mag
 
         struct DescriptorLimits
         {
-                u32 max_per_stage_combined_image_samplers;
-                u32 max_per_stage_uniform_buffers;
-                u32 max_per_stage_storage_buffers;
+                u32 max_per_stage_combined_image_samplers = 0;
+                u32 max_per_stage_uniform_buffers = 0;
+                u32 max_per_stage_storage_buffers = 0;
         };
 
         class ISampler

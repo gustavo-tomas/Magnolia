@@ -214,7 +214,7 @@ namespace mag
 
         void on_update()
         {
-            ImGuiIO& io = ImGui::GetIO();
+            const ImGuiIO& io = ImGui::GetIO();
             (void)io;
 
             SDL_Window* window = state->window;
