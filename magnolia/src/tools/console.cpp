@@ -68,7 +68,7 @@ namespace mag
 
         static void draw_console();
 
-        static void scrolling_region(const b8 copy_to_clipboard);
+        static void scrolling_region(b8 copy_to_clipboard);
 
         static void handle_text_history(ImGuiInputTextCallbackData* data);
 

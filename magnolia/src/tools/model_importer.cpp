@@ -32,7 +32,7 @@ namespace mag
             static b8 create_native_file(const str& output_directory, const ModelResource& model,
                                          str& imported_model_path);
 
-            static b8 initialize_mesh(const u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
+            static b8 initialize_mesh(u32 mesh_idx, const aiMesh* ai_mesh, ModelResource& model);
             static void initialize_materials(const aiScene* ai_scene, const str& file_path, const str& output_directory,
                                              ModelResource& model);
             static void optimize_mesh(const std::vector<Vertex>& vertices, const std::vector<u32>& indices,

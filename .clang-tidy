@@ -39,7 +39,6 @@ Checks: >
   portability-*,
 
   readability-*,
-  -readability-avoid-const-params-in-decls,
   -readability-identifier-length,
   -readability-magic-numbers,
 

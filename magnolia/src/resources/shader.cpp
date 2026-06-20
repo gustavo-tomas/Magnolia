@@ -66,8 +66,8 @@ namespace mag
                                            const std::vector<str>& include_paths, const std::vector<str>& defines,
                                            const str& shader_stage);
 
-        static void read_descriptor_sets(const SpvReflectShaderModule& spv_module,
-                                         const ShaderResourceStage shader_stage, ShaderResource* resource);
+        static void read_descriptor_sets(const SpvReflectShaderModule& spv_module, ShaderResourceStage shader_stage,
+                                         ShaderResource* resource);
 
         static void read_vertex_input_attributes(const SpvReflectShaderModule& spv_module, ShaderResource* resource);
 
