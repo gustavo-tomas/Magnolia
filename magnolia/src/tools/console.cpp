@@ -68,6 +68,10 @@ namespace mag
 
         static void draw_console();
 
+        static void handle_text_history(ImGuiInputTextCallbackData* data);
+
+        static void handle_text_completion(ImGuiInputTextCallbackData* data);
+
         static i32 text_edit_callback(ImGuiInputTextCallbackData* data);
 
         static void clear_log();
@@ -359,6 +363,8 @@ namespace mag
             if (ImGui::InputText("##Input", &command_line, input_text_flags,
                                  [](ImGuiInputTextCallbackData* data) -> i32 { return text_edit_callback(data); }))
             {
+                reclaim_focus = true;
+
                 string::trim(command_line);
 
                 std::vector<str> substrings;
@@ -368,18 +374,11 @@ namespace mag
 
                 if (!substrings.empty())
                 {
-                    const str& command = substrings[0];
-                    std::vector<str> args;
-
-                    for (u64 i = 1; i < substrings.size(); i++)
-                    {
-                        args.push_back(substrings[i]);
-                    }
+                    const str& command = substrings.front();
+                    const std::vector<str> args(substrings.begin() + 1, substrings.end());
 
                     execute_command(command, args);
                 }
-
-                reclaim_focus = true;
             }
 
             ImGui::PopItemWidth();
@@ -396,6 +395,129 @@ namespace mag
             ImGui::End();
         }
 
+        void handle_text_history(ImGuiInputTextCallbackData* data)
+        {
+            const i64 prev_history_pos = state->history_pos;
+
+            if (data->EventKey == ImGuiKey_UpArrow)
+            {
+                if (state->history_pos == -1)
+                {
+                    state->history_pos = static_cast<i64>(state->history.size()) - 1;
+                }
+                else if (state->history_pos > 0)
+                {
+                    state->history_pos--;
+                }
+            }
+
+            else if (data->EventKey == ImGuiKey_DownArrow && state->history_pos != -1)
+            {
+                if (std::cmp_greater_equal(++state->history_pos, state->history.size()))
+                {
+                    state->history_pos = -1;
+                }
+            }
+
+            // A better implementation would preserve the data on the current input line along with
+            // cursor position.
+            if (prev_history_pos != state->history_pos)
+            {
+                const str history_str = (state->history_pos >= 0) ? state->history[state->history_pos] : "";
+
+                data->DeleteChars(0, data->BufTextLen);
+                data->InsertChars(0, history_str.c_str());
+            }
+        }
+
+        void handle_text_completion(ImGuiInputTextCallbackData* data)
+        {
+            // Locate beginning of current word
+            const c8* word_end = data->Buf + data->CursorPos;
+            const c8* word_start = word_end;
+            while (word_start > data->Buf)
+            {
+                const c8 c = word_start[-1];
+                if (c == ' ' || c == '\t' || c == ',' || c == ';')
+                {
+                    break;
+                }
+                word_start--;
+            }
+
+            // Build a list of candidates
+            std::vector<str> candidates;
+
+            for (const auto& [command, function] : state->commands)
+            {
+                const b8 equal = string::equalni(command, word_start, static_cast<i32>(word_end - word_start));
+
+                if (equal)
+                {
+                    candidates.push_back(command);
+                }
+            }
+
+            // No match
+            if (candidates.empty())
+            {
+                add_log({.color = COLOR_RED, .text = "No match for '{0}'!"}, word_start);
+            }
+
+            // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing.
+            else if (candidates.size() == 1)
+            {
+                data->DeleteChars(static_cast<i32>(word_start - data->Buf), static_cast<i32>(word_end - word_start));
+                data->InsertChars(data->CursorPos, candidates[0].c_str());
+                data->InsertChars(data->CursorPos, " ");
+            }
+
+            // Multiple matches. Complete as much as we can.
+            else
+            {
+                i32 match_len = static_cast<i32>(word_end - word_start);
+                b8 all_candidates_matches = true;
+
+                while (all_candidates_matches)
+                {
+                    i32 c = 0;
+
+                    for (u64 i = 0; i < candidates.size() && all_candidates_matches; i++)
+                    {
+                        const i32 candidate_c = std::toupper(candidates[i][match_len]);
+                        if (i == 0)
+                        {
+                            c = candidate_c;
+                        }
+                        else if (c == 0 || c != candidate_c)
+                        {
+                            all_candidates_matches = false;
+                        }
+                    }
+
+                    if (all_candidates_matches)
+                    {
+                        match_len++;
+                    }
+                }
+
+                if (match_len > 0)
+                {
+                    data->DeleteChars(static_cast<i32>(word_start - data->Buf),
+                                      static_cast<i32>(word_end - word_start));
+                    data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
+                }
+
+                // List matches
+                add_log({.text = "Possible matches:"});
+
+                for (const str& candidate : candidates)
+                {
+                    add_log({.text = "- {0}"}, candidate);
+                }
+            }
+        }
+
         i32 text_edit_callback(ImGuiInputTextCallbackData* data)
         {
             switch (data->EventFlag)
@@ -403,129 +525,15 @@ namespace mag
                 // Text completion
                 case ImGuiInputTextFlags_CallbackCompletion:
                 {
-                    // Locate beginning of current word
-                    const c8* word_end = data->Buf + data->CursorPos;
-                    const c8* word_start = word_end;
-                    while (word_start > data->Buf)
-                    {
-                        const c8 c = word_start[-1];
-                        if (c == ' ' || c == '\t' || c == ',' || c == ';')
-                        {
-                            break;
-                        }
-                        word_start--;
-                    }
-
-                    // Build a list of candidates
-                    std::vector<str> candidates;
-
-                    for (const auto& [command, function] : state->commands)
-                    {
-                        const b8 equal = string::equalni(command, word_start, static_cast<i32>(word_end - word_start));
-
-                        if (equal)
-                        {
-                            candidates.push_back(command);
-                        }
-                    }
-
-                    // No match
-                    if (candidates.empty())
-                    {
-                        add_log({.color = COLOR_RED, .text = "No match for '{0}'!"}, word_start);
-                    }
-
-                    // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing.
-                    else if (candidates.size() == 1)
-                    {
-                        data->DeleteChars(static_cast<i32>(word_start - data->Buf),
-                                          static_cast<i32>(word_end - word_start));
-                        data->InsertChars(data->CursorPos, candidates[0].c_str());
-                        data->InsertChars(data->CursorPos, " ");
-                    }
-
-                    // Multiple matches. Complete as much as we can.
-                    else
-                    {
-                        i32 match_len = static_cast<i32>(word_end - word_start);
-                        b8 all_candidates_matches = true;
-
-                        while (all_candidates_matches)
-                        {
-                            i32 c = 0;
-
-                            for (u64 i = 0; i < candidates.size() && all_candidates_matches; i++)
-                            {
-                                const i32 candidate_c = std::toupper(candidates[i][match_len]);
-                                if (i == 0)
-                                {
-                                    c = candidate_c;
-                                }
-                                else if (c == 0 || c != candidate_c)
-                                {
-                                    all_candidates_matches = false;
-                                }
-                            }
-
-                            if (all_candidates_matches)
-                            {
-                                match_len++;
-                            }
-                        }
-
-                        if (match_len > 0)
-                        {
-                            data->DeleteChars(static_cast<i32>(word_start - data->Buf),
-                                              static_cast<i32>(word_end - word_start));
-                            data->InsertChars(data->CursorPos, candidates[0].c_str(),
-                                              candidates[0].c_str() + match_len);
-                        }
-
-                        // List matches
-                        add_log({.text = "Possible matches:"});
-
-                        for (const str& candidate : candidates)
-                        {
-                            add_log({.text = "- {0}"}, candidate);
-                        }
-                    }
-
+                    handle_text_completion(data);
                     break;
                 }
 
                 // History
                 case ImGuiInputTextFlags_CallbackHistory:
                 {
-                    const i64 prev_history_pos = state->history_pos;
-                    if (data->EventKey == ImGuiKey_UpArrow)
-                    {
-                        if (state->history_pos == -1)
-                        {
-                            state->history_pos = static_cast<i64>(state->history.size()) - 1;
-                        }
-                        else if (state->history_pos > 0)
-                        {
-                            state->history_pos--;
-                        }
-                    }
-
-                    else if (data->EventKey == ImGuiKey_DownArrow && state->history_pos != -1)
-                    {
-                        if (std::cmp_greater_equal(++state->history_pos, state->history.size()))
-                        {
-                            state->history_pos = -1;
-                        }
-                    }
-
-                    // A better implementation would preserve the data on the current input line along with
-                    // cursor position.
-                    if (prev_history_pos != state->history_pos)
-                    {
-                        const str history_str = (state->history_pos >= 0) ? state->history[state->history_pos] : "";
-
-                        data->DeleteChars(0, data->BufTextLen);
-                        data->InsertChars(0, history_str.c_str());
-                    }
+                    handle_text_history(data);
+                    break;
                 }
 
                 default:
