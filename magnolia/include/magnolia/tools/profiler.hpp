@@ -33,11 +33,11 @@ namespace mag
     class MAG_API ScopedProfiler
     {
         public:
-            explicit ScopedProfiler(const str& name, const f64 time_interval_ms = 100);
+            explicit ScopedProfiler(str name, const f64 time_interval_ms = 100);
             ~ScopedProfiler();
 
         private:
-            const str name;
+            str name;
             f64 start, time_interval_ms;
     };
 

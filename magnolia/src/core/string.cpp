@@ -29,15 +29,15 @@ namespace mag
 
         void split(const str& s, const str& del, std::vector<str>& output)
         {
-            std::regex delimiter = std::regex(del);
+            const std::regex delimiter = std::regex(del);
 
             std::sregex_token_iterator it(s.begin(), s.end(), delimiter, -1);
 
-            std::sregex_token_iterator end;
+            const std::sregex_token_iterator end;
 
             while (it != end)
             {
-                str substr = *it;
+                const str substr = *it;
 
                 if (!substr.empty())
                 {

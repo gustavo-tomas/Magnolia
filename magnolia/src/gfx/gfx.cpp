@@ -264,7 +264,7 @@ namespace mag::gfx
                                                        PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
         // Flip the viewport to correct vulkan coordinate system
-        math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
+        const math::vec2 viewport_offset = math::vec2(0.0f, extent.y);
         auto viewport_extent = math::vec2(extent);
         viewport_extent.y = -viewport_extent.y;
 

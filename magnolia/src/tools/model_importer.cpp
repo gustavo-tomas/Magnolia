@@ -81,8 +81,8 @@ namespace mag
         }
 
         // Sort meshes by ascending order of material index
-        std::sort(model.meshes.begin(), model.meshes.end(),
-                  [](const Mesh& a, const Mesh& b) { return a.material_index < b.material_index; });
+        std::ranges::sort(model.meshes.begin(), model.meshes.end(),
+                          [](const Mesh& a, const Mesh& b) { return a.material_index < b.material_index; });
 
         const str output_directory = fs::path(file_path).parent_path() / fs::path("native");
         if (!fs::create_directories(output_directory))
