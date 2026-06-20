@@ -146,10 +146,11 @@ namespace mag
         void read_descriptor_sets(const SpvReflectShaderModule& spv_module, const ShaderResourceStage shader_stage,
                                   ShaderResource* resource)
         {
-            for (u32 i = 0; i < spv_module.descriptor_set_count; i++)
-            {
-                const SpvReflectDescriptorSet spv_descriptor_set = spv_module.descriptor_sets[i];
+            const std::vector<SpvReflectDescriptorSet> spv_descriptor_sets(
+                &spv_module.descriptor_sets[0], &spv_module.descriptor_sets[0] + spv_module.descriptor_set_count);
 
+            for (const SpvReflectDescriptorSet& spv_descriptor_set : spv_descriptor_sets)
+            {
                 ShaderResourceDescriptorData descriptor = {};
                 descriptor.set = spv_descriptor_set.set;
 
