@@ -127,7 +127,6 @@ set(MAG_LIB_INCLUDES
     "${MAG_ROOT_DIR}/libs/sdl/include"
     "${MAG_ROOT_DIR}/libs/soloud/include"
     "${MAG_ROOT_DIR}/libs/spirv_reflect"
-    "${MAG_ROOT_DIR}/libs/stb"
     "${MAG_ROOT_DIR}/libs/vkbootstrap/src"
     "${MAG_ROOT_DIR}/libs/vma/include"
     "${MAG_ROOT_DIR}/libs/vulkan/include"
