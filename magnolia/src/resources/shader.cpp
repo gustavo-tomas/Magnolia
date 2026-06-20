@@ -212,11 +212,11 @@ namespace mag
                         // correctly. Unbounded arrays count will be decided on the gfx side.
 
                         // Assume that arrays with count = 1 are variable count (@TODO: this is just a fix)
-                        b8 is_unbounded_array = spv_binding->array.dims_count > 0;
+                        const b8 is_unbounded_array = spv_binding->array.dims_count > 0;
 
                         // Storage buffers are assume unbounded (@TODO: this assumes that bounded SSBO block members are
                         // also unbounded)
-                        b8 is_ssbo = binding.descriptor_type == ShaderResourceDescriptorType::Storage;
+                        const b8 is_ssbo = binding.descriptor_type == ShaderResourceDescriptorType::Storage;
 
                         if (is_unbounded_array || is_ssbo)
                         {

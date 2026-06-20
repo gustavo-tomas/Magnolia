@@ -8,7 +8,7 @@ namespace mag
     {
         struct State
         {
-                const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
+                std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
         };
 
         static State* state = nullptr;

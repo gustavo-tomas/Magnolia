@@ -348,8 +348,8 @@ namespace mag
             }
 
             // Number is a value between 0 and 1
-            f32 number = static_cast<f32>(state->distribution(state->random_engine)) /
-                         static_cast<f32>(std::numeric_limits<uint_fast32_t>::max());
+            const f32 number = static_cast<f32>(state->distribution(state->random_engine)) /
+                               static_cast<f32>(std::numeric_limits<uint_fast32_t>::max());
 
             return b + ((e - b) * number);
         }

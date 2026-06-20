@@ -174,7 +174,7 @@ namespace mag
                     }
 
                     std::unique_lock<std::mutex> grab_lock(state->grab_job_mutex);
-                    Job job = grab_job(handle);
+                    const Job job = grab_job(handle);
                     state->workers[handle].busy = true;
                     grab_lock.unlock();
 
@@ -182,7 +182,7 @@ namespace mag
                     if (job.execute_fn)
                     {
                         const JobData result = job.execute_fn();
-                        std::lock_guard<std::mutex> lock(state->execute_mutex);
+                        const std::scoped_lock<std::mutex> lock(state->execute_mutex);
                         state->workers[handle].busy = false;
                         state->execute_result_queue.push(result);
                     }
@@ -190,7 +190,7 @@ namespace mag
                     // Push the callback to the callback queue
                     if (job.callback_fn)
                     {
-                        std::lock_guard<std::mutex> lock(state->callback_mutex);
+                        const std::scoped_lock<std::mutex> lock(state->callback_mutex);
                         state->callback_queue.push(job.callback_fn);
                     }
                 }

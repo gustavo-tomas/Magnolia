@@ -14,6 +14,7 @@
 
 #include <map>
 #include <numeric>
+#include <utility>
 
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/logger.hpp"
@@ -52,7 +53,7 @@ namespace mag
                 std::vector<str> history;
                 i64 history_pos = -1;  // -1: new line, 0..History.Size-1 browsing history.
                 ImGuiTextFilter filter;
-                const u32 history_display_size = 15;
+                u32 history_display_size = 15;
                 b8 scroll_to_bottom = false;
                 b8 auto_scroll = true;
         };
@@ -262,7 +263,7 @@ namespace mag
 
             ImGui::SameLine();
             ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_C, ImGuiInputFlags_Tooltip);
-            b8 copy_to_clipboard = ImGui::SmallButton("Copy");
+            const b8 copy_to_clipboard = ImGui::SmallButton("Copy");
 
             ImGui::Separator();
 
@@ -508,14 +509,11 @@ namespace mag
                         }
                     }
 
-                    else if (data->EventKey == ImGuiKey_DownArrow)
+                    else if (data->EventKey == ImGuiKey_DownArrow && state->history_pos != -1)
                     {
-                        if (state->history_pos != -1)
+                        if (std::cmp_greater_equal(++state->history_pos, state->history.size()))
                         {
-                            if (++state->history_pos >= static_cast<i64>(state->history.size()))
-                            {
-                                state->history_pos = -1;
-                            }
+                            state->history_pos = -1;
                         }
                     }
 

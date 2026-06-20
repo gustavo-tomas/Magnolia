@@ -212,25 +212,25 @@ namespace mag
 
         str get_file_extension(const fs::path& raw_file_path)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
             return file_path.extension().c_str();
         }
 
         str get_file_name(const fs::path& raw_file_path)
         {
-            const auto file_path = get_fixed_path(raw_file_path);
+            const fs::path file_path = get_fixed_path(raw_file_path);
             return file_path.stem().string();
         }
 
         b8 exists(const fs::path& raw_file_path)
         {
-            const auto path = get_fixed_path(raw_file_path);
+            const fs::path path = get_fixed_path(raw_file_path);
             return std::filesystem::exists(path);
         }
 
         b8 is_directory(const fs::path& raw_file_path)
         {
-            const auto path = get_fixed_path(raw_file_path);
+            const fs::path path = get_fixed_path(raw_file_path);
             return std::filesystem::is_directory(path);
         }
 
@@ -269,7 +269,7 @@ namespace mag
 
         b8 was_file_modified(const fs::path& file_path)
         {
-            const std::lock_guard<std::mutex> lock(state->fw.files_mutex);
+            const std::scoped_lock<std::mutex> lock(state->fw.files_mutex);
             return state->fw.files_on_watch.contains(file_path) && state->fw.files_on_watch[file_path].modified;
         }
     };  // namespace fs
