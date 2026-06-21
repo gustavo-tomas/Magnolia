@@ -271,8 +271,6 @@ namespace mag
 
         mat4 to_mat4(const quat& q)
         {
-            mat4 res(0.0F);
-
             const f32 w = q.w;
             const f32 x = q.x;
             const f32 y = q.y;
@@ -290,25 +288,12 @@ namespace mag
             const f32 wy = w * y;
             const f32 wz = w * z;
 
-            res[0][0] = 1.0F - (2.0F * (yy + zz));
-            res[0][1] = 2.0F * (xy + wz);
-            res[0][2] = 2.0F * (xz - wy);
-            res[0][3] = 0.0F;
-
-            res[1][0] = 2.0F * (xy - wz);
-            res[1][1] = 1.0F - (2.0F * (xx + zz));
-            res[1][2] = 2.0F * (yz + wx);
-            res[1][3] = 0.0F;
-
-            res[2][0] = 2.0F * (xz + wy);
-            res[2][1] = 2.0F * (yz - wx);
-            res[2][2] = 1.0F - (2.0F * (xx + yy));
-            res[2][3] = 0.0F;
-
-            res[3][0] = 0.0F;
-            res[3][1] = 0.0F;
-            res[3][2] = 0.0F;
-            res[3][3] = 1.0F;
+            const mat4 res = {
+                {1.0F - (2.0F * (yy + zz)), 2.0F * (xy + wz),          2.0F * (xz - wy),          0.0F},
+                {2.0F * (xy - wz),          1.0F - (2.0F * (xx + zz)), 2.0F * (yz + wx),          0.0F},
+                {2.0F * (xz + wy),          2.0F * (yz - wx),          1.0F - (2.0F * (xx + yy)), 0.0F},
+                {0.0F,                      0.0F,                      0.0F,                      1.0F},
+            };
 
             return res;
         }

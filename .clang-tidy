@@ -12,7 +12,6 @@ Checks: >
   -clang-analyzer-optin.cplusplus.VirtualCall,
   
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
