@@ -32,7 +32,7 @@ namespace mag
 
     namespace thread
     {
-        b8 initialize_job_system(const u32 max_number_of_threads);
+        b8 initialize_job_system(u32 max_number_of_threads);
         void shutdown_job_system();
 
         // Create a job group. This is useful for the caller to track pending jobs.
@@ -40,9 +40,9 @@ namespace mag
 
         // Destroy all jobs in a group and wait for the threads that are executing jobs belonging to that group to
         // finish. This is a blocking operation.
-        MAG_API void destroy_job_group(const JobGroupHandle group);
+        MAG_API void destroy_job_group(JobGroupHandle group);
 
-        MAG_API void add_job(const JobGroupHandle group, const Job& job);
+        MAG_API void add_job(JobGroupHandle group, const Job& job);
 
         MAG_API void process_callbacks();
     };  // namespace thread

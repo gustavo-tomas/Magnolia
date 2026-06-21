@@ -18,7 +18,7 @@ namespace mag
     class MAG_API ProfilerManager
     {
         public:
-            void update_profile_result(const str& name, const f64 duration, const f64 time_interval_ms);
+            void update_profile_result(const str& name, f64 duration, f64 time_interval_ms);
             void clear_results();
 
             ProfileResult get_result(const str& name) const;
@@ -33,7 +33,7 @@ namespace mag
     class MAG_API ScopedProfiler
     {
         public:
-            explicit ScopedProfiler(str name, const f64 time_interval_ms = 100);
+            explicit ScopedProfiler(str name, f64 time_interval_ms = 100);
             ~ScopedProfiler();
 
         private:

@@ -13,7 +13,7 @@ namespace mag
 
         void shutdown();
 
-        MAG_API f32 radians(const f32 angle_deg);
+        MAG_API f32 radians(f32 angle_deg);
 
         MAG_API f32 dot(const vec3& v1, const vec3& v2);
 
@@ -45,21 +45,20 @@ namespace mag
 
         MAG_API mat4 to_mat4(const quat& q);
 
-        MAG_API mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far);
+        MAG_API mat4 perspective(f32 fov, f32 aspect, f32 near, f32 far);
 
-        MAG_API mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near,
-                           const f32 far);
+        MAG_API mat4 ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
 
-        MAG_API f32 random(const f32 begin = 0.0f, const f32 end = 1.0f);
+        MAG_API f32 random(f32 begin = 0.0f, f32 end = 1.0f);
 
-        MAG_API i32 random(const i32 begin = 0, const i32 end = 1);
+        MAG_API i32 random(i32 begin = 0, i32 end = 1);
 
         // Get direction from angles
-        MAG_API vec3 get_right_dir(const f32 yaw);
+        MAG_API vec3 get_right_dir(f32 yaw);
 
-        MAG_API vec3 get_forward_dir(const f32 pitch, const f32 yaw);
+        MAG_API vec3 get_forward_dir(f32 pitch, f32 yaw);
 
-        MAG_API vec3 get_up_dir(const f32 pitch, const f32 yaw);
+        MAG_API vec3 get_up_dir(f32 pitch, f32 yaw);
 
         template <typename T>
         MAG_API inline T sin(const T x)

@@ -34,20 +34,20 @@ namespace mag
 
         MAG_API b8 set_window_icon(const str& bmp_file);
         MAG_API void set_title(const str& title);
-        MAG_API void set_resizable(const b8 resizable);
-        MAG_API void set_fullscreen(const b8 fullscreen);
+        MAG_API void set_resizable(b8 resizable);
+        MAG_API void set_fullscreen(b8 fullscreen);
         MAG_API void set_event_callback(const EventCallback& callback);
 
-        MAG_API void set_capture_mouse(const b8 capture);
-        MAG_API void set_mouse_position(const i32 x, const i32 y);
+        MAG_API void set_capture_mouse(b8 capture);
+        MAG_API void set_mouse_position(i32 x, i32 y);
 
         // Set target fps. -1 is no limits
-        MAG_API void set_target_frame_rate(const i32 frame_rate = -1);
+        MAG_API void set_target_frame_rate(i32 frame_rate = -1);
 
-        MAG_API b8 is_key_pressed(const Key key);
-        MAG_API b8 is_key_down(const Key key);
-        MAG_API b8 is_button_pressed(const Button button);
-        MAG_API b8 is_button_down(const Button button);
+        MAG_API b8 is_key_pressed(Key key);
+        MAG_API b8 is_key_down(Key key);
+        MAG_API b8 is_button_pressed(Button button);
+        MAG_API b8 is_button_down(Button button);
         MAG_API b8 is_mouse_captured();
         MAG_API b8 is_minimized();
         MAG_API b8 is_fullscreen();

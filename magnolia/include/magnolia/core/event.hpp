@@ -48,7 +48,7 @@ namespace mag
 
     struct WindowResizeEvent : public Event
     {
-            WindowResizeEvent(const u32 width, const u32 height);
+            WindowResizeEvent(u32 width, u32 height);
 
             STATIC_EVENT_TYPE(EventType::WindowResizeEvent);
 
@@ -58,7 +58,7 @@ namespace mag
 
     struct KeyPressEvent : public Event
     {
-            explicit KeyPressEvent(const Keys key);
+            explicit KeyPressEvent(Keys key);
 
             STATIC_EVENT_TYPE(EventType::KeyPressEvent);
 
@@ -67,7 +67,7 @@ namespace mag
 
     struct KeyReleaseEvent : public Event
     {
-            explicit KeyReleaseEvent(const Keys key);
+            explicit KeyReleaseEvent(Keys key);
 
             STATIC_EVENT_TYPE(EventType::KeyReleaseEvent);
 
@@ -76,7 +76,7 @@ namespace mag
 
     struct MouseMoveEvent : public Event
     {
-            MouseMoveEvent(const i32 x_direction, const i32 y_direction, const i32 x, const i32 y);
+            MouseMoveEvent(i32 x_direction, i32 y_direction, i32 x, i32 y);
 
             STATIC_EVENT_TYPE(EventType::MouseMoveEvent);
 
@@ -88,7 +88,7 @@ namespace mag
 
     struct MouseScrollEvent : public Event
     {
-            MouseScrollEvent(const f64 x_offset, const f64 y_offset);
+            MouseScrollEvent(f64 x_offset, f64 y_offset);
 
             STATIC_EVENT_TYPE(EventType::MouseScrollEvent);
 
@@ -98,7 +98,7 @@ namespace mag
 
     struct MousePressEvent : public Event
     {
-            explicit MousePressEvent(const Buttons button);
+            explicit MousePressEvent(Buttons button);
 
             STATIC_EVENT_TYPE(EventType::MousePressEvent);
 

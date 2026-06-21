@@ -35,69 +35,67 @@ namespace mag
             public:
                 virtual ~IPhysicsWorld() = default;
 
-                virtual void on_update(const f32 dt) = 0;
+                virtual void on_update(f32 dt) = 0;
 
                 // Add a rigid body with a box collider
                 virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                       const math::vec3& collider_dimensions, const f32 mass) = 0;
+                                                       const math::vec3& collider_dimensions, f32 mass) = 0;
 
                 // Add a rigid body with a capsule collider
                 virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                       const f32 radius, const f32 height, const f32 mass) = 0;
+                                                       f32 radius, f32 height, f32 mass) = 0;
 
                 // Add a rigid body with a mesh collider
-                virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation,
-                                                       const f32 mass,
+                virtual RigidBodyHandle add_rigid_body(const math::vec3& position, const math::quat& rotation, f32 mass,
                                                        const std::vector<math::Triangle>& triangle_list) = 0;
 
-                virtual void remove_rigid_body(const RigidBodyHandle handle) = 0;
+                virtual void remove_rigid_body(RigidBodyHandle handle) = 0;
 
                 // Applies continuous force over time
-                virtual void apply_force(const RigidBodyHandle handle, const math::vec3& force) = 0;
+                virtual void apply_force(RigidBodyHandle handle, const math::vec3& force) = 0;
 
                 // Applies an instantaneous change in momentum
-                virtual void apply_impulse(const RigidBodyHandle handle, const math::vec3& impulse) = 0;
+                virtual void apply_impulse(RigidBodyHandle handle, const math::vec3& impulse) = 0;
 
                 // Applies continuous torque over time
-                virtual void apply_torque(const RigidBodyHandle handle, const math::vec3& force) = 0;
+                virtual void apply_torque(RigidBodyHandle handle, const math::vec3& force) = 0;
 
                 // Applies an instantaneous change in torque
-                virtual void apply_torque_impulse(const RigidBodyHandle handle, const math::vec3& force) = 0;
+                virtual void apply_torque_impulse(RigidBodyHandle handle, const math::vec3& force) = 0;
 
-                virtual void set_position(const RigidBodyHandle handle, const math::vec3& position) = 0;
+                virtual void set_position(RigidBodyHandle handle, const math::vec3& position) = 0;
 
-                virtual void set_rotation(const RigidBodyHandle handle, const math::quat& rotation) = 0;
+                virtual void set_rotation(RigidBodyHandle handle, const math::quat& rotation) = 0;
 
                 // Set body linear velocity
-                virtual void set_linear_velocity(const RigidBodyHandle handle, const math::vec3& velocity) = 0;
+                virtual void set_linear_velocity(RigidBodyHandle handle, const math::vec3& velocity) = 0;
 
                 // Set body angular velocity
-                virtual void set_angular_velocity(const RigidBodyHandle handle, const math::vec3& velocity) = 0;
+                virtual void set_angular_velocity(RigidBodyHandle handle, const math::vec3& velocity) = 0;
 
-                virtual void set_degrees_of_freedom(const RigidBodyHandle handle, const DegreesOfFreedom dof) = 0;
+                virtual void set_degrees_of_freedom(RigidBodyHandle handle, DegreesOfFreedom dof) = 0;
 
                 // Set body activation state
-                virtual void set_activation_state(const RigidBodyHandle handle,
-                                                  const ActivationState activation_state) = 0;
+                virtual void set_activation_state(RigidBodyHandle handle, ActivationState activation_state) = 0;
 
                 virtual f32 get_fixed_delta_time() const = 0;
 
                 virtual math::vec3 get_gravity() const = 0;
 
                 // Get linear velocity of a body
-                virtual math::vec3 get_linear_velocity(const RigidBodyHandle handle) const = 0;
+                virtual math::vec3 get_linear_velocity(RigidBodyHandle handle) const = 0;
 
                 // Get angular velocity of a body
-                virtual math::vec3 get_angular_velocity(const RigidBodyHandle handle) const = 0;
+                virtual math::vec3 get_angular_velocity(RigidBodyHandle handle) const = 0;
 
-                virtual void get_position_and_rotation(const RigidBodyHandle handle, math::vec3& position,
+                virtual void get_position_and_rotation(RigidBodyHandle handle, math::vec3& position,
                                                        math::quat& rotation) const = 0;
 
-                virtual void get_position(const RigidBodyHandle handle, math::vec3& position) const = 0;
+                virtual void get_position(RigidBodyHandle handle, math::vec3& position) const = 0;
 
-                virtual void get_rotation(const RigidBodyHandle handle, math::quat& rotation) const = 0;
+                virtual void get_rotation(RigidBodyHandle handle, math::quat& rotation) const = 0;
 
-                virtual void get_rigid_body_collisions(const RigidBodyHandle handle,
+                virtual void get_rigid_body_collisions(RigidBodyHandle handle,
                                                        std::vector<RigidBodyHandle>& collisions) const = 0;
 
                 // Debug lines for visualization

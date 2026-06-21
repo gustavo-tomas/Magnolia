@@ -65,7 +65,7 @@ namespace mag
             explicit PerspectiveCamera(const PerspectiveCameraDesc& camera_desc);
             ~PerspectiveCamera() override;
 
-            void set_fov(const f32 camera_fov);
+            void set_fov(f32 camera_fov);
             const f32& get_fov() const;
 
         protected:
@@ -91,7 +91,7 @@ namespace mag
             explicit OrthographicCamera(const OrthographicCameraDesc& camera_desc);
             ~OrthographicCamera() override;
 
-            void set_size(const f32 camera_size);
+            void set_size(f32 camera_size);
             f32 get_size() const;
 
         protected:

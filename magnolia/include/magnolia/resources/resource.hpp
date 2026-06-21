@@ -49,18 +49,18 @@ namespace mag
         // Base function to load a resource
         b8 load_sync(const str& file_path, ResourceManager* rm, IResource* resource) = delete;
 
-        MAG_API ref<TextureResource> get_texture(const str& file_path, const b8 reload = false);
-        MAG_API ref<MaterialResource> get_material(const str& file_path, const b8 reload = false);
-        MAG_API ref<ModelResource> get_model(const str& file_path, const b8 reload = false);
-        MAG_API ref<FontResource> get_font(const str& file_path, const b8 reload = false);
-        MAG_API ref<AudioResource> get_audio(const str& file_path, const b8 reload = false);
-        MAG_API ref<ShaderResource> get_shader(const str& file_path, const b8 reload = false);
+        MAG_API ref<TextureResource> get_texture(const str& file_path, b8 reload = false);
+        MAG_API ref<MaterialResource> get_material(const str& file_path, b8 reload = false);
+        MAG_API ref<ModelResource> get_model(const str& file_path, b8 reload = false);
+        MAG_API ref<FontResource> get_font(const str& file_path, b8 reload = false);
+        MAG_API ref<AudioResource> get_audio(const str& file_path, b8 reload = false);
+        MAG_API ref<ShaderResource> get_shader(const str& file_path, b8 reload = false);
 
-        MAG_API void get_model_async(const str& file_path, const JobGroupHandle job_group,
-                                     const ResourceLoadedCallbackFn& callback, const b8 reload = false);
+        MAG_API void get_model_async(const str& file_path, JobGroupHandle job_group,
+                                     const ResourceLoadedCallbackFn& callback, b8 reload = false);
 
-        MAG_API void get_texture_async(const str& file_path, const JobGroupHandle job_group,
-                                       const ResourceLoadedCallbackFn& callback, const b8 reload = false);
+        MAG_API void get_texture_async(const str& file_path, JobGroupHandle job_group,
+                                       const ResourceLoadedCallbackFn& callback, b8 reload = false);
 
         class ResourceManager
         {

@@ -20,10 +20,10 @@ namespace mag
         // returns invalid on error
         MAG_API ScriptHandle load_script(const str& file_path);
 
-        MAG_API b8 unload_script(const ScriptHandle handle);
+        MAG_API b8 unload_script(ScriptHandle handle);
 
         // returns nullptr on error
-        MAG_API void* get_symbol(const ScriptHandle handle, const str& name);
+        MAG_API void* get_symbol(ScriptHandle handle, const str& name);
 
         struct RecompileScriptParams
         {
