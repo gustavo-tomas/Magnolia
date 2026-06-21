@@ -4,20 +4,9 @@
 
 namespace mag
 {
-    struct ModelResource;
-    struct Vertex;
-
-    class MAG_API ModelImporter
+    namespace tools
     {
-        public:
-            ModelImporter();
-            ~ModelImporter();
-
-            b8 import(const str& file_path, str& imported_model_path);
-            b8 is_extension_supported(const str& extension_with_dot);
-
-        private:
-            struct IMPL;
-            unique<IMPL> impl;
-    };
+        MAG_API b8 import_model(const str& file_path, str& imported_model_path);
+        MAG_API b8 is_extension_supported(const str& extension_with_dot);
+    };  // namespace tools
 };  // namespace mag

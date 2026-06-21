@@ -191,14 +191,12 @@ namespace game
                 mag::Job job = {};
                 job.execute_fn = [this, arg]()
                 {
-                    mag::ModelImporter importer;
-
                     // We reuse the asset dir retrieved from the project to make things
                     // easier
                     const str file_path = project->get_asset_dir() / arg;
 
                     str out_file_path;
-                    const b8 result = importer.import(file_path, out_file_path);
+                    const b8 result = mag::tools::import_model(file_path, out_file_path);
 
                     mag::JobData job_data = {};
                     job_data.result = result;

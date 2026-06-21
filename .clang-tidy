@@ -26,7 +26,6 @@ Checks: >
   -misc-header-include-cycle,
   -misc-use-anonymous-namespace,
   -misc-use-internal-linkage,
-  -misc-non-private-member-variables-in-classes,
 
   modernize-*,
   -modernize-use-nodiscard,
