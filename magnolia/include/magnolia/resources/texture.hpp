@@ -18,7 +18,7 @@ namespace mag
             u32 width = 64;
             u32 height = 64;
             u32 mip_levels = 1;
-            std::vector<u8> pixels = std::vector<u8>(64l * 64 * 4, 153);
+            std::vector<u8> pixels = std::vector<u8>(64L * 64 * 4, 153);
     };
 
     namespace resource

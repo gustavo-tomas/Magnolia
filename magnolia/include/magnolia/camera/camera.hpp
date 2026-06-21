@@ -36,27 +36,27 @@ namespace mag
         protected:
             virtual void calculate_projection() = 0;
 
-            mat4 projection = mat4(1.0f);
-            f32 aspect_ratio = 16.0f / 9.0f;
-            f32 near = 1.0f;
-            f32 far = 100.0f;
+            mat4 projection = mat4(1.0F);
+            f32 aspect_ratio = 16.0F / 9.0F;
+            f32 near = 1.0F;
+            f32 far = 100.0F;
 
         private:
             void calculate_view();
 
-            mat4 view = mat4(1.0f);
-            mat4 rotation_mat = mat4(1.0f);
-            vec3 position = vec3(0.0f);
+            mat4 view = mat4(1.0F);
+            mat4 rotation_mat = mat4(1.0F);
+            vec3 position = vec3(0.0F);
     };
 
     struct PerspectiveCameraDesc
     {
-            vec3 position = vec3(0.0f);
-            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
-            vec2 viewport_size = vec2(1280.0f, 720.0f);
-            f32 near = 1.0f;
-            f32 far = 1000.0f;
-            f32 fov = 1.047198f;  // 60°
+            vec3 position = vec3(0.0F);
+            quat rotation = quat(1.0F, 0.0F, 0.0F, 0.0F);
+            vec2 viewport_size = vec2(1280.0F, 720.0F);
+            f32 near = 1.0F;
+            f32 far = 1000.0F;
+            f32 fov = 1.047198F;  // 60°
     };
 
     class MAG_API PerspectiveCamera : public Camera
@@ -72,17 +72,17 @@ namespace mag
             void calculate_projection() override;
 
         private:
-            f32 fov = 1.047198f;  // 60°;
+            f32 fov = 1.047198F;  // 60°;
     };
 
     struct OrthographicCameraDesc
     {
-            vec3 position = vec3(0.0f);
-            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
-            vec2 viewport_size = vec2(1280.0f, 720.0f);
-            f32 near = -1.0f;
-            f32 far = 1000.0f;
-            f32 size = 1000.0f;
+            vec3 position = vec3(0.0F);
+            quat rotation = quat(1.0F, 0.0F, 0.0F, 0.0F);
+            vec2 viewport_size = vec2(1280.0F, 720.0F);
+            f32 near = -1.0F;
+            f32 far = 1000.0F;
+            f32 size = 1000.0F;
     };
 
     class MAG_API OrthographicCamera : public Camera
@@ -98,6 +98,6 @@ namespace mag
             void calculate_projection() override;
 
         private:
-            f32 size = 1000.0f;
+            f32 size = 1000.0F;
     };
 };  // namespace mag

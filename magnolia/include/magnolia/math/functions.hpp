@@ -49,7 +49,7 @@ namespace mag
 
         MAG_API mat4 ortho(f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far);
 
-        MAG_API f32 random(f32 begin = 0.0f, f32 end = 1.0f);
+        MAG_API f32 random(f32 begin = 0.0F, f32 end = 1.0F);
 
         MAG_API i32 random(i32 begin = 0, i32 end = 1);
 
