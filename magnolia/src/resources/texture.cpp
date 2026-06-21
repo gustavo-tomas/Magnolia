@@ -55,11 +55,16 @@ namespace mag
 
         b8 get_image_info(const str& raw_file_path, u32* width, u32* height, u32* channels, u32* mip_levels)
         {
+            i32 w = 0;
+            i32 h = 0;
+            i32 c = 0;
+
             const str file_path = fs::get_fixed_path(raw_file_path);
+            const b8 result = stbi_info(file_path.c_str(), &w, &h, &c) != 0;
 
-            const b8 result = stbi_info(file_path.c_str(), reinterpret_cast<i32*>(width),
-                                        reinterpret_cast<i32*>(height), reinterpret_cast<i32*>(channels)) != 0;
-
+            *width = static_cast<u32>(w);
+            *height = static_cast<u32>(h);
+            *channels = static_cast<u32>(c);
             *mip_levels = static_cast<u32>(std::floor(std::log2(std::max(*width, *height)))) + 1;
 
             return result;
