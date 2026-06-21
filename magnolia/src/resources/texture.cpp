@@ -5,8 +5,6 @@
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
-
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
 namespace mag
