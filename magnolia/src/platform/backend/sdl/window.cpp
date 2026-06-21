@@ -128,7 +128,8 @@ namespace mag
 
             // Calculate dt
             curr_time = plat::get_time();
-            state->dt = (curr_time - last_time) / 1000.0;  // convert from ms to seconds
+            const f64 dt_in_seconds = (curr_time - last_time) / 1000.0;
+            state->dt = dt_in_seconds;
             last_time = curr_time;
 
             SDL_Event e;

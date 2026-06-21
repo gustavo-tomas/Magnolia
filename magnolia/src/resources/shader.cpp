@@ -163,7 +163,8 @@ namespace mag
                     {
                         // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
                         // https://github.com/KhronosGroup/SPIRV-Reflect/issues/280
-                        block_size += get_aligned_size(spv_binding->block.members[k].size, 16);
+                        const u64 alignment = 16;
+                        block_size += get_aligned_size(spv_binding->block.members[k].size, alignment);
                     }
 
                     ShaderResourceBindingData binding = {};
@@ -221,8 +222,9 @@ namespace mag
             u32 offset = 0;
             for (const auto& [location, variable] : sorted_input_variables)
             {
-                u32 size = variable->numeric.scalar.width / 8;
-                size *= variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1;
+                const u32 size =
+                    (variable->numeric.scalar.width / 8) *
+                    (variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1);
 
                 ShaderResourceVertexInputData vertex_input = {};
                 vertex_input.format = format_type_map.at(variable->format);

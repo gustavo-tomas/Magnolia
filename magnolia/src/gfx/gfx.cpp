@@ -75,16 +75,19 @@ namespace mag::gfx
             return binding.count;
         }
 
+        const u64 combined_image_sampler_count = 1024;
+        const u64 storage_count = 4ULL * 1024 * 1024;
+
         switch (binding.descriptor_type)
         {
             case ShaderResourceDescriptorType::CombinedImageSampler:
             {
-                return 1024;
+                return combined_image_sampler_count;
             }
 
             case ShaderResourceDescriptorType::Storage:
             {
-                return (4ULL * 1024 * 1024) / binding.block_size_bytes;
+                return storage_count / binding.block_size_bytes;
             }
 
             default:
@@ -128,6 +131,7 @@ namespace mag::gfx
         // Triple buffering if the device supports it
         const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3U);
         const math::uvec3 render_target_extent = math::uvec3(options.resolution, 1);
+        const u32 max_descriptor_set_count = 1024;
 
         state->frames.resize(max_frames_in_flight);
 
@@ -163,7 +167,7 @@ namespace mag::gfx
             state->frames[i].render_target_depth = state->device->create_texture(render_target_depth_texture_desc);
 
             IDescriptorPoolDesc descriptor_pool_desc = {};
-            descriptor_pool_desc.max_sets = 1024;
+            descriptor_pool_desc.max_sets = max_descriptor_set_count;
 
             const DescriptorLimits limits = state->device->get_descriptor_limits();
 
@@ -219,6 +223,7 @@ namespace mag::gfx
         }
 
         const math::uvec2 extent = math::uvec2(render_target_color->get_extent());
+        const math::vec4 clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
 
         // Render Passes
         // -------------------------------------------------------------------------------------------------
@@ -228,7 +233,7 @@ namespace mag::gfx
 
         IRenderingAttachmentDesc color_attachment_desc = {};
         color_attachment_desc.type = RenderingAttachmentType::Color;
-        color_attachment_desc.clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
+        color_attachment_desc.clear_color = clear_color;
         color_attachment_desc.texture = render_target_color.get();
         color_attachment = state->device->create_render_attachment(color_attachment_desc);
 

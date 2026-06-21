@@ -38,12 +38,15 @@ namespace mag
                 return false;
             }
 
-            // @TODO: hardcoded pixel height
-            FT_Set_Pixel_Sizes(face, 0, 48);
+            // @TODO: hardcoded pixel height and number of characters
+            const u32 pixel_width = 0;
+            const u32 pixel_height = 48;
+            const u8 num_of_characters = 128;
 
-            // @TODO: hardcoded number of characters
-            // Load first 128 characters of ASCII set
-            for (u8 c = 0; c < 128; c++)
+            FT_Set_Pixel_Sizes(face, pixel_width, pixel_height);
+
+            // Load first N characters of ASCII set
+            for (u8 c = 0; c < num_of_characters; c++)
             {
                 // Load character glyph
                 if (FT_Load_Char(face, c, FT_LOAD_RENDER) != 0)

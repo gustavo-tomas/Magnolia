@@ -27,8 +27,9 @@ namespace mag
             // Ms since start
             const std::chrono::time_point current_time = std::chrono::system_clock::now();
             const std::chrono::duration<f64> elapsed_seconds = current_time - state->start_time;
+            const f64 elapsed_ms = elapsed_seconds.count() * 1000.0;
 
-            return elapsed_seconds.count() * 1000.0;
+            return elapsed_ms;
         }
     };  // namespace plat
 };  // namespace mag

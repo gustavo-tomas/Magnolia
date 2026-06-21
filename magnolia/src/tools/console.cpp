@@ -243,10 +243,12 @@ namespace mag
 
             draw_console();
 
+            const math::vec4 draw_color = {0.4, 0.4, 0.4, 1.0};
+
             // Frame end
             ImGui::Render();
             SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-            SDL_SetRenderDrawColorFloat(renderer, 0.4, 0.4, 0.4, 1.0);
+            SDL_SetRenderDrawColorFloat(renderer, draw_color.r, draw_color.g, draw_color.b, draw_color.a);
             SDL_RenderClear(renderer);
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
             SDL_RenderPresent(renderer);
@@ -338,8 +340,9 @@ namespace mag
                 ImGui::OpenPopup("Options");
             }
 
+            const u32 line_width = 180;
             ImGui::SameLine();
-            state->filter.Draw(R"(Filter ("incl,-excl") ("error"))", 180);
+            state->filter.Draw(R"(Filter ("incl,-excl") ("error"))", line_width);
 
             ImGui::Separator();
 

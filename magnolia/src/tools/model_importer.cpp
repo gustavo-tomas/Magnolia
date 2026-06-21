@@ -218,6 +218,7 @@ namespace mag
     {
         const u32 vertex_count = vertices.size();
         const u32 index_count = indices.size();
+        const f32 overdraw_threshold = 1.05F;
 
         std::vector<u32> remap(index_count);
         const u64 optimized_vertex_count = meshopt_generateVertexRemap(remap.data(), nullptr, index_count,
@@ -237,7 +238,8 @@ namespace mag
 
         // Reduce pixel overdraw
         meshopt_optimizeOverdraw(optimized_indices.data(), optimized_indices.data(), index_count,
-                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex), 1.05F);
+                                 &(optimized_vertices[0].position.x), optimized_vertex_count, sizeof(Vertex),
+                                 overdraw_threshold);
 
         // Optimize vertex buffer access
         meshopt_optimizeVertexFetch(optimized_vertices.data(), optimized_indices.data(), index_count,

@@ -45,7 +45,8 @@ namespace mag
             {
                 while (state->fw.running)
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                    const u64 sleep_in_ms = 20;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_in_ms));
 
                     std::vector<str> marked_for_removal;
 

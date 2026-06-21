@@ -141,7 +141,8 @@ namespace mag
 
                 while (worker.busy)
                 {
-                    sleep(10);
+                    const f64 sleep_in_ms = 10;
+                    sleep(sleep_in_ms);
                 }
             }
 

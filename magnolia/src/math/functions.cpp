@@ -23,7 +23,11 @@ namespace mag
 
         void shutdown() { delete state; }
 
-        f32 radians(const f32 angle_deg) { return angle_deg * 0.01745329251994329576923690768489F; }
+        f32 radians(const f32 angle_deg)
+        {
+            const f32 pi_over_180 = 0.01745329251994329576923690768489F;
+            return angle_deg * pi_over_180;
+        }
 
         f32 dot(const vec3& v1, const vec3& v2)
         {
@@ -311,25 +315,24 @@ namespace mag
 
         mat4 perspective(const f32 fov, const f32 aspect, const f32 near, const f32 far)
         {
-            mat4 res(0.0F);
-            res[0][0] = 1.0F / (aspect * std::tan(fov / 2.0F));
-            res[1][1] = 1.0F / std::tan(fov / 2.0F);
-            res[2][2] = -(far + near) / (far - near);
-            res[2][3] = -1.0F;
-            res[3][2] = (-2.0F * far * near) / (far - near);
+            const mat4 res = {
+                {1.0F / (aspect * std::tan(fov / 2.0F)), 0.0F,                        0.0F,                                0.0F },
+                {0.0F,                                   1.0F / std::tan(fov / 2.0F), 0.0F,                                0.0F },
+                {0.0F,                                   0.0F,                        -(far + near) / (far - near),        -1.0F},
+                {0.0F,                                   0.0F,                        (-2.0F * far * near) / (far - near), 0.0F },
+            };
 
             return res;
         }
 
         mat4 ortho(const f32 left, const f32 right, const f32 bottom, const f32 top, const f32 near, const f32 far)
         {
-            mat4 res(1.0F);
-            res[0][0] = 2.0F / (right - left);
-            res[1][1] = 2.0F / (top - bottom);
-            res[2][2] = 2.0F / (near - far);
-            res[3][0] = -(right + left) / (right - left);
-            res[3][1] = -(top + bottom) / (top - bottom);
-            res[3][2] = (near + far) / (near - far);
+            const mat4 res = {
+                {2.0F / (right - left),            0.0F,                             0.0F,                        0.0F},
+                {0.0F,                             2.0F / (top - bottom),            0.0F,                        0.0F},
+                {0.0F,                             0.0F,                             2.0F / (near - far),         0.0F},
+                {-(right + left) / (right - left), -(top + bottom) / (top - bottom), (near + far) / (near - far), 1.0F},
+            };
 
             return res;
         }

@@ -406,6 +406,12 @@ namespace mag
         };
 
         template <typename T>
+        MAG_API constexpr b8 operator==(const vector4<T>& v1, const vector4<T>& v2)
+        {
+            return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
+        }
+
+        template <typename T>
         MAG_API constexpr vector4<T> operator+(const vector4<T>& v1, const vector4<T>& v2)
         {
             return vector4<T>(v1) += v2;
@@ -636,6 +642,12 @@ namespace mag
             private:
                 std::array<vector4<T>, 4> columns;
         };
+
+        template <typename T>
+        MAG_API constexpr b8 operator==(const matrix4x4<T>& m1, const matrix4x4<T>& m2)
+        {
+            return m1[0] == m2[0] && m1[1] == m2[1] && m1[2] == m2[2] && m1[3] == m2[3];
+        }
 
         template <typename T>
         MAG_API constexpr matrix4x4<T> operator*(const matrix4x4<T>& m, const T s)

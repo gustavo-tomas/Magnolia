@@ -287,8 +287,9 @@ namespace mag
                     i32 collision_steps = 0;
 
                     // Cap the collision steps (if we ever hit this stage it will be a miserable experience anyways)
+                    const f32 max_dt = 1.0F / 4.0F;
                     accumulated_dt += dt;
-                    accumulated_dt = math::min(accumulated_dt, 1.0F / 4.0F);
+                    accumulated_dt = math::min(accumulated_dt, max_dt);
 
                     while (accumulated_dt >= fixed_dt)
                     {
