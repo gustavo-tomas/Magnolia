@@ -16,7 +16,7 @@ namespace mag
         class MAG_API Map
         {
             public:
-                using iterator = typename std::unordered_map<Key, Value>::iterator;
+                using iterator = std::unordered_map<Key, Value>::iterator;
 
                 Map() = default;
 
