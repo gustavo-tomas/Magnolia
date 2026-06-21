@@ -1,8 +1,11 @@
 #include "magnolia/audio/audio_system.hpp"
 
 #include "magnolia/resources/audio.hpp"
+
+// NOLINTBEGIN
 #include "soloud/include/soloud.h"
 #include "soloud/include/soloud_wav.h"
+// NOLINTEND
 
 namespace mag
 {

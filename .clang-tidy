@@ -23,7 +23,6 @@ Checks: >
 
   misc-*,
   -misc-include-cleaner,
-  -misc-header-include-cycle,
   -misc-use-anonymous-namespace,
   -misc-use-internal-linkage,
 
