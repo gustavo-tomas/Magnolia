@@ -5,8 +5,6 @@
 
 namespace mag
 {
-#define DEFAULT_MATERIAL_NAME "__mag_default_material__"
-
     enum class TextureSlot : u8
     {
         Albedo = 0,

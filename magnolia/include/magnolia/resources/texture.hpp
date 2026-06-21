@@ -7,11 +7,6 @@
 
 namespace mag
 {
-#define DEFAULT_ALBEDO_TEXTURE_NAME "__mag_default_albedo_texture__"
-#define DEFAULT_NORMAL_TEXTURE_NAME "__mag_default_normal_texture__"
-#define DEFAULT_ROUGHNESS_TEXTURE_NAME "__mag_default_roughness_texture__"
-#define DEFAULT_METALNESS_TEXTURE_NAME "__mag_default_metalness_texture__"
-
     struct TextureResource : public IResource
     {
             u8 channels = 4;
