@@ -1,19 +1,14 @@
 #include "magnolia/camera/camera.hpp"
 
-#include "magnolia/camera/frustum.hpp"
 #include "magnolia/math/functions.hpp"
 
 namespace mag
 {
-    void Camera::calculate_frustum() { frustum = Frustum(projection * view); }
-
     void Camera::calculate_view()
     {
         const mat4 translation = translate(mat4(1.0F), position);
 
         view = inverse(translation * rotation_mat);
-
-        calculate_frustum();
     }
 
     void Camera::set_position(const vec3& camera_position)
@@ -41,14 +36,11 @@ namespace mag
         calculate_projection();
     }
 
-    b8 Camera::is_aabb_visible(const BoundingBox& aabb) const { return frustum.is_aabb_visible(aabb); }
-
     const mat4& Camera::get_view() const { return view; }
     const mat4& Camera::get_projection() const { return projection; }
     const vec3& Camera::get_position() const { return position; }
     quat Camera::get_rotation() const { return to_quat(rotation_mat); }
     const mat4& Camera::get_rotation_mat() const { return rotation_mat; }
-    const Frustum& Camera::get_frustum() const { return frustum; }
 
     f32 Camera::get_near() const { return near; }
     f32 Camera::get_far() const { return far; }
@@ -79,11 +71,7 @@ namespace mag
         calculate_projection();
     }
 
-    void PerspectiveCamera::calculate_projection()
-    {
-        projection = perspective(fov, aspect_ratio, near, far);
-        calculate_frustum();
-    }
+    void PerspectiveCamera::calculate_projection() { projection = perspective(fov, aspect_ratio, near, far); }
 
     const f32& PerspectiveCamera::get_fov() const { return fov; }
 
@@ -115,8 +103,6 @@ namespace mag
         const f32 top = size * 0.5F;
 
         projection = ortho(left, right, bottom, top, near, far);
-
-        calculate_frustum();
     }
 
     f32 OrthographicCamera::get_size() const { return size; }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "magnolia/camera/frustum.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/math/types.hpp"
 
@@ -24,7 +23,6 @@ namespace mag
             const vec3& get_position() const;
             quat get_rotation() const;
             const mat4& get_rotation_mat() const;
-            const Frustum& get_frustum() const;
 
             f32 get_near() const;
             f32 get_far() const;
@@ -35,11 +33,8 @@ namespace mag
             vec3 get_forward() const;
             vec2 get_near_far() const;
 
-            b8 is_aabb_visible(const BoundingBox& aabb) const;
-
         protected:
             virtual void calculate_projection() = 0;
-            void calculate_frustum();
 
             mat4 projection = mat4(1.0f);
             f32 aspect_ratio = 16.0f / 9.0f;
@@ -49,7 +44,6 @@ namespace mag
         private:
             void calculate_view();
 
-            Frustum frustum;
             mat4 view = mat4(1.0f);
             mat4 rotation_mat = mat4(1.0f);
             vec3 position = vec3(0.0f);
