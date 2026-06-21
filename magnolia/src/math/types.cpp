@@ -56,21 +56,19 @@ namespace mag
             const vec3& max_p = transformed_aabb.max;
 
             // Generate the box corners
-            std::vector<vec3> corners(8);
-
-            corners[0] = min_p;
-            corners[1] = vec3(min_p.x, min_p.y, max_p.z);
-            corners[2] = vec3(min_p.x, max_p.y, min_p.z);
-            corners[3] = vec3(min_p.x, max_p.y, max_p.z);
-            corners[4] = vec3(max_p.x, min_p.y, min_p.z);
-            corners[5] = vec3(max_p.x, min_p.y, max_p.z);
-            corners[6] = vec3(max_p.x, max_p.y, min_p.z);
-            corners[7] = max_p;
+            const std::vector<vec3> corners = {
+                min_p,
+                vec3(min_p.x, min_p.y, max_p.z),
+                vec3(min_p.x, max_p.y, min_p.z),
+                vec3(min_p.x, max_p.y, max_p.z),
+                vec3(max_p.x, min_p.y, min_p.z),
+                vec3(max_p.x, min_p.y, max_p.z),
+                vec3(max_p.x, max_p.y, min_p.z),
+                max_p,
+            };
 
             // Generate the box edges
-            std::vector<std::pair<u32, u32>> edges;
-
-            edges = {
+            const std::vector<std::pair<u32, u32>> edges = {
                 {0, 1},
                 {1, 3},
                 {3, 2},
