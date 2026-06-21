@@ -22,43 +22,43 @@ namespace mag
 
                 ~Map()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     map.clear();
                 }
 
                 b8 contains(const Key& key)
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return map.contains(key);
                 }
 
                 void erase(const Key& key)
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     map.erase(key);
                 }
 
                 iterator find(const Key& key)
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return map.find(key);
                 }
 
                 iterator begin()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return map.begin();
                 }
 
                 iterator end()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return map.end();
                 }
 
                 Value& operator[](const Key& key)
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return map[key];
                 }
 
@@ -77,13 +77,13 @@ namespace mag
 
                 void push(const T& item)
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     queue.push(item);
                 }
 
                 T pop()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     T result = queue.front();
                     queue.pop();
 
@@ -92,7 +92,7 @@ namespace mag
 
                 void clear()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     while (!queue.empty())
                     {
                         queue.pop();
@@ -101,13 +101,13 @@ namespace mag
 
                 b8 empty()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return queue.empty();
                 }
 
                 u64 size()
                 {
-                    std::unique_lock<std::mutex> lock(mutex);
+                    const std::unique_lock<std::mutex> lock(mutex);
                     return queue.size();
                 }
 
