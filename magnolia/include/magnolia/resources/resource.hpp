@@ -122,7 +122,7 @@ namespace mag
                     // First time loading this resource
                     loading_map[name].push(callback);
 
-                    Job job(
+                    const Job job(
                         [this, name, reload]()
                     {
                         JobData data = {};
@@ -136,7 +136,7 @@ namespace mag
                     {
                         while (!loading_map[name].empty())
                         {
-                            ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
+                            const ResourceLoadedCallbackFn queued_callback = loading_map[name].pop();
                             queued_callback(std::any_cast<ref<T>>(data.data));
                         }
 
