@@ -1,13 +1,9 @@
 #include "magnolia/resources/font.hpp"
 
+#include "freetype/freetype.h"
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
-
-//
-#include "freetype/freetype.h"
-#include FT_FREETYPE_H
-//
 
 namespace mag
 {

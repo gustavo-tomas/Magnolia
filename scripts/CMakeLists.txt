@@ -71,7 +71,7 @@ set(MAG_SOURCES
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/resources/model.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/resources/font.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/resources/texture.cpp"
-    "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/resources/stb_implementation.cpp"
+    "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/resources/lib_implementation.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/platform/file_system.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/platform/json.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/platform/platform.hpp"
