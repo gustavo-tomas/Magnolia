@@ -132,7 +132,7 @@ namespace mag
                         return data;
                     },
 
-                        [this, name](const JobData data)
+                        [this, name](const JobData& data)
                     {
                         while (!loading_map[name].empty())
                         {
