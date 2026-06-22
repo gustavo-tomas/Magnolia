@@ -130,13 +130,13 @@ namespace game
         physics.set_linear_velocity(rigid_body_handle, new_velocity);
 
         // Get current velocity
-        const mag::vec3& velocity = physics.get_linear_velocity(rigid_body_handle);
+        const mag::math::vec3& velocity = physics.get_linear_velocity(rigid_body_handle);
 
         // Calculate desired movement direction
-        const mag::vec3& forward = mag::math::get_forward_dir(player.pitch, player.yaw);
-        const mag::vec3& right = mag::math::get_right_dir(player.yaw);
+        const mag::math::vec3& forward = mag::math::get_forward_dir(player.pitch, player.yaw);
+        const mag::math::vec3& right = mag::math::get_right_dir(player.yaw);
 
-        mag::vec3 input_direction(0.0f);
+        mag::math::vec3 input_direction(0.0f);
 
         if (mag::window::is_key_down(mag::Key::w))
         {
@@ -161,17 +161,17 @@ namespace game
             input_direction = normalize(input_direction);
 
             // Set horizontal velocity directly
-            mag::vec3 new_velocity = input_direction * player.walk_speed * physics_dt;
+            mag::math::vec3 new_velocity = input_direction * player.walk_speed * physics_dt;
             new_velocity.y = velocity.y;  // Preserve vertical velocity
 
             physics.set_linear_velocity(rigid_body_handle, new_velocity);
         }
 
         // Update the camera transform
-        mag::quat new_rot = mag::quat({player.pitch, player.yaw, 0.0f});
+        mag::math::quat new_rot = mag::math::quat({player.pitch, player.yaw, 0.0f});
         new_rot = mag::math::normalize(new_rot);
 
-        mag::vec3 new_pos(0.0f);
+        mag::math::vec3 new_pos(0.0f);
         physics.get_position(rigid_body_handle, new_pos);
 
         camera.camera.set_rotation(new_rot);
@@ -181,7 +181,7 @@ namespace game
     void fire_bullet(Scene& scene, mag::ECS& ecs, mag::physics::IPhysicsWorld& physics,
                      const TransformComponent& transform)
     {
-        const mag::vec3& forward_dir = mag::math::get_forward_dir(player.pitch, player.yaw);
+        const mag::math::vec3& forward_dir = mag::math::get_forward_dir(player.pitch, player.yaw);
 
         // Create a bullet
         static u32 counter = 0;
@@ -189,7 +189,7 @@ namespace game
 
         // Apply small offset to avoid collisions with the player
         TransformComponent bullet_transform = transform;
-        bullet_transform.scale = mag::vec3(0.01f);
+        bullet_transform.scale = mag::math::vec3(0.01f);
         bullet_transform.translation -= forward_dir * player.bullet_offset;
 
         const str file_path = "test_game/assets/sprites/test_texture0.png";
@@ -415,17 +415,17 @@ namespace game
         for (PerspectiveCameraComponent* camera_c : cameras)
         {
             vec3 position = camera_c->camera.get_position();
-            mag::quat rotation = quat(mag::vec3(pitch, yaw, 0.0f));
+            mag::math::quat rotation = quat(mag::math::vec3(pitch, yaw, 0.0f));
 
             rotation = mag::math::normalize(rotation);
 
             // Calculate desired movement direction
             const mat4 rotation_mat = to_mat4(rotation);
-            const mag::vec3 right = vec3(rotation_mat[0]);
-            const mag::vec3 up = vec3(rotation_mat[1]);
-            const mag::vec3 forward = vec3(rotation_mat[2]);
+            const mag::math::vec3 right = vec3(rotation_mat[0]);
+            const mag::math::vec3 up = vec3(rotation_mat[1]);
+            const mag::math::vec3 forward = vec3(rotation_mat[2]);
 
-            mag::vec3 input_direction(0.0f);
+            mag::math::vec3 input_direction(0.0f);
 
             if (mag::window::is_key_down(mag::Key::w))
             {

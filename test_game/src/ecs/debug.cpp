@@ -83,7 +83,7 @@ namespace game
 
         mag::gfx::set_uniform("u_global", &global_data);
 
-        for (const mag::Line& line : line_list.lines)
+        for (const mag::math::Line& line : line_list.lines)
         {
             lines.push_back({.position = line.start, .color = line.color});
             lines.push_back({.position = line.end, .color = line.color});

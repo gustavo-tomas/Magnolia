@@ -8,15 +8,13 @@
 
 namespace mag
 {
-    using namespace mag::math;
-
     struct Vertex
     {
-            vec3 position;
-            vec3 normal;
-            vec2 tex_coords;
-            vec3 tangent;
-            vec3 bitangent;
+            math::vec3 position;
+            math::vec3 normal;
+            math::vec2 tex_coords;
+            math::vec3 tangent;
+            math::vec3 bitangent;
     };
 
     struct Mesh
@@ -25,8 +23,8 @@ namespace mag
             u32 base_index = 0;
             u32 index_count = 0;
             u32 material_index = 0;
-            vec3 aabb_min;
-            vec3 aabb_max;
+            math::vec3 aabb_min;
+            math::vec3 aabb_max;
     };
 
     struct ModelResource : public IResource
