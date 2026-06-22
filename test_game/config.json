@@ -4,5 +4,5 @@
   "WindowPosition": [],
   "WindowTitle": "TestGame",
   "WindowIcon": "",
-  "TargetFrameRate": 120
+  "TargetFrameRate": -1
 }

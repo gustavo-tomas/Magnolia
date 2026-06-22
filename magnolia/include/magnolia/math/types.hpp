@@ -523,13 +523,13 @@ namespace mag
                 }
                 matrix3x3(const vector3<T>& v0, const vector3<T>& v1, const vector3<T>& v2) : columns{v0, v1, v2} {}
 
-                vector3<T>& operator[](const u8 i)
+                constexpr vector3<T>& operator[](const u8 i)
                 {
                     MAG_ASSERT(i < 3, "Out of bounds index: {0}", i);
                     return columns[i];
                 }
 
-                const vector3<T>& operator[](const u8 i) const
+                constexpr const vector3<T>& operator[](const u8 i) const
                 {
                     MAG_ASSERT(i < 3, "Out of bounds index: {0}", i);
                     return columns[i];
