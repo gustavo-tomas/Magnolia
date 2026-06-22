@@ -19,12 +19,14 @@ namespace mag::fs
     template <basic_type T>
     inline void to_binary(std::ostringstream& ss, const T& data)
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         ss.write(reinterpret_cast<const c8*>(&data), sizeof(data));
     }
 
     template <basic_type T>
     inline void from_binary(std::istringstream& ss, T& data)
     {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         ss.read(reinterpret_cast<c8*>(&data), sizeof(data));
     }
 
@@ -102,6 +104,7 @@ namespace mag::fs
     inline void from_binary(std::istringstream& ss, std::vector<T>& data)
     {
         u64 count = 0;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         ss.read(reinterpret_cast<c8*>(&count), sizeof(count));
         data.resize(count);
 

@@ -5,6 +5,7 @@
 namespace mag
 {
     // Avoid RTTI and all that
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define STATIC_EVENT_TYPE(event_type)                    \
     static constexpr EventType static_type = event_type; \
     EventType type() const override { return static_type; }

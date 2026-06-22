@@ -14,6 +14,7 @@ namespace mag
             template <typename T>
             T* cast()
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
                 return reinterpret_cast<T*>(data.data());
             }
 
