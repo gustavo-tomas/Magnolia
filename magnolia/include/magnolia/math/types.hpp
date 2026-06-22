@@ -491,6 +491,36 @@ namespace mag
                     };
                 }
 
+                constexpr quaternion<T>& operator+=(const quaternion<T>& q)
+                {
+                    w += q.w;
+                    x += q.x;
+                    y += q.y;
+                    z += q.z;
+
+                    return *this;
+                }
+
+                constexpr quaternion<T>& operator-=(const quaternion<T>& q)
+                {
+                    w -= q.w;
+                    x -= q.x;
+                    y -= q.y;
+                    z -= q.z;
+
+                    return *this;
+                }
+
+                constexpr quaternion<T>& operator*=(const T s)
+                {
+                    w *= s;
+                    x *= s;
+                    y *= s;
+                    z *= s;
+
+                    return *this;
+                }
+
                 template <typename U>
                 constexpr quaternion<T>& operator*=(const quaternion<U>& r)
                 {
@@ -505,6 +535,25 @@ namespace mag
                     return *this;
                 }
         };
+
+        template <typename T>
+        MAG_API constexpr quaternion<T> operator+(const quaternion<T>& q1, const quaternion<T>& q2)
+        {
+            return quaternion<T>(q1) += q2;
+        }
+
+        template <typename T>
+        MAG_API constexpr quaternion<T> operator-(const quaternion<T>& q1, const quaternion<T>& q2)
+
+        {
+            return quaternion<T>(q1) -= q2;
+        }
+
+        template <typename T>
+        MAG_API constexpr quaternion<T> operator*(const quaternion<T>& q1, const T s)
+        {
+            return quaternion<T>(q1) *= s;
+        }
 
         template <typename T>
         MAG_API constexpr quaternion<T> operator*(const quaternion<T>& q1, const quaternion<T>& q2)

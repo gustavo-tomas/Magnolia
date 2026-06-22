@@ -29,6 +29,14 @@ namespace mag
 
         MAG_API quat normalize(const quat& q);
 
+        MAG_API f32 lerp(f32 x, f32 y, f32 alpha);
+
+        MAG_API vec3 lerp(const vec3& v1, const vec3& v2, f32 alpha);
+
+        MAG_API quat lerp(const quat& q1, const quat& q2, f32 alpha);
+
+        MAG_API quat slerp(const quat& q1, const quat& q2, f32 alpha);
+
         MAG_API mat4 translate(const mat4& m, const vec3& position);
 
         MAG_API mat4 translate(const vec3& position);
@@ -112,7 +120,7 @@ namespace mag
 
         // String conversions
         template <typename T>
-        MAG_API inline constexpr str to_string(const vector2<T>& v, const u8 precision = 3)
+        MAG_API constexpr str to_string(const vector2<T>& v, const u8 precision = 3)
         {
             if constexpr (std::is_floating_point_v<T>)
             {
@@ -125,7 +133,7 @@ namespace mag
         }
 
         template <typename T>
-        MAG_API inline constexpr str to_string(const vector3<T>& v, const u8 precision = 3)
+        MAG_API constexpr str to_string(const vector3<T>& v, const u8 precision = 3)
         {
             if constexpr (std::is_floating_point_v<T>)
             {

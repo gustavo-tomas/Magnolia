@@ -98,6 +98,43 @@ namespace mag
             return res;
         }
 
+        f32 lerp(const f32 x, const f32 y, const f32 alpha) { return (x * (1.0F - alpha)) + (y * alpha); }
+
+        vec3 lerp(const vec3& v1, const vec3& v2, const f32 alpha)
+        {
+            return {lerp(v1.x, v2.x, alpha), lerp(v1.y, v2.y, alpha), lerp(v1.z, v2.z, alpha)};
+        }
+
+        quat lerp(const quat& q1, const quat& q2, f32 alpha)
+        {
+            quat res = {lerp(q1.w, q2.w, alpha), lerp(q1.x, q2.x, alpha), lerp(q1.y, q2.y, alpha),
+                        lerp(q1.z, q2.z, alpha)};
+
+            res = normalize(res);
+
+            return res;
+        }
+
+        quat slerp(const quat& q1, const quat& q2, f32 alpha)
+        {
+            f32 dot = math::dot(q1, q2);
+
+            const f32 threshold = 0.9995F;
+            if (dot > threshold)
+            {
+                return lerp(q1, q2, alpha);
+            }
+
+            dot = std::clamp(dot, -1.0F, 1.0F);
+            const f32 theta_0 = acosf(dot);
+            const f32 theta = theta_0 * alpha;
+
+            quat q3 = q2 - q1 * dot;
+            q3 = normalize(q3);
+
+            return (q1 * cos(theta)) + (q3 * sin(theta));
+        }
+
         mat4 translate(const mat4& m, const vec3& position)
         {
             mat4 res = m;
