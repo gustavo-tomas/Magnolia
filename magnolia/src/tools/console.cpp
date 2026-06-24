@@ -8,6 +8,7 @@
 #include <imgui/imgui.h>
 //
 
+#include <SDL3/SDL_properties.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_sdlrenderer3.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -98,7 +99,21 @@ namespace mag
             const SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
             state->window = SDL_CreateWindow("Console", width, height, flags);
-            state->renderer = SDL_CreateRenderer(state->window, nullptr);
+
+            // @TODO: SDL3 renderer has memory leaks :( This is a workaround for fixing (most) of the leaks.
+            // Update SDL3 submodule when issues get resolved
+            // https://github.com/libsdl-org/SDL/issues/14973
+            // https://github.com/libsdl-org/SDL/issues/15125
+
+            const SDL_PropertiesID props = SDL_CreateProperties();
+            MAG_ASSERT(SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1),
+                       "Failed to set property: '{}'", SDL_GetError());
+
+            MAG_ASSERT(SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, state->window),
+                       "Failed to set property: '{}'", SDL_GetError());
+
+            state->renderer = SDL_CreateRendererWithProperties(props);
+            SDL_DestroyProperties(props);
 
             MAG_ASSERT(state->window != nullptr, "Failed to create SDL window: '{}'", SDL_GetError());
 
@@ -245,9 +260,19 @@ namespace mag
 
             const math::vec4 draw_color = {0.4, 0.4, 0.4, 1.0};
 
+            // Track previous scale to avoid redundant calls
+            static math::vec2 prev_render_scale = {0, 0};
+
+            if (io.DisplayFramebufferScale.x != prev_render_scale.x ||
+                io.DisplayFramebufferScale.y != prev_render_scale.y)
+            {
+                SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+                prev_render_scale.x = io.DisplayFramebufferScale.x;
+                prev_render_scale.y = io.DisplayFramebufferScale.y;
+            }
+
             // Frame end
             ImGui::Render();
-            SDL_SetRenderScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
             SDL_SetRenderDrawColorFloat(renderer, draw_color.r, draw_color.g, draw_color.b, draw_color.a);
             SDL_RenderClear(renderer);
             ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
