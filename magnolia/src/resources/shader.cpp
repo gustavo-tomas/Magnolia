@@ -286,6 +286,9 @@ namespace mag
                 {
                     read_vertex_input_attributes(spv_module, resource);
                 }
+
+                // Destroy after use
+                spvReflectDestroyShaderModule(&spv_module);
             }
 
             LOG_SUCCESS("Loaded shader: {0}", file_path);
