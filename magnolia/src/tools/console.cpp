@@ -106,8 +106,8 @@ namespace mag
             // https://github.com/libsdl-org/SDL/issues/15125
 
             const SDL_PropertiesID props = SDL_CreateProperties();
-            MAG_ASSERT(SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1),
-                       "Failed to set property: '{}'", SDL_GetError());
+            // MAG_ASSERT(SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1),
+            //            "Failed to set property: '{}'", SDL_GetError());
 
             MAG_ASSERT(SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, state->window),
                        "Failed to set property: '{}'", SDL_GetError());
