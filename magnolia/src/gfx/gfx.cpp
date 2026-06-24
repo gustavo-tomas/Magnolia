@@ -335,41 +335,113 @@ namespace mag::gfx
         return true;
     }
 
-    static const std::unordered_map<ShaderResourceStage, gfx::ShaderStage> convert_resource_shader_stage = {
-        {ShaderResourceStage::Vertex,   gfx::ShaderStage::Vertex  },
-        {ShaderResourceStage::Fragment, gfx::ShaderStage::Fragment},
-    };
+    static constexpr gfx::ShaderStage convert_resource_shader_stage(const ShaderResourceStage stage)
+    {
+        switch (stage)
+        {
+            case ShaderResourceStage::Vertex:
+                return gfx::ShaderStage::Vertex;
 
-    static const std::unordered_map<ShaderResourceTopology, gfx::PrimitiveTopology> convert_topology = {
-        {ShaderResourceTopology::TriangleList,  gfx::PrimitiveTopology::TriangleList },
-        {ShaderResourceTopology::TriangleStrip, gfx::PrimitiveTopology::TriangleStrip},
-        {ShaderResourceTopology::LineList,      gfx::PrimitiveTopology::LineList     },
-    };
+            case ShaderResourceStage::Fragment:
+                return gfx::ShaderStage::Fragment;
+        }
 
-    static const std::unordered_map<ShaderResourceDescriptorType, gfx::DescriptorType> convert_descriptor_type = {
-        {ShaderResourceDescriptorType::Uniform,              gfx::DescriptorType::Uniform             },
-        {ShaderResourceDescriptorType::Storage,              gfx::DescriptorType::Storage             },
-        {ShaderResourceDescriptorType::CombinedImageSampler, gfx::DescriptorType::CombinedImageSampler},
-    };
+        MAG_ASSERT(false, "Invalid shader resource stage");
+        return gfx::ShaderStage::Vertex;
+    }
 
-    static const std::unordered_map<ShaderResourceFormat, gfx::Format> convert_resource_format = {
-        {ShaderResourceFormat::Undefined,           gfx::Format::Undefined          },
-        {ShaderResourceFormat::R32_UINT,            gfx::Format::R32_UINT           },
-        {ShaderResourceFormat::R32_SFLOAT,          gfx::Format::R32_SFLOAT         },
-        {ShaderResourceFormat::R32G32_SFLOAT,       gfx::Format::R32G32_SFLOAT      },
-        {ShaderResourceFormat::R32G32B32_SFLOAT,    gfx::Format::R32G32B32_SFLOAT   },
-        {ShaderResourceFormat::R32G32B32A32_SFLOAT, gfx::Format::R32G32B32A32_SFLOAT},
-    };
+    static constexpr gfx::PrimitiveTopology convert_topology(const ShaderResourceTopology topology)
+    {
+        switch (topology)
+        {
+            case ShaderResourceTopology::TriangleList:
+                return gfx::PrimitiveTopology::TriangleList;
 
-    static const std::unordered_map<ShaderResourceBlendOp, gfx::BlendOp> convert_blend_op = {
-        {ShaderResourceBlendOp::Add, gfx::BlendOp::Add},
-    };
+            case ShaderResourceTopology::TriangleStrip:
+                return gfx::PrimitiveTopology::TriangleStrip;
 
-    static const std::unordered_map<ShaderResourceBlendFactor, gfx::BlendFactor> convert_blend_factor = {
-        {ShaderResourceBlendFactor::One,              gfx::BlendFactor::One             },
-        {ShaderResourceBlendFactor::SrcAlpha,         gfx::BlendFactor::SrcAlpha        },
-        {ShaderResourceBlendFactor::OneMinusSrcAlpha, gfx::BlendFactor::OneMinusSrcAlpha},
-    };
+            case ShaderResourceTopology::LineList:
+                return gfx::PrimitiveTopology::LineList;
+        }
+
+        MAG_ASSERT(false, "Invalid shader resource topology");
+        return gfx::PrimitiveTopology::TriangleList;
+    }
+
+    static constexpr gfx::DescriptorType convert_descriptor_type(const ShaderResourceDescriptorType descriptor_type)
+    {
+        switch (descriptor_type)
+        {
+            case ShaderResourceDescriptorType::Uniform:
+                return gfx::DescriptorType::Uniform;
+
+            case ShaderResourceDescriptorType::Storage:
+                return gfx::DescriptorType::Storage;
+
+            case ShaderResourceDescriptorType::CombinedImageSampler:
+                return gfx::DescriptorType::CombinedImageSampler;
+        }
+
+        MAG_ASSERT(false, "Invalid shader resource descriptor type");
+        return gfx::DescriptorType::Uniform;
+    }
+
+    static constexpr gfx::Format convert_resource_format(const ShaderResourceFormat format)
+    {
+        switch (format)
+        {
+            case ShaderResourceFormat::Undefined:
+                return gfx::Format::Undefined;
+
+            case ShaderResourceFormat::R32_UINT:
+                return gfx::Format::R32_UINT;
+
+            case ShaderResourceFormat::R32_SFLOAT:
+                return gfx::Format::R32_SFLOAT;
+
+            case ShaderResourceFormat::R32G32_SFLOAT:
+                return gfx::Format::R32G32_SFLOAT;
+
+            case ShaderResourceFormat::R32G32B32_SFLOAT:
+                return gfx::Format::R32G32B32_SFLOAT;
+
+            case ShaderResourceFormat::R32G32B32A32_SFLOAT:
+                return gfx::Format::R32G32B32A32_SFLOAT;
+        }
+
+        MAG_ASSERT(false, "Invalid shader resource format");
+        return gfx::Format::B8G8R8A8_SRGB;
+    }
+
+    static constexpr gfx::BlendOp convert_blend_op(const ShaderResourceBlendOp blend_op)
+    {
+        switch (blend_op)
+        {
+            case ShaderResourceBlendOp::Add:
+                return gfx::BlendOp::Add;
+        }
+
+        MAG_ASSERT(false, "Invalid shader resource blend op");
+        return gfx::BlendOp::Add;
+    }
+
+    static constexpr gfx::BlendFactor convert_blend_factor(const ShaderResourceBlendFactor blend_factor)
+    {
+        switch (blend_factor)
+        {
+            case ShaderResourceBlendFactor::One:
+                return gfx::BlendFactor::One;
+
+            case ShaderResourceBlendFactor::SrcAlpha:
+                return gfx::BlendFactor::SrcAlpha;
+
+            case ShaderResourceBlendFactor::OneMinusSrcAlpha:
+                return gfx::BlendFactor::OneMinusSrcAlpha;
+        }
+
+        MAG_ASSERT(false, "Invalid shader resource blend factor");
+        return gfx::BlendFactor::One;
+    }
 
     static u32 create_handle()
     {
@@ -573,7 +645,7 @@ namespace mag::gfx
                 binding_desc.binding = binding.binding;
                 binding_desc.descriptor_count = binding_count;
                 binding_desc.variable_descriptor_count = binding.variable_count;
-                binding_desc.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
+                binding_desc.descriptor_type = convert_descriptor_type(binding.descriptor_type);
 
                 // @TODO: this is hardcoded to make my life easier
                 binding_desc.stages = ShaderStage::Vertex | ShaderStage::Fragment;
@@ -584,7 +656,7 @@ namespace mag::gfx
                 binding_data.binding = binding.binding;
                 binding_data.block_size = binding.block_size_bytes;
                 binding_data.max_size_bytes = binding_count * binding.block_size_bytes;
-                binding_data.descriptor_type = convert_descriptor_type.at(binding.descriptor_type);
+                binding_data.descriptor_type = convert_descriptor_type(binding.descriptor_type);
 
                 if (binding.variable_count)
                 {
@@ -639,30 +711,30 @@ namespace mag::gfx
         const math::uvec2 extent = math::uvec2(current_frame.render_target_color->get_extent());
 
         IGraphicsPipelineDesc graphics_pipeline_desc = {};
-        graphics_pipeline_desc.primitive_topology = convert_topology.at(shader.topology);
+        graphics_pipeline_desc.primitive_topology = convert_topology(shader.topology);
         graphics_pipeline_desc.color_attachment_format = color_format;
         graphics_pipeline_desc.depth_attachment_format = depth_format;
         graphics_pipeline_desc.extent = extent;
         graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
 
         graphics_pipeline_desc.color_blend.blend_enable = shader.color_blend.blend_enable;
-        graphics_pipeline_desc.color_blend.color_blend_op = convert_blend_op.at(shader.color_blend.color_blend_op);
-        graphics_pipeline_desc.color_blend.alpha_blend_op = convert_blend_op.at(shader.color_blend.alpha_blend_op);
+        graphics_pipeline_desc.color_blend.color_blend_op = convert_blend_op(shader.color_blend.color_blend_op);
+        graphics_pipeline_desc.color_blend.alpha_blend_op = convert_blend_op(shader.color_blend.alpha_blend_op);
         graphics_pipeline_desc.color_blend.src_color_blend_factor =
-            convert_blend_factor.at(shader.color_blend.src_color_blend_factor);
+            convert_blend_factor(shader.color_blend.src_color_blend_factor);
         graphics_pipeline_desc.color_blend.dst_color_blend_factor =
-            convert_blend_factor.at(shader.color_blend.dst_color_blend_factor);
+            convert_blend_factor(shader.color_blend.dst_color_blend_factor);
         graphics_pipeline_desc.color_blend.src_alpha_blend_factor =
-            convert_blend_factor.at(shader.color_blend.src_alpha_blend_factor);
+            convert_blend_factor(shader.color_blend.src_alpha_blend_factor);
         graphics_pipeline_desc.color_blend.dst_alpha_blend_factor =
-            convert_blend_factor.at(shader.color_blend.dst_alpha_blend_factor);
+            convert_blend_factor(shader.color_blend.dst_alpha_blend_factor);
 
         u32 stride = 0;
         for (const ShaderResourceVertexInputData& vertex_input : shader.vertex_inputs)
         {
             IVertexAttributeDesc vertex_attribute_desc = {};
             vertex_attribute_desc.binding = 0;
-            vertex_attribute_desc.format = convert_resource_format.at(vertex_input.format);
+            vertex_attribute_desc.format = convert_resource_format(vertex_input.format);
             vertex_attribute_desc.location = vertex_input.location;
             vertex_attribute_desc.offset = vertex_input.offset;
 
@@ -685,7 +757,7 @@ namespace mag::gfx
         {
             IShaderModuleDesc shader_module_desc = {};
             shader_module_desc.code = shader_resource_data.code;
-            shader_module_desc.stage = convert_resource_shader_stage.at(shader_stage);
+            shader_module_desc.stage = convert_resource_shader_stage(shader_stage);
 
             graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
         }
