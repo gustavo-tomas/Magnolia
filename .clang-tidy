@@ -5,7 +5,6 @@ Checks: >
   bugprone-*,
   -bugprone-command-processor,
   -bugprone-easily-swappable-parameters,
-  -bugprone-invalid-enum-default-initialization,
 
   clang-*,
   -clang-analyzer-optin.core.EnumCastOutOfRange,

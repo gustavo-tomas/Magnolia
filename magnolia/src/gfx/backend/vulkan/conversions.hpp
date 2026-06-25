@@ -156,7 +156,7 @@ namespace mag
 
         inline ShaderStage vk_to_mag_shader_stage(const VkShaderStageFlags shader_stage)
         {
-            ShaderStage mag_shader_stage = {};
+            auto mag_shader_stage = static_cast<ShaderStage>(0);
 
             if (IS_BIT_SET(shader_stage, VK_SHADER_STAGE_VERTEX_BIT))
             {
@@ -1056,7 +1056,7 @@ namespace mag
 
         inline TextureUsage vk_to_mag(const VkImageUsageFlags usage)
         {
-            TextureUsage mag_usage = {};
+            auto mag_usage = static_cast<TextureUsage>(0);
 
             if (IS_BIT_SET(usage, VK_IMAGE_USAGE_TRANSFER_SRC_BIT))
             {
@@ -1124,7 +1124,7 @@ namespace mag
 
         inline PipelineStage vk_to_mag_stage(const VkPipelineStageFlags stage)
         {
-            PipelineStage mag_stage = {};
+            auto mag_stage = static_cast<PipelineStage>(0);
 
             if (IS_BIT_SET(stage, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT))
             {
@@ -1196,7 +1196,7 @@ namespace mag
 
         inline BufferUsage vk_to_mag_buffer_usage(const VkBufferUsageFlags usage)
         {
-            BufferUsage mag_usage = {};
+            auto mag_usage = static_cast<BufferUsage>(0);
 
             if (IS_BIT_SET(usage, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT))
             {

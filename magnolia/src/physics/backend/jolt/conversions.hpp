@@ -107,7 +107,7 @@ namespace mag
 
         inline DegreesOfFreedom to_mag(const JPH::EAllowedDOFs dof)
         {
-            DegreesOfFreedom mag_dof = {};
+            auto mag_dof = static_cast<DegreesOfFreedom>(0);
 
             if (IS_BIT_SET(dof, JPH::EAllowedDOFs::TranslationX))
             {

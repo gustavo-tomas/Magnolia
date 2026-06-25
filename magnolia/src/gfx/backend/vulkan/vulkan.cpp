@@ -203,16 +203,23 @@ namespace mag
                       sample_count(desc.sample_count)
                 {
                     // Create image and image view
-                    VkImageCreateInfo image_create_info = {};
-                    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-                    image_create_info.imageType = mag_to_vk(desc.type);
-                    image_create_info.format = mag_to_vk(desc.format);
-                    image_create_info.extent = mag_to_vk(desc.extent);
-                    image_create_info.mipLevels = desc.mip_levels;
-                    image_create_info.arrayLayers = desc.array_layers;
-                    image_create_info.samples = mag_to_vk(desc.sample_count);
-                    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-                    image_create_info.usage = mag_to_vk(desc.usage);
+                    const VkImageCreateInfo image_create_info = {
+                        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                        .pNext = nullptr,
+                        .flags = 0,
+                        .imageType = mag_to_vk(desc.type),
+                        .format = mag_to_vk(desc.format),
+                        .extent = mag_to_vk(desc.extent),
+                        .mipLevels = desc.mip_levels,
+                        .arrayLayers = desc.array_layers,
+                        .samples = mag_to_vk(desc.sample_count),
+                        .tiling = VK_IMAGE_TILING_OPTIMAL,
+                        .usage = mag_to_vk(desc.usage),
+                        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+                        .queueFamilyIndexCount = 0,
+                        .pQueueFamilyIndices = nullptr,
+                        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                    };
 
                     VmaAllocationCreateInfo vma_alloc_info = {};
                     vma_alloc_info.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
@@ -620,11 +627,15 @@ namespace mag
                         vk_check(disp->createShaderModule(&shader_module_info, nullptr, &shader_modules[i]),
                                  "Failed to create shader module");
 
-                        shader_stages[i] = {};
-                        shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                        shader_stages[i].stage = mag_to_vk_bits(shader_module_desc.stage);
-                        shader_stages[i].module = shader_modules[i];
-                        shader_stages[i].pName = "main";
+                        shader_stages[i] = {
+                            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                            .pNext = nullptr,
+                            .flags = 0,
+                            .stage = mag_to_vk_bits(shader_module_desc.stage),
+                            .module = shader_modules[i],
+                            .pName = "main",
+                            .pSpecializationInfo = nullptr,
+                        };
                     }
 
                     std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
@@ -704,10 +715,17 @@ namespace mag
                     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
                     rasterizer.depthBiasEnable = VK_FALSE;
 
-                    VkPipelineMultisampleStateCreateInfo multisampling = {};
-                    multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-                    multisampling.sampleShadingEnable = VK_FALSE;
-                    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+                    const VkPipelineMultisampleStateCreateInfo multisampling = {
+                        .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+                        .pNext = nullptr,
+                        .flags = 0,
+                        .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+                        .sampleShadingEnable = VK_FALSE,
+                        .minSampleShading = 0.0F,
+                        .pSampleMask = nullptr,
+                        .alphaToCoverageEnable = VK_FALSE,
+                        .alphaToOneEnable = VK_FALSE,
+                    };
 
                     VkPipelineColorBlendAttachmentState color_blend_attachment = {};
                     color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
