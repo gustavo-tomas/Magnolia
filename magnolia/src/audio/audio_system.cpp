@@ -35,7 +35,7 @@ namespace mag
         void shutdown()
         {
             // Cleanup soloud
-            for (SoLoud::Wav* audio : state->audios)
+            for (const SoLoud::Wav* audio : state->audios)
             {
                 delete audio;
             }
