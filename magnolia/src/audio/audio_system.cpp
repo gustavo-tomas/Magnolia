@@ -1,5 +1,7 @@
 #include "magnolia/audio/audio_system.hpp"
 
+#include <set>
+
 #include "magnolia/resources/audio.hpp"
 
 // NOLINTBEGIN
@@ -14,6 +16,7 @@ namespace mag
         // Private state
         struct State
         {
+                std::set<SoLoud::Wav*> audios;
                 SoLoud::Soloud soloud;
         };
 
@@ -32,9 +35,27 @@ namespace mag
         void shutdown()
         {
             // Cleanup soloud
+            for (SoLoud::Wav* audio : state->audios)
+            {
+                delete audio;
+            }
+
             state->soloud.deinit();
 
             delete state;
+        }
+
+        void register_audio_source(void* source)
+        {
+            auto* soloud_source = static_cast<SoLoud::Wav*>(source);
+
+            if (state->audios.contains(soloud_source))
+            {
+                LOG_WARNING("Audio source is already loaded");
+                return;
+            }
+
+            state->audios.insert(soloud_source);
         }
 
         void play(ref<AudioResource>& audio, const f32 volume, const math::vec3& position, const math::vec3& velocity)

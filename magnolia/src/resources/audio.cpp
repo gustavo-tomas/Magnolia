@@ -1,5 +1,6 @@
 #include "magnolia/resources/audio.hpp"
 
+#include "magnolia/audio/audio_system.hpp"
 #include "magnolia/core/buffer.hpp"
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
@@ -33,6 +34,9 @@ namespace mag
             resource->name = file_path;
             resource->file_path = file_path;
             resource->source = audio_source;
+
+            // Add audio to the audio system
+            audio::register_audio_source(audio_source);
 
             return true;
         }
