@@ -12,14 +12,6 @@ namespace mag
 
         void shutdown_process_manager();
 
-        // Starts a process. Returns invalid id on error.
-        // The user is responsible to end the process.
-        MAG_API ProcessHandle start_process(const str& process_path);
-
-        // Kills an existing process.
-        MAG_API b8 kill_process(ProcessHandle handle);
-
-        // Checks if a process is running. Invalid process are considered to not be running.
-        MAG_API b8 is_process_running(ProcessHandle handle);
+        MAG_API b8 execute_process(const str& process_path, std::vector<str> args);
     };  // namespace thread
 };  // namespace mag

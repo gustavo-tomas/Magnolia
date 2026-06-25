@@ -4,6 +4,7 @@
 #include "magnolia/core/logger.hpp"
 #include "magnolia/platform/file_system.hpp"
 #include "magnolia/platform/json.hpp"
+#include "magnolia/threads/process_manager.hpp"
 #include "spirv_reflect.h"
 
 namespace mag
@@ -410,24 +411,34 @@ namespace mag
             // Create directories if they dont exist
             fs::create_directories(fs::path(output_file_path).parent_path());
 
+            std::vector<str> args;
+            args.reserve(include_paths.size() + defines.size());
+
             // @TODO: for now no optimizations
-            str compile_script_cmd = MAG_EXT_GLSLC " -O0 -g";
+            args.emplace_back("-O0");
+            args.emplace_back("-g");
 
             // Include paths
-            compile_script_cmd = std::accumulate(include_paths.begin(), include_paths.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -I" + arg; });
+            for (const str& arg : include_paths)
+            {
+                args.push_back("-I" + arg);
+            }
 
             // Defines
-            compile_script_cmd = std::accumulate(defines.begin(), defines.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -D" + arg; });
+            for (const str& arg : defines)
+            {
+                args.push_back("-D" + arg);
+            }
 
-            // Stage
-            compile_script_cmd += " -fshader-stage=" + shader_stage;
-
-            compile_script_cmd += " " + input_file_path + " -o " + output_file_path;
+            // Shader stage
+            args.push_back("-fshader-stage=" + shader_stage);
+            args.push_back("-o" + output_file_path);
+            args.push_back(input_file_path);
 
             // Execute
-            return system(compile_script_cmd.c_str()) == 0;
+            const b8 result = thread::execute_process(MAG_EXT_GLSLC, args);
+
+            return result;
         }
     };  // namespace resource
 };  // namespace mag
