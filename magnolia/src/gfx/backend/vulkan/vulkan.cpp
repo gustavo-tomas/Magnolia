@@ -114,12 +114,12 @@ namespace mag
                              "Failed to create buffer");
 
                     // Use persistent mapping
-                    this->map();
+                    vk_check(vmaMapMemory(allocator, allocation, &mapped_region), "Failed to map buffer memory");
                 }
 
                 ~VulkanBuffer() override
                 {
-                    this->unmap();
+                    vmaUnmapMemory(allocator, allocation);
                     vmaDestroyBuffer(allocator, buffer, allocation);
                 }
 
@@ -1363,19 +1363,19 @@ namespace mag
 
                     ICommandPoolDesc command_pool_desc = {};
                     command_pool_desc.queue_type = QueueType::Graphics;
-                    immediate_command_pool = this->create_command_pool(command_pool_desc);
+                    immediate_command_pool = create_unique<VulkanCommandPool>(command_pool_desc, &disp, device);
 
                     ICommandBufferDesc command_buffer_desc = {};
                     command_buffer_desc.command_buffer_level = CommandBufferLevel::Primary;
                     command_buffer_desc.command_pool = immediate_command_pool.get();
-                    immediate_command_buffer = this->create_command_buffer(command_buffer_desc);
+                    immediate_command_buffer = create_unique<VulkanCommandBuffer>(command_buffer_desc, &disp);
 
                     IQueueDesc queue_desc = {};
                     queue_desc.queue_type = QueueType::Graphics;
-                    immediate_queue = this->create_queue(queue_desc);
+                    immediate_queue = create_unique<VulkanQueue>(queue_desc, &disp, device);
 
                     const IFenceDesc fence_desc = {};
-                    immediate_fence = this->create_fence(fence_desc);
+                    immediate_fence = create_unique<VulkanFence>(fence_desc, &disp);
                 }
 
                 ~VulkanDevice() override
