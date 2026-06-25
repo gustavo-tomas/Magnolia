@@ -68,13 +68,11 @@ namespace mag
             return result;
         }
 
-        b8 is_image_extension_supported(const str& extension_with_dot)
+        constexpr b8 is_image_extension_supported(const str& extension_with_dot)
         {
-            // Extensions supported by stb
-            static const std::set<str> supported_formats = {".jpeg", ".png", ".tga", ".bmp", ".psd",
-                                                            ".gif",  ".hdr", ".pic", ".pnm"};
-
-            return supported_formats.contains(extension_with_dot);
+            return (extension_with_dot == ".jpeg" || extension_with_dot == ".png" || extension_with_dot == ".tga" ||
+                    extension_with_dot == ".bmp" || extension_with_dot == ".psd" || extension_with_dot == ".gif" ||
+                    extension_with_dot == ".hdr" || extension_with_dot == ".pic" || extension_with_dot == ".pnm");
         }
     };  // namespace resource
 };  // namespace mag
