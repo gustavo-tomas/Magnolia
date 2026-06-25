@@ -16,8 +16,8 @@ namespace mag
             void set_near_far(const math::vec2& near_far);
             void set_viewport_size(const math::vec2& size);
 
-            const math::mat4& get_view() const;
-            const math::mat4& get_projection() const;
+            const math::mat4& get_view();
+            const math::mat4& get_projection();
             const math::vec3& get_position() const;
             math::quat get_rotation() const;
             const math::mat4& get_rotation_mat() const;
@@ -38,6 +38,8 @@ namespace mag
             f32 aspect_ratio = 16.0F / 9.0F;
             f32 near = 1.0F;
             f32 far = 100.0F;
+            b8 is_projection_outdated = true;
+            b8 is_view_outdated = true;
 
         private:
             void calculate_view();

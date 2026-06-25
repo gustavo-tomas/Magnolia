@@ -14,30 +14,50 @@ namespace mag
     void Camera::set_position(const math::vec3& camera_position)
     {
         this->position = camera_position;
-        calculate_view();
+        is_view_outdated = true;
     }
 
     void Camera::set_rotation(const math::quat& rotation)
     {
         rotation_mat = to_mat4(math::normalize(rotation));
-        calculate_view();
+        is_view_outdated = true;
     }
 
     void Camera::set_viewport_size(const math::vec2& size)
     {
         aspect_ratio = size.x / size.y;
-        calculate_projection();
+        is_projection_outdated = true;
     }
 
     void Camera::set_near_far(const math::vec2& near_far)
     {
         near = near_far.x;
         far = near_far.y;
-        calculate_projection();
+        is_projection_outdated = true;
     }
 
-    const math::mat4& Camera::get_view() const { return view; }
-    const math::mat4& Camera::get_projection() const { return projection; }
+    const math::mat4& Camera::get_view()
+    {
+        if (is_view_outdated)
+        {
+            calculate_view();
+            is_view_outdated = false;
+        }
+
+        return view;
+    }
+
+    const math::mat4& Camera::get_projection()
+    {
+        if (is_projection_outdated)
+        {
+            calculate_projection();
+            is_projection_outdated = false;
+        }
+
+        return projection;
+    }
+
     const math::vec3& Camera::get_position() const { return position; }
     math::quat Camera::get_rotation() const { return to_quat(rotation_mat); }
     const math::mat4& Camera::get_rotation_mat() const { return rotation_mat; }
@@ -68,7 +88,7 @@ namespace mag
     void PerspectiveCamera::set_fov(const f32 camera_fov)
     {
         this->fov = camera_fov;
-        calculate_projection();
+        is_projection_outdated = true;
     }
 
     void PerspectiveCamera::calculate_projection() { projection = math::perspective(fov, aspect_ratio, near, far); }
@@ -92,7 +112,7 @@ namespace mag
     void OrthographicCamera::set_size(const f32 camera_size)
     {
         this->size = camera_size;
-        calculate_projection();
+        is_projection_outdated = true;
     }
 
     void OrthographicCamera::calculate_projection()

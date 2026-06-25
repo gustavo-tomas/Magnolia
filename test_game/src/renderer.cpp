@@ -65,7 +65,7 @@ namespace game
     void Renderer::render_models(Scene& scene)
     {
         auto& ecs = scene.get_ecs();
-        const auto& camera = scene.get_camera();
+        auto& camera = scene.get_camera();
 
         auto model_entities = ecs.get_all_components_of_types<TransformComponent, ModelComponent>();
 

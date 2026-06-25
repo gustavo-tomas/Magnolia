@@ -155,7 +155,7 @@ namespace game
         ortho_camera_desc.size = 1000.0f;
         ortho_camera_desc.viewport_size = vec2(window::get_size());
 
-        const mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
+        mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
 
         mag::gfx::use_shader(shaders[DEBUG_TEXT_SHADER]);
 
