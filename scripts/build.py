@@ -118,26 +118,18 @@ def format_files():
 # ----- Lint -----
 def lint():
 
-    if not has_executable("cppcheck"):
+    if not has_executable("run-clang-tidy"):
         return
 
     sources = list(Path("magnolia/").rglob("*.*"))
-    sources += list(Path("test_game/src/").rglob("*.*"))
+    # sources += list(Path("test_game/src/").rglob("*.*")) // not yet
 
     subprocess.run(
         [
-            "cppcheck",
-            "--std=c++23",
-            "--check-level=exhaustive",
-            f"--output-file={get_clang_build_dir()}/lint.txt",
-            "--enable=all",
-            "--suppress=missingInclude",
-            "--suppress=missingIncludeSystem",
-            "--suppress=useStlAlgorithm",
-            "--suppress=unusedFunction",
-            "--suppress=unknownMacro",
-            "--suppress=unusedStructMember",
-            "-Imagnolia/include",
+            "run-clang-tidy",
+            "-quiet",
+            "-config-file=.clang-tidy",
+            f"-p={get_clang_build_dir()}",
             *sources,
         ],
         check=True,
