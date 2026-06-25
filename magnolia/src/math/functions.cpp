@@ -117,19 +117,19 @@ namespace mag
 
         quat slerp(const quat& q1, const quat& q2, f32 alpha)
         {
-            f32 dot = math::dot(q1, q2);
+            f32 d = math::dot(q1, q2);
 
             const f32 threshold = 0.9995F;
-            if (dot > threshold)
+            if (d > threshold)
             {
                 return lerp(q1, q2, alpha);
             }
 
-            dot = std::clamp(dot, -1.0F, 1.0F);
-            const f32 theta_0 = acosf(dot);
+            d = std::clamp(d, -1.0F, 1.0F);
+            const f32 theta_0 = acosf(d);
             const f32 theta = theta_0 * alpha;
 
-            quat q3 = q2 - q1 * dot;
+            quat q3 = q2 - q1 * d;
             q3 = normalize(q3);
 
             return (q1 * cos(theta)) + (q3 * sin(theta));
