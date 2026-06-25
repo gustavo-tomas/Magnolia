@@ -109,6 +109,7 @@ def format_files():
         return
 
     sources = list(Path("magnolia/").rglob("*.*"))
+    sources += list(Path("test_game/src/").rglob("*.*"))
 
     subprocess.run(["clang-format", "-i", "-style=file", *sources], check=True)
 
@@ -122,7 +123,7 @@ def lint():
         return
 
     sources = list(Path("magnolia/").rglob("*.*"))
-    # sources += list(Path("test_game/src/").rglob("*.*")) // not yet
+    # sources += list(Path("test_game/src/").rglob("*.*")) # not yet
 
     subprocess.run(
         [
