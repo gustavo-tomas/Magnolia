@@ -18,49 +18,128 @@ namespace mag
                 ShaderResourceStage stage;
         };
 
-        static const std::unordered_map<str, ShaderStageData> shader_stage_map = {
-            {"Vertex",
-             {.extension = ".vert",
-              .define = "VERTEX_SHADER",
-              .stage_str = "vertex",
-              .stage = ShaderResourceStage::Vertex}},
-            {"Fragment",
-             {.extension = ".frag",
-              .define = "FRAGMENT_SHADER",
-              .stage_str = "fragment",
-              .stage = ShaderResourceStage::Fragment}},
-        };
+        static constexpr ShaderStageData shader_stage_map(const str& stage)
+        {
+            if (stage == "Vertex")
+            {
+                return {.extension = ".vert",
+                        .define = "VERTEX_SHADER",
+                        .stage_str = "vertex",
+                        .stage = ShaderResourceStage::Vertex};
+            }
 
-        static const std::unordered_map<str, ShaderResourceTopology> topology_map = {
-            {"TriangleList", ShaderResourceTopology::TriangleList},
-            {"TriangleStrip", ShaderResourceTopology::TriangleStrip},
-            {"LineList", ShaderResourceTopology::LineList},
-        };
+            if (stage == "Fragment")
+            {
+                return {.extension = ".frag",
+                        .define = "FRAGMENT_SHADER",
+                        .stage_str = "fragment",
+                        .stage = ShaderResourceStage::Fragment};
+            }
 
-        static const std::unordered_map<SpvReflectDescriptorType, ShaderResourceDescriptorType> descriptor_type_map = {
-            {SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ShaderResourceDescriptorType::Uniform},
-            {SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER, ShaderResourceDescriptorType::Storage},
-            {SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, ShaderResourceDescriptorType::CombinedImageSampler},
-        };
+            MAG_ASSERT(false, "Invalid stage");
+            return {};
+        }
 
-        static const std::unordered_map<SpvReflectFormat, ShaderResourceFormat> format_type_map = {
-            {SPV_REFLECT_FORMAT_UNDEFINED, ShaderResourceFormat::Undefined},
-            {SPV_REFLECT_FORMAT_R32_UINT, ShaderResourceFormat::R32_UINT},
-            {SPV_REFLECT_FORMAT_R32_SFLOAT, ShaderResourceFormat::R32_SFLOAT},
-            {SPV_REFLECT_FORMAT_R32G32_SFLOAT, ShaderResourceFormat::R32G32_SFLOAT},
-            {SPV_REFLECT_FORMAT_R32G32B32_SFLOAT, ShaderResourceFormat::R32G32B32_SFLOAT},
-            {SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT, ShaderResourceFormat::R32G32B32A32_SFLOAT},
-        };
+        static constexpr ShaderResourceTopology topology_map(const str& topology)
+        {
+            if (topology == "TriangleList")
+            {
+                return ShaderResourceTopology::TriangleList;
+            }
 
-        static const std::unordered_map<str, ShaderResourceBlendOp> blend_op_map = {
-            {"Add", ShaderResourceBlendOp::Add},
-        };
+            if (topology == "TriangleStrip")
+            {
+                return ShaderResourceTopology::TriangleStrip;
+            }
 
-        static const std::unordered_map<str, ShaderResourceBlendFactor> blend_factor_map = {
-            {"One", ShaderResourceBlendFactor::One},
-            {"SrcAlpha", ShaderResourceBlendFactor::SrcAlpha},
-            {"OneMinusSrcAlpha", ShaderResourceBlendFactor::OneMinusSrcAlpha},
-        };
+            if (topology == "LineList")
+            {
+                return ShaderResourceTopology::LineList;
+            }
+
+            MAG_ASSERT(false, "Invalid topology");
+            return ShaderResourceTopology::TriangleList;
+        }
+
+        static constexpr ShaderResourceDescriptorType descriptor_type_map(
+            const SpvReflectDescriptorType descriptor_type)
+        {
+            switch (descriptor_type)
+            {
+                case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+                    return ShaderResourceDescriptorType::Uniform;
+
+                case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                    return ShaderResourceDescriptorType::Storage;
+
+                case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                    return ShaderResourceDescriptorType::CombinedImageSampler;
+
+                default:
+                    MAG_ASSERT(false, "Invalid descriptor type");
+                    return ShaderResourceDescriptorType::Uniform;
+            }
+        }
+
+        static constexpr ShaderResourceFormat format_map(const SpvReflectFormat format)
+        {
+            switch (format)
+            {
+                case SPV_REFLECT_FORMAT_UNDEFINED:
+                    return ShaderResourceFormat::Undefined;
+
+                case SPV_REFLECT_FORMAT_R32_UINT:
+                    return ShaderResourceFormat::R32_UINT;
+
+                case SPV_REFLECT_FORMAT_R32_SFLOAT:
+                    return ShaderResourceFormat::R32_SFLOAT;
+
+                case SPV_REFLECT_FORMAT_R32G32_SFLOAT:
+                    return ShaderResourceFormat::R32G32_SFLOAT;
+
+                case SPV_REFLECT_FORMAT_R32G32B32_SFLOAT:
+                    return ShaderResourceFormat::R32G32B32_SFLOAT;
+
+                case SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT:
+                    return ShaderResourceFormat::R32G32B32A32_SFLOAT;
+
+                default:
+                    MAG_ASSERT(false, "Invalid format type");
+                    return ShaderResourceFormat::Undefined;
+            }
+        }
+
+        static constexpr ShaderResourceBlendOp blend_op_map(const str& blend_op)
+        {
+            if (blend_op == "Add")
+            {
+                return ShaderResourceBlendOp::Add;
+            }
+
+            MAG_ASSERT(false, "Invalid blend op");
+            return ShaderResourceBlendOp::Add;
+        }
+
+        static constexpr ShaderResourceBlendFactor blend_factor_map(const str& blend_factor)
+        {
+            if (blend_factor == "One")
+            {
+                return ShaderResourceBlendFactor::One;
+            }
+
+            if (blend_factor == "SrcAlpha")
+            {
+                return ShaderResourceBlendFactor::SrcAlpha;
+            }
+
+            if (blend_factor == "OneMinusSrcAlpha")
+            {
+                return ShaderResourceBlendFactor::OneMinusSrcAlpha;
+            }
+
+            MAG_ASSERT(false, "Invalid blend factor");
+            return ShaderResourceBlendFactor::One;
+        }
 
         static b8 compile_shader_submodule(const str& input_file_path, const str& output_file_path,
                                            const std::vector<str>& include_paths, const std::vector<str>& defines,
@@ -107,21 +186,15 @@ namespace mag
             const std::vector<str> stages = data["Stages"].get<std::vector<str>>();
             const str topology = data["Topology"];
 
-            if (!topology_map.contains(topology))
-            {
-                LOG_ERROR("Invalid topology: {0}", topology);
-                return false;
-            }
-
             if (data.contains("ColorBlendOp") || data.contains("AlphaBlendOp"))
             {
                 shader->color_blend.blend_enable = true;
-                shader->color_blend.color_blend_op = blend_op_map.at(data["ColorBlendOp"]);
-                shader->color_blend.alpha_blend_op = blend_op_map.at(data["AlphaBlendOp"]);
-                shader->color_blend.src_color_blend_factor = blend_factor_map.at(data["SrcColorBlendFactor"]);
-                shader->color_blend.dst_color_blend_factor = blend_factor_map.at(data["DstColorBlendFactor"]);
-                shader->color_blend.src_alpha_blend_factor = blend_factor_map.at(data["SrcAlphaBlendFactor"]);
-                shader->color_blend.dst_alpha_blend_factor = blend_factor_map.at(data["DstAlphaBlendFactor"]);
+                shader->color_blend.color_blend_op = blend_op_map(data["ColorBlendOp"]);
+                shader->color_blend.alpha_blend_op = blend_op_map(data["AlphaBlendOp"]);
+                shader->color_blend.src_color_blend_factor = blend_factor_map(data["SrcColorBlendFactor"]);
+                shader->color_blend.dst_color_blend_factor = blend_factor_map(data["DstColorBlendFactor"]);
+                shader->color_blend.src_alpha_blend_factor = blend_factor_map(data["SrcAlphaBlendFactor"]);
+                shader->color_blend.dst_alpha_blend_factor = blend_factor_map(data["DstAlphaBlendFactor"]);
             }
 
             else
@@ -131,14 +204,14 @@ namespace mag
 
             for (const str& stage : stages)
             {
-                const ShaderResourceStage shader_stage = shader_stage_map.at(stage).stage;
+                const ShaderResourceStage shader_stage = shader_stage_map(stage).stage;
                 shader->stages[shader_stage].stage = stage;
             }
 
             shader->name = name;
             shader->file_path = file_path;
             shader->glsl_file_path = glsl_file_path;
-            shader->topology = topology_map.at(topology);
+            shader->topology = topology_map(topology);
 
             return true;
         }
@@ -174,7 +247,7 @@ namespace mag
                     binding.name = spv_binding->name;
                     binding.variable_count = false;
                     binding.unbounded = false;
-                    binding.descriptor_type = descriptor_type_map.at(spv_binding->descriptor_type);
+                    binding.descriptor_type = descriptor_type_map(spv_binding->descriptor_type);
 
                     // Set the correct values for descriptor count and max binding size.
                     // We need to to this because spv is a little confused and can't process arrays
@@ -227,7 +300,7 @@ namespace mag
                     (variable->numeric.vector.component_count > 0 ? variable->numeric.vector.component_count : 1);
 
                 ShaderResourceVertexInputData vertex_input = {};
-                vertex_input.format = format_type_map.at(variable->format);
+                vertex_input.format = format_map(variable->format);
                 vertex_input.offset = offset;
                 vertex_input.location = location;
                 vertex_input.size = size;
@@ -250,7 +323,7 @@ namespace mag
             for (const auto& [stage, module_data] : resource->stages)
             {
                 // Build the binary name from the glsl name
-                const str extension = shader_stage_map.at(module_data.stage).extension;
+                const str extension = shader_stage_map(module_data.stage).extension;
                 const str binary_file_path =
                     MAG_BUILD_SHADER_NAME(fs::get_file_name(resource->glsl_file_path) + extension);
 
@@ -263,7 +336,7 @@ namespace mag
                     return false;
                 }
 
-                const ShaderResourceStage shader_stage = shader_stage_map.at(module_data.stage).stage;
+                const ShaderResourceStage shader_stage = shader_stage_map(module_data.stage).stage;
                 resource->stages[shader_stage].code = buffer.data;
 
                 SpvReflectShaderModule spv_module;
@@ -306,20 +379,18 @@ namespace mag
             }
 
             b8 result = true;
-            for (const auto& [stage, data] : shader_stage_map)
+            for (const auto& [stage, data] : shader_resource.stages)
             {
-                if (shader_resource.stages.contains(data.stage))
-                {
-                    const str extension = shader_stage_map.at(stage).extension;
-                    const str binary_file_path =
-                        MAG_BUILD_SHADER_NAME(fs::get_file_name(shader_resource.glsl_file_path) + extension);
+                const ShaderStageData shader_stage_data = shader_stage_map(data.stage);
 
-                    const str& submodule_file_path =
-                        fs::path(input_file_path).parent_path() / shader_resource.glsl_file_path;
+                const str binary_file_path = MAG_BUILD_SHADER_NAME(fs::get_file_name(shader_resource.glsl_file_path) +
+                                                                   shader_stage_data.extension);
 
-                    result = result && compile_shader_submodule(submodule_file_path, binary_file_path, {},
-                                                                {data.define}, data.stage_str);
-                }
+                const str& submodule_file_path =
+                    fs::path(input_file_path).parent_path() / shader_resource.glsl_file_path;
+
+                result = result && compile_shader_submodule(submodule_file_path, binary_file_path, {},
+                                                            {shader_stage_data.define}, shader_stage_data.stage_str);
             }
 
             if (result)
