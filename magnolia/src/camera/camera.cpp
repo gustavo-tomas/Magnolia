@@ -73,7 +73,7 @@ namespace mag
 
     void PerspectiveCamera::calculate_projection() { projection = math::perspective(fov, aspect_ratio, near, far); }
 
-    const f32& PerspectiveCamera::get_fov() const { return fov; }
+    f32 PerspectiveCamera::get_fov() const { return fov; }
 
     // OrthographicCamera
     // -----------------------------------------------------------------------------------------------------------------

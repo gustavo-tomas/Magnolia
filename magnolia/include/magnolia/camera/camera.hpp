@@ -64,7 +64,7 @@ namespace mag
             ~PerspectiveCamera() override;
 
             void set_fov(f32 camera_fov);
-            const f32& get_fov() const;
+            f32 get_fov() const;
 
         protected:
             void calculate_projection() override;
