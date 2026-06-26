@@ -468,16 +468,18 @@ namespace mag
         void handle_text_completion(ImGuiInputTextCallbackData* data)
         {
             // Locate beginning of current word
-            const c8* word_end = data->Buf + data->CursorPos;
+            const std::span word(data->Buf, data->CursorPos);
+            const c8* word_end = word.end().base();
             const c8* word_start = word_end;
-            while (word_start > data->Buf)
+            for (i32 i = static_cast<i32>(word.size()) - 1; i >= 0; i--)
             {
-                const c8 c = word_start[-1];
+                const c8 c = word[i];
                 if (c == ' ' || c == '\t' || c == ',' || c == ';')
                 {
                     break;
                 }
-                word_start--;
+
+                word_start = &word[i];
             }
 
             // Build a list of candidates
