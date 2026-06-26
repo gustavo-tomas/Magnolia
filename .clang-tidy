@@ -3,7 +3,6 @@ Checks: >
   -*,
 
   bugprone-*,
-  -bugprone-command-processor,
   -bugprone-easily-swappable-parameters,
 
   clang-*,

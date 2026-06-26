@@ -29,7 +29,7 @@ namespace mag
         {
                 str file_path;
                 b8 force_recompilation = false;
-                str compilation_flags = "-std=c++23 -fPIC -shared -O0";
+                std::vector<str> compilation_flags = {"-std=c++23", "-fPIC", "-shared", "-O0"};
                 std::vector<str> include_paths = {"magnolia/include"};
                 std::vector<str> lib_paths = {MAG_BUILD_DIR_BIN "magnolia"};
                 std::vector<str> link_libs = {"magnolia"};

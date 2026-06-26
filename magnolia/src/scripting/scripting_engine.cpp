@@ -5,6 +5,7 @@
 #include "magnolia/core/logger.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/platform/file_system.hpp"
+#include "magnolia/threads/process_manager.hpp"
 
 // @TODO: this is unix only, create an interface for the windows build
 #if MAG_PLATFORM_LINUX
@@ -115,39 +116,51 @@ namespace mag
                 return true;
             }
 
-            const str compilation_flags = params.compilation_flags;
-            const std::vector<str> include_paths = params.include_paths;
-            const std::vector<str> lib_paths = params.lib_paths;
-            const std::vector<str> link_libs = params.link_libs;
-            std::vector<str> defines = params.defines;
-
             // Create directories if they dont exist
             fs::create_directories(fs::path(bin_script_file_path).parent_path());
 
-            str compile_script_cmd = "clang++ " + compilation_flags;
+            const str command = "clang++";
+
+            std::vector<str> args;
+            args.reserve(params.compilation_flags.size());
+
+            // Flags
+            for (const str& arg : params.compilation_flags)
+            {
+                args.push_back(arg);
+            }
 
             // Include paths
-            compile_script_cmd = std::accumulate(include_paths.begin(), include_paths.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -I" + arg; });
+            for (const str& arg : params.include_paths)
+            {
+                args.push_back("-I" + arg);
+            }
 
             // Defines
-            compile_script_cmd = std::accumulate(defines.begin(), defines.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -D" + arg; });
+            for (const str& arg : params.defines)
+            {
+                args.push_back("-D" + arg);
+            }
 
             // Libs paths
-            compile_script_cmd = std::accumulate(lib_paths.begin(), lib_paths.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -L" + arg; });
+            for (const str& arg : params.lib_paths)
+            {
+                args.push_back("-L" + arg);
+            }
 
             // Link libs
-            compile_script_cmd = std::accumulate(link_libs.begin(), link_libs.end(), compile_script_cmd,
-                                                 [](const str& cmd, const str& arg) { return cmd + " -l" + arg; });
+            for (const str& arg : params.link_libs)
+            {
+                args.push_back("-l" + arg);
+            }
 
-            compile_script_cmd += " " + file_path + " -o " + bin_script_file_path;
+            args.push_back(file_path);
+            args.push_back("-o" + bin_script_file_path);
 
             LOG_INFO("Compiling script '{0}'...", file_path);
 
             // Execute clang
-            const b8 result = system(compile_script_cmd.c_str()) == 0;
+            const b8 result = thread::execute_process(command, args);
 
             if (!result)
             {
