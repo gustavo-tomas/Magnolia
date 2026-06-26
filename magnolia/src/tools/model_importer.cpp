@@ -66,10 +66,12 @@ namespace mag
             model.name = scene->mRootNode->mName.C_Str();
             model.meshes.resize(scene->mNumMeshes);
 
-            for (u32 m = 0; m < scene->mNumMeshes; m++)
+            const std::span meshes_span(scene->mMeshes, scene->mNumMeshes);
+
+            for (u32 i = 0; i < meshes_span.size(); i++)
             {
-                const aiMesh* mesh = scene->mMeshes[m];
-                if (!initialize_mesh(m, mesh, model))
+                const aiMesh* mesh = meshes_span[i];
+                if (!initialize_mesh(i, mesh, model))
                 {
                     return false;
                 }
@@ -170,35 +172,46 @@ namespace mag
 
             std::vector<u32> indices(ai_mesh->mNumFaces * 3ULL);
 
+            const u32 index_count = indices.size();
+
+            const std::span faces(ai_mesh->mFaces, ai_mesh->mNumFaces);
+
             // Indices
-            for (u32 i = 0; i < ai_mesh->mNumFaces; i++)
+            for (u32 i = 0; i < faces.size(); i++)
             {
-                const auto& face = ai_mesh->mFaces[i];
+                const auto& face = faces[i];
                 if (face.mNumIndices != 3)
                 {
                     LOG_ERROR("Face is not a triangle");
                     return false;
                 }
 
-                indices[(i * 3) + 0] = face.mIndices[0];
-                indices[(i * 3) + 1] = face.mIndices[1];
-                indices[(i * 3) + 2] = face.mIndices[2];
+                const std::span indices_span(face.mIndices, face.mNumIndices);
+
+                indices[(i * 3) + 0] = indices_span[0];
+                indices[(i * 3) + 1] = indices_span[1];
+                indices[(i * 3) + 2] = indices_span[2];
             }
 
-            std::vector<Vertex> vertices(indices.size());
+            std::vector<Vertex> vertices(index_count);
+
+            const std::span vertices_span(ai_mesh->mVertices, index_count);
+            const std::span normals_span(ai_mesh->mNormals, index_count);
+            const std::span tex_coords_span(ai_mesh->mTextureCoords[0], index_count);
+            const std::span tangents_span(ai_mesh->mTangents, index_count);
+            const std::span bitangents_span(ai_mesh->mBitangents, index_count);
 
             // Vertices - load with duplicates. The optimization step will create a better vertex/index buffer.
-            for (u32 i = 0; i < indices.size(); i++)
+            for (u32 i = 0; i < index_count; i++)
             {
                 Vertex vertex = {};
 
                 const u32 idx = indices[i];
-                vertex.position = {ai_mesh->mVertices[idx].x, ai_mesh->mVertices[idx].y, ai_mesh->mVertices[idx].z};
-                vertex.normal = {ai_mesh->mNormals[idx].x, ai_mesh->mNormals[idx].y, ai_mesh->mNormals[idx].z};
-                vertex.tex_coords = {ai_mesh->mTextureCoords[0][idx].x, ai_mesh->mTextureCoords[0][idx].y};
-                vertex.tangent = {ai_mesh->mTangents[idx].x, ai_mesh->mTangents[idx].y, ai_mesh->mTangents[idx].z};
-                vertex.bitangent = {ai_mesh->mBitangents[idx].x, ai_mesh->mBitangents[idx].y,
-                                    ai_mesh->mBitangents[idx].z};
+                vertex.position = {vertices_span[idx].x, vertices_span[idx].y, vertices_span[idx].z};
+                vertex.normal = {normals_span[idx].x, normals_span[idx].y, normals_span[idx].z};
+                vertex.tex_coords = {tex_coords_span[idx].x, tex_coords_span[idx].y};
+                vertex.tangent = {tangents_span[idx].x, tangents_span[idx].y, tangents_span[idx].z};
+                vertex.bitangent = {bitangents_span[idx].x, bitangents_span[idx].y, bitangents_span[idx].z};
 
                 vertices[i] = vertex;
             }
@@ -251,15 +264,18 @@ namespace mag
 
             model.materials.resize(ai_scene->mNumMaterials);
 
-            for (u32 i = 0; i < ai_scene->mNumMaterials; i++)
+            const std::span materials_span(ai_scene->mMaterials, ai_scene->mNumMaterials);
+
+            const u32 material_count = materials_span.size();
+            for (u32 i = 0; i < material_count; i++)
             {
-                const aiMaterial* ai_material = ai_scene->mMaterials[i];
+                const aiMaterial* ai_material = materials_span[i];
                 str material_name = ai_material->GetName().C_Str();
 
                 // Invalid material name, use placeholder instead
                 if (material_name.empty())
                 {
-                    material_name = log::get_formatted_str("__Material_{0}_{1}__", i, ai_scene->mNumMaterials - 1);
+                    material_name = log::get_formatted_str("__Material_{0}_{1}__", i, material_count - 1);
                 }
 
                 const str material_file_path =

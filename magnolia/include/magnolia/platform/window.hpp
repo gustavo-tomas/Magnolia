@@ -57,6 +57,6 @@ namespace mag
         MAG_API math::uvec2 get_size();
         MAG_API f64 get_delta_time();
 
-        const std::vector<const c8*>& get_instance_extensions();
+        const std::vector<str>& get_instance_extensions();
     };  // namespace window
 };  // namespace mag

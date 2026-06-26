@@ -35,6 +35,9 @@ namespace mag
 
             const u64 image_size = static_cast<u64>(tex_width * tex_height) * tex_channels;
 
+            // Convert to safe range first
+            const std::span pixels_span(pixels, image_size);
+
             // Update image data
             resource->name = file_path;
             resource->file_path = file_path;
@@ -42,7 +45,7 @@ namespace mag
             resource->height = tex_height;
             resource->channels = tex_channels;
             resource->mip_levels = static_cast<u32>(std::floor(std::log2(std::max(tex_width, tex_height)))) + 1;
-            resource->pixels = std::vector<u8>(pixels, pixels + image_size);
+            resource->pixels = std::vector<u8>(pixels_span.begin(), pixels_span.end());
 
             stbi_image_free(pixels);
 

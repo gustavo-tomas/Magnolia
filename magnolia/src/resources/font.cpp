@@ -60,11 +60,10 @@ namespace mag
                 if (face->glyph->bitmap.width > 0 && face->glyph->bitmap.rows > 0 &&
                     (face->glyph->bitmap.buffer != nullptr))
                 {
-                    character.data =
-                        std::vector<u8>(face->glyph->bitmap.buffer,
-                                        face->glyph->bitmap.buffer +
-                                            (static_cast<u64>(face->glyph->bitmap.width * face->glyph->bitmap.rows)));
+                    const u64 bitmap_size = 1ULL * face->glyph->bitmap.width * face->glyph->bitmap.rows;
+                    const std::span pixels_span(face->glyph->bitmap.buffer, bitmap_size);
 
+                    character.data = std::vector<u8>(pixels_span.begin(), pixels_span.end());
                     character.texture.channels = 1;
                     character.texture.width = character.size.x;
                     character.texture.height = character.size.y;

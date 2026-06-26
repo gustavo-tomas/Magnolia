@@ -7,8 +7,6 @@
 #include <SDL3/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
-#include <algorithm>
-
 #include "conversions.hpp"
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/buffer.hpp"
@@ -33,7 +31,7 @@ namespace mag
                 b8 window_resized = false;
                 SDL_Event last_window_resize_event = {};
                 SDL_Event last_mouse_move_event = {};
-                std::vector<const c8*> extensions;
+                std::vector<str> extensions;
 
                 f64 dt = 0;
                 i32 target_frame_rate = -1;
@@ -83,10 +81,11 @@ namespace mag
             u32 count = 0;
             const c8* const* extensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
-            MAG_ASSERT(count, "Failed to get window extensions: '{}'", SDL_GetError());
+            MAG_ASSERT(extensions != nullptr, "Failed to get window extensions: '{}'", SDL_GetError());
 
-            state->extensions.resize(count);
-            std::copy(extensions, extensions + count, state->extensions.data());
+            const std::span extensions_span(extensions, count);
+
+            state->extensions = std::vector<str>(extensions_span.begin(), extensions_span.end());
 
             if (!options.window_icon.empty())
             {
@@ -385,6 +384,6 @@ namespace mag
             return math::uvec2(size);
         }
 
-        const std::vector<const c8*>& get_instance_extensions() { return state->extensions; }
+        const std::vector<str>& get_instance_extensions() { return state->extensions; }
     };  // namespace window
 };  // namespace mag
