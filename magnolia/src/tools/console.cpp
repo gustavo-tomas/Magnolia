@@ -538,8 +538,9 @@ namespace mag
 
             if (match_len > 0)
             {
+                const auto word_begin = candidates[0].begin();
                 data->DeleteChars(static_cast<i32>(word_start - data->Buf), static_cast<i32>(word_end - word_start));
-                data->InsertChars(data->CursorPos, candidates[0].c_str(), candidates[0].c_str() + match_len);
+                data->InsertChars(data->CursorPos, word_begin.base(), (word_begin + match_len).base());
             }
 
             // List matches

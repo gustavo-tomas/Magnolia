@@ -220,25 +220,28 @@ namespace mag
         void read_descriptor_sets(const SpvReflectShaderModule& spv_module, const ShaderResourceStage shader_stage,
                                   ShaderResource* resource)
         {
-            const std::vector<SpvReflectDescriptorSet> spv_descriptor_sets(
-                &spv_module.descriptor_sets[0], &spv_module.descriptor_sets[0] + spv_module.descriptor_set_count);
-
-            for (const SpvReflectDescriptorSet& spv_descriptor_set : spv_descriptor_sets)
+            // Copy entire C array but we only need up to 'descriptor_set_count' elements
+            const std::span descriptor_sets(spv_module.descriptor_sets);
+            for (u32 i = 0; i < spv_module.descriptor_set_count && i < descriptor_sets.size(); i++)
             {
+                const SpvReflectDescriptorSet spv_descriptor_set = descriptor_sets[i];
+
                 ShaderResourceDescriptorData descriptor = {};
                 descriptor.set = spv_descriptor_set.set;
 
-                for (u32 j = 0; j < spv_descriptor_set.binding_count; j++)
+                const std::span bindings(spv_descriptor_set.bindings, spv_descriptor_set.binding_count);
+                for (u32 j = 0; j < bindings.size(); j++)
                 {
-                    const SpvReflectDescriptorBinding* spv_binding = spv_descriptor_set.bindings[j];
+                    const SpvReflectDescriptorBinding* spv_binding = bindings[j];
 
                     u64 block_size = 0;
-                    for (u32 k = 0; k < spv_binding->block.member_count; k++)
+                    const std::span block_members(spv_binding->block.members, spv_binding->block.member_count);
+                    for (const SpvReflectBlockVariable& block_member : block_members)
                     {
                         // @TODO: block padded_size is buggy, so we use this function to calculated the aligned size
                         // https://github.com/KhronosGroup/SPIRV-Reflect/issues/280
                         const u64 alignment = 16;
-                        block_size += get_aligned_size(spv_binding->block.members[k].size, alignment);
+                        block_size += get_aligned_size(block_member.size, alignment);
                     }
 
                     ShaderResourceBindingData binding = {};
@@ -282,10 +285,9 @@ namespace mag
         {
             // Add vertex attributes sorted by location
             std::map<u32, const SpvReflectInterfaceVariable*> sorted_input_variables;
-            for (u32 i = 0; i < spv_module.input_variable_count; i++)
+            const std::span input_variables(spv_module.input_variables, spv_module.input_variable_count);
+            for (const SpvReflectInterfaceVariable* variable : input_variables)
             {
-                const SpvReflectInterfaceVariable* const variable = spv_module.input_variables[i];
-
                 // Filter built-in variables
                 if (variable->location < Max_U32)
                 {
