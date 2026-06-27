@@ -40,5 +40,5 @@ Checks: >
   -readability-magic-numbers,
 
 FormatStyle: "file"
-HeaderFilterRegex: '^.*/include/magnolia/.*\.hpp$'
+HeaderFilterRegex: '^.*/magnolia/.*\.hpp$'
 WarningsAsErrors: ""

@@ -23,14 +23,11 @@
 // See the hello world example for nice explanations of the jolt structures
 // https://github.com/jrouwe/JoltPhysics/blob/master/HelloWorld/HelloWorld.cpp
 
-// Disable common warnings triggered by Jolt, you can use JPH_SUPPRESS_WARNING_PUSH / JPH_SUPPRESS_WARNING_POP to store
-// and restore the warning state
-// JPH_SUPPRESS_WARNINGS
-
 namespace mag
 {
     namespace physics
     {
+        // NOLINTBEGIN
         inline void trace_callback(const c8* fmt, ...)
         {
             va_list list;
@@ -41,6 +38,7 @@ namespace mag
 
             LOG_INFO("[Physics] {}", buffer.data());
         }
+        // NOLINTEND
 
 #ifdef JPH_ENABLE_ASSERTS
 
