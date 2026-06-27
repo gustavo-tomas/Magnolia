@@ -31,7 +31,7 @@ namespace mag
 {
     namespace physics
     {
-        static void trace_callback(const c8* fmt, ...)
+        inline void trace_callback(const c8* fmt, ...)
         {
             va_list list;
             va_start(list, fmt);
@@ -44,7 +44,7 @@ namespace mag
 
 #ifdef JPH_ENABLE_ASSERTS
 
-        static b8 assert_failed_callback(const c8* expression, const c8* message, const c8* file, u32 line)
+        inline b8 assert_failed_callback(const c8* expression, const c8* message, const c8* file, u32 line)
         {
             MAG_ASSERT(false, "[Physics] {0}:{1}: ({2}) {3}", file, line, expression,
                        (message != nullptr ? message : ""));
