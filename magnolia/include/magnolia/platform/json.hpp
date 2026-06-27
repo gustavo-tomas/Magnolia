@@ -5,6 +5,14 @@
 #include "magnolia/platform/file_system.hpp"
 #include "nlohmann/json.hpp"
 
+namespace mag::fs
+{
+    using json = nlohmann::ordered_json;
+
+    MAG_API b8 read_json_data(const fs::path& file_path, fs::json& data);
+    MAG_API b8 write_json_data(const fs::path& file_path, const fs::json& data);
+};  // namespace mag::fs
+
 namespace nlohmann
 {
     template <typename T>
