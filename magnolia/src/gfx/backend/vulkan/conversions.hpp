@@ -15,7 +15,7 @@ namespace mag
     {
         inline VkOffset2D mag_to_vk(const math::ivec2& offset)
         {
-            const VkOffset2D vk_offset = {offset[0], offset[1]};
+            const VkOffset2D vk_offset = {.x = offset[0], .y = offset[1]};
             return vk_offset;
         }
 
@@ -27,13 +27,13 @@ namespace mag
 
         inline VkExtent3D mag_to_vk(const math::uvec3& extent)
         {
-            const VkExtent3D vk_extent = {extent[0], extent[1], extent[2]};
+            const VkExtent3D vk_extent = {.width = extent[0], .height = extent[1], .depth = extent[2]};
             return vk_extent;
         }
 
         inline VkExtent2D mag_to_vk(const math::uvec2& extent)
         {
-            const VkExtent2D vk_extent = {extent[0], extent[1]};
+            const VkExtent2D vk_extent = {.width = extent[0], .height = extent[1]};
             return vk_extent;
         }
 

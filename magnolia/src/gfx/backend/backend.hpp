@@ -95,8 +95,8 @@ namespace mag
 
         struct IRenderingAttachmentDesc
         {
-                math::vec4 clear_color = {1.0f, 1.0f, 1.0f, 1.0f};
-                f32 clear_depth = 0.0f;
+                math::vec4 clear_color = {1.0F, 1.0F, 1.0F, 1.0F};
+                f32 clear_depth = 0.0F;
                 u32 clear_stencil = 0;
                 RenderingAttachmentType type = RenderingAttachmentType::Color;
                 const ITexture* texture = nullptr;
@@ -171,10 +171,10 @@ namespace mag
                 SamplerAddressMode address_mode_u = SamplerAddressMode::Repeat;
                 SamplerAddressMode address_mode_v = SamplerAddressMode::Repeat;
                 SamplerAddressMode address_mode_w = SamplerAddressMode::Repeat;
-                f32 min_lod = 0.0f;
-                f32 max_lod = 0.0f;
+                f32 min_lod = 0.0F;
+                f32 max_lod = 0.0F;
                 b8 anisotropy_enable = false;
-                f32 max_anisotropy = 0.0f;
+                f32 max_anisotropy = 0.0F;
         };
 
         struct DescriptorLimits
@@ -199,7 +199,7 @@ namespace mag
 
                 virtual void unmap() const = 0;
 
-                virtual void set_data(const void* const data, const u64 size, const u64 offset) const = 0;
+                virtual void set_data(const void* data, u64 size, u64 offset) const = 0;
 
                 virtual u64 get_size() const = 0;
 
@@ -241,7 +241,7 @@ namespace mag
             public:
                 virtual ~IFence() = default;
 
-                virtual void wait(const u64 timeout = Timeout) const = 0;
+                virtual void wait(u64 timeout = Timeout) const = 0;
 
                 virtual void reset() const = 0;
         };
@@ -251,7 +251,7 @@ namespace mag
             public:
                 virtual ~ITexture() = default;
 
-                virtual void set_data(const void* const data, const u64 size) = 0;
+                virtual void set_data(const void* data, u64 size) = 0;
 
                 virtual const math::uvec3& get_extent() const = 0;
 
@@ -287,10 +287,9 @@ namespace mag
 
                 virtual Format get_format() const = 0;
 
-                virtual ITexture* get_texture(const u32 index) const = 0;
+                virtual ITexture* get_texture(u32 index) const = 0;
 
-                virtual Result acquire_next_image(const ISemaphore* const signal_semaphore,
-                                                  const IFence* const fence) = 0;
+                virtual Result acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence) = 0;
 
                 virtual void resize(const math::uvec2& extent) = 0;
         };
@@ -312,11 +311,11 @@ namespace mag
             public:
                 virtual ~IDescriptorSet() = default;
 
-                virtual void update(const IBuffer* const buffer, const u32 binding, const u32 array_element,
-                                    const DescriptorType descriptor_type, const u64 offset = 0) const = 0;
+                virtual void update(const IBuffer* buffer, u32 binding, u32 array_element,
+                                    DescriptorType descriptor_type, u64 offset = 0) const = 0;
 
-                virtual void update(const ITexture* const texture, const ISampler* const sampler, const u32 binding,
-                                    const u32 array_element, const DescriptorType descriptor_type) const = 0;
+                virtual void update(const ITexture* texture, const ISampler* sampler, u32 binding, u32 array_element,
+                                    DescriptorType descriptor_type) const = 0;
         };
 
         class IGraphicsPipeline
@@ -344,49 +343,45 @@ namespace mag
 
                 virtual void reset() const = 0;
 
-                virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, const f32 min_depth,
-                                          const f32 max_depth) const = 0;
+                virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, f32 min_depth,
+                                          f32 max_depth) const = 0;
 
                 virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset) const = 0;
 
-                virtual void begin_rendering(const IRenderPass* const render_pass) const = 0;
+                virtual void begin_rendering(const IRenderPass* render_pass) const = 0;
 
                 virtual void end_rendering() const = 0;
 
-                virtual void bind_pipeline(const IGraphicsPipeline* const pipeline) const = 0;
+                virtual void bind_pipeline(const IGraphicsPipeline* pipeline) const = 0;
 
-                virtual void bind_descriptor(const IGraphicsPipeline* const pipeline,
-                                             const IDescriptorSet* const descriptor) const = 0;
+                virtual void bind_descriptor(const IGraphicsPipeline* pipeline,
+                                             const IDescriptorSet* descriptor) const = 0;
 
-                virtual void bind_vertex_buffers(const u32 first_binding, const u32 binding_count,
+                virtual void bind_vertex_buffers(u32 first_binding, u32 binding_count,
                                                  const std::vector<const IBuffer*>& buffers,
                                                  const std::vector<u64>& offsets) const = 0;
 
-                virtual void bind_index_buffer(const IBuffer* const buffer, const u64 offset) const = 0;
+                virtual void bind_index_buffer(const IBuffer* buffer, u64 offset) const = 0;
 
-                virtual void draw(const u32 vertex_count, const u32 instance_count = 1, const u32 first_vertex = 0,
-                                  const u32 first_instance = 0) const = 0;
+                virtual void draw(u32 vertex_count, u32 instance_count = 1, u32 first_vertex = 0,
+                                  u32 first_instance = 0) const = 0;
 
-                virtual void draw_indexed(const u32 index_count, const u32 instance_count = 1,
-                                          const u32 first_index = 0, const i32 vertex_offset = 0,
-                                          const u32 first_instance = 0) const = 0;
+                virtual void draw_indexed(u32 index_count, u32 instance_count = 1, u32 first_index = 0,
+                                          i32 vertex_offset = 0, u32 first_instance = 0) const = 0;
 
-                virtual void draw_indexed_indirect(const IBuffer* const buffer, const u64 offset, const u32 draw_count,
-                                                   const u32 stride) const = 0;
+                virtual void draw_indexed_indirect(const IBuffer* buffer, u64 offset, u32 draw_count,
+                                                   u32 stride) const = 0;
 
-                virtual void pipeline_barrier(ITexture* const texture, const TextureLayout new_layout,
-                                              const AccessMask src_access_mask, const AccessMask dst_access_mask,
-                                              const PipelineStage src_stage_mask,
-                                              const PipelineStage dst_stage_mask) const = 0;
+                virtual void pipeline_barrier(ITexture* texture, TextureLayout new_layout, AccessMask src_access_mask,
+                                              AccessMask dst_access_mask, PipelineStage src_stage_mask,
+                                              PipelineStage dst_stage_mask) const = 0;
 
-                virtual void blit_texture(const ITexture* const src_texture, const ITexture* const dst_texture,
-                                          const Filter filter) const = 0;
+                virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
+                                          Filter filter) const = 0;
 
-                virtual void copy_texture(const ITexture* const src_texture,
-                                          const ITexture* const dst_texture) const = 0;
+                virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) const = 0;
 
-                virtual void copy_buffer_to_texture(const IBuffer* const buffer,
-                                                    const ITexture* const texture) const = 0;
+                virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) const = 0;
         };
 
         class IQueue
@@ -394,11 +389,10 @@ namespace mag
             public:
                 virtual ~IQueue() = default;
 
-                virtual void submit(const ISemaphore* const wait_semaphore, const ISemaphore* const signal_semaphore,
-                                    const IFence* const fence, const ICommandBuffer* const command_buffer) const = 0;
+                virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore,
+                                    const IFence* fence, const ICommandBuffer* command_buffer) const = 0;
 
-                virtual Result present(const ISwapchain* const swapchain,
-                                       const ISemaphore* const wait_semaphore) const = 0;
+                virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) const = 0;
         };
 
         class IDevice

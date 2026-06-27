@@ -161,9 +161,9 @@ namespace mag
                     for (u64 t = 0; t < batch->triangles.size(); ++t)
                     {
                         Triangle& triangle = batch->triangles[t];
-                        triangle.mV[0] = inVertices[inIndices[t * 3 + 0]];
-                        triangle.mV[1] = inVertices[inIndices[t * 3 + 1]];
-                        triangle.mV[2] = inVertices[inIndices[t * 3 + 2]];
+                        triangle.mV[0] = inVertices[inIndices[(t * 3) + 0]];
+                        triangle.mV[1] = inVertices[inIndices[(t * 3) + 1]];
+                        triangle.mV[2] = inVertices[inIndices[(t * 3) + 2]];
                     }
 
                     return batch;
@@ -256,7 +256,7 @@ namespace mag
                 JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer layer) const override
                 {
                     MAG_ASSERT(layer < Layers::Num_Layers, "[Physics] Layer count exceeded");
-                    return object_to_broad_phase[layer];
+                    return object_to_broad_phase.at(layer);
                 }
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
