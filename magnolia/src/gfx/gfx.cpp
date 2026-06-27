@@ -206,7 +206,7 @@ namespace mag::gfx
         const unique<ITexture>& render_target_color = current_frame.render_target_color;
         const unique<ITexture>& render_target_depth = current_frame.render_target_depth;
 
-        current_frame.in_flight_fence->wait();
+        current_frame.in_flight_fence->wait(Timeout);
 
         const Result result = state->swapchain->acquire_next_image(current_frame.available_semaphore.get(), nullptr);
 
@@ -519,7 +519,8 @@ namespace mag::gfx
 
         // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-        descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element, binding.descriptor_type);
+        descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element, binding.descriptor_type,
+                                               0);
     }
 
     void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
@@ -563,7 +564,7 @@ namespace mag::gfx
             // If we change the buffer, we need to update the descriptor sets (for each frame)
 
             descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element,
-                                                   binding.descriptor_type);
+                                                   binding.descriptor_type, 0);
         }
     }
 

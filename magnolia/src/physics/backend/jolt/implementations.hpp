@@ -386,7 +386,6 @@ namespace mag
             public:
                 const std::vector<JPH::BodyID>& get_collisions() const { return collisions; }
 
-            private:
                 void AddHit(const JPH::CollideShapeResult& inResult) override
                 {
                     collisions.push_back(inResult.mBodyID2);

@@ -1423,7 +1423,7 @@ namespace mag
                     cmd->end_recording();
 
                     immediate_queue->submit(nullptr, nullptr, immediate_fence.get(), immediate_command_buffer.get());
-                    immediate_fence->wait();
+                    immediate_fence->wait(Timeout);
 
                     (*immediate_fence).reset();
                     (*immediate_command_pool).reset();

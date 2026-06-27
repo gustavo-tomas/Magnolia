@@ -241,7 +241,7 @@ namespace mag
             public:
                 virtual ~IFence() = default;
 
-                virtual void wait(u64 timeout = Timeout) const = 0;
+                virtual void wait(u64 timeout) const = 0;
 
                 virtual void reset() const = 0;
         };
@@ -312,7 +312,7 @@ namespace mag
                 virtual ~IDescriptorSet() = default;
 
                 virtual void update(const IBuffer* buffer, u32 binding, u32 array_element,
-                                    DescriptorType descriptor_type, u64 offset = 0) const = 0;
+                                    DescriptorType descriptor_type, u64 offset) const = 0;
 
                 virtual void update(const ITexture* texture, const ISampler* sampler, u32 binding, u32 array_element,
                                     DescriptorType descriptor_type) const = 0;
@@ -363,11 +363,10 @@ namespace mag
 
                 virtual void bind_index_buffer(const IBuffer* buffer, u64 offset) const = 0;
 
-                virtual void draw(u32 vertex_count, u32 instance_count = 1, u32 first_vertex = 0,
-                                  u32 first_instance = 0) const = 0;
+                virtual void draw(u32 vertex_count, u32 instance_count, u32 first_vertex, u32 first_instance) const = 0;
 
-                virtual void draw_indexed(u32 index_count, u32 instance_count = 1, u32 first_index = 0,
-                                          i32 vertex_offset = 0, u32 first_instance = 0) const = 0;
+                virtual void draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset,
+                                          u32 first_instance) const = 0;
 
                 virtual void draw_indexed_indirect(const IBuffer* buffer, u64 offset, u32 draw_count,
                                                    u32 stride) const = 0;
