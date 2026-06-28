@@ -21,8 +21,8 @@ namespace mag
     {
         public:
             virtual ~IComponentStorage() = default;
-            virtual void remove_component(const EntityID entity_id) = 0;
-            virtual b8 has_component(const EntityID entity_id) const = 0;
+            virtual void remove_component(EntityID entity_id) = 0;
+            virtual b8 has_component(EntityID entity_id) const = 0;
     };
 
     template <typename Component>
