@@ -41,6 +41,8 @@ namespace mag::gfx
             TextureHandle render_target_color = Invalid_ID;
             TextureHandle render_target_depth = Invalid_ID;
             DescriptorPoolHandle descriptor_pool = Invalid_ID;
+            RenderingAttachmentHandle color_attachment = Invalid_ID;
+            RenderingAttachmentHandle depth_attachment = Invalid_ID;
             std::unordered_map<ShaderHandle, DescriptorData> descriptor_set_map;
     };
 
@@ -124,6 +126,8 @@ namespace mag::gfx
 
         state->frames.resize(max_frames_in_flight);
 
+        const math::vec4 clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
+
         for (FrameData& frame : state->frames)
         {
             ICommandPoolDesc command_pool_desc = {};
@@ -143,6 +147,8 @@ namespace mag::gfx
             frame.available_semaphore = create_semaphore(sem_desc);
             frame.in_flight_fence = create_fence(fence_desc);
 
+            // Render target and attachments
+            // -------------------------------------------------------------------------------------------------
             ITextureDesc render_target_color_texture_desc = {};
             render_target_color_texture_desc.extent = render_target_extent;
             render_target_color_texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
@@ -154,6 +160,18 @@ namespace mag::gfx
             render_target_depth_texture_desc.aspect = TextureAspect::Depth | TextureAspect::Stencil;
             render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
             frame.render_target_depth = create_texture(render_target_depth_texture_desc);
+
+            IRenderingAttachmentDesc color_attachment_desc = {};
+            color_attachment_desc.type = RenderingAttachmentType::Color;
+            color_attachment_desc.clear_color = clear_color;
+            color_attachment_desc.texture = frame.render_target_color;
+            frame.color_attachment = create_render_attachment(color_attachment_desc);
+
+            IRenderingAttachmentDesc depth_attachment_desc = {};
+            depth_attachment_desc.type = RenderingAttachmentType::Depth;
+            depth_attachment_desc.clear_depth = 1.0F;
+            depth_attachment_desc.texture = frame.render_target_depth;
+            frame.depth_attachment = create_render_attachment(depth_attachment_desc);
 
             IDescriptorPoolDesc descriptor_pool_desc = {};
             descriptor_pool_desc.max_sets = max_descriptor_set_count;
@@ -212,26 +230,13 @@ namespace mag::gfx
         }
 
         const math::uvec2 extent = math::uvec2(get_extent_texture(render_target_color));
-        const math::vec4 clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
 
         // Render Passes
         // -------------------------------------------------------------------------------------------------
-        IRenderingAttachmentDesc color_attachment_desc = {};
-        color_attachment_desc.type = RenderingAttachmentType::Color;
-        color_attachment_desc.clear_color = clear_color;
-        color_attachment_desc.texture = render_target_color;
-        const RenderingAttachmentHandle color_attachment = create_render_attachment(color_attachment_desc);
-
-        IRenderingAttachmentDesc depth_attachment_desc = {};
-        depth_attachment_desc.type = RenderingAttachmentType::Depth;
-        depth_attachment_desc.clear_depth = 1.0F;
-        depth_attachment_desc.texture = render_target_depth;
-        const RenderingAttachmentHandle depth_attachment = create_render_attachment(depth_attachment_desc);
-
         IRenderPassDesc render_pass_desc = {};
         render_pass_desc.extent = extent;
-        render_pass_desc.color_attachments.push_back(color_attachment);
-        render_pass_desc.depth_attachment = depth_attachment;
+        render_pass_desc.color_attachments.push_back(current_frame.color_attachment);
+        render_pass_desc.depth_attachment = current_frame.depth_attachment;
         const RenderPassHandle render_pass = create_render_pass(render_pass_desc);
 
         begin_recording_command_buffer(current_frame.command_buffer);
