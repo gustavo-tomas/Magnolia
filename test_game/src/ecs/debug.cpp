@@ -58,8 +58,6 @@ namespace game
                 vec3 color;
         };
 
-        std::vector<Line> lines;
-
         const mag::physics::IPhysicsWorld& physics = scene.get_physics_world();
 
         const mag::math::LineList& line_list = physics.get_debug_line_list();
@@ -83,10 +81,13 @@ namespace game
 
         mag::gfx::set_uniform("u_global", &global_data);
 
-        for (const mag::math::Line& line : line_list.lines)
+        std::vector<Line> lines(line_list.lines.size());
+
+        for (u64 i = 0; i < line_list.lines.size(); i++)
         {
-            lines.push_back({.position = line.start, .color = line.color});
-            lines.push_back({.position = line.end, .color = line.color});
+            const math::Line& line = line_list.lines[i];
+            lines[i] = {.position = line.start, .color = line.color};
+            lines[i] = {.position = line.end, .color = line.color};
         }
 
         static mag::gfx::VertexBufferHandle vb = mag::Invalid_ID;

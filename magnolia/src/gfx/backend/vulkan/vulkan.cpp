@@ -757,7 +757,7 @@ namespace mag::gfx
         return handle;
     }
 
-    void destroy_buffer(const BufferHandle handle)
+    void destroy_buffer_shitty_name(const BufferHandle handle)
     {
         const VulkanBuffer& buffer = state->buffers[handle];
 
@@ -1005,7 +1005,7 @@ namespace mag::gfx
         const std::vector<VkImage>& swapchain_images = swapchain.swapchain.get_images().value();
         const std::vector<VkImageView>& swapchain_image_views = swapchain.swapchain.get_image_views().value();
 
-        // @TODO: reserve
+        swapchain.swapchain_textures.resize(swapchain.swapchain.image_count);
         for (u32 i = 0; i < swapchain.swapchain.image_count; i++)
         {
             const TextureHandle texture_handle = state->texture_handles++;
@@ -1016,7 +1016,7 @@ namespace mag::gfx
             texture.image_view = swapchain_image_views[i];
             texture.usage = TextureUsage::TransferDst;
 
-            swapchain.swapchain_textures.push_back(texture_handle);
+            swapchain.swapchain_textures[i] = texture_handle;
         }
     }
 
@@ -1223,12 +1223,13 @@ namespace mag::gfx
 
         VkDescriptorSetLayout* const descriptor_layout = &state->descriptor_layouts[handle].descriptor_layout;
 
-        // @TODO: reserve
-        std::vector<VkDescriptorSetLayoutBinding> bindings;
-        std::vector<VkDescriptorBindingFlags> flags;
+        std::vector<VkDescriptorSetLayoutBinding> bindings(desc.binding_descs.size());
+        std::vector<VkDescriptorBindingFlags> flags(desc.binding_descs.size());
 
-        for (const IDescriptorSetLayoutBindingDesc& binding_desc : desc.binding_descs)
+        for (u64 i = 0; i < desc.binding_descs.size(); i++)
         {
+            const IDescriptorSetLayoutBindingDesc& binding_desc = desc.binding_descs[i];
+
             VkDescriptorSetLayoutBinding binding = {};
             binding.binding = binding_desc.binding;
             binding.descriptorType = mag_to_vk(binding_desc.descriptor_type);
@@ -1243,8 +1244,8 @@ namespace mag::gfx
                 binding_flags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
             }
 
-            bindings.push_back(binding);
-            flags.push_back(binding_flags);
+            bindings[i] = binding;
+            flags[i] = binding_flags;
         }
 
         VkDescriptorSetLayoutBindingFlagsCreateInfoEXT binding_flags = {};
@@ -1393,14 +1394,15 @@ namespace mag::gfx
             };
         }
 
-        // @TODO: reserve
-        std::vector<VkDescriptorSetLayout> descriptor_set_layouts;
-        for (const DescriptorSetLayoutHandle descriptor_layout_handle : desc.descriptor_layouts)
+        std::vector<VkDescriptorSetLayout> descriptor_set_layouts(desc.descriptor_layouts.size());
+        for (u64 i = 0; i < descriptor_set_layouts.size(); i++)
         {
+            const DescriptorSetLayoutHandle descriptor_layout_handle = desc.descriptor_layouts[i];
+
             const VulkanDescriptorSetLayout& descriptor_set_layout =
                 state->descriptor_layouts[descriptor_layout_handle];
 
-            descriptor_set_layouts.push_back(descriptor_set_layout.descriptor_layout);
+            descriptor_set_layouts[i] = descriptor_set_layout.descriptor_layout;
         }
 
         VkPipelineVertexInputStateCreateInfo vertex_input_info = {};

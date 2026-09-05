@@ -475,6 +475,7 @@ namespace mag::gfx
         // before deleting. WaitIdle is, however, simpler.
 
         wait_idle();
+        destroy_buffer_shitty_name(state->buffers[handle]);
         state->buffers.erase(handle);
     }
 
