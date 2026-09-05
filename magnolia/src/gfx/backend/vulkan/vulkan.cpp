@@ -1708,6 +1708,8 @@ namespace mag::gfx
         vkb::destroy_device(state->device);
         vkb::destroy_surface(state->instance, state->surface);
         vkb::destroy_instance(state->instance);
+
+        delete state;
     }
 
     void wait_idle() { state->disp.deviceWaitIdle(); }
