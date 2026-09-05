@@ -32,12 +32,6 @@ namespace mag::gfx
             DescriptorSetLayoutHandle descriptor_layout = Invalid_ID;
     };
 
-    struct TextureData
-    {
-            TextureHandle texture = Invalid_ID;
-            SamplerHandle sampler = Invalid_ID;
-    };
-
     struct FrameData
     {
             CommandPoolHandle command_pool = Invalid_ID;
@@ -57,7 +51,7 @@ namespace mag::gfx
             std::vector<FrameData> frames;
             std::vector<SemaphoreHandle> submit_semaphores;
             std::unordered_map<ShaderHandle, ShaderData> shaders;
-            std::unordered_map<TextureHandle, TextureData> textures;
+            std::unordered_map<TextureHandle, SamplerHandle> textures;
             u32 current_frame = 0;
             ShaderHandle current_bound_shader = Invalid_ID;
     };
@@ -523,12 +517,11 @@ namespace mag::gfx
 
         const BindingData& binding = bindings_map.at(uniform_name);
 
-        const TextureHandle texture = state->textures[texture_handle].texture;
-        const SamplerHandle sampler = state->textures[texture_handle].sampler;
+        const SamplerHandle sampler = state->textures[texture_handle];
 
         // If we change the texture, we need to update the descriptor sets (for each frame)
 
-        update_descriptor_set(descriptor_data.descriptor_set, texture, sampler, binding.binding, array_element,
+        update_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding, array_element,
                               binding.descriptor_type);
     }
 
@@ -569,21 +562,18 @@ namespace mag::gfx
 
             const BindingData& binding = bindings_map.at(uniform_name);
 
-            const TextureHandle texture = state->textures[texture_handle].texture;
-            const SamplerHandle sampler = state->textures[texture_handle].sampler;
+            const SamplerHandle sampler = state->textures[texture_handle];
 
             // If we change the texture, we need to update the descriptor sets (for each frame)
 
-            update_descriptor_set(descriptor_data.descriptor_set, texture, sampler, binding.binding, array_element,
-                                  binding.descriptor_type);
+            update_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding,
+                                  array_element, binding.descriptor_type);
         }
     }
 
     TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels,
                                  const Format format)
     {
-        const TextureHandle handle = create_handle();
-
         ITextureDesc texture_desc = {};
         texture_desc.extent = math::uvec3(width, height, 1);
         texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::Sampled | TextureUsage::TransferDst;
@@ -593,8 +583,9 @@ namespace mag::gfx
         sampler_desc.min_lod = 0.0F;
         sampler_desc.max_lod = static_cast<f32>(texture_desc.mip_levels);
 
-        state->textures[handle].sampler = create_sampler(sampler_desc);
-        state->textures[handle].texture = create_texture(texture_desc);
+        const TextureHandle handle = create_texture(texture_desc);
+
+        state->textures[handle] = create_sampler(sampler_desc);
 
         if ((size > 0) && (pixels != nullptr))
         {
@@ -606,7 +597,7 @@ namespace mag::gfx
 
     void set_texture_data(const TextureHandle texture_handle, const u64 size, const void* data)
     {
-        set_data_texture(state->textures[texture_handle].texture, data, size);
+        set_data_texture(texture_handle, data, size);
     }
 
     ShaderHandle create_shader(const ShaderResource& shader)
