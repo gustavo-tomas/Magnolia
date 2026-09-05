@@ -112,9 +112,9 @@ namespace mag::gfx
 
         state->submit_semaphores.resize(get_image_count_swapchain());
 
-        for (u32 i = 0; i < state->submit_semaphores.size(); i++)
+        for (SemaphoreHandle& submit_semaphore : state->submit_semaphores)
         {
-            state->submit_semaphores[i] = create_semaphore(submit_semaphore_desc);
+            submit_semaphore = create_semaphore(submit_semaphore_desc);
         }
 
         // Triple buffering if the device supports it
@@ -124,36 +124,36 @@ namespace mag::gfx
 
         state->frames.resize(max_frames_in_flight);
 
-        for (u32 i = 0; i < state->frames.size(); i++)
+        for (FrameData& frame : state->frames)
         {
             ICommandPoolDesc command_pool_desc = {};
             command_pool_desc.queue_type = QueueType::Graphics;
-            state->frames[i].command_pool = create_command_pool(command_pool_desc);
+            frame.command_pool = create_command_pool(command_pool_desc);
 
             ICommandBufferDesc command_buffer_desc = {};
             command_buffer_desc.command_buffer_level = CommandBufferLevel::Primary;
-            command_buffer_desc.command_pool = state->frames[i].command_pool;
-            state->frames[i].command_buffer = create_command_buffer(command_buffer_desc);
+            command_buffer_desc.command_pool = frame.command_pool;
+            frame.command_buffer = create_command_buffer(command_buffer_desc);
 
             IFenceDesc fence_desc = {};
             fence_desc.signaled = true;
 
             const ISemaphoreDesc sem_desc = {};
 
-            state->frames[i].available_semaphore = create_semaphore(sem_desc);
-            state->frames[i].in_flight_fence = create_fence(fence_desc);
+            frame.available_semaphore = create_semaphore(sem_desc);
+            frame.in_flight_fence = create_fence(fence_desc);
 
             ITextureDesc render_target_color_texture_desc = {};
             render_target_color_texture_desc.extent = render_target_extent;
             render_target_color_texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
-            state->frames[i].render_target_color = create_texture(render_target_color_texture_desc);
+            frame.render_target_color = create_texture(render_target_color_texture_desc);
 
             ITextureDesc render_target_depth_texture_desc = {};
             render_target_depth_texture_desc.extent = render_target_extent;
             render_target_depth_texture_desc.usage = TextureUsage::DepthStencilAttachment;
             render_target_depth_texture_desc.aspect = TextureAspect::Depth | TextureAspect::Stencil;
             render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
-            state->frames[i].render_target_depth = create_texture(render_target_depth_texture_desc);
+            frame.render_target_depth = create_texture(render_target_depth_texture_desc);
 
             IDescriptorPoolDesc descriptor_pool_desc = {};
             descriptor_pool_desc.max_sets = max_descriptor_set_count;
@@ -176,7 +176,7 @@ namespace mag::gfx
             descriptor_pool_desc.size_descs.push_back(size_desc_storage);
             descriptor_pool_desc.size_descs.push_back(size_desc_combined_sampler);
 
-            state->frames[i].descriptor_pool = create_descriptor_pool(descriptor_pool_desc);
+            frame.descriptor_pool = create_descriptor_pool(descriptor_pool_desc);
         }
 
         return state != nullptr;
@@ -527,11 +527,9 @@ namespace mag::gfx
 
     void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element)
     {
-        for (u32 i = 0; i < state->frames.size(); i++)
+        for (FrameData& frame : state->frames)
         {
-            FrameData& current_frame = state->frames[i];
-
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+            DescriptorData& descriptor_data = frame.descriptor_set_map[state->current_bound_shader];
 
             std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
@@ -552,11 +550,9 @@ namespace mag::gfx
 
     void set_uniform_static(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
     {
-        for (u32 i = 0; i < state->frames.size(); i++)
+        for (FrameData& frame : state->frames)
         {
-            const FrameData& current_frame = state->frames[i];
-
-            const DescriptorData& descriptor_data = current_frame.descriptor_set_map.at(state->current_bound_shader);
+            const DescriptorData& descriptor_data = frame.descriptor_set_map.at(state->current_bound_shader);
 
             const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
