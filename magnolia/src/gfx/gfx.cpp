@@ -57,7 +57,6 @@ namespace mag::gfx
             std::vector<FrameData> frames;
             std::vector<SemaphoreHandle> submit_semaphores;
             std::unordered_map<ShaderHandle, ShaderData> shaders;
-            std::unordered_map<BufferHandle, BufferHandle> buffers;
             std::unordered_map<TextureHandle, TextureData> textures;
             u32 current_frame = 0;
             ShaderHandle current_bound_shader = Invalid_ID;
@@ -448,21 +447,18 @@ namespace mag::gfx
 
     static void set_texture_data(TextureHandle texture_handle, u64 size, const void* data);
 
-    // @TODO: review logic
     static BufferHandle create_buffer(const u64 size, const void* data, const BufferUsage usage)
     {
-        const BufferHandle handle = create_handle();
-
         IBufferDesc buffer_desc = {};
         buffer_desc.size_bytes = size;
         buffer_desc.buffer_usage = usage;
         buffer_desc.memory_usage = MemoryUsage::Auto;
 
-        state->buffers[handle] = create_buffer(buffer_desc);
+        const BufferHandle handle = create_buffer(buffer_desc);
 
         if (data != nullptr)
         {
-            set_data_buffer(state->buffers[handle], data, size, 0);
+            set_data_buffer(handle, data, size, 0);
         }
 
         return handle;
@@ -475,8 +471,7 @@ namespace mag::gfx
         // before deleting. WaitIdle is, however, simpler.
 
         wait_idle();
-        destroy_buffer_shitty_name(state->buffers[handle]);
-        state->buffers.erase(handle);
+        destroy_buffer_shitty_name(handle);
     }
 
     VertexBufferHandle create_vertex_buffer(const u64 size, const void* data)
@@ -493,7 +488,7 @@ namespace mag::gfx
 
     void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
     {
-        set_data_buffer(state->buffers[buffer_handle], data, size, offset);
+        set_data_buffer(buffer_handle, data, size, offset);
     }
 
     void set_uniform(const str& uniform_name, const void* data, const u32 array_element)
@@ -507,7 +502,6 @@ namespace mag::gfx
         const BindingData& binding = bindings_map[uniform_name];
 
         const BufferHandle buffer_handle = binding.buffer_handle;
-        const BufferHandle buffer = state->buffers[buffer_handle];
 
         // Set the buffer data
 
@@ -515,7 +509,7 @@ namespace mag::gfx
 
         // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-        update_descriptor_set(descriptor_data.descriptor_set, buffer, binding.binding, array_element,
+        update_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
                               binding.descriptor_type, 0);
     }
 
@@ -551,7 +545,6 @@ namespace mag::gfx
             const BindingData& binding = bindings_map[uniform_name];
 
             const BufferHandle buffer_handle = binding.buffer_handle;
-            const BufferHandle buffer = state->buffers[buffer_handle];
 
             // Set the buffer data
 
@@ -559,7 +552,7 @@ namespace mag::gfx
 
             // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-            update_descriptor_set(descriptor_data.descriptor_set, buffer, binding.binding, array_element,
+            update_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
                                   binding.descriptor_type, 0);
         }
     }
@@ -805,15 +798,14 @@ namespace mag::gfx
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        bind_vertex_buffers_command_buffer(current_frame.command_buffer, 0, 1, {state->buffers[vertex_buffer_handle]},
-                                           {0});
+        bind_vertex_buffers_command_buffer(current_frame.command_buffer, 0, 1, {vertex_buffer_handle}, {0});
     }
 
     void bind_index_buffer(const BufferHandle index_buffer_handle)
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        bind_index_buffer_command_buffer(current_frame.command_buffer, state->buffers[index_buffer_handle], 0);
+        bind_index_buffer_command_buffer(current_frame.command_buffer, index_buffer_handle, 0);
     }
 
     void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
