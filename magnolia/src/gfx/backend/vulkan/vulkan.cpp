@@ -712,7 +712,7 @@ namespace mag::gfx
         render_pass.render_info.pDepthAttachment = &depth_attachment.rendering_attachment_info;
 
         return handle;
-    }  // namespace mag::gfx
+    }
 
     void destroy_render_pass(const RenderPassHandle handle) { state->render_passes.erase(handle); }
 
