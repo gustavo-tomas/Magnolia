@@ -41,6 +41,20 @@ namespace mag
         return {};
     }
 
+    void ProfilerManager::print_results() const
+    {
+        if (results.empty())
+        {
+            return;
+        }
+
+        LOG_INFO("[Profile] ------------------- Results -------------------");
+        for (const auto& [name, result] : results)
+        {
+            LOG_INFO("[Profile] {0:.<29.29} | Average: {1:.4f}", name, result.average);
+        }
+    }
+
     ProfilerManager& ProfilerManager::get()
     {
         static ProfilerManager instance;

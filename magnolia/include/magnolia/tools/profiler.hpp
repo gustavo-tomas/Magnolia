@@ -22,6 +22,7 @@ namespace mag
             void clear_results();
 
             ProfileResult get_result(const str& name) const;
+            void print_results() const;
 
             static ProfilerManager& get();
 
