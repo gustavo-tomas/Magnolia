@@ -442,8 +442,6 @@ namespace mag::gfx
         return handle_counter++;
     }
 
-    static void set_buffer_data(BufferHandle buffer_handle, const void* data, u64 size, u64 offset = 0);
-
     static void set_texture_data(TextureHandle texture_handle, u64 size, const void* data);
 
     static BufferHandle create_buffer(const u64 size, const void* data, const BufferUsage usage)

@@ -22,6 +22,8 @@ namespace mag
 
         MAG_API void destroy_vertex_buffer(VertexBufferHandle vertex_buffer_handle);
 
+        MAG_API void set_buffer_data(VertexBufferHandle buffer_handle, const void* data, u64 size, u64 offset = 0);
+
         MAG_API IndexBufferHandle create_index_buffer(u64 size, const void* data = nullptr);
 
         MAG_API TextureHandle create_texture(u32 width, u32 height, u64 size = 0, const void* pixels = nullptr,

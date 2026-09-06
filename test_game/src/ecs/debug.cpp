@@ -90,14 +90,20 @@ namespace game
             lines[i] = {.position = line.end, .color = line.color};
         }
 
-        static mag::gfx::VertexBufferHandle vb = mag::Invalid_ID;
+        // Create a big buffer. Expand if necessary.
+        const u64 max_buffer_size = 64ULL * 1024 * 1024;
+        static mag::gfx::VertexBufferHandle vb = mag::gfx::create_vertex_buffer(max_buffer_size, nullptr);
 
-        if (vb != mag::Invalid_ID)
+        const u64 line_vec_size = VEC_SIZE_BYTES(lines);
+
+        if (line_vec_size > max_buffer_size)
         {
-            mag::gfx::destroy_vertex_buffer(vb);
+            LOG_ERROR("Debug buffer size exceeded ('{0}' < '{1}'). Please increase buffer limit.", max_buffer_size,
+                      line_vec_size);
+            return;
         }
 
-        vb = mag::gfx::create_vertex_buffer(VEC_SIZE_BYTES(lines), lines.data());
+        mag::gfx::set_buffer_data(vb, lines.data(), line_vec_size, 0);
 
         mag::gfx::bind_vertex_buffer(vb);
 
