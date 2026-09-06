@@ -41,9 +41,13 @@ namespace mag
             f64 start, time_interval_ms;
     };
 
-// @NOTE: Don't use this macro with the same name twice in the same scope
 #if MAG_PROFILE_ENABLED
-    #define MAG_SCOPED_PROFILE(name, ...) ScopedProfiler scoped_profiler(name, ##__VA_ARGS__)
+    #define MAG_CONCAT_IMPL(a, b) a##b
+    #define MAG_CONCAT(a, b) MAG_CONCAT_IMPL(a, b)
+
+    // Generate unique names for each profiler
+    #define MAG_SCOPED_PROFILE(name, ...) \
+        mag::ScopedProfiler MAG_CONCAT(scoped_profiler_, __COUNTER__)(name, ##__VA_ARGS__)
 #else
     #define MAG_SCOPED_PROFILE(name, ...)
 #endif
