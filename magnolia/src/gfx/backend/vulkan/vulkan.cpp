@@ -686,9 +686,10 @@ namespace mag::gfx
 
         VulkanRenderPass& render_pass = state->render_passes[handle];
 
-        VkRect2D render_area = {};
-        render_area.extent = mag_to_vk(desc.extent);
-        render_area.offset = mag_to_vk(desc.offset);
+        const VkRect2D render_area = {
+            .offset = mag_to_vk(desc.offset),
+            .extent = mag_to_vk(desc.extent),
+        };
 
         for (const RenderingAttachmentHandle color_attachment_handle : desc.color_attachments)
         {
@@ -711,7 +712,7 @@ namespace mag::gfx
         render_pass.render_info.pDepthAttachment = &depth_attachment.rendering_attachment_info;
 
         return handle;
-    }
+    }  // namespace mag::gfx
 
     void destroy_render_pass(const RenderPassHandle handle) { state->render_passes.erase(handle); }
 
