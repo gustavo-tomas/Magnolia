@@ -87,6 +87,7 @@ set(MAG_SOURCES
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/engine.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/buffer.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/memory.hpp"
+    "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/stl.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/string.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/assert.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/include/magnolia/core/debug.hpp"
