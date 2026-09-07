@@ -43,6 +43,7 @@ namespace mag::gfx
             DescriptorPoolHandle descriptor_pool = Invalid_ID;
             RenderingAttachmentHandle color_attachment = Invalid_ID;
             RenderingAttachmentHandle depth_attachment = Invalid_ID;
+            RenderPassHandle render_pass = Invalid_ID;
             std::unordered_map<ShaderHandle, DescriptorData> descriptor_set_map;
     };
 
@@ -173,6 +174,14 @@ namespace mag::gfx
             depth_attachment_desc.texture = frame.render_target_depth;
             frame.depth_attachment = create_render_attachment(depth_attachment_desc);
 
+            // Render Passes
+            // -------------------------------------------------------------------------------------------------
+            IRenderPassDesc render_pass_desc = {};
+            render_pass_desc.extent = math::uvec2(render_target_extent);
+            render_pass_desc.color_attachments.push_back(frame.color_attachment);
+            render_pass_desc.depth_attachment = frame.depth_attachment;
+            frame.render_pass = create_render_pass(render_pass_desc);
+
             IDescriptorPoolDesc descriptor_pool_desc = {};
             descriptor_pool_desc.max_sets = max_descriptor_set_count;
 
@@ -229,16 +238,6 @@ namespace mag::gfx
             return false;
         }
 
-        const math::uvec2 extent = math::uvec2(get_extent_texture(render_target_color));
-
-        // Render Passes
-        // -------------------------------------------------------------------------------------------------
-        IRenderPassDesc render_pass_desc = {};
-        render_pass_desc.extent = extent;
-        render_pass_desc.color_attachments.push_back(current_frame.color_attachment);
-        render_pass_desc.depth_attachment = current_frame.depth_attachment;
-        const RenderPassHandle render_pass = create_render_pass(render_pass_desc);
-
         begin_recording_command_buffer(current_frame.command_buffer);
 
         static u32 f = 0;
@@ -258,6 +257,8 @@ namespace mag::gfx
             current_frame.command_buffer, render_target_color, TextureLayout::ColorAttachment, AccessMask::None,
             AccessMask::ColorAttachmentWrite, PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
 
+        const math::uvec2 extent = math::uvec2(get_extent_texture(render_target_color));
+
         // Flip the viewport to correct vulkan coordinate system
         const math::vec2 viewport_offset = math::vec2(0.0F, extent.y);
         auto viewport_extent = math::vec2(extent);
@@ -265,10 +266,7 @@ namespace mag::gfx
 
         set_viewport_command_buffer(current_frame.command_buffer, viewport_extent, viewport_offset, 0.0F, 1.0F);
         set_scissor_command_buffer(current_frame.command_buffer, extent, {0.0F, 0.0F});
-        begin_rendering_command_buffer(current_frame.command_buffer, render_pass);
-
-        // RenderPass is a temporary resource, release it
-        destroy_render_pass(render_pass);
+        begin_rendering_command_buffer(current_frame.command_buffer, current_frame.render_pass);
 
         return true;
     }

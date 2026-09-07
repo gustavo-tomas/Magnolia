@@ -13,6 +13,7 @@
 #include "magnolia/core/assert.hpp"
 #include "magnolia/core/debug.hpp"
 #include "magnolia/core/memory.hpp"
+#include "magnolia/core/stl.hpp"
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/types.hpp"
 #include "magnolia/math/functions.hpp"
@@ -194,8 +195,7 @@ namespace mag::gfx
             RenderingAttachmentHandle rendering_attachment_handles = 0;
             std::unordered_map<RenderingAttachmentHandle, VulkanRenderingAttachment> rendering_attachments;
 
-            RenderPassHandle render_pass_handles = 0;
-            std::unordered_map<RenderPassHandle, VulkanRenderPass> render_passes;
+            stl::pool<VulkanRenderPass, 3> render_passes;
 
             QueueHandle queue_handles = 0;
             std::unordered_map<QueueHandle, VulkanQueue> queues;
@@ -682,7 +682,7 @@ namespace mag::gfx
 
     RenderPassHandle create_render_pass(const IRenderPassDesc& desc)
     {
-        const RenderPassHandle handle = state->render_pass_handles++;
+        const RenderPassHandle handle = state->render_passes.acquire_resource();
 
         VulkanRenderPass& render_pass = state->render_passes[handle];
 
@@ -714,7 +714,7 @@ namespace mag::gfx
         return handle;
     }
 
-    void destroy_render_pass(const RenderPassHandle handle) { state->render_passes.erase(handle); }
+    void destroy_render_pass(const RenderPassHandle handle) { state->render_passes.release_resource(handle); }
 
     math::ivec2 get_offset(const RenderPassHandle handle)
     {
