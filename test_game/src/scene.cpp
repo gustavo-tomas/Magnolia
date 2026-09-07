@@ -19,12 +19,11 @@
 namespace game
 {
     Scene::Scene(Renderer* renderer)
-        : ecs(mag::create_unique<mag::ECS>([this](const mag::EntityID id, std::any component)
-    { on_component_added(id, component); })),
-          physics_world(mag::physics::create_physics_world()),
+        : physics_world(mag::physics::create_physics_world()),
           renderer(renderer),
           job_group(mag::thread::create_job_group())
     {
+        ecs.initialize([this](const mag::EntityID id, std::any component) { on_component_added(id, component); });
     }
 
     Scene::~Scene()
@@ -41,7 +40,7 @@ namespace game
     void Scene::on_start()
     {
         // Play audios
-        for (const AudioComponent* audio_c : ecs->get_all_components_of_type<AudioComponent>())
+        for (const AudioComponent* audio_c : ecs.get_all_components_of_type<AudioComponent>())
         {
             if (audio_c->play_on_load)
             {
@@ -62,13 +61,10 @@ namespace game
         // See: https://stackoverflow.com/questions/36524043/accessing-memory-allocated-by-shared-library-after-dlclose
 
         // Stop audios
-        for (auto* audio : ecs->get_all_components_of_type<AudioComponent>())
+        for (auto* audio : ecs.get_all_components_of_type<AudioComponent>())
         {
             mag::audio::stop(audio->audio);
         }
-
-        // Destroy the ECS
-        ecs.reset();
 
         running = false;
     }
@@ -81,14 +77,14 @@ namespace game
             const mag::EntityID entity_id = entity_deletion_queue[i];
 
             // Remove physics object from physics world if entity has physics properties
-            RigidBodyComponent* rigid_body = ecs->get_component<RigidBodyComponent>(entity_id);
+            RigidBodyComponent* rigid_body = ecs.get_component<RigidBodyComponent>(entity_id);
 
             if (rigid_body != nullptr)
             {
                 physics_world->remove_rigid_body(rigid_body->rigid_body_handle);
             }
 
-            ecs->erase_entity(entity_id);
+            ecs.erase_entity(entity_id);
         }
 
         entity_deletion_queue.clear();
@@ -97,7 +93,7 @@ namespace game
         physics_world->on_update(dt);
 
         // Synchronize physics components with the physics world
-        auto objects = ecs->get_all_components_of_types<TransformComponent, RigidBodyComponent>();
+        auto objects = ecs.get_all_components_of_types<TransformComponent, RigidBodyComponent>();
 
         for (auto [transform, rigid_body] : objects)
         {
@@ -128,13 +124,13 @@ namespace game
         // Add rigidbody to physics world
         if (is_rigid_body)
         {
-            auto* rigid_body = ecs->get_component<RigidBodyComponent>(id);
+            auto* rigid_body = ecs.get_component<RigidBodyComponent>(id);
 
-            vec3 position = vec3(0.0f);
-            quat rotation = quat(1.0f, 0.0f, 0.0f, 0.0f);
-            vec3 scale = vec3(1.0f);
+            vec3 position = vec3(0.0F);
+            quat rotation = quat(1.0F, 0.0F, 0.0F, 0.0F);
+            vec3 scale = vec3(1.0F);
 
-            if (auto* transform = ecs->get_component<TransformComponent>(id))
+            if (auto* transform = ecs.get_component<TransformComponent>(id))
             {
                 position = transform->translation;
                 rotation = transform->rotation;
@@ -183,9 +179,9 @@ namespace game
         // Set rigidbody transforms
         if (is_transform)
         {
-            auto* transform = ecs->get_component<TransformComponent>(id);
+            auto* transform = ecs.get_component<TransformComponent>(id);
 
-            if (auto* rigid_body = ecs->get_component<RigidBodyComponent>(id))
+            if (auto* rigid_body = ecs.get_component<RigidBodyComponent>(id))
             {
                 physics_world->set_position(rigid_body->rigid_body_handle, transform->translation);
                 physics_world->set_rotation(rigid_body->rigid_body_handle, transform->rotation);
@@ -195,7 +191,7 @@ namespace game
         // Upload model data to the GPU
         if (is_model)
         {
-            auto* model = ecs->get_component<ModelComponent>(id);
+            auto* model = ecs.get_component<ModelComponent>(id);
             renderer->on_model_added(*model->model);
             return;
         }
@@ -203,7 +199,7 @@ namespace game
         // Upload texture data to the GPU
         if (is_sprite)
         {
-            auto* sprite = ecs->get_component<SpriteComponent>(id);
+            auto* sprite = ecs.get_component<SpriteComponent>(id);
             renderer->on_texture_added(*sprite->texture);
             return;
         }
@@ -211,7 +207,7 @@ namespace game
         // Upload font data to the GPU
         if (is_text)
         {
-            auto* text = ecs->get_component<TextComponent>(id);
+            auto* text = ecs.get_component<TextComponent>(id);
             renderer->on_font_added(*text->font);
             return;
         }
@@ -226,12 +222,12 @@ namespace game
     {
         const vec2 size = {e.width, e.height};
 
-        for (auto* camera_c : ecs->get_all_components_of_type<PerspectiveCameraComponent>())
+        for (auto* camera_c : ecs.get_all_components_of_type<PerspectiveCameraComponent>())
         {
             camera_c->camera.set_viewport_size(size);
         }
 
-        for (auto* camera_c : ecs->get_all_components_of_type<OrthographicCameraComponent>())
+        for (auto* camera_c : ecs.get_all_components_of_type<OrthographicCameraComponent>())
         {
             camera_c->camera.set_viewport_size(size);
         }
@@ -239,7 +235,7 @@ namespace game
 
     void Scene::remove_entity(const mag::EntityID id)
     {
-        if (!ecs->entity_exists(id))
+        if (!ecs.entity_exists(id))
         {
             return;
         }
@@ -264,18 +260,18 @@ namespace game
 
     mag::physics::IPhysicsWorld& Scene::get_physics_world() { return *physics_world; }
 
-    mag::ECS& Scene::get_ecs() { return *ecs; }
+    mag::ECS& Scene::get_ecs() { return ecs; }
 
     mag::Camera& Scene::get_camera()
     {
         // @NOTE: we assume the active camera is the first entity with a camera component
-        auto perspective_cameras = ecs->get_all_components_of_types<PerspectiveCameraComponent>();
+        auto perspective_cameras = ecs.get_all_components_of_types<PerspectiveCameraComponent>();
         for (auto [camera_c] : perspective_cameras)
         {
             return camera_c->camera;
         }
 
-        auto ortho_cameras = ecs->get_all_components_of_types<OrthographicCameraComponent>();
+        auto ortho_cameras = ecs.get_all_components_of_types<OrthographicCameraComponent>();
         for (auto [camera_c] : ortho_cameras)
         {
             return camera_c->camera;

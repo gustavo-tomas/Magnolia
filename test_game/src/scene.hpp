@@ -31,10 +31,10 @@ namespace game
             void on_stop();
 
             void on_event(const mag::Event& e);
-            void on_update(const f32 dt);
-            void on_render(const f32 dt);
+            void on_update(f32 dt);
+            void on_render(f32 dt);
 
-            void remove_entity(const mag::EntityID id);
+            void remove_entity(mag::EntityID id);
 
             void set_name(const str& name);
             void set_file_path(const str& file_path);
@@ -56,11 +56,11 @@ namespace game
 
             str name = "Untitled";
             str file_path;
-            mag::unique<mag::ECS> ecs;
+            mag::ECS ecs;
             mag::unique<mag::physics::IPhysicsWorld> physics_world;
 
         private:
-            void on_component_added(const mag::EntityID id, std::any& component);
+            void on_component_added(mag::EntityID id, std::any& component);
 
             Renderer* renderer = nullptr;
             std::vector<mag::EntityID> entity_deletion_queue;
