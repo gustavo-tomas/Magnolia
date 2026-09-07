@@ -290,6 +290,7 @@ namespace mag
                                               &physics::state->job_system);
                     }
 
+#if MAG_CONFIG_DEBUG
                     // Render the world
                     JPH::BodyManager::DrawSettings settings = {};
                     settings.mDrawShape = true;
@@ -297,6 +298,7 @@ namespace mag
 
                     physics::state->debug_renderer->reset_line_list();
                     physics_system.DrawBodies(settings, physics::state->debug_renderer.get());
+#endif
                 }
 
                 void apply_force(const RigidBodyHandle handle, const math::vec3& force) override
