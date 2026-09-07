@@ -1,6 +1,7 @@
 #pragma once
 
 #include <magnolia/core/types.hpp>
+#include <magnolia/project/project.hpp>
 
 #include "renderer.hpp"
 
@@ -35,7 +36,7 @@ namespace game
 
             Renderer renderer;
             mag::unique<Scene> scene;
-            mag::unique<mag::Project> project;
+            mag::Project project;
 
             b8 running = false;
     };

@@ -40,10 +40,8 @@ namespace game
 
         // Load the project
 
-        project = mag::create_unique<mag::Project>();
-
         const str project_file_path = "test_game/TestGame.proj.json";
-        if (!mag::project::load(project_file_path, *project))
+        if (!mag::project::load(project_file_path, project))
         {
             LOG_ERROR("Failed to load project: '{0}'", project_file_path);
             return;
@@ -55,7 +53,7 @@ namespace game
 
         scene = mag::create_unique<Scene>(&renderer);
 
-        const str start_scene_file_path = project->get_asset_dir() / project->get_relative_start_scene_path();
+        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
         {
             LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
@@ -68,7 +66,6 @@ namespace game
     TestGame::~TestGame()
     {
         scene.reset();
-        project.reset();
         mag::shutdown();
     }
 
@@ -155,7 +152,7 @@ namespace game
 
                 // We reuse the asset dir retrieved from the project to make things
                 // easier
-                params.file_path = project->get_asset_dir() / arg;
+                params.file_path = project.get_asset_dir() / arg;
 
                 if (mag::script::compile_script(params))
                 {
@@ -172,7 +169,7 @@ namespace game
             {
                 // We reuse the asset dir retrieved from the project to make things
                 // easier
-                const str file_path = project->get_asset_dir() / arg;
+                const str file_path = project.get_asset_dir() / arg;
 
                 renderer.build_shader(file_path, true);
             }
@@ -191,7 +188,7 @@ namespace game
                 {
                     // We reuse the asset dir retrieved from the project to make things
                     // easier
-                    const str file_path = project->get_asset_dir() / arg;
+                    const str file_path = project.get_asset_dir() / arg;
 
                     str out_file_path;
                     const b8 result = mag::tools::import_model(file_path, out_file_path);

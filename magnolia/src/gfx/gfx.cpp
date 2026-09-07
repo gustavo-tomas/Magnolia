@@ -756,7 +756,11 @@ namespace mag::gfx
             // Destroy uniform buffers
             for (const auto& [uniform_name, binding_data] : frame.descriptor_set_map[shader_handle].bindings_map)
             {
-                destroy_buffer(binding_data.buffer_handle);
+                if (binding_data.descriptor_type == DescriptorType::Uniform ||
+                    binding_data.descriptor_type == DescriptorType::Storage)
+                {
+                    destroy_buffer(binding_data.buffer_handle);
+                }
             }
 
             frame.descriptor_set_map.erase(shader_handle);
