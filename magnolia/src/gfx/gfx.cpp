@@ -761,10 +761,14 @@ namespace mag::gfx
                 }
             }
 
+            destroy_descriptor_set(frame.descriptor_set_map[shader_handle].descriptor_set);
             frame.descriptor_set_map.erase(shader_handle);
         }
 
         // Destroy graphics pipeline and descriptor set layouts
+        destroy_graphics_pipeline(state->shaders[shader_handle].pipeline);
+        destroy_descriptor_set_layout(state->shaders[shader_handle].descriptor_layout);
+
         state->shaders.erase(shader_handle);
     }
 

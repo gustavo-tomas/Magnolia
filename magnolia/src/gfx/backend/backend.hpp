@@ -198,6 +198,8 @@ namespace mag::gfx
 
     void create_swapchain(const ISwapchainDesc& desc);
 
+    void destroy_swapchain();
+
     Result acquire_next_image_swapchain(SemaphoreHandle signal_semaphore_handle, FenceHandle fence_handle);
 
     void resize_swapchain(const math::uvec2& extent);
@@ -217,6 +219,8 @@ namespace mag::gfx
     Result present_queue(QueueHandle handle, SemaphoreHandle wait_semaphore_handle);
 
     GraphicsPipelineHandle create_graphics_pipeline(const IGraphicsPipelineDesc& desc);
+
+    void destroy_graphics_pipeline(GraphicsPipelineHandle handle);
 
     CommandPoolHandle create_command_pool(const ICommandPoolDesc& desc);
 
@@ -283,7 +287,11 @@ namespace mag::gfx
 
     DescriptorSetLayoutHandle create_descriptor_set_layout(const IDescriptorSetLayoutDesc& desc);
 
+    void destroy_descriptor_set_layout(DescriptorSetLayoutHandle handle);
+
     DescriptorSetHandle create_descriptor_set(const IDescriptorSetDesc& desc);
+
+    void destroy_descriptor_set(DescriptorSetHandle handle);
 
     void update_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
                                DescriptorType descriptor_type, u64 offset);

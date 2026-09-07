@@ -4,7 +4,6 @@
 #include <vulkan/vulkan.h>
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "VkBootstrap.h"
@@ -148,6 +147,21 @@ namespace mag::gfx
 
     struct State
     {
+            stl::pool<VulkanBuffer, 1024> buffers;
+            stl::pool<VulkanTexture, 512> textures;
+            stl::pool<VulkanSampler, 512> samplers;  // @TODO: cache/reuse if possible
+            stl::pool<VulkanSemaphore, 6> semaphores;
+            stl::pool<VulkanFence, 4> fences;
+            stl::pool<VulkanCommandPool, 4> command_pools;
+            stl::pool<VulkanCommandBuffer, 4> command_buffers;
+            stl::pool<VulkanRenderingAttachment, 6> rendering_attachments;
+            stl::pool<VulkanDescriptorSet, 64> descriptor_sets;
+            stl::pool<VulkanRenderPass, 3> render_passes;
+            stl::pool<VulkanGraphicsPipeline, 32> graphics_pipelines;
+            stl::pool<VulkanDescriptorSetLayout, 16> descriptor_layouts;  // @TODO: cache/reuse if possible
+            stl::pool<VulkanDescriptorPool, 16> descriptor_pools;
+            stl::pool<VulkanQueue, 3> queues;
+
             vkb::DispatchTable disp;
             vkb::Device device;
             vkb::Instance instance;
@@ -161,47 +175,6 @@ namespace mag::gfx
             FenceHandle immediate_fence_handle = 0;
 
             VulkanSwapchain swapchain = {};
-
-            SemaphoreHandle semaphore_handles = 0;
-            std::unordered_map<SemaphoreHandle, VulkanSemaphore> semaphores;
-
-            FenceHandle fence_handles = 0;
-            std::unordered_map<FenceHandle, VulkanFence> fences;
-
-            SamplerHandle sampler_handles = 0;
-            std::unordered_map<SamplerHandle, VulkanSampler> samplers;
-
-            CommandPoolHandle command_pool_handles = 0;
-            std::unordered_map<CommandPoolHandle, VulkanCommandPool> command_pools;
-
-            CommandBufferHandle command_buffer_handles = 0;
-            std::unordered_map<CommandBufferHandle, VulkanCommandBuffer> command_buffers;
-
-            BufferHandle buffer_handles = 0;
-            std::unordered_map<BufferHandle, VulkanBuffer> buffers;
-
-            DescriptorSetLayoutHandle descriptor_set_layout_handles = 0;
-            std::unordered_map<DescriptorSetLayoutHandle, VulkanDescriptorSetLayout> descriptor_layouts;
-
-            DescriptorSetHandle descriptor_set_handles = 0;
-            std::unordered_map<DescriptorSetHandle, VulkanDescriptorSet> descriptor_sets;
-
-            DescriptorPoolHandle descriptor_pool_handles = 0;
-            std::unordered_map<DescriptorPoolHandle, VulkanDescriptorPool> descriptor_pools;
-
-            TextureHandle texture_handles = 0;
-            std::unordered_map<TextureHandle, VulkanTexture> textures;
-
-            RenderingAttachmentHandle rendering_attachment_handles = 0;
-            std::unordered_map<RenderingAttachmentHandle, VulkanRenderingAttachment> rendering_attachments;
-
-            stl::pool<VulkanRenderPass, 3> render_passes;
-
-            QueueHandle queue_handles = 0;
-            std::unordered_map<QueueHandle, VulkanQueue> queues;
-
-            GraphicsPipelineHandle graphics_pipeline_handles = 0;
-            std::unordered_map<GraphicsPipelineHandle, VulkanGraphicsPipeline> graphics_pipelines;
     };
 
     static State* state = nullptr;
@@ -212,7 +185,7 @@ namespace mag::gfx
     {
         const VulkanCommandPool& command_pool = state->command_pools[desc.command_pool];
 
-        const CommandBufferHandle handle = state->command_buffer_handles++;
+        const CommandBufferHandle handle = state->command_buffers.acquire_resource();
 
         VulkanCommandBuffer& command_buffer = state->command_buffers[handle];
         command_buffer.command_pool = desc.command_pool;
@@ -236,6 +209,7 @@ namespace mag::gfx
         const VulkanCommandPool& command_pool = state->command_pools[command_buffer.command_pool];
 
         state->disp.freeCommandBuffers(command_pool.pool, 1, &command_buffer.command_buffer);
+        state->command_buffers.release_resource(handle);
     }
 
     void begin_recording_command_buffer(const CommandBufferHandle handle)
@@ -510,7 +484,7 @@ namespace mag::gfx
             fence_info.flags |= VK_FENCE_CREATE_SIGNALED_BIT;
         }
 
-        const FenceHandle handle = state->fence_handles++;
+        const FenceHandle handle = state->fences.acquire_resource();
 
         VkFence* const fence = &state->fences[handle].fence;
 
@@ -524,6 +498,7 @@ namespace mag::gfx
         const VkFence& fence = state->fences[handle].fence;
 
         state->disp.destroyFence(fence, nullptr);
+        state->fences.release_resource(handle);
     }
 
     void wait_fence(const FenceHandle handle, const u64 timeout)
@@ -542,7 +517,7 @@ namespace mag::gfx
 
     QueueHandle create_queue(const IQueueDesc& desc)
     {
-        const QueueHandle handle = state->queue_handles++;
+        const QueueHandle handle = state->queues.acquire_resource();
         VulkanQueue& queue = state->queues[handle];
 
         const vkb::Result<VkQueue> queue_ret = state->device.get_queue(mag_to_vk(desc.queue_type));
@@ -554,7 +529,7 @@ namespace mag::gfx
         return handle;
     }
 
-    void destroy_queue(const QueueHandle handle) { state->queues.erase(handle); }
+    void destroy_queue(const QueueHandle handle) { state->queues.release_resource(handle); }
 
     void submit_queue(const QueueHandle handle, const SemaphoreHandle wait_semaphore_handle,
                       const SemaphoreHandle signal_semaphore_handle, const FenceHandle fence_handle,
@@ -636,7 +611,7 @@ namespace mag::gfx
             clear_value.depthStencil.stencil = desc.clear_stencil;
         }
 
-        const RenderingAttachmentHandle handle = state->rendering_attachment_handles++;
+        const RenderingAttachmentHandle handle = state->rendering_attachments.acquire_resource();
 
         VulkanRenderingAttachment& rendering_attachment = state->rendering_attachments[handle];
 
@@ -653,7 +628,7 @@ namespace mag::gfx
 
     void destroy_rendering_attachment(const RenderingAttachmentHandle handle)
     {
-        state->rendering_attachments.erase(handle);
+        state->rendering_attachments.release_resource(handle);
     }
 
     math::vec4 get_clear_color_render_attachment(const RenderingAttachmentHandle handle)
@@ -742,7 +717,7 @@ namespace mag::gfx
         allocation_create_info.flags =
             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        const BufferHandle handle = state->buffer_handles++;
+        const BufferHandle handle = state->buffers.acquire_resource();
 
         VulkanBuffer& buffer = state->buffers[handle];
         buffer.size = desc.size_bytes;
@@ -765,7 +740,7 @@ namespace mag::gfx
         vmaUnmapMemory(state->allocator, buffer.allocation);
         vmaDestroyBuffer(state->allocator, buffer.buffer, buffer.allocation);
 
-        state->buffers.erase(handle);
+        state->buffers.release_resource(handle);
     }
 
     void* map_buffer(const BufferHandle handle)
@@ -816,7 +791,7 @@ namespace mag::gfx
 
     TextureHandle create_texture(const ITextureDesc& desc)
     {
-        const TextureHandle handle = state->texture_handles++;
+        const TextureHandle handle = state->textures.acquire_resource();
 
         VulkanTexture& texture = state->textures[handle];
         texture.array_layers = desc.array_layers;
@@ -878,10 +853,8 @@ namespace mag::gfx
         VulkanTexture& texture = state->textures[handle];
 
         state->disp.destroyImageView(texture.image_view, nullptr);
-        if (texture.allocation != nullptr)
-        {
-            vmaDestroyImage(state->allocator, texture.image, texture.allocation);
-        }
+        vmaDestroyImage(state->allocator, texture.image, texture.allocation);
+        state->textures.release_resource(handle);
     }
 
     void set_data_texture(const TextureHandle handle, const void* const data, const u64 size)
@@ -997,9 +970,7 @@ namespace mag::gfx
 
         MAG_ASSERT(swap_ret, "{0} {1}", swap_ret.error().message(), std::to_string(swap_ret.vk_result()));
 
-        swapchain.swapchain_textures.clear();
-
-        vkb::destroy_swapchain(swapchain.swapchain);
+        destroy_swapchain();
 
         swapchain.swapchain = swap_ret.value();
 
@@ -1009,9 +980,10 @@ namespace mag::gfx
         swapchain.swapchain_textures.resize(swapchain.swapchain.image_count);
         for (u32 i = 0; i < swapchain.swapchain.image_count; i++)
         {
-            const TextureHandle texture_handle = state->texture_handles++;
+            const TextureHandle texture_handle = state->textures.acquire_resource();
 
             VulkanTexture& texture = state->textures[texture_handle];
+            texture = {};
             texture.extent = math::uvec3(vk_to_mag(swapchain.swapchain.extent), 1);
             texture.image = swapchain_images[i];
             texture.image_view = swapchain_image_views[i];
@@ -1032,6 +1004,10 @@ namespace mag::gfx
     {
         VulkanSwapchain& swapchain = state->swapchain;
 
+        for (const TextureHandle texture : swapchain.swapchain_textures)
+        {
+            state->textures.release_resource(texture);
+        }
         vkb::destroy_swapchain(swapchain.swapchain);
         swapchain.swapchain_textures.clear();
     }
@@ -1088,7 +1064,7 @@ namespace mag::gfx
 
     DescriptorSetHandle create_descriptor_set(const IDescriptorSetDesc& desc)
     {
-        const DescriptorSetHandle handle = state->descriptor_set_handles++;
+        const DescriptorSetHandle handle = state->descriptor_sets.acquire_resource();
 
         VulkanDescriptorSet& descriptor_set = state->descriptor_sets[handle];
         descriptor_set.parent_pool_handle = desc.descriptor_pool;
@@ -1123,6 +1099,8 @@ namespace mag::gfx
 
         vk_check(state->disp.freeDescriptorSets(descriptor_pool.descriptor_pool, 1, &descriptor_set.descriptor_set),
                  "Failed to free descriptor set");
+
+        state->descriptor_sets.release_resource(handle);
     }
 
     void update_descriptor_set(const DescriptorSetHandle handle, const BufferHandle buffer_handle, const u32 binding,
@@ -1183,7 +1161,7 @@ namespace mag::gfx
 
     DescriptorPoolHandle create_descriptor_pool(const IDescriptorPoolDesc& desc)
     {
-        const DescriptorPoolHandle handle = state->descriptor_pool_handles++;
+        const DescriptorPoolHandle handle = state->descriptor_pools.acquire_resource();
 
         VkDescriptorPool* const descriptor_pool = &state->descriptor_pools[handle].descriptor_pool;
 
@@ -1216,11 +1194,12 @@ namespace mag::gfx
         const VkDescriptorPool& descriptor_pool = state->descriptor_pools[handle].descriptor_pool;
 
         state->disp.destroyDescriptorPool(descriptor_pool, nullptr);
+        state->descriptor_pools.release_resource(handle);
     }
 
     DescriptorSetLayoutHandle create_descriptor_set_layout(const IDescriptorSetLayoutDesc& desc)
     {
-        const DescriptorSetLayoutHandle handle = state->descriptor_set_layout_handles++;
+        const DescriptorSetLayoutHandle handle = state->descriptor_layouts.acquire_resource();
 
         VkDescriptorSetLayout* const descriptor_layout = &state->descriptor_layouts[handle].descriptor_layout;
 
@@ -1272,6 +1251,7 @@ namespace mag::gfx
         const VkDescriptorSetLayout& descriptor_layout = state->descriptor_layouts[handle].descriptor_layout;
 
         state->disp.destroyDescriptorSetLayout(descriptor_layout, nullptr);
+        state->descriptor_layouts.release_resource(handle);
     }
 
     CommandPoolHandle create_command_pool(const ICommandPoolDesc& desc)
@@ -1281,7 +1261,7 @@ namespace mag::gfx
         pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         pool_info.queueFamilyIndex = state->device.get_queue_index(mag_to_vk(desc.queue_type)).value();
 
-        const CommandPoolHandle handle = state->command_pool_handles++;
+        const CommandPoolHandle handle = state->command_pools.acquire_resource();
 
         VkCommandPool* const command_pool = &state->command_pools[handle].pool;
 
@@ -1295,6 +1275,7 @@ namespace mag::gfx
         const VkCommandPool& command_pool = state->command_pools[handle].pool;
 
         state->disp.destroyCommandPool(command_pool, nullptr);
+        state->command_pools.release_resource(handle);
     }
 
     void reset_command_pool(const CommandPoolHandle handle)
@@ -1319,7 +1300,7 @@ namespace mag::gfx
         sampler_info.anisotropyEnable = static_cast<VkBool32>(desc.anisotropy_enable);
         sampler_info.maxAnisotropy = desc.max_anisotropy;
 
-        const SamplerHandle handle = state->sampler_handles++;
+        const SamplerHandle handle = state->samplers.acquire_resource();
 
         VkSampler* const sampler = &state->samplers[handle].sampler;
 
@@ -1333,6 +1314,7 @@ namespace mag::gfx
         const VkSampler& sampler = state->samplers[handle].sampler;
 
         state->disp.destroySampler(sampler, nullptr);
+        state->samplers.release_resource(handle);
     }
 
     SemaphoreHandle create_semaphore(const ISemaphoreDesc& desc)
@@ -1342,7 +1324,7 @@ namespace mag::gfx
         VkSemaphoreCreateInfo semaphore_info = {};
         semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        const SemaphoreHandle handle = state->semaphore_handles++;
+        const SemaphoreHandle handle = state->semaphores.acquire_resource();
 
         VkSemaphore* const semaphore = &state->semaphores[handle].semaphore;
 
@@ -1356,11 +1338,12 @@ namespace mag::gfx
         const VkSemaphore& semaphore = state->semaphores[handle].semaphore;
 
         state->disp.destroySemaphore(semaphore, nullptr);
+        state->semaphores.release_resource(handle);
     }
 
     GraphicsPipelineHandle create_graphics_pipeline(const IGraphicsPipelineDesc& desc)
     {
-        const GraphicsPipelineHandle handle = state->graphics_pipeline_handles++;
+        const GraphicsPipelineHandle handle = state->graphics_pipelines.acquire_resource();
         VulkanGraphicsPipeline& pipeline = state->graphics_pipelines[handle];
 
         const u32 shader_module_count = desc.shader_modules.size();
@@ -1575,6 +1558,7 @@ namespace mag::gfx
 
         state->disp.destroyPipeline(pipeline.pipeline, nullptr);
         state->disp.destroyPipelineLayout(pipeline.pipeline_layout, nullptr);
+        state->graphics_pipelines.release_resource(handle);
     }
 
     void create_device()
