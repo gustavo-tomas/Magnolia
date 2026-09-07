@@ -107,27 +107,14 @@ namespace mag
                     // interpenetrating / fall through the world.
                     const u32 max_contact_constraints = 10240;
 
-                    // Create mapping table from object layer to broadphase layer
-                    broad_phase_layer_interface = create_unique<BPLayerInterfaceImpl>();
-
-                    // Create class that filters object vs broadphase layers
-                    object_vs_broadphase_layer_filter = create_unique<ObjectVsBroadPhaseLayerFilterImpl>();
-
-                    // Create class that filters object vs object layers
-                    object_vs_object_layer_filter = create_unique<ObjectLayerPairFilterImpl>();
-
                     // Now we can create the actual physics system.
                     physics_system.Init(max_bodies, num_body_mutexes, max_body_pairs, max_contact_constraints,
-                                        *broad_phase_layer_interface, *object_vs_broadphase_layer_filter,
-                                        *object_vs_object_layer_filter);
+                                        broad_phase_layer_interface, object_vs_broadphase_layer_filter,
+                                        object_vs_object_layer_filter);
 
-                    body_activation_listener = create_unique<BodyActivationListener>();
+                    physics_system.SetBodyActivationListener(&body_activation_listener);
 
-                    contact_listener = create_unique<ContactListener>();
-
-                    physics_system.SetBodyActivationListener(body_activation_listener.get());
-
-                    physics_system.SetContactListener(contact_listener.get());
+                    physics_system.SetContactListener(&contact_listener);
                 }
 
                 ~JoltPhysicsWorld() override
@@ -638,23 +625,23 @@ namespace mag
                 JPH::PhysicsSystem physics_system;
 
                 // Create mapping table from object layer to broadphase layer
-                unique<BPLayerInterfaceImpl> broad_phase_layer_interface = nullptr;
+                BPLayerInterfaceImpl broad_phase_layer_interface;
 
                 // Create class that filters object vs broadphase layers
-                unique<ObjectVsBroadPhaseLayerFilterImpl> object_vs_broadphase_layer_filter = nullptr;
+                ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
 
                 // Create class that filters object vs object layers
-                unique<ObjectLayerPairFilterImpl> object_vs_object_layer_filter = nullptr;
+                ObjectLayerPairFilterImpl object_vs_object_layer_filter;
 
                 // A body activation listener gets notified when bodies activate and go to sleep
                 // Note that this is called from a job so whatever you do here needs to be thread safe.
                 // Registering one is entirely optional.
-                unique<BodyActivationListener> body_activation_listener = nullptr;
+                BodyActivationListener body_activation_listener;
 
                 // A contact listener gets notified when bodies (are about to) collide, and when they separate again.
                 // Note that this is called from a job so whatever you do here needs to be thread safe.
                 // Registering one is entirely optional.
-                unique<ContactListener> contact_listener = nullptr;
+                ContactListener contact_listener;
 
                 std::unordered_map<RigidBodyHandle, JPH::Body*> rigid_bodies;
 
