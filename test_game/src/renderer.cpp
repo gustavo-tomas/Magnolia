@@ -31,7 +31,7 @@ namespace game
 #define TEXT_SHADER "test_game/assets/shaders/text_shader.mag.json"
 #define GRASS_SHADER "test_game/assets/shaders/grass_shader.mag.json"
 
-    Renderer::Renderer()
+    void Renderer::initialize()
     {
         // Load shaders
 
@@ -40,8 +40,6 @@ namespace game
         build_shader(TEXT_SHADER, false);
         build_shader(GRASS_SHADER, false);
     }
-
-    Renderer::~Renderer() = default;
 
     void Renderer::render_scene(Scene& scene, const f32 dt)
     {

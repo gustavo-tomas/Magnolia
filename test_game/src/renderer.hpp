@@ -20,8 +20,7 @@ namespace game
     class Renderer
     {
         public:
-            Renderer();
-            ~Renderer();
+            void initialize();
 
             void on_event(const mag::Event& e);
 
@@ -31,9 +30,9 @@ namespace game
 
             void on_font_added(const mag::FontResource& font);
 
-            void render_scene(Scene& scene, const f32 dt);
+            void render_scene(Scene& scene, f32 dt);
 
-            void build_shader(const str& file_path, const b8 recompile = false);
+            void build_shader(const str& file_path, b8 recompile = false);
 
         private:
             void render_models(Scene& scene);
