@@ -24,12 +24,20 @@ namespace game
           job_group(mag::thread::create_job_group())
     {
         ecs.initialize([this](const mag::EntityID id, std::any component) { on_component_added(id, component); });
+
+#if MAG_CONFIG_DEBUG
+        initialize_debug_system();
+#endif
     }
 
     Scene::~Scene()
     {
         // Destroy the job group
         mag::thread::destroy_job_group(job_group);
+
+#if MAG_CONFIG_DEBUG
+        shutdown_debug_system();
+#endif
 
         if (running)
         {

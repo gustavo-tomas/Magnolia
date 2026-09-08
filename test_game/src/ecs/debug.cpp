@@ -23,7 +23,54 @@ namespace game
 #define LINE_SHADER "test_game/assets/shaders/line_shader.mag.json"
 #define DEBUG_TEXT_SHADER "test_game/assets/shaders/debug_text_shader.mag.json"
 
-    static std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
+    const u64 max_buffer_size = 64ULL * 1024 * 1024;
+
+    // @TODO: temp
+    struct FontData
+    {
+            std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
+            mag::FontResource font;
+            u32 idx;
+    };
+
+    struct State
+    {
+            std::unordered_map<str, mag::gfx::ShaderHandle> shaders;
+
+            // Create a big buffer. Expand if necessary.
+            mag::gfx::VertexBufferHandle vb = Invalid_ID;
+
+            // @TODO: doesnt need a map for this
+            // @TODO: send this whole system back to the renderer maybe
+            std::unordered_map<str, FontData> fonts;
+
+            // Quick way to calculate fps and frame time
+            f64 time = 0;
+            u64 frame_counter = 0;
+            u64 fps = 0;
+    };
+
+    static State* state = nullptr;
+
+    static void build_shader(const str& file_path, b8 recompile);
+
+    void initialize_debug_system()
+    {
+        state = new State();
+
+        state->vb = mag::gfx::create_vertex_buffer(max_buffer_size, nullptr);
+
+        build_shader(LINE_SHADER, false);
+        build_shader(FLOOR_SHADER, false);
+        build_shader(DEBUG_TEXT_SHADER, false);
+    }
+
+    void shutdown_debug_system()
+    {
+        mag::gfx::destroy_vertex_buffer(state->vb);
+
+        delete state;
+    }
 
     static void build_shader(const str& file_path, const b8 recompile)
     {
@@ -38,12 +85,12 @@ namespace game
 
         // Destroy existing shader
 
-        if (shaders.contains(file_path))
+        if (state->shaders.contains(file_path))
         {
-            mag::gfx::destroy_shader(shaders[file_path]);
+            mag::gfx::destroy_shader(state->shaders[file_path]);
         }
 
-        shaders[file_path] = mag::gfx::create_shader(*shader_resource);
+        state->shaders[file_path] = mag::gfx::create_shader(*shader_resource);
     }
 
     static void draw_colliders(Scene& scene, const f32 dt)
@@ -67,7 +114,7 @@ namespace game
             return;
         }
 
-        mag::gfx::use_shader(shaders[LINE_SHADER]);
+        mag::gfx::use_shader(state->shaders[LINE_SHADER]);
 
         struct GlobalData
         {
@@ -75,7 +122,7 @@ namespace game
                 mat4 projection;
         };
 
-        static GlobalData global_data = {};
+        GlobalData global_data = {};
         global_data.view = camera.get_view();
         global_data.projection = camera.get_projection();
 
@@ -90,10 +137,6 @@ namespace game
             lines[i] = {.position = line.end, .color = line.color};
         }
 
-        // Create a big buffer. Expand if necessary.
-        const u64 max_buffer_size = 64ULL * 1024 * 1024;
-        static mag::gfx::VertexBufferHandle vb = mag::gfx::create_vertex_buffer(max_buffer_size, nullptr);
-
         const u64 line_vec_size = VEC_SIZE_BYTES(lines);
 
         if (line_vec_size > max_buffer_size)
@@ -103,9 +146,9 @@ namespace game
             return;
         }
 
-        mag::gfx::set_buffer_data(vb, lines.data(), line_vec_size, 0);
+        mag::gfx::set_buffer_data(state->vb, lines.data(), line_vec_size, 0);
 
-        mag::gfx::bind_vertex_buffer(vb);
+        mag::gfx::bind_vertex_buffer(state->vb);
 
         mag::gfx::draw(lines.size());
     }
@@ -119,7 +162,7 @@ namespace game
 
         auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
 
-        mag::gfx::use_shader(shaders[FLOOR_SHADER]);
+        mag::gfx::use_shader(state->shaders[FLOOR_SHADER]);
 
         struct GlobalData
         {
@@ -164,17 +207,7 @@ namespace game
 
         mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
 
-        mag::gfx::use_shader(shaders[DEBUG_TEXT_SHADER]);
-
-        // @TODO: temp
-        struct FontData
-        {
-                std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
-                mag::FontResource font;
-                u32 idx;
-        };
-
-        static std::unordered_map<str, FontData> fonts;
+        mag::gfx::use_shader(state->shaders[DEBUG_TEXT_SHADER]);
 
         struct GlobalData
         {
@@ -192,43 +225,38 @@ namespace game
 
         const str font_name = "test_game/assets/fonts/FixedSys_Excelsior/FSEX300.ttf";
 
-        // Quick way to calculate fps and frame time
-        static f64 time = 0;
-        static u64 frame_counter = 0;
-        static u64 fps = 0;
+        state->frame_counter++;
+        state->time += dt;
 
-        frame_counter++;
-        time += dt;
-
-        if (time >= 1.0)
+        if (state->time >= 1.0)
         {
-            fps = frame_counter;
-            frame_counter = 0;
-            time -= 1.0;
+            state->fps = state->frame_counter;
+            state->frame_counter = 0;
+            state->time -= 1.0;
         }
 
         math::vec4 color = math::vec4(0.8f, 0.8f, 0.8f, 1.0f);
 
-        if (fps > 100)
+        if (state->fps > 100)
         {
             color = math::vec4(0.02f, 0.98f, 0.02f, 1.0f);
         }
 
-        else if (fps >= 50 && fps <= 100)
+        else if (state->fps >= 50 && state->fps <= 100)
         {
             color = math::vec4(0.98f, 0.98f, 0.02f, 1.0f);
         }
 
-        else if (fps < 50)
+        else if (state->fps < 50)
         {
             color = math::vec4(0.98f, 0.02f, 0.02f, 1.0f);
         }
 
-        const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", fps, dt * 1000.0);
+        const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", state->fps, dt * 1000.0);
 
         u32 char_offset = 0;
 
-        if (!fonts.contains(font_name))
+        if (!state->fonts.contains(font_name))
         {
             mag::FontResource font = {};
             ref<mag::FontResource> loaded_font = mag::resource::get_font(font_name);
@@ -240,7 +268,7 @@ namespace game
 
             FontData font_data = {};
             font_data.font = font;
-            font_data.idx = fonts.size();  // The index is used to map a letter to the correct texture (and font)
+            font_data.idx = state->fonts.size();  // The index is used to map a letter to the correct texture (and font)
 
             for (auto& [c, ch] : font.characters)
             {
@@ -255,7 +283,7 @@ namespace game
                                              ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
             }
 
-            fonts[font_name] = font_data;
+            state->fonts[font_name] = font_data;
         }
 
         const f32 scale = transform.scale.x;
@@ -265,7 +293,7 @@ namespace game
 
         for (const c8& c : text)
         {
-            Character& ch = fonts[font_name].font.characters[c];
+            Character& ch = state->fonts[font_name].font.characters[c];
 
             // Skip chars with no visual representation (i.e. spaces)
             if (ch.data.empty())
@@ -295,7 +323,7 @@ namespace game
             // @TODO: rotation is a bit iffy but for now its ok
             const mat4 model_matrix = char_transform.get_transformation_matrix();
 
-            const u32 font_offset = fonts[font_name].idx * 128;  // skip next 128 character textures
+            const u32 font_offset = state->fonts[font_name].idx * 128;  // skip next 128 character textures
             const u32 texture_idx = font_offset + c;
 
             DebugTextData text_data = {};
@@ -305,7 +333,7 @@ namespace game
 
             mag::gfx::set_uniform("u_instance", &text_data, char_offset);
 
-            mag::gfx::set_uniform("u_char_textures", fonts[font_name].char_texture_handles[c], texture_idx);
+            mag::gfx::set_uniform("u_char_textures", state->fonts[font_name].char_texture_handles[c], texture_idx);
 
             char_offset++;
 
@@ -319,17 +347,6 @@ namespace game
 
     void debug_system(Scene& scene, const f32 dt)
     {
-        static b8 init = false;
-
-        if (!init)
-        {
-            build_shader(LINE_SHADER, false);
-            build_shader(FLOOR_SHADER, false);
-            build_shader(DEBUG_TEXT_SHADER, false);
-
-            init = true;
-        }
-
         draw_colliders(scene, dt);
         draw_floor(scene, dt);
         draw_text(scene, dt);
