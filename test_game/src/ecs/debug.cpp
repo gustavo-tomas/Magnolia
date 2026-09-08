@@ -30,7 +30,6 @@ namespace game
     {
             std::unordered_map<c8, mag::gfx::TextureHandle> char_texture_handles;
             mag::FontResource font;
-            u32 idx;
     };
 
     struct State
@@ -40,9 +39,8 @@ namespace game
             // Create a big buffer. Expand if necessary.
             mag::gfx::VertexBufferHandle vb = Invalid_ID;
 
-            // @TODO: doesnt need a map for this
             // @TODO: send this whole system back to the renderer maybe
-            std::unordered_map<str, FontData> fonts;
+            FontData font_data;
 
             // Quick way to calculate fps and frame time
             f64 time = 0;
@@ -63,6 +61,32 @@ namespace game
         build_shader(LINE_SHADER, false);
         build_shader(FLOOR_SHADER, false);
         build_shader(DEBUG_TEXT_SHADER, false);
+
+        const str font_name = "test_game/assets/fonts/FixedSys_Excelsior/FSEX300.ttf";
+
+        mag::FontResource font = {};
+        ref<mag::FontResource> loaded_font = mag::resource::get_font(font_name);
+
+        if (loaded_font != nullptr)
+        {
+            font = *loaded_font;
+        }
+
+        FontData& font_data = state->font_data;
+        font_data.font = font;
+
+        for (auto& [c, ch] : font.characters)
+        {
+            // Skip non visual characters
+            if (ch.texture.pixels.empty())
+            {
+                continue;
+            }
+
+            font_data.char_texture_handles[c] =
+                mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
+                                         ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
+        }
     }
 
     void shutdown_debug_system()
@@ -166,9 +190,9 @@ namespace game
 
         struct GlobalData
         {
-                mat4 view;
-                mat4 projection;
-                u32 light_count;
+                mat4 view = mat4(1.0F);
+                mat4 projection = mat4(1.0F);
+                u32 light_count = 0;
         };
 
         GlobalData global_data = {};
@@ -198,11 +222,11 @@ namespace game
         (void)scene;
 
         OrthographicCameraDesc ortho_camera_desc = {};
-        ortho_camera_desc.near = -100.0f;
-        ortho_camera_desc.far = 100.0f;
-        ortho_camera_desc.position = vec3(0.0f);
-        ortho_camera_desc.rotation = quat(vec3(0.0f));
-        ortho_camera_desc.size = 1000.0f;
+        ortho_camera_desc.near = -100.0F;
+        ortho_camera_desc.far = 100.0F;
+        ortho_camera_desc.position = vec3(0.0F);
+        ortho_camera_desc.rotation = quat(vec3(0.0F));
+        ortho_camera_desc.size = 1000.0F;
         ortho_camera_desc.viewport_size = vec2(window::get_size());
 
         mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
@@ -220,10 +244,8 @@ namespace game
         mag::gfx::set_uniform("u_global", &global_data);
 
         TransformComponent transform;
-        transform.scale = vec3(0.5f);
-        transform.translation = vec3(-200.0f, -400.0f, 0.0f);
-
-        const str font_name = "test_game/assets/fonts/FixedSys_Excelsior/FSEX300.ttf";
+        transform.scale = vec3(0.5F);
+        transform.translation = vec3(-200.0F, -400.0F, 0.0F);
 
         state->frame_counter++;
         state->time += dt;
@@ -235,56 +257,26 @@ namespace game
             state->time -= 1.0;
         }
 
-        math::vec4 color = math::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+        math::vec4 color = math::vec4(0.8F, 0.8F, 0.8F, 1.0F);
 
         if (state->fps > 100)
         {
-            color = math::vec4(0.02f, 0.98f, 0.02f, 1.0f);
+            color = math::vec4(0.02F, 0.98F, 0.02F, 1.0F);
         }
 
         else if (state->fps >= 50 && state->fps <= 100)
         {
-            color = math::vec4(0.98f, 0.98f, 0.02f, 1.0f);
+            color = math::vec4(0.98F, 0.98F, 0.02F, 1.0F);
         }
 
         else if (state->fps < 50)
         {
-            color = math::vec4(0.98f, 0.02f, 0.02f, 1.0f);
+            color = math::vec4(0.98F, 0.02F, 0.02F, 1.0F);
         }
 
         const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", state->fps, dt * 1000.0);
 
         u32 char_offset = 0;
-
-        if (!state->fonts.contains(font_name))
-        {
-            mag::FontResource font = {};
-            ref<mag::FontResource> loaded_font = mag::resource::get_font(font_name);
-
-            if (loaded_font != nullptr)
-            {
-                font = *loaded_font;
-            }
-
-            FontData font_data = {};
-            font_data.font = font;
-            font_data.idx = state->fonts.size();  // The index is used to map a letter to the correct texture (and font)
-
-            for (auto& [c, ch] : font.characters)
-            {
-                // Skip non visual characters
-                if (ch.texture.pixels.empty())
-                {
-                    continue;
-                }
-
-                font_data.char_texture_handles[c] =
-                    mag::gfx::create_texture(ch.texture.width, ch.texture.height, ch.texture.pixels.size(),
-                                             ch.texture.pixels.data(), mag::gfx::Format::R8_UNORM);
-            }
-
-            state->fonts[font_name] = font_data;
-        }
 
         const f32 scale = transform.scale.x;
         f32 x = transform.translation.x;
@@ -293,7 +285,7 @@ namespace game
 
         for (const c8& c : text)
         {
-            Character& ch = state->fonts[font_name].font.characters[c];
+            Character& ch = state->font_data.font.characters[c];
 
             // Skip chars with no visual representation (i.e. spaces)
             if (ch.data.empty())
@@ -305,7 +297,7 @@ namespace game
             // Format newlines
             if (c == '\n')
             {
-                y -= static_cast<f32>(ch.size.y) * 1.5f * scale;  // @TODO: hardcoded line spacing
+                y -= static_cast<f32>(ch.size.y) * 1.5F * scale;  // @TODO: hardcoded line spacing
                 x = transform.translation.x;
                 continue;
             }
@@ -317,14 +309,13 @@ namespace game
 
             TransformComponent char_transform;
             char_transform.translation = vec3(xpos, ypos, zpos);
-            char_transform.scale = vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0f);
+            char_transform.scale = vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0F);
             char_transform.rotation = transform.rotation;
 
             // @TODO: rotation is a bit iffy but for now its ok
             const mat4 model_matrix = char_transform.get_transformation_matrix();
 
-            const u32 font_offset = state->fonts[font_name].idx * 128;  // skip next 128 character textures
-            const u32 texture_idx = font_offset + c;
+            const u32 texture_idx = 0 + c;
 
             DebugTextData text_data = {};
             text_data.color = color;
@@ -333,7 +324,7 @@ namespace game
 
             mag::gfx::set_uniform("u_instance", &text_data, char_offset);
 
-            mag::gfx::set_uniform("u_char_textures", state->fonts[font_name].char_texture_handles[c], texture_idx);
+            mag::gfx::set_uniform("u_char_textures", state->font_data.char_texture_handles[c], texture_idx);
 
             char_offset++;
 
