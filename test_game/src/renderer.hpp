@@ -62,9 +62,9 @@ namespace game
             void initialize_debug_system();
             void shutdown_debug_system() const;
             void render_debug(Scene& scene, f32 dt);
-            void draw_colliders(Scene& scene, f32 dt);
-            void draw_floor(Scene& scene, f32 dt);
-            void draw_text(Scene& scene, f32 dt);
+            void draw_debug_colliders(Scene& scene, f32 dt);
+            void draw_debug_floor(Scene& scene, f32 dt);
+            void draw_debug_text(Scene& scene, f32 dt);
 
             // Create a big buffer. Expand if necessary.
             mag::gfx::VertexBufferHandle vb = mag::Invalid_ID;

@@ -492,7 +492,7 @@ namespace game
 
         build_shader(LINE_SHADER, false);
         build_shader(FLOOR_SHADER, false);
-        build_shader(DEBUG_TEXT_SHADER, false);
+        build_shader(DEBUG_TEXT_SHADER, true);
 
         debug_font = mag::resource::get_font(debug_font_name);
 
@@ -504,7 +504,7 @@ namespace game
 
     void Renderer::shutdown_debug_system() const { mag::gfx::destroy_vertex_buffer(vb); }
 
-    void Renderer::draw_colliders(Scene& scene, const f32 dt)
+    void Renderer::draw_debug_colliders(Scene& scene, const f32 dt)
     {
         (void)dt;
 
@@ -564,7 +564,7 @@ namespace game
         mag::gfx::draw(lines.size());
     }
 
-    void Renderer::draw_floor(Scene& scene, const f32 dt)
+    void Renderer::draw_debug_floor(Scene& scene, const f32 dt)
     {
         (void)dt;
 
@@ -604,7 +604,7 @@ namespace game
         mag::gfx::draw(4);
     }
 
-    void Renderer::draw_text(Scene& scene, const f32 dt)
+    void Renderer::draw_debug_text(Scene& scene, const f32 dt)
     {
         (void)scene;
 
@@ -625,14 +625,9 @@ namespace game
                 mat4 projection;
         };
 
-        GlobalData global_data = {};
-        global_data.projection = ortho_camera.get_projection();
+        const GlobalData global_data = {.projection = ortho_camera.get_projection()};
 
         mag::gfx::set_uniform("u_global", &global_data);
-
-        TransformComponent transform;
-        transform.scale = vec3(0.5F);
-        transform.translation = vec3(-200.0F, -400.0F, 0.0F);
 
         frame_counter++;
         time += dt;
@@ -665,10 +660,10 @@ namespace game
 
         u32 char_offset = 0;
 
-        const f32 scale = transform.scale.x;
-        f32 x = transform.translation.x;
-        f32 y = transform.translation.y;
-        f32 z = transform.translation.z;
+        const f32 scale = 0.5F;
+        const vec2 base_position(-200.0F, -400.0F);
+        f32 x = base_position.x;
+        f32 y = base_position.y;
 
         FontData& font_data = fonts[debug_font_name];
 
@@ -686,34 +681,25 @@ namespace game
             // Format newlines
             if (c == '\n')
             {
-                y -= static_cast<f32>(ch.size.y) * 1.5F * scale;  // @TODO: hardcoded line spacing
-                x = transform.translation.x;
+                y -= static_cast<f32>(ch.size.y) * 1.5F * scale;
+                x = base_position.x;
                 continue;
             }
 
             // Don't offset the first letter of the text
             const f32 xpos = x + (char_offset > 0 ? static_cast<f32>(ch.bearing.x) * scale : 0);
             const f32 ypos = y - (char_offset > 0 ? static_cast<f32>(ch.size.y - ch.bearing.y) * scale : 0);
-            const f32 zpos = z;
 
-            TransformComponent char_transform;
-            char_transform.translation = vec3(xpos, ypos, zpos);
-            char_transform.scale = vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0F);
-            char_transform.rotation = transform.rotation;
-
-            // @TODO: rotation is a bit iffy but for now its ok
-            const mat4 model_matrix = char_transform.get_transformation_matrix();
-
-            const u32 texture_idx = 0 + c;
-
-            DebugTextData text_data = {};
-            text_data.color = color;
-            text_data.model = model_matrix;
-            text_data.texture_idx = texture_idx;
+            const DebugTextData text_data = {
+                .color = color,
+                .position = vec2(xpos, ypos),
+                .scale = vec2(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale),
+                .texture_idx = static_cast<u32>(c),
+            };
 
             mag::gfx::set_uniform("u_instance", &text_data, char_offset);
 
-            mag::gfx::set_uniform("u_char_textures", font_data.char_texture_handles[c], texture_idx);
+            mag::gfx::set_uniform("u_char_textures", font_data.char_texture_handles[c], c);
 
             char_offset++;
 
@@ -727,9 +713,9 @@ namespace game
 
     void Renderer::render_debug(Scene& scene, const f32 dt)
     {
-        draw_colliders(scene, dt);
-        draw_floor(scene, dt);
-        draw_text(scene, dt);
+        draw_debug_colliders(scene, dt);
+        draw_debug_floor(scene, dt);
+        draw_debug_text(scene, dt);
     }
 #endif
 

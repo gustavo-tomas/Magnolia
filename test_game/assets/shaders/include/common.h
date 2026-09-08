@@ -90,7 +90,8 @@ struct alignas(16) GrassData
 
 struct alignas(16) DebugTextData
 {
-        mat4 model;       // 64 bytes (16 x 4)
-        vec4 color;       // 16 bytes ( 4 x 4)
+        vec4 color;       // 16 bytes (4 x 4)
+        vec2 position;    // 8 bytes  (2 x 4)
+        vec2 scale;       // 8 bytes  (2 x 4)
         u32 texture_idx;  // 4 bytes
 };
