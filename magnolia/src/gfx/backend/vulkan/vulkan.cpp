@@ -147,8 +147,8 @@ namespace mag::gfx
 
     struct State
     {
-            stl::pool<VulkanBuffer, 1024> buffers;
             stl::pool<VulkanTexture, 512> textures;
+            stl::pool<VulkanBuffer, 512> buffers;
             stl::pool<VulkanSampler, 512> samplers;  // @TODO: cache/reuse if possible
             stl::pool<VulkanSemaphore, 6> semaphores;
             stl::pool<VulkanFence, 4> fences;
@@ -884,6 +884,8 @@ namespace mag::gfx
                                             AccessMask::ShaderRead, PipelineStage::Transfer,
                                             PipelineStage::FragmentShader);
         });
+
+        destroy_buffer_shitty_name(staging_buffer_handle);
     }
 
     const math::uvec3& get_extent_texture(const TextureHandle handle)
