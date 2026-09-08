@@ -190,9 +190,15 @@ namespace mag::gfx
 
     void create_device();
 
+    void destroy_device();
+
     SemaphoreHandle create_semaphore(const ISemaphoreDesc& desc);
 
+    void destroy_semaphore(SemaphoreHandle handle);
+
     FenceHandle create_fence(const IFenceDesc& desc);
+
+    void destroy_fence(FenceHandle handle);
 
     void wait_fence(FenceHandle handle, u64 timeout);
 
@@ -212,6 +218,8 @@ namespace mag::gfx
 
     QueueHandle create_queue(const IQueueDesc& desc);
 
+    void destroy_queue(QueueHandle handle);
+
     void submit_queue(QueueHandle handle, SemaphoreHandle wait_semaphore_handle,
                       SemaphoreHandle signal_semaphore_handle, FenceHandle fence_handle,
                       CommandBufferHandle command_buffer_handle);
@@ -224,7 +232,11 @@ namespace mag::gfx
 
     CommandPoolHandle create_command_pool(const ICommandPoolDesc& desc);
 
+    void destroy_command_pool(CommandPoolHandle handle);
+
     CommandBufferHandle create_command_buffer(const ICommandBufferDesc& desc);
+
+    void destroy_command_buffer(CommandBufferHandle handle);
 
     void begin_recording_command_buffer(CommandBufferHandle handle);
 
@@ -265,11 +277,15 @@ namespace mag::gfx
 
     RenderingAttachmentHandle create_render_attachment(const IRenderingAttachmentDesc& desc);
 
+    void destroy_rendering_attachment(RenderingAttachmentHandle handle);
+
     RenderPassHandle create_render_pass(const IRenderPassDesc& desc);
 
     void destroy_render_pass(RenderPassHandle handle);
 
     TextureHandle create_texture(const ITextureDesc& desc);
+
+    void destroy_texture(TextureHandle handle);
 
     void set_data_texture(TextureHandle handle, const void* data, u64 size);
 
@@ -284,6 +300,8 @@ namespace mag::gfx
     void set_data_buffer(BufferHandle handle, const void* data, u64 data_size, u64 offset);
 
     DescriptorPoolHandle create_descriptor_pool(const IDescriptorPoolDesc& desc);
+
+    void destroy_descriptor_pool(DescriptorPoolHandle handle);
 
     DescriptorSetLayoutHandle create_descriptor_set_layout(const IDescriptorSetLayoutDesc& desc);
 
@@ -300,6 +318,8 @@ namespace mag::gfx
                                u32 binding, u32 array_element, DescriptorType descriptor_type);
 
     SamplerHandle create_sampler(const ISamplerDesc& desc);
+
+    void destroy_sampler(SamplerHandle handle);
 
     void wait_idle();
 

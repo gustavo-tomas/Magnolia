@@ -1008,6 +1008,7 @@ namespace mag::gfx
 
         for (const TextureHandle texture : swapchain.swapchain_textures)
         {
+            state->disp.destroyImageView(state->textures[texture].image_view, nullptr);
             state->textures.release_resource(texture);
         }
         vkb::destroy_swapchain(swapchain.swapchain);
@@ -1689,6 +1690,11 @@ namespace mag::gfx
     void destroy_device()
     {
         wait_idle();
+
+        destroy_command_buffer(state->immediate_command_buffer_handle);
+        destroy_command_pool(state->immediate_command_pool_handle);
+        destroy_queue(state->immediate_queue_handle);
+        destroy_fence(state->immediate_fence_handle);
 
         vmaDestroyAllocator(state->allocator);
 

@@ -22,6 +22,8 @@ namespace game
         public:
             void initialize();
 
+            void shutdown();
+
             void on_event(const mag::Event& e);
 
             void on_model_added(const mag::ModelResource& model);

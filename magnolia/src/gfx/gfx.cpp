@@ -213,6 +213,65 @@ namespace mag::gfx
     {
         wait_idle();
 
+        destroy_queue(state->graphics_queue);
+        destroy_queue(state->present_queue);
+
+        for (SemaphoreHandle& submit_semaphore : state->submit_semaphores)
+        {
+            destroy_semaphore(submit_semaphore);
+        }
+
+        // Destroy shaders
+        std::vector<ShaderHandle> shaders;
+        shaders.reserve(state->shaders.size());
+        for (const auto& [handle, data] : state->shaders)
+        {
+            shaders.push_back(handle);
+        }
+
+        for (const ShaderHandle handle : shaders)
+        {
+            destroy_shader(handle);
+        }
+
+        // Destroy textures
+        std::vector<TextureHandle> textures;
+        std::vector<SamplerHandle> samplers;
+        textures.reserve(state->textures.size());
+        samplers.reserve(state->textures.size());
+        for (const auto& [handle, data] : state->textures)
+        {
+            textures.push_back(handle);
+            samplers.push_back(data);
+        }
+
+        for (const TextureHandle handle : textures)
+        {
+            destroy_texture(handle);
+        }
+
+        for (const SamplerHandle handle : samplers)
+        {
+            destroy_sampler(handle);
+        }
+
+        for (FrameData& frame : state->frames)
+        {
+            destroy_command_buffer(frame.command_buffer);
+            destroy_command_pool(frame.command_pool);
+            destroy_semaphore(frame.available_semaphore);
+            destroy_fence(frame.in_flight_fence);
+            destroy_texture(frame.render_target_color);
+            destroy_texture(frame.render_target_depth);
+            destroy_rendering_attachment(frame.color_attachment);
+            destroy_rendering_attachment(frame.depth_attachment);
+            destroy_render_pass(frame.render_pass);
+            destroy_descriptor_pool(frame.descriptor_pool);
+        }
+
+        destroy_swapchain();
+        destroy_device();
+
         delete state;
     }
 
@@ -480,6 +539,8 @@ namespace mag::gfx
     {
         return create_buffer(size, data, BufferUsage::Index);
     }
+
+    void destroy_index_buffer(const IndexBufferHandle index_buffer_handle) { destroy_buffer(index_buffer_handle); }
 
     void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
     {

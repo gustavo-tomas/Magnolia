@@ -27,6 +27,8 @@ namespace mag::gfx
 
     MAG_API IndexBufferHandle create_index_buffer(u64 size, const void* data = nullptr);
 
+    MAG_API void destroy_index_buffer(IndexBufferHandle index_buffer_handle);
+
     MAG_API TextureHandle create_texture(u32 width, u32 height, u64 size = 0, const void* pixels = nullptr,
                                          Format format = Format::R8G8B8A8_SRGB);
 

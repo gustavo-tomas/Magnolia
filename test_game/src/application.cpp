@@ -65,6 +65,7 @@ namespace game
 
     TestGame::~TestGame()
     {
+        renderer.shutdown();
         scene.reset();
         mag::shutdown();
     }

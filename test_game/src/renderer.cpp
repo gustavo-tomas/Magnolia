@@ -41,6 +41,24 @@ namespace game
         build_shader(GRASS_SHADER, false);
     }
 
+    void Renderer::shutdown()
+    {
+        for (const auto& [name, handle] : vertex_buffer_handles)
+        {
+            mag::gfx::destroy_vertex_buffer(handle);
+        }
+
+        for (const auto& [name, handle] : index_buffer_handles)
+        {
+            mag::gfx::destroy_index_buffer(handle);
+        }
+
+        for (const auto& [name, shader] : shaders)
+        {
+            mag::gfx::destroy_shader(shader);
+        }
+    }
+
     void Renderer::render_scene(Scene& scene, const f32 dt)
     {
         if (!mag::gfx::begin_frame())
