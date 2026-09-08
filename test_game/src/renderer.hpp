@@ -57,5 +57,23 @@ namespace game
             };
 
             std::unordered_map<str, FontData> fonts;
+
+#if MAG_CONFIG_DEBUG
+            void initialize_debug_system();
+            void shutdown_debug_system() const;
+            void render_debug(Scene& scene, f32 dt);
+            void draw_colliders(Scene& scene, f32 dt);
+            void draw_floor(Scene& scene, f32 dt);
+            void draw_text(Scene& scene, f32 dt);
+
+            // Create a big buffer. Expand if necessary.
+            mag::gfx::VertexBufferHandle vb = mag::Invalid_ID;
+            mag::ref<mag::FontResource> debug_font;
+
+            // Quick way to calculate fps and frame time
+            f64 time = 0;
+            u64 frame_counter = 0;
+            u64 fps = 0;
+#endif
     };
 };  // namespace game

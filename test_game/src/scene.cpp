@@ -12,7 +12,6 @@
 #include <magnolia/threads/job_system.hpp>
 
 #include "ecs/components.hpp"
-#include "ecs/debug.hpp"
 #include "ecs/systems.hpp"
 #include "renderer.hpp"
 
@@ -24,20 +23,12 @@ namespace game
           job_group(mag::thread::create_job_group())
     {
         ecs.initialize([this](const mag::EntityID id, std::any component) { on_component_added(id, component); });
-
-#if MAG_CONFIG_DEBUG
-        initialize_debug_system();
-#endif
     }
 
     Scene::~Scene()
     {
         // Destroy the job group
         mag::thread::destroy_job_group(job_group);
-
-#if MAG_CONFIG_DEBUG
-        shutdown_debug_system();
-#endif
 
         if (running)
         {
@@ -112,13 +103,6 @@ namespace game
 
         // Update systems
         execute_systems(*this, dt);
-    }
-
-    void Scene::on_render(const f32 dt)
-    {
-#if MAG_CONFIG_DEBUG
-        debug_system(*this, dt);
-#endif
     }
 
     void Scene::on_component_added(const mag::EntityID id, std::any& component)

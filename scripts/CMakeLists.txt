@@ -285,9 +285,7 @@ set(TEST_GAME_SOURCES
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/renderer.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/application.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/ecs/systems.cpp"
-    "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/ecs/debug.hpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/ecs/components.hpp"
-    "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/ecs/debug.cpp"
     "${MAG_ROOT_DIR}/${PROJECT_NAME}/src/ecs/systems.hpp"
 )
 
