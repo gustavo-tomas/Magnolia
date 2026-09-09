@@ -115,8 +115,8 @@ namespace game
         // Global buffer
         struct GlobalData
         {
-                CameraData camera;
-                u32 light_count;
+                CameraData camera = {};
+                u32 light_count = 0;
         };
 
         GlobalData global_data = {};
@@ -282,8 +282,8 @@ namespace game
     static b8 init = false;
 
     const i32 count = 300;
-    const f32 patch_spread = 1.0f;
-    const f32 position_variation = 0.7f;
+    const f32 patch_spread = 1.0F;
+    const f32 position_variation = 0.7F;
 
     void Renderer::set_grass_uniforms()
     {
@@ -294,7 +294,7 @@ namespace game
             {
                 const vec3 position = vec3(
                     (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
-                    (static_cast<f32>(j - count / 2 - 10) * patch_spread) +
+                    (static_cast<f32>(j - (count / 2) - 10) * patch_spread) +
                         math::random(-position_variation, position_variation));
 
                 GrassData grass_data = {};
@@ -320,7 +320,7 @@ namespace game
 
         static std::vector<u32> grass_indices;
 
-        static f32 max_height = 0.0f;
+        static f32 max_height = 0.0F;
 
         if (!init)
         {
@@ -331,13 +331,13 @@ namespace game
             max_height = grass_model->meshes[0].aabb_max.y;
 
             // Apply scale directly to the vertex
-            const vec3 scale = vec3(3.0f);
-            const mat4 model_matrix = math::scale(mat4(1.0f), scale);
+            const vec3 scale = vec3(3.0F);
+            const mat4 model_matrix = math::scale(mat4(1.0F), scale);
 
             for (Vertex& v : grass_model->vertices)
             {
                 GrassVertex grass_vertex = {};
-                grass_vertex.position = vec3(model_matrix * vec4(v.position, 1.0f));
+                grass_vertex.position = vec3(model_matrix * vec4(v.position, 1.0F));
                 grass_vertex.normal = v.normal;
 
                 grass_vertices.push_back(grass_vertex);
@@ -440,7 +440,7 @@ namespace game
                 // Format newlines
                 if (c == '\n')
                 {
-                    y -= static_cast<f32>(ch.size.y) * 1.5f * scale;  // @TODO: hardcoded line spacing
+                    y -= static_cast<f32>(ch.size.y) * 1.5F * scale;  // @TODO: hardcoded line spacing
                     x = transform->translation.x;
                     continue;
                 }
@@ -453,7 +453,7 @@ namespace game
                 TransformComponent char_transform;
                 char_transform.translation = vec3(xpos, ypos, zpos);
                 char_transform.scale =
-                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0f);
+                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0F);
                 char_transform.rotation = transform->rotation;
 
                 // @TODO: rotation is a bit iffy but for now its ok
@@ -492,7 +492,7 @@ namespace game
 
         build_shader(LINE_SHADER, false);
         build_shader(FLOOR_SHADER, false);
-        build_shader(DEBUG_TEXT_SHADER, true);
+        build_shader(DEBUG_TEXT_SHADER, false);
 
         debug_font = mag::resource::get_font(debug_font_name);
 
@@ -608,26 +608,18 @@ namespace game
     {
         (void)scene;
 
-        OrthographicCameraDesc ortho_camera_desc = {};
-        ortho_camera_desc.near = -100.0F;
-        ortho_camera_desc.far = 100.0F;
-        ortho_camera_desc.position = vec3(0.0F);
-        ortho_camera_desc.rotation = quat(vec3(0.0F));
-        ortho_camera_desc.size = 1000.0F;
-        ortho_camera_desc.viewport_size = vec2(window::get_size());
+        const OrthographicCameraDesc ortho_camera_desc = {
+            .position = vec3(0.0F),
+            .rotation = quat(vec3(0.0F)),
+            .viewport_size = vec2(window::get_size()),
+            .near = -100.0F,
+            .far = 100.0F,
+            .size = 1000.0F,
+        };
 
         mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
 
         mag::gfx::use_shader(shaders[DEBUG_TEXT_SHADER]);
-
-        struct GlobalData
-        {
-                mat4 projection;
-        };
-
-        const GlobalData global_data = {.projection = ortho_camera.get_projection()};
-
-        mag::gfx::set_uniform("u_global", &global_data);
 
         frame_counter++;
         time += dt;
@@ -639,22 +631,35 @@ namespace game
             time -= 1.0;
         }
 
-        math::vec4 color = math::vec4(0.8F, 0.8F, 0.8F, 1.0F);
+        math::vec3 color = math::vec3(0.8F, 0.8F, 0.8F);
 
         if (fps > 100)
         {
-            color = math::vec4(0.02F, 0.98F, 0.02F, 1.0F);
+            color = math::vec3(0.02F, 0.98F, 0.02F);
         }
 
         else if (fps >= 50 && fps <= 100)
         {
-            color = math::vec4(0.98F, 0.98F, 0.02F, 1.0F);
+            color = math::vec3(0.98F, 0.98F, 0.02F);
         }
 
         else if (fps < 50)
         {
-            color = math::vec4(0.98F, 0.02F, 0.02F, 1.0F);
+            color = math::vec3(0.98F, 0.02F, 0.02F);
         }
+
+        struct GlobalData
+        {
+                mat4 projection;
+                vec3 color;
+        };
+
+        const GlobalData global_data = {
+            .projection = ortho_camera.get_projection(),
+            .color = color,
+        };
+
+        mag::gfx::set_uniform("u_global", &global_data);
 
         const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", fps, dt * 1000.0);
 
@@ -665,7 +670,7 @@ namespace game
         f32 x = base_position.x;
         f32 y = base_position.y;
 
-        FontData& font_data = fonts[debug_font_name];
+        const FontData& font_data = fonts[debug_font_name];
 
         for (const c8 c : text)
         {
@@ -691,7 +696,6 @@ namespace game
             const f32 ypos = y - (char_offset > 0 ? static_cast<f32>(ch.size.y - ch.bearing.y) * scale : 0);
 
             const DebugTextData text_data = {
-                .color = color,
                 .position = vec2(xpos, ypos),
                 .scale = vec2(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale),
                 .texture_idx = static_cast<u32>(c),
@@ -699,7 +703,7 @@ namespace game
 
             mag::gfx::set_uniform("u_instance", &text_data, char_offset);
 
-            mag::gfx::set_uniform("u_char_textures", font_data.char_texture_handles[c], c);
+            mag::gfx::set_uniform("u_char_textures", font_data.char_texture_handles.at(c), c);
 
             char_offset++;
 

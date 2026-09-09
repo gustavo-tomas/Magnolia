@@ -7,6 +7,7 @@ layout (set = 0, binding = 0) uniform GlobalBuffer
 {
     // Camera
     mat4 projection;
+	vec3 color;
 } u_global;
 
 // Instance buffer
@@ -51,7 +52,7 @@ void main()
 
 	gl_Position = PROJ_MATRIX * model_matrix * vec4(position, 0.0, 1.0);
 	out_tex_coords = tex_coords[gl_VertexIndex];
-	out_color = text.color;
+	out_color = vec4(u_global.color, 1.0);
 	out_texture_idx = text.texture_idx;
 }
 
