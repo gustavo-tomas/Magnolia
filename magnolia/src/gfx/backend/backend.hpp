@@ -311,7 +311,7 @@ namespace mag::gfx
 
     BufferHandle create_buffer(const IBufferDesc& desc);
 
-    void destroy_buffer_shitty_name(BufferHandle handle);
+    void destroy_buffer(BufferHandle handle);
 
     void set_data_buffer(BufferHandle handle, const void* data, u64 data_size, u64 offset);
 

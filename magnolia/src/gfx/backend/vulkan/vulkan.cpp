@@ -734,7 +734,7 @@ namespace mag::gfx
         return handle;
     }
 
-    void destroy_buffer_shitty_name(const BufferHandle handle)
+    void destroy_buffer(const BufferHandle handle)
     {
         const VulkanBuffer& buffer = state->buffers[handle];
 
@@ -886,7 +886,7 @@ namespace mag::gfx
                                             PipelineStage::FragmentShader);
         });
 
-        destroy_buffer_shitty_name(staging_buffer_handle);
+        destroy_buffer(staging_buffer_handle);
     }
 
     const math::uvec3& get_extent_texture(const TextureHandle handle)

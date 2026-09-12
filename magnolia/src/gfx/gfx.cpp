@@ -520,14 +520,14 @@ namespace mag::gfx
         return handle;
     }
 
-    static void destroy_buffer(const BufferHandle handle)
+    static void wait_and_destroy_buffer(const BufferHandle handle)
     {
         // @TODO: we need to make sure that a buffer is not in use when we delete it. A more robust approach would
         // be adding the buffer to a deletion queue and/or finding a way to query if the buffer is in use or not
         // before deleting. WaitIdle is, however, simpler.
 
         wait_idle();
-        destroy_buffer_shitty_name(handle);
+        destroy_buffer(handle);
     }
 
     VertexBufferHandle create_vertex_buffer(const u64 size, const void* data)
@@ -535,14 +535,20 @@ namespace mag::gfx
         return create_buffer(size, data, BufferUsage::Vertex);
     }
 
-    void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle) { destroy_buffer(vertex_buffer_handle); }
+    void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle)
+    {
+        wait_and_destroy_buffer(vertex_buffer_handle);
+    }
 
     IndexBufferHandle create_index_buffer(const u64 size, const void* data)
     {
         return create_buffer(size, data, BufferUsage::Index);
     }
 
-    void destroy_index_buffer(const IndexBufferHandle index_buffer_handle) { destroy_buffer(index_buffer_handle); }
+    void destroy_index_buffer(const IndexBufferHandle index_buffer_handle)
+    {
+        wait_and_destroy_buffer(index_buffer_handle);
+    }
 
     void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
     {
@@ -820,7 +826,7 @@ namespace mag::gfx
                 if (binding_data.descriptor_type == DescriptorType::Uniform ||
                     binding_data.descriptor_type == DescriptorType::Storage)
                 {
-                    destroy_buffer(binding_data.buffer_handle);
+                    wait_and_destroy_buffer(binding_data.buffer_handle);
                 }
             }
 
