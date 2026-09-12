@@ -181,6 +181,22 @@ namespace mag::gfx
             f32 max_anisotropy = 0.0F;
     };
 
+    struct DescriptorUpdate
+    {
+            DescriptorSetHandle handle = Invalid_ID;
+            DescriptorType descriptor_type = DescriptorType::Uniform;
+            u32 binding = 0;
+            u32 array_element = 0;
+
+            // Buffer
+            u64 offset = 0;
+            BufferHandle buffer_handle = Invalid_ID;
+
+            // Texture
+            TextureHandle texture_handle = Invalid_ID;
+            SamplerHandle sampler_handle = Invalid_ID;
+    };
+
     struct DescriptorLimits
     {
             u32 max_per_stage_combined_image_samplers = 0;
@@ -310,6 +326,16 @@ namespace mag::gfx
     DescriptorSetHandle create_descriptor_set(const IDescriptorSetDesc& desc);
 
     void destroy_descriptor_set(DescriptorSetHandle handle);
+
+    // Instead of updating each descrpitor one by one, cache the updates. Then update all descriptors at the end of the
+    // frame, before submitting.
+    void prepare_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
+                                DescriptorType descriptor_type, u64 offset);
+
+    void prepare_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
+                                u32 binding, u32 array_element, DescriptorType descriptor_type);
+
+    void update_pending_descriptor_sets();
 
     void update_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
                                DescriptorType descriptor_type, u64 offset);

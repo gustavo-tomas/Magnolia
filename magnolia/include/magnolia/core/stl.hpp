@@ -53,6 +53,10 @@ namespace mag::stl
                 available_resources.at(--first_available_resource) = handle;
             }
 
+            b8 empty() const { return first_available_resource == 0; }
+
+            u32 used_size() const { return first_available_resource; }
+
             constexpr Resource& operator[](const u32 i)
             {
                 MAG_ASSERT(i < size, "Out of bounds index: {0}", i);
