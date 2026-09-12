@@ -1113,6 +1113,7 @@ namespace mag::gfx
         const u32 descriptor_update_handle = state->descriptor_updates.acquire_resource();
         DescriptorUpdate& update = state->descriptor_updates[descriptor_update_handle];
 
+        update = {};
         update.handle = handle;
         update.buffer_handle = buffer_handle;
         update.binding = binding;
@@ -1138,11 +1139,11 @@ namespace mag::gfx
 
     void update_pending_descriptor_sets()
     {
-        u32 i = 0;
-        std::vector<VkWriteDescriptorSet> writes(state->descriptor_updates.used_size());
-        std::vector<VkDescriptorBufferInfo> buffer_infos(writes.size());  // not true
-        std::vector<VkDescriptorImageInfo> image_infos(writes.size());    // not true
-        while (!state->descriptor_updates.empty() && i < writes.size())
+        const u32 size = state->descriptor_updates.used_size();
+        std::vector<VkWriteDescriptorSet> writes(size);
+        std::vector<VkDescriptorBufferInfo> buffer_infos(size);  // not true
+        std::vector<VkDescriptorImageInfo> image_infos(size);    // not true
+        for (u32 i = 0; i < size && !state->descriptor_updates.empty(); i++)
         {
             const DescriptorUpdate& update = state->descriptor_updates[i];
             const VulkanDescriptorSet& descriptor_set = state->descriptor_sets[update.handle];
@@ -1184,7 +1185,6 @@ namespace mag::gfx
             }
 
             state->descriptor_updates.release_resource(i);
-            i++;
         }
 
         state->disp.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
