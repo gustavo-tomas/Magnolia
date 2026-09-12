@@ -1141,8 +1141,8 @@ namespace mag::gfx
     {
         const u32 size = state->descriptor_updates.used_size();
         std::vector<VkWriteDescriptorSet> writes(size);
-        std::vector<VkDescriptorBufferInfo> buffer_infos(size);  // not true
-        std::vector<VkDescriptorImageInfo> image_infos(size);    // not true
+        std::vector<VkDescriptorBufferInfo> buffer_infos(size);  // @TODO: not necessarily true
+        std::vector<VkDescriptorImageInfo> image_infos(size);    // @TODO: not necessarily true
         for (u32 i = 0; i < size && !state->descriptor_updates.empty(); i++)
         {
             const DescriptorUpdate& update = state->descriptor_updates[i];
