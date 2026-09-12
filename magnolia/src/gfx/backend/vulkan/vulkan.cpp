@@ -147,7 +147,7 @@ namespace mag::gfx
 
     struct State
     {
-            stl::pool<DescriptorUpdate, 2048> descriptor_updates;
+            stl::pool<DescriptorUpdate, 1024> descriptor_updates;
             stl::pool<VulkanTexture, 512> textures;
             stl::pool<VulkanBuffer, 512> buffers;
             stl::pool<VulkanSampler, 512> samplers;  // @TODO: cache/reuse if possible
@@ -1136,7 +1136,7 @@ namespace mag::gfx
         update.sampler_handle = sampler_handle;
     }
 
-    void update_descriptor_sets()
+    void update_pending_descriptor_sets()
     {
         u32 i = 0;
         std::vector<VkWriteDescriptorSet> writes(state->descriptor_updates.used_size());

@@ -332,7 +332,8 @@ namespace mag::gfx
 
     b8 end_frame()
     {
-        update_descriptor_sets();
+        update_pending_descriptor_sets();
+
         u32& current_frame_idx = state->current_frame;
         FrameData& current_frame = state->frames[current_frame_idx];
         const TextureHandle render_target = current_frame.render_target_color;

@@ -7,7 +7,7 @@ namespace mag::stl
     // Fixed size pool with no memory allocations aside from the initial construction. Also has out-of-bounds checks to
     // prevent exceptions and segfaults. I think this implementation is pretty neat and could be reproduced for other
     // data structures.
-    template <typename Resource, u32 _size>
+    template <typename Resource, u32 size>
     class pool
     {
         public:
@@ -15,9 +15,9 @@ namespace mag::stl
 
             pool()
             {
-                static_assert(_size > 0, "Pool size must be greater than zero");
+                static_assert(size > 0, "Pool size must be greater than zero");
 
-                for (Handle i = 0; i < _size; i++)
+                for (Handle i = 0; i < size; i++)
                 {
                     available_resources.at(i) = i;
                 }
@@ -27,9 +27,9 @@ namespace mag::stl
 
             Handle acquire_resource()
             {
-                MAG_ASSERT(first_available_resource < _size, "Pool size exceeded: '{}'. Please increase pool size.",
-                           _size);
-                if (first_available_resource >= _size)
+                MAG_ASSERT(first_available_resource < size, "Pool size exceeded: '{}'. Please increase pool size.",
+                           size);
+                if (first_available_resource >= size)
                 {
                     return 0;
                 }
@@ -44,8 +44,8 @@ namespace mag::stl
             void release_resource(const Handle handle)
             {
                 MAG_ASSERT(first_available_resource > 0, "Pool is already empty");
-                MAG_ASSERT(handle < _size, "Out of bounds handle: '{0}' > (Max handle = '{1}')", handle, _size - 1);
-                if (first_available_resource == 0 || handle >= _size)
+                MAG_ASSERT(handle < size, "Out of bounds handle: '{0}' > (Max handle = '{1}')", handle, size - 1);
+                if (first_available_resource == 0 || handle >= size)
                 {
                     return;
                 }
@@ -55,14 +55,12 @@ namespace mag::stl
 
             b8 empty() const { return first_available_resource == 0; }
 
-            u32 size() const { return _size; }
-
             u32 used_size() const { return first_available_resource; }
 
             constexpr Resource& operator[](const u32 i)
             {
-                MAG_ASSERT(i < _size, "Out of bounds index: {0}", i);
-                if (i >= _size)
+                MAG_ASSERT(i < size, "Out of bounds index: {0}", i);
+                if (i >= size)
                 {
                     return resources[0];
                 }
@@ -71,8 +69,8 @@ namespace mag::stl
             }
 
         private:
-            std::array<Resource, _size> resources;
-            std::array<Handle, _size> available_resources;
+            std::array<Resource, size> resources;
+            std::array<Handle, size> available_resources;
             u64 first_available_resource = 0;
     };
 };  // namespace mag::stl

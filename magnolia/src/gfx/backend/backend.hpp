@@ -327,16 +327,18 @@ namespace mag::gfx
 
     void destroy_descriptor_set(DescriptorSetHandle handle);
 
+    // Instead of updating each descrpitor one by one, cache the updates. Then update all descriptors at the end of the
+    // frame, before submitting.
     void prepare_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
                                 DescriptorType descriptor_type, u64 offset);
 
     void prepare_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
                                 u32 binding, u32 array_element, DescriptorType descriptor_type);
 
+    void update_pending_descriptor_sets();
+
     void update_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
                                DescriptorType descriptor_type, u64 offset);
-
-    void update_descriptor_sets();
 
     void update_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
                                u32 binding, u32 array_element, DescriptorType descriptor_type);
