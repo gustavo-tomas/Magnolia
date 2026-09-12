@@ -1160,12 +1160,12 @@ namespace mag::gfx
             {
                 const VulkanBuffer& buffer = state->buffers[update.buffer_handle];
 
-                VkDescriptorBufferInfo buffer_info = {};
+                VkDescriptorBufferInfo& buffer_info = buffer_infos[i];
+                buffer_info = {};
                 buffer_info.buffer = buffer.buffer;
                 buffer_info.offset = update.offset;
                 buffer_info.range = buffer.size;
 
-                buffer_infos[i] = buffer_info;
                 write.pBufferInfo = &buffer_infos[i];
             }
 
@@ -1174,12 +1174,12 @@ namespace mag::gfx
                 const VulkanTexture& texture = state->textures[update.texture_handle];
                 const VulkanSampler& sampler = state->samplers[update.sampler_handle];
 
-                VkDescriptorImageInfo image_info = {};
+                VkDescriptorImageInfo& image_info = image_infos[i];
+                image_info = {};
                 image_info.imageLayout = mag_to_vk(texture.layout);
                 image_info.imageView = texture.image_view;
                 image_info.sampler = sampler.sampler;
 
-                image_infos[i] = image_info;
                 write.pImageInfo = &image_infos[i];
             }
 
