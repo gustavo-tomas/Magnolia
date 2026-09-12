@@ -540,8 +540,8 @@ namespace mag::gfx
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        const std::array<VkPipelineStageFlags, 1> wait_stages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submit_info.pWaitDstStageMask = wait_stages.data();
+        const VkPipelineStageFlags wait_stages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submit_info.pWaitDstStageMask = &wait_stages;
 
         if (wait_semaphore_handle != Invalid_ID)
         {
@@ -1112,8 +1112,6 @@ namespace mag::gfx
         const VulkanDescriptorSet& descriptor_set = state->descriptor_sets[handle];
         const VulkanBuffer& buffer = state->buffers[buffer_handle];
 
-        std::vector<VkWriteDescriptorSet> descriptor_writes;
-
         VkDescriptorBufferInfo buffer_info = {};
         buffer_info.buffer = buffer.buffer;
         buffer_info.offset = offset;
@@ -1128,9 +1126,7 @@ namespace mag::gfx
         write.descriptorCount = 1;
         write.pBufferInfo = &buffer_info;
 
-        descriptor_writes.push_back(write);
-
-        state->disp.updateDescriptorSets(descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+        state->disp.updateDescriptorSets(1, &write, 0, nullptr);
     }
 
     void update_descriptor_set(const DescriptorSetHandle handle, const TextureHandle texture_handle,
@@ -1140,8 +1136,6 @@ namespace mag::gfx
         const VulkanDescriptorSet& descriptor_set = state->descriptor_sets[handle];
         const VulkanTexture& texture = state->textures[texture_handle];
         const VulkanSampler& sampler = state->samplers[sampler_handle];
-
-        std::vector<VkWriteDescriptorSet> descriptor_writes;
 
         VkDescriptorImageInfo image_info = {};
         image_info.imageLayout = mag_to_vk(texture.layout);
@@ -1157,9 +1151,7 @@ namespace mag::gfx
         write.descriptorCount = 1;
         write.pImageInfo = &image_info;
 
-        descriptor_writes.push_back(write);
-
-        state->disp.updateDescriptorSets(descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+        state->disp.updateDescriptorSets(1, &write, 0, nullptr);
     }
 
     DescriptorPoolHandle create_descriptor_pool(const IDescriptorPoolDesc& desc)
@@ -1496,12 +1488,10 @@ namespace mag::gfx
         pipeline_layout_info.pSetLayouts = descriptor_set_layouts.data();
         pipeline_layout_info.pushConstantRangeCount = 0;
 
-        if (state->disp.createPipelineLayout(&pipeline_layout_info, nullptr, &pipeline.pipeline_layout) != VK_SUCCESS)
-        {
-            MAG_ASSERT(false, "Failed to create pipeline layout");
-        }
+        vk_check(state->disp.createPipelineLayout(&pipeline_layout_info, nullptr, &pipeline.pipeline_layout),
+                 "Failed to create pipeline layout");
 
-        std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+        const std::array<VkDynamicState, 2> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
         VkPipelineDynamicStateCreateInfo dynamic_info = {};
         dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -1541,11 +1531,8 @@ namespace mag::gfx
         pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
         pipeline_info.pNext = &pipeline_rendering_create_info;
 
-        if (state->disp.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline.pipeline) !=
-            VK_SUCCESS)
-        {
-            MAG_ASSERT(false, "Failed to create pipeline");
-        }
+        vk_check(state->disp.createGraphicsPipelines(VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &pipeline.pipeline),
+                 "Failed to create pipeline");
 
         for (u32 i = 0; i < shader_module_count; i++)
         {
