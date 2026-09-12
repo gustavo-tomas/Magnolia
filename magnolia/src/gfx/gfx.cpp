@@ -332,6 +332,7 @@ namespace mag::gfx
 
     b8 end_frame()
     {
+        update_descriptor_sets();
         u32& current_frame_idx = state->current_frame;
         FrameData& current_frame = state->frames[current_frame_idx];
         const TextureHandle render_target = current_frame.render_target_color;
@@ -565,8 +566,8 @@ namespace mag::gfx
 
         // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-        update_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
-                              binding.descriptor_type, 0);
+        prepare_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
+                               binding.descriptor_type, 0);
     }
 
     void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
@@ -583,8 +584,8 @@ namespace mag::gfx
 
         // If we change the texture, we need to update the descriptor sets (for each frame)
 
-        update_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding, array_element,
-                              binding.descriptor_type);
+        prepare_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding, array_element,
+                               binding.descriptor_type);
     }
 
     void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element)

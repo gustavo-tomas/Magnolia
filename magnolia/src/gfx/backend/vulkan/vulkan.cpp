@@ -147,6 +147,7 @@ namespace mag::gfx
 
     struct State
     {
+            stl::pool<DescriptorUpdate, 2048> descriptor_updates;
             stl::pool<VulkanTexture, 512> textures;
             stl::pool<VulkanBuffer, 512> buffers;
             stl::pool<VulkanSampler, 512> samplers;  // @TODO: cache/reuse if possible
@@ -1104,6 +1105,89 @@ namespace mag::gfx
                  "Failed to free descriptor set");
 
         state->descriptor_sets.release_resource(handle);
+    }
+
+    void prepare_descriptor_set(const DescriptorSetHandle handle, const BufferHandle buffer_handle, const u32 binding,
+                                const u32 array_element, const DescriptorType descriptor_type, const u64 offset)
+    {
+        const u32 descriptor_update_handle = state->descriptor_updates.acquire_resource();
+        DescriptorUpdate& update = state->descriptor_updates[descriptor_update_handle];
+
+        update.handle = handle;
+        update.buffer_handle = buffer_handle;
+        update.binding = binding;
+        update.array_element = array_element;
+        update.descriptor_type = descriptor_type;
+        update.offset = offset;
+    }
+
+    void prepare_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
+                                u32 binding, u32 array_element, DescriptorType descriptor_type)
+    {
+        const u32 descriptor_update_handle = state->descriptor_updates.acquire_resource();
+        DescriptorUpdate& update = state->descriptor_updates[descriptor_update_handle];
+
+        update = {};
+        update.handle = handle;
+        update.binding = binding;
+        update.array_element = array_element;
+        update.descriptor_type = descriptor_type;
+        update.texture_handle = texture_handle;
+        update.sampler_handle = sampler_handle;
+    }
+
+    void update_descriptor_sets()
+    {
+        u32 i = 0;
+        std::vector<VkWriteDescriptorSet> writes(state->descriptor_updates.used_size());
+        std::vector<VkDescriptorBufferInfo> buffer_infos(writes.size());  // not true
+        std::vector<VkDescriptorImageInfo> image_infos(writes.size());    // not true
+        while (!state->descriptor_updates.empty() && i < writes.size())
+        {
+            const DescriptorUpdate& update = state->descriptor_updates[i];
+            const VulkanDescriptorSet& descriptor_set = state->descriptor_sets[update.handle];
+
+            VkWriteDescriptorSet& write = writes[i];
+            write = {};
+            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write.dstSet = descriptor_set.descriptor_set;
+            write.dstBinding = update.binding;
+            write.dstArrayElement = update.array_element;
+            write.descriptorType = mag_to_vk(update.descriptor_type);
+            write.descriptorCount = 1;
+
+            if (update.buffer_handle != Invalid_ID)
+            {
+                const VulkanBuffer& buffer = state->buffers[update.buffer_handle];
+
+                VkDescriptorBufferInfo buffer_info = {};
+                buffer_info.buffer = buffer.buffer;
+                buffer_info.offset = update.offset;
+                buffer_info.range = buffer.size;
+
+                buffer_infos[i] = buffer_info;
+                write.pBufferInfo = &buffer_infos[i];
+            }
+
+            else if (update.texture_handle != Invalid_ID)
+            {
+                const VulkanTexture& texture = state->textures[update.texture_handle];
+                const VulkanSampler& sampler = state->samplers[update.sampler_handle];
+
+                VkDescriptorImageInfo image_info = {};
+                image_info.imageLayout = mag_to_vk(texture.layout);
+                image_info.imageView = texture.image_view;
+                image_info.sampler = sampler.sampler;
+
+                image_infos[i] = image_info;
+                write.pImageInfo = &image_infos[i];
+            }
+
+            state->descriptor_updates.release_resource(i);
+            i++;
+        }
+
+        state->disp.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
     }
 
     void update_descriptor_set(const DescriptorSetHandle handle, const BufferHandle buffer_handle, const u32 binding,
