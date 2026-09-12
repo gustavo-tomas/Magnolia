@@ -20,8 +20,9 @@ namespace game
     class Renderer
     {
         public:
-            Renderer();
-            ~Renderer();
+            void initialize();
+
+            void shutdown();
 
             void on_event(const mag::Event& e);
 
@@ -31,9 +32,9 @@ namespace game
 
             void on_font_added(const mag::FontResource& font);
 
-            void render_scene(Scene& scene, const f32 dt);
+            void render_scene(Scene& scene, f32 dt);
 
-            void build_shader(const str& file_path, const b8 recompile = false);
+            void build_shader(const str& file_path, b8 recompile = false);
 
         private:
             void render_models(Scene& scene);
@@ -56,5 +57,23 @@ namespace game
             };
 
             std::unordered_map<str, FontData> fonts;
+
+#if MAG_CONFIG_DEBUG
+            void initialize_debug_system();
+            void shutdown_debug_system() const;
+            void render_debug(Scene& scene, f32 dt);
+            void draw_debug_colliders(Scene& scene, f32 dt);
+            void draw_debug_floor(Scene& scene, f32 dt);
+            void draw_debug_text(Scene& scene, f32 dt);
+
+            // Create a big buffer. Expand if necessary.
+            mag::gfx::VertexBufferHandle vb = mag::Invalid_ID;
+            mag::ref<mag::FontResource> debug_font;
+
+            // Quick way to calculate fps and frame time
+            f64 time = 0;
+            u64 frame_counter = 0;
+            u64 fps = 0;
+#endif
     };
 };  // namespace game

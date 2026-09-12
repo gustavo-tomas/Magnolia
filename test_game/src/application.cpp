@@ -33,17 +33,15 @@ namespace game
 
         MAG_ASSERT(mag::initialize(options), "Failed to initialize mag");
 
-        renderer = mag::create_unique<Renderer>();
+        renderer.initialize();
 
         // Set a callback for window events
         mag::window::set_event_callback([this](const mag::Event& e) { on_event(e); });
 
         // Load the project
 
-        project = mag::create_unique<mag::Project>();
-
         const str project_file_path = "test_game/TestGame.proj.json";
-        if (!mag::project::load(project_file_path, *project))
+        if (!mag::project::load(project_file_path, project))
         {
             LOG_ERROR("Failed to load project: '{0}'", project_file_path);
             return;
@@ -53,9 +51,9 @@ namespace game
 
         // Then load starting scene
 
-        scene = mag::create_unique<Scene>(renderer.get());
+        scene = mag::create_unique<Scene>(&renderer);
 
-        const str start_scene_file_path = project->get_asset_dir() / project->get_relative_start_scene_path();
+        const str start_scene_file_path = project.get_asset_dir() / project.get_relative_start_scene_path();
         if (!scene::load(start_scene_file_path, *scene))
         {
             LOG_ERROR("Failed to load start scene: '{0}'", start_scene_file_path);
@@ -67,8 +65,8 @@ namespace game
 
     TestGame::~TestGame()
     {
+        renderer.shutdown();
         scene.reset();
-        project.reset();
         mag::shutdown();
     }
 
@@ -103,7 +101,7 @@ namespace game
         const str& next_scene_file_path = scene->get_next_scene();
         if (!next_scene_file_path.empty())
         {
-            Scene* next_scene = new Scene(renderer.get());
+            auto* next_scene = new Scene(&renderer);
             if (!scene::load(next_scene_file_path, *next_scene))
             {
                 LOG_ERROR("Failed to load scene: '{0}'", next_scene_file_path);
@@ -120,7 +118,7 @@ namespace game
         }
 
         scene->on_update(dt);
-        renderer->render_scene(*scene, dt);
+        renderer.render_scene(*scene, dt);
     }
 
     void TestGame::on_event(const mag::Event& e)
@@ -129,7 +127,7 @@ namespace game
         dispatch_event<mag::QuitEvent>(e, [this](const mag::QuitEvent& e) { on_quit(e); });
 
         scene->on_event(e);
-        renderer->on_event(e);
+        renderer.on_event(e);
     }
 
     void TestGame::on_quit(const mag::QuitEvent& e)
@@ -155,7 +153,7 @@ namespace game
 
                 // We reuse the asset dir retrieved from the project to make things
                 // easier
-                params.file_path = project->get_asset_dir() / arg;
+                params.file_path = project.get_asset_dir() / arg;
 
                 if (mag::script::compile_script(params))
                 {
@@ -172,9 +170,9 @@ namespace game
             {
                 // We reuse the asset dir retrieved from the project to make things
                 // easier
-                const str file_path = project->get_asset_dir() / arg;
+                const str file_path = project.get_asset_dir() / arg;
 
-                renderer->build_shader(file_path, true);
+                renderer.build_shader(file_path, true);
             }
         });
 
@@ -191,7 +189,7 @@ namespace game
                 {
                     // We reuse the asset dir retrieved from the project to make things
                     // easier
-                    const str file_path = project->get_asset_dir() / arg;
+                    const str file_path = project.get_asset_dir() / arg;
 
                     str out_file_path;
                     const b8 result = mag::tools::import_model(file_path, out_file_path);

@@ -35,10 +35,10 @@ namespace mag
 
         struct State
         {
-                unique<DebugRenderer> debug_renderer = nullptr;
-
                 // @TODO: this is an example job system. Integrate jolt with our job system.
-                unique<JPH::JobSystemThreadPool> job_system = nullptr;
+                JPH::JobSystemThreadPool job_system;
+
+                unique<DebugRenderer> debug_renderer = nullptr;
 
                 // We need a temp allocator for temporary allocations during the physics update
                 unique<JPH::TempAllocatorImpl> temp_allocator = nullptr;
@@ -70,8 +70,8 @@ namespace mag
             const u64 allocation_size = 1ULL * 20 * 1024 * 1024;
             physics::state->temp_allocator = create_unique<JPH::TempAllocatorImpl>(allocation_size);
 
-            physics::state->job_system = create_unique<JPH::JobSystemThreadPool>(
-                JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, static_cast<i32>(thread::get_core_count() - 1));
+            physics::state->job_system.Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers,
+                                            static_cast<i32>(thread::get_core_count() - 1));
 
             return state != nullptr;
         }
@@ -107,33 +107,19 @@ namespace mag
                     // interpenetrating / fall through the world.
                     const u32 max_contact_constraints = 10240;
 
-                    // Create mapping table from object layer to broadphase layer
-                    broad_phase_layer_interface = create_unique<BPLayerInterfaceImpl>();
-
-                    // Create class that filters object vs broadphase layers
-                    object_vs_broadphase_layer_filter = create_unique<ObjectVsBroadPhaseLayerFilterImpl>();
-
-                    // Create class that filters object vs object layers
-                    object_vs_object_layer_filter = create_unique<ObjectLayerPairFilterImpl>();
-
                     // Now we can create the actual physics system.
-                    physics_system = create_unique<JPH::PhysicsSystem>();
-                    physics_system->Init(max_bodies, num_body_mutexes, max_body_pairs, max_contact_constraints,
-                                         *broad_phase_layer_interface, *object_vs_broadphase_layer_filter,
-                                         *object_vs_object_layer_filter);
+                    physics_system.Init(max_bodies, num_body_mutexes, max_body_pairs, max_contact_constraints,
+                                        broad_phase_layer_interface, object_vs_broadphase_layer_filter,
+                                        object_vs_object_layer_filter);
 
-                    body_activation_listener = create_unique<BodyActivationListener>();
+                    physics_system.SetBodyActivationListener(&body_activation_listener);
 
-                    contact_listener = create_unique<ContactListener>();
-
-                    physics_system->SetBodyActivationListener(body_activation_listener.get());
-
-                    physics_system->SetContactListener(contact_listener.get());
+                    physics_system.SetContactListener(&contact_listener);
                 }
 
                 ~JoltPhysicsWorld() override
                 {
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     for (const auto& [id, body] : rigid_bodies)
                     {
@@ -153,7 +139,7 @@ namespace mag
                     // The main way to interact with the bodies in the physics system is through the body interface.
                     // There is a locking and a non-locking variant of this. We're going to use the locking version
                     // (even though we're not planning to access bodies from multiple threads)
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     if (shape_result.HasError())
                     {
@@ -200,7 +186,7 @@ namespace mag
                         // collision detection performance. You should definitely not call this every frame or when e.g.
                         // streaming in a new level section as it is an expensive operation. Instead insert all new
                         // objects in batches instead of 1 at a time to keep the broad phase efficient.
-                        physics_system->OptimizeBroadPhase();
+                        physics_system.OptimizeBroadPhase();
                     }
 
                     return handle;
@@ -265,7 +251,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::BodyID id = it->second->GetID();
 
@@ -300,17 +286,19 @@ namespace mag
                     if (collision_steps > 0)
                     {
                         // Step the world
-                        physics_system->Update(fixed_dt, collision_steps, physics::state->temp_allocator.get(),
-                                               physics::state->job_system.get());
+                        physics_system.Update(fixed_dt, collision_steps, physics::state->temp_allocator.get(),
+                                              &physics::state->job_system);
                     }
 
+#if MAG_CONFIG_DEBUG
                     // Render the world
                     JPH::BodyManager::DrawSettings settings = {};
                     settings.mDrawShape = true;
                     settings.mDrawShapeWireframe = true;
 
                     physics::state->debug_renderer->reset_line_list();
-                    physics_system->DrawBodies(settings, physics::state->debug_renderer.get());
+                    physics_system.DrawBodies(settings, physics::state->debug_renderer.get());
+#endif
                 }
 
                 void apply_force(const RigidBodyHandle handle, const math::vec3& force) override
@@ -322,7 +310,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     body_interface.AddForce(it->second->GetID(), physics::from_mag(force));
                 }
@@ -336,7 +324,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     body_interface.AddImpulse(it->second->GetID(), physics::from_mag(impulse));
                 }
@@ -350,7 +338,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     body_interface.AddTorque(it->second->GetID(), physics::from_mag(torque));
                 }
@@ -379,7 +367,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::EActivation activation = body_interface.IsActive(it->second->GetID())
                                                             ? JPH::EActivation::Activate
@@ -397,7 +385,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::EActivation activation = body_interface.IsActive(it->second->GetID())
                                                             ? JPH::EActivation::Activate
@@ -415,7 +403,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     body_interface.SetLinearVelocity(it->second->GetID(), physics::from_mag(velocity));
                 }
@@ -429,7 +417,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     body_interface.SetAngularVelocity(it->second->GetID(), physics::from_mag(velocity));
                 }
@@ -467,7 +455,7 @@ namespace mag
                         return;
                     }
 
-                    JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     switch (activation_state)
                     {
@@ -494,7 +482,7 @@ namespace mag
                         return math::vec3(0.0F);
                     }
 
-                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    const JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::Vec3 velocity = body_interface.GetLinearVelocity(it->second->GetID());
 
@@ -510,7 +498,7 @@ namespace mag
                         return math::vec3(0.0F);
                     }
 
-                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    const JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::Vec3 velocity = body_interface.GetAngularVelocity(it->second->GetID());
 
@@ -527,7 +515,7 @@ namespace mag
                         return;
                     }
 
-                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    const JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::BodyID& id = it->second->GetID();
                     JPH::RVec3 pos = {};
@@ -547,7 +535,7 @@ namespace mag
                         return;
                     }
 
-                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    const JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::BodyID& id = it->second->GetID();
                     const JPH::RVec3 pos = body_interface.GetPosition(id);
@@ -564,7 +552,7 @@ namespace mag
                         return;
                     }
 
-                    const JPH::BodyInterface& body_interface = physics_system->GetBodyInterface();
+                    const JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
 
                     const JPH::BodyID& id = it->second->GetID();
                     const JPH::Quat rot = body_interface.GetRotation(id);
@@ -576,7 +564,7 @@ namespace mag
 
                 math::vec3 get_gravity() const override
                 {
-                    const math::vec3 gravity = to_mag(physics_system->GetGravity());
+                    const math::vec3 gravity = to_mag(physics_system.GetGravity());
                     return gravity;
                 }
 
@@ -615,8 +603,8 @@ namespace mag
                     JPH::RMat44Arg center_of_mass_transform = body->GetCenterOfMassTransform();
                     CollideShapeCollector collide_shape_collector;
 
-                    physics_system->GetNarrowPhaseQuery().CollideShape(shape, shape_scale, center_of_mass_transform,
-                                                                       settings, base_offset, collide_shape_collector);
+                    physics_system.GetNarrowPhaseQuery().CollideShape(shape, shape_scale, center_of_mass_transform,
+                                                                      settings, base_offset, collide_shape_collector);
 
                     const std::vector<JPH::BodyID>& body_ids = collide_shape_collector.get_collisions();
 
@@ -636,6 +624,29 @@ namespace mag
                 }
 
             private:
+                JPH::PhysicsSystem physics_system;
+
+                // Create mapping table from object layer to broadphase layer
+                BPLayerInterfaceImpl broad_phase_layer_interface;
+
+                // Create class that filters object vs broadphase layers
+                ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
+
+                // Create class that filters object vs object layers
+                ObjectLayerPairFilterImpl object_vs_object_layer_filter;
+
+                // A body activation listener gets notified when bodies activate and go to sleep
+                // Note that this is called from a job so whatever you do here needs to be thread safe.
+                // Registering one is entirely optional.
+                BodyActivationListener body_activation_listener;
+
+                // A contact listener gets notified when bodies (are about to) collide, and when they separate again.
+                // Note that this is called from a job so whatever you do here needs to be thread safe.
+                // Registering one is entirely optional.
+                ContactListener contact_listener;
+
+                std::unordered_map<RigidBodyHandle, JPH::Body*> rigid_bodies;
+
                 // We simulate the physics world in discrete time steps. 60 Hz is a good rate to update the physics
                 // system.
                 const f32 fixed_dt = 1.0F / 60.0F;
@@ -643,29 +654,6 @@ namespace mag
                 f32 accumulated_dt = 0.0F;
 
                 RigidBodyHandle handle_counter = 0;
-
-                unique<JPH::PhysicsSystem> physics_system = nullptr;
-
-                // Create mapping table from object layer to broadphase layer
-                unique<BPLayerInterfaceImpl> broad_phase_layer_interface = nullptr;
-
-                // Create class that filters object vs broadphase layers
-                unique<ObjectVsBroadPhaseLayerFilterImpl> object_vs_broadphase_layer_filter = nullptr;
-
-                // Create class that filters object vs object layers
-                unique<ObjectLayerPairFilterImpl> object_vs_object_layer_filter = nullptr;
-
-                // A body activation listener gets notified when bodies activate and go to sleep
-                // Note that this is called from a job so whatever you do here needs to be thread safe.
-                // Registering one is entirely optional.
-                unique<BodyActivationListener> body_activation_listener = nullptr;
-
-                // A contact listener gets notified when bodies (are about to) collide, and when they separate again.
-                // Note that this is called from a job so whatever you do here needs to be thread safe.
-                // Registering one is entirely optional.
-                unique<ContactListener> contact_listener = nullptr;
-
-                std::unordered_map<RigidBodyHandle, JPH::Body*> rigid_bodies;
         };
 
         unique<IPhysicsWorld> create_physics_world() { return create_unique<JoltPhysicsWorld>(); }

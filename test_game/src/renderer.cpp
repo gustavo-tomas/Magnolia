@@ -31,7 +31,13 @@ namespace game
 #define TEXT_SHADER "test_game/assets/shaders/text_shader.mag.json"
 #define GRASS_SHADER "test_game/assets/shaders/grass_shader.mag.json"
 
-    Renderer::Renderer()
+#if MAG_CONFIG_DEBUG
+    #define FLOOR_SHADER "test_game/assets/shaders/floor_shader.mag.json"
+    #define LINE_SHADER "test_game/assets/shaders/line_shader.mag.json"
+    #define DEBUG_TEXT_SHADER "test_game/assets/shaders/debug_text_shader.mag.json"
+#endif
+
+    void Renderer::initialize()
     {
         // Load shaders
 
@@ -39,9 +45,33 @@ namespace game
         build_shader(SPRITE_SHADER, false);
         build_shader(TEXT_SHADER, false);
         build_shader(GRASS_SHADER, false);
+
+#if MAG_CONFIG_DEBUG
+        initialize_debug_system();
+#endif
     }
 
-    Renderer::~Renderer() = default;
+    void Renderer::shutdown()
+    {
+#if MAG_CONFIG_DEBUG
+        shutdown_debug_system();
+#endif
+
+        for (const auto& [name, handle] : vertex_buffer_handles)
+        {
+            mag::gfx::destroy_vertex_buffer(handle);
+        }
+
+        for (const auto& [name, handle] : index_buffer_handles)
+        {
+            mag::gfx::destroy_index_buffer(handle);
+        }
+
+        for (const auto& [name, shader] : shaders)
+        {
+            mag::gfx::destroy_shader(shader);
+        }
+    }
 
     void Renderer::render_scene(Scene& scene, const f32 dt)
     {
@@ -54,7 +84,9 @@ namespace game
         render_models(scene);
         // render_grass(scene);
         render_text(scene);
-        scene.on_render(dt);
+#if MAG_CONFIG_DEBUG
+        render_debug(scene, dt);
+#endif
 
         if (!mag::gfx::end_frame())
         {
@@ -83,8 +115,8 @@ namespace game
         // Global buffer
         struct GlobalData
         {
-                CameraData camera;
-                u32 light_count;
+                CameraData camera = {};
+                u32 light_count = 0;
         };
 
         GlobalData global_data = {};
@@ -250,8 +282,8 @@ namespace game
     static b8 init = false;
 
     const i32 count = 300;
-    const f32 patch_spread = 1.0f;
-    const f32 position_variation = 0.7f;
+    const f32 patch_spread = 1.0F;
+    const f32 position_variation = 0.7F;
 
     void Renderer::set_grass_uniforms()
     {
@@ -262,7 +294,7 @@ namespace game
             {
                 const vec3 position = vec3(
                     (static_cast<f32>(i) * patch_spread) + math::random(-position_variation, position_variation), 0,
-                    (static_cast<f32>(j - count / 2 - 10) * patch_spread) +
+                    (static_cast<f32>(j - (count / 2) - 10) * patch_spread) +
                         math::random(-position_variation, position_variation));
 
                 GrassData grass_data = {};
@@ -288,7 +320,7 @@ namespace game
 
         static std::vector<u32> grass_indices;
 
-        static f32 max_height = 0.0f;
+        static f32 max_height = 0.0F;
 
         if (!init)
         {
@@ -299,13 +331,13 @@ namespace game
             max_height = grass_model->meshes[0].aabb_max.y;
 
             // Apply scale directly to the vertex
-            const vec3 scale = vec3(3.0f);
-            const mat4 model_matrix = math::scale(mat4(1.0f), scale);
+            const vec3 scale = vec3(3.0F);
+            const mat4 model_matrix = math::scale(mat4(1.0F), scale);
 
             for (Vertex& v : grass_model->vertices)
             {
                 GrassVertex grass_vertex = {};
-                grass_vertex.position = vec3(model_matrix * vec4(v.position, 1.0f));
+                grass_vertex.position = vec3(model_matrix * vec4(v.position, 1.0F));
                 grass_vertex.normal = v.normal;
 
                 grass_vertices.push_back(grass_vertex);
@@ -408,7 +440,7 @@ namespace game
                 // Format newlines
                 if (c == '\n')
                 {
-                    y -= static_cast<f32>(ch.size.y) * 1.5f * scale;  // @TODO: hardcoded line spacing
+                    y -= static_cast<f32>(ch.size.y) * 1.5F * scale;  // @TODO: hardcoded line spacing
                     x = transform->translation.x;
                     continue;
                 }
@@ -421,7 +453,7 @@ namespace game
                 TransformComponent char_transform;
                 char_transform.translation = vec3(xpos, ypos, zpos);
                 char_transform.scale =
-                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0f);
+                    vec3(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale, 1.0F);
                 char_transform.rotation = transform->rotation;
 
                 // @TODO: rotation is a bit iffy but for now its ok
@@ -449,6 +481,247 @@ namespace game
 
         mag::gfx::draw(4, char_offset);
     }
+
+#if MAG_CONFIG_DEBUG
+    const u64 max_buffer_size = 64ULL * 1024 * 1024;
+    const str debug_font_name = "test_game/assets/fonts/FixedSys_Excelsior/FSEX300.ttf";
+
+    void Renderer::initialize_debug_system()
+    {
+        vb = mag::gfx::create_vertex_buffer(max_buffer_size, nullptr);
+
+        build_shader(LINE_SHADER, false);
+        build_shader(FLOOR_SHADER, false);
+        build_shader(DEBUG_TEXT_SHADER, false);
+
+        debug_font = mag::resource::get_font(debug_font_name);
+
+        if (debug_font != nullptr)
+        {
+            on_font_added(*debug_font);
+        }
+    }
+
+    void Renderer::shutdown_debug_system() const { mag::gfx::destroy_vertex_buffer(vb); }
+
+    void Renderer::draw_debug_colliders(Scene& scene, const f32 dt)
+    {
+        (void)dt;
+
+        mag::Camera& camera = scene.get_camera();
+
+        struct Line
+        {
+                vec3 position;
+                vec3 color;
+        };
+
+        const mag::physics::IPhysicsWorld& physics = scene.get_physics_world();
+
+        const mag::math::LineList& line_list = physics.get_debug_line_list();
+
+        if (line_list.lines.empty())
+        {
+            return;
+        }
+
+        mag::gfx::use_shader(shaders[LINE_SHADER]);
+
+        struct GlobalData
+        {
+                mat4 view;
+                mat4 projection;
+        };
+
+        GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        std::vector<Line> lines(line_list.lines.size());
+
+        for (u64 i = 0; i < line_list.lines.size(); i++)
+        {
+            const math::Line& line = line_list.lines[i];
+            lines[i] = {.position = line.start, .color = line.color};
+            lines[i] = {.position = line.end, .color = line.color};
+        }
+
+        const u64 line_vec_size = VEC_SIZE_BYTES(lines);
+
+        if (line_vec_size > max_buffer_size)
+        {
+            LOG_ERROR("Debug buffer size exceeded ('{0}' < '{1}'). Please increase buffer limit.", max_buffer_size,
+                      line_vec_size);
+            return;
+        }
+
+        mag::gfx::set_buffer_data(vb, lines.data(), line_vec_size, 0);
+
+        mag::gfx::bind_vertex_buffer(vb);
+
+        mag::gfx::draw(lines.size());
+    }
+
+    void Renderer::draw_debug_floor(Scene& scene, const f32 dt)
+    {
+        (void)dt;
+
+        mag::ECS& ecs = scene.get_ecs();
+        mag::Camera& camera = scene.get_camera();
+
+        auto light_entities = ecs.get_all_components_of_types<TransformComponent, LightComponent>();
+
+        mag::gfx::use_shader(shaders[FLOOR_SHADER]);
+
+        struct GlobalData
+        {
+                mat4 view = mat4(1.0F);
+                mat4 projection = mat4(1.0F);
+                u32 light_count = 0;
+        };
+
+        GlobalData global_data = {};
+        global_data.view = camera.get_view();
+        global_data.projection = camera.get_projection();
+        global_data.light_count = light_entities.size();
+
+        // Lights buffer
+        u32 light_num = 0;
+        for (const auto& [transform, light] : light_entities)
+        {
+            LightData light_data = {};
+            light_data.position = transform->translation;
+            light_data.color = light->color;
+            light_data.intensity = light->intensity;
+
+            mag::gfx::set_uniform("u_light", &light_data, light_num++);
+        }
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        mag::gfx::draw(4);
+    }
+
+    void Renderer::draw_debug_text(Scene& scene, const f32 dt)
+    {
+        (void)scene;
+
+        const OrthographicCameraDesc ortho_camera_desc = {
+            .position = vec3(0.0F),
+            .rotation = quat(vec3(0.0F)),
+            .viewport_size = vec2(window::get_size()),
+            .near = -100.0F,
+            .far = 100.0F,
+            .size = 1000.0F,
+        };
+
+        mag::OrthographicCamera ortho_camera = mag::OrthographicCamera(ortho_camera_desc);
+
+        mag::gfx::use_shader(shaders[DEBUG_TEXT_SHADER]);
+
+        frame_counter++;
+        time += dt;
+
+        if (time >= 1.0)
+        {
+            fps = frame_counter;
+            frame_counter = 0;
+            time -= 1.0;
+        }
+
+        math::vec3 color = math::vec3(0.8F, 0.8F, 0.8F);
+
+        if (fps > 100)
+        {
+            color = math::vec3(0.02F, 0.98F, 0.02F);
+        }
+
+        else if (fps >= 50 && fps <= 100)
+        {
+            color = math::vec3(0.98F, 0.98F, 0.02F);
+        }
+
+        else if (fps < 50)
+        {
+            color = math::vec3(0.98F, 0.02F, 0.02F);
+        }
+
+        struct GlobalData
+        {
+                mat4 projection;
+                vec3 color;
+        };
+
+        const GlobalData global_data = {
+            .projection = ortho_camera.get_projection(),
+            .color = color,
+        };
+
+        mag::gfx::set_uniform("u_global", &global_data);
+
+        const str text = mag::log::get_formatted_log("fps: {0}\ntime: {1:.3f} ms/frame", fps, dt * 1000.0);
+
+        u32 char_offset = 0;
+
+        const f32 scale = 0.5F;
+        const vec2 base_position(-200.0F, -400.0F);
+        f32 x = base_position.x;
+        f32 y = base_position.y;
+
+        const FontData& font_data = fonts[debug_font_name];
+
+        for (const c8 c : text)
+        {
+            const Character& ch = debug_font->characters[c];
+
+            // Skip chars with no visual representation (i.e. spaces)
+            if (ch.data.empty())
+            {
+                x += static_cast<f32>(ch.advance.x >> 6) * scale;
+                continue;
+            }
+
+            // Format newlines
+            if (c == '\n')
+            {
+                y -= static_cast<f32>(ch.size.y) * 1.5F * scale;
+                x = base_position.x;
+                continue;
+            }
+
+            // Don't offset the first letter of the text
+            const f32 xpos = x + (char_offset > 0 ? static_cast<f32>(ch.bearing.x) * scale : 0);
+            const f32 ypos = y - (char_offset > 0 ? static_cast<f32>(ch.size.y - ch.bearing.y) * scale : 0);
+
+            const DebugTextData text_data = {
+                .position = vec2(xpos, ypos),
+                .scale = vec2(static_cast<f32>(ch.size.x) * scale, static_cast<f32>(ch.size.y) * scale),
+                .texture_idx = static_cast<u32>(c),
+            };
+
+            mag::gfx::set_uniform("u_instance", &text_data, char_offset);
+
+            mag::gfx::set_uniform("u_char_textures", font_data.char_texture_handles.at(c), c);
+
+            char_offset++;
+
+            // Advance cursors for next glyph (note that advance is number of 1/64 pixels) bitshift by 6 to
+            // get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+            x += static_cast<f32>(ch.advance.x >> 6) * scale;
+        }
+
+        mag::gfx::draw(4, char_offset);
+    }
+
+    void Renderer::render_debug(Scene& scene, const f32 dt)
+    {
+        draw_debug_colliders(scene, dt);
+        draw_debug_floor(scene, dt);
+        draw_debug_text(scene, dt);
+    }
+#endif
 
     void Renderer::build_shader(const str& file_path, const b8 recompile)
     {

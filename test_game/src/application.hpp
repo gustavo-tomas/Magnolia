@@ -1,6 +1,9 @@
 #pragma once
 
 #include <magnolia/core/types.hpp>
+#include <magnolia/project/project.hpp>
+
+#include "renderer.hpp"
 
 namespace mag
 {
@@ -12,7 +15,6 @@ namespace mag
 
 namespace game
 {
-    class Renderer;
     class Scene;
 
     class TestGame
@@ -24,7 +26,7 @@ namespace game
             void run();
 
         private:
-            void on_update(const f32 dt);
+            void on_update(f32 dt);
             void on_event(const mag::Event& e);
 
             void register_commands();
@@ -32,10 +34,10 @@ namespace game
             void on_window_close(const mag::WindowCloseEvent& e);
             void on_quit(const mag::QuitEvent& e);
 
-            b8 running = false;
-
-            mag::unique<Renderer> renderer;
+            Renderer renderer;
             mag::unique<Scene> scene;
-            mag::unique<mag::Project> project;
+            mag::Project project;
+
+            b8 running = false;
     };
 };  // namespace game

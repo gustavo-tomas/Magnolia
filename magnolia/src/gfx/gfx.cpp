@@ -11,8 +11,6 @@
 
 namespace mag::gfx
 {
-    using BufferHandle = u32;
-
     struct BindingData
     {
             u32 binding = 0;
@@ -24,45 +22,39 @@ namespace mag::gfx
 
     struct DescriptorData
     {
-            unique<IDescriptorSet> descriptor_set;
+            DescriptorSetHandle descriptor_set = Invalid_ID;
             std::unordered_map<str, BindingData> bindings_map;
     };
 
     struct ShaderData
     {
-            unique<IGraphicsPipeline> pipeline;
-            unique<IDescriptorSetLayout> descriptor_layout;
-    };
-
-    struct TextureData
-    {
-            unique<ITexture> texture;
-            unique<ISampler> sampler;
+            GraphicsPipelineHandle pipeline = Invalid_ID;
+            DescriptorSetLayoutHandle descriptor_layout = Invalid_ID;
     };
 
     struct FrameData
     {
-            unique<ICommandPool> command_pool;
-            unique<ICommandBuffer> command_buffer;
-            unique<ISemaphore> available_semaphore;
-            unique<IFence> in_flight_fence;
-            unique<ITexture> render_target_color;
-            unique<ITexture> render_target_depth;
-            unique<IDescriptorPool> descriptor_pool;
+            CommandPoolHandle command_pool = Invalid_ID;
+            CommandBufferHandle command_buffer = Invalid_ID;
+            SemaphoreHandle available_semaphore = Invalid_ID;
+            FenceHandle in_flight_fence = Invalid_ID;
+            TextureHandle render_target_color = Invalid_ID;
+            TextureHandle render_target_depth = Invalid_ID;
+            DescriptorPoolHandle descriptor_pool = Invalid_ID;
+            RenderingAttachmentHandle color_attachment = Invalid_ID;
+            RenderingAttachmentHandle depth_attachment = Invalid_ID;
+            RenderPassHandle render_pass = Invalid_ID;
             std::unordered_map<ShaderHandle, DescriptorData> descriptor_set_map;
     };
 
     struct GfxState
     {
-            unique<IDevice> device;
-            unique<ISwapchain> swapchain;
-            unique<IQueue> graphics_queue;
-            unique<IQueue> present_queue;
+            QueueHandle graphics_queue = Invalid_ID;
+            QueueHandle present_queue = Invalid_ID;
             std::vector<FrameData> frames;
-            std::vector<unique<ISemaphore>> submit_semaphores;
+            std::vector<SemaphoreHandle> submit_semaphores;
             std::unordered_map<ShaderHandle, ShaderData> shaders;
-            std::unordered_map<BufferHandle, unique<IBuffer>> buffers;
-            std::unordered_map<TextureHandle, TextureData> textures;
+            std::unordered_map<TextureHandle, SamplerHandle> textures;
             u32 current_frame = 0;
             ShaderHandle current_bound_shader = Invalid_ID;
     };
@@ -103,73 +95,97 @@ namespace mag::gfx
     b8 initialize(const GfxOptions& options)
     {
         state = new GfxState();
-        state->device = create_device();
+        create_device();
 
         // Swapchain
         // -------------------------------------------------------------------------------------------------
         ISwapchainDesc swapchain_desc = {};
         swapchain_desc.desired_present_mode = PresentMode::Mailbox;
         swapchain_desc.desired_extent = window::get_size();
-        state->swapchain = state->device->create_swapchain(swapchain_desc);
+        create_swapchain(swapchain_desc);
 
         // Queues
         // -------------------------------------------------------------------------------------------------
-        state->graphics_queue = state->device->create_queue({.queue_type = QueueType::Graphics});
-        state->present_queue = state->device->create_queue({.queue_type = QueueType::Present});
+        state->graphics_queue = create_queue({.queue_type = QueueType::Graphics});
+        state->present_queue = create_queue({.queue_type = QueueType::Present});
 
         // Command Pool, Command Buffers and Sync Objects
         // -------------------------------------------------------------------------------------------------
         const ISemaphoreDesc submit_semaphore_desc = {};
 
-        state->submit_semaphores.resize(state->swapchain->get_image_count());
+        state->submit_semaphores.resize(get_image_count_swapchain());
 
-        for (u32 i = 0; i < state->submit_semaphores.size(); i++)
+        for (SemaphoreHandle& submit_semaphore : state->submit_semaphores)
         {
-            state->submit_semaphores[i] = state->device->create_semaphore(submit_semaphore_desc);
+            submit_semaphore = create_semaphore(submit_semaphore_desc);
         }
 
         // Triple buffering if the device supports it
-        const u32 max_frames_in_flight = math::min(state->swapchain->get_image_count(), 3U);
+        const u32 max_frames_in_flight = math::min(get_image_count_swapchain(), 3U);
         const math::uvec3 render_target_extent = math::uvec3(options.resolution, 1);
         const u32 max_descriptor_set_count = 1024;
 
         state->frames.resize(max_frames_in_flight);
 
-        for (u32 i = 0; i < state->frames.size(); i++)
+        const math::vec4 clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
+
+        for (FrameData& frame : state->frames)
         {
             ICommandPoolDesc command_pool_desc = {};
             command_pool_desc.queue_type = QueueType::Graphics;
-            state->frames[i].command_pool = state->device->create_command_pool(command_pool_desc);
+            frame.command_pool = create_command_pool(command_pool_desc);
 
             ICommandBufferDesc command_buffer_desc = {};
             command_buffer_desc.command_buffer_level = CommandBufferLevel::Primary;
-            command_buffer_desc.command_pool = state->frames[i].command_pool.get();
-            state->frames[i].command_buffer = state->device->create_command_buffer(command_buffer_desc);
+            command_buffer_desc.command_pool = frame.command_pool;
+            frame.command_buffer = create_command_buffer(command_buffer_desc);
 
             IFenceDesc fence_desc = {};
             fence_desc.signaled = true;
 
             const ISemaphoreDesc sem_desc = {};
 
-            state->frames[i].available_semaphore = state->device->create_semaphore(sem_desc);
-            state->frames[i].in_flight_fence = state->device->create_fence(fence_desc);
+            frame.available_semaphore = create_semaphore(sem_desc);
+            frame.in_flight_fence = create_fence(fence_desc);
 
+            // Render target and attachments
+            // -------------------------------------------------------------------------------------------------
             ITextureDesc render_target_color_texture_desc = {};
             render_target_color_texture_desc.extent = render_target_extent;
             render_target_color_texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::TransferSrc;
-            state->frames[i].render_target_color = state->device->create_texture(render_target_color_texture_desc);
+            frame.render_target_color = create_texture(render_target_color_texture_desc);
 
             ITextureDesc render_target_depth_texture_desc = {};
             render_target_depth_texture_desc.extent = render_target_extent;
             render_target_depth_texture_desc.usage = TextureUsage::DepthStencilAttachment;
             render_target_depth_texture_desc.aspect = TextureAspect::Depth | TextureAspect::Stencil;
             render_target_depth_texture_desc.format = Format::D24_UNORM_S8_UINT;
-            state->frames[i].render_target_depth = state->device->create_texture(render_target_depth_texture_desc);
+            frame.render_target_depth = create_texture(render_target_depth_texture_desc);
+
+            IRenderingAttachmentDesc color_attachment_desc = {};
+            color_attachment_desc.type = RenderingAttachmentType::Color;
+            color_attachment_desc.clear_color = clear_color;
+            color_attachment_desc.texture = frame.render_target_color;
+            frame.color_attachment = create_render_attachment(color_attachment_desc);
+
+            IRenderingAttachmentDesc depth_attachment_desc = {};
+            depth_attachment_desc.type = RenderingAttachmentType::Depth;
+            depth_attachment_desc.clear_depth = 1.0F;
+            depth_attachment_desc.texture = frame.render_target_depth;
+            frame.depth_attachment = create_render_attachment(depth_attachment_desc);
+
+            // Render Passes
+            // -------------------------------------------------------------------------------------------------
+            IRenderPassDesc render_pass_desc = {};
+            render_pass_desc.extent = math::uvec2(render_target_extent);
+            render_pass_desc.color_attachments.push_back(frame.color_attachment);
+            render_pass_desc.depth_attachment = frame.depth_attachment;
+            frame.render_pass = create_render_pass(render_pass_desc);
 
             IDescriptorPoolDesc descriptor_pool_desc = {};
             descriptor_pool_desc.max_sets = max_descriptor_set_count;
 
-            const DescriptorLimits limits = state->device->get_descriptor_limits();
+            const DescriptorLimits limits = get_descriptor_limits();
 
             IDescriptorPoolSizeDesc size_desc_uniform = {};
             size_desc_uniform.type = DescriptorType::Uniform;
@@ -187,15 +203,74 @@ namespace mag::gfx
             descriptor_pool_desc.size_descs.push_back(size_desc_storage);
             descriptor_pool_desc.size_descs.push_back(size_desc_combined_sampler);
 
-            state->frames[i].descriptor_pool = state->device->create_descriptor_pool(descriptor_pool_desc);
+            frame.descriptor_pool = create_descriptor_pool(descriptor_pool_desc);
         }
 
-        return state->device != nullptr;
+        return state != nullptr;
     }
 
     void shutdown()
     {
-        state->device->wait_idle();
+        wait_idle();
+
+        destroy_queue(state->graphics_queue);
+        destroy_queue(state->present_queue);
+
+        for (SemaphoreHandle& submit_semaphore : state->submit_semaphores)
+        {
+            destroy_semaphore(submit_semaphore);
+        }
+
+        // Destroy shaders
+        std::vector<ShaderHandle> shaders;
+        shaders.reserve(state->shaders.size());
+        for (const auto& [handle, data] : state->shaders)
+        {
+            shaders.push_back(handle);
+        }
+
+        for (const ShaderHandle handle : shaders)
+        {
+            destroy_shader(handle);
+        }
+
+        // Destroy textures
+        std::vector<TextureHandle> textures;
+        std::vector<SamplerHandle> samplers;
+        textures.reserve(state->textures.size());
+        samplers.reserve(state->textures.size());
+        for (const auto& [handle, data] : state->textures)
+        {
+            textures.push_back(handle);
+            samplers.push_back(data);
+        }
+
+        for (const TextureHandle handle : textures)
+        {
+            destroy_texture(handle);
+        }
+
+        for (const SamplerHandle handle : samplers)
+        {
+            destroy_sampler(handle);
+        }
+
+        for (FrameData& frame : state->frames)
+        {
+            destroy_command_buffer(frame.command_buffer);
+            destroy_command_pool(frame.command_pool);
+            destroy_semaphore(frame.available_semaphore);
+            destroy_fence(frame.in_flight_fence);
+            destroy_texture(frame.render_target_color);
+            destroy_texture(frame.render_target_depth);
+            destroy_rendering_attachment(frame.color_attachment);
+            destroy_rendering_attachment(frame.depth_attachment);
+            destroy_render_pass(frame.render_pass);
+            destroy_descriptor_pool(frame.descriptor_pool);
+        }
+
+        destroy_swapchain();
+        destroy_device();
 
         delete state;
     }
@@ -203,16 +278,16 @@ namespace mag::gfx
     b8 begin_frame()
     {
         FrameData& current_frame = state->frames[state->current_frame];
-        const unique<ITexture>& render_target_color = current_frame.render_target_color;
-        const unique<ITexture>& render_target_depth = current_frame.render_target_depth;
+        const TextureHandle render_target_color = current_frame.render_target_color;
+        const TextureHandle render_target_depth = current_frame.render_target_depth;
 
-        current_frame.in_flight_fence->wait(Timeout);
+        wait_fence(current_frame.in_flight_fence, Timeout);
 
-        const Result result = state->swapchain->acquire_next_image(current_frame.available_semaphore.get(), nullptr);
+        const Result result = acquire_next_image_swapchain(current_frame.available_semaphore, Invalid_ID);
 
         if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
         {
-            state->swapchain->resize(window::get_size());
+            resize_swapchain(window::get_size());
             return false;
         }
 
@@ -222,105 +297,81 @@ namespace mag::gfx
             return false;
         }
 
-        const math::uvec2 extent = math::uvec2(render_target_color->get_extent());
-        const math::vec4 clear_color = {0.4F, 0.6F, 0.8F, 1.0F};
-
-        // Render Passes
-        // -------------------------------------------------------------------------------------------------
-        unique<IRenderPass> render_pass;
-        unique<IRenderingAttachment> color_attachment;
-        unique<IRenderingAttachment> depth_attachment;
-
-        IRenderingAttachmentDesc color_attachment_desc = {};
-        color_attachment_desc.type = RenderingAttachmentType::Color;
-        color_attachment_desc.clear_color = clear_color;
-        color_attachment_desc.texture = render_target_color.get();
-        color_attachment = state->device->create_render_attachment(color_attachment_desc);
-
-        IRenderingAttachmentDesc depth_attachment_desc = {};
-        depth_attachment_desc.type = RenderingAttachmentType::Depth;
-        depth_attachment_desc.clear_depth = 1.0F;
-        depth_attachment_desc.texture = render_target_depth.get();
-        depth_attachment = state->device->create_render_attachment(depth_attachment_desc);
-
-        IRenderPassDesc render_pass_desc = {};
-        render_pass_desc.extent = extent;
-        render_pass_desc.color_attachments.push_back(color_attachment.get());
-        render_pass_desc.depth_attachment = depth_attachment.get();
-        render_pass = state->device->create_render_pass(render_pass_desc);
-
-        current_frame.command_buffer->begin_recording();
+        begin_recording_command_buffer(current_frame.command_buffer);
 
         static u32 f = 0;
         if (f < state->frames.size())
         {
             // Transition depth render target to optimal (only needs to be done once per frame)
-            current_frame.command_buffer->pipeline_barrier(
-                render_target_depth.get(), TextureLayout::DepthStencilAttachment, AccessMask::None,
-                AccessMask::DepthStencilAttachmentRead | AccessMask::DepthStencilAttachmentWrite,
+            pipeline_barrier_command_buffer(
+                current_frame.command_buffer, render_target_depth, TextureLayout::DepthStencilAttachment,
+                AccessMask::None, AccessMask::DepthStencilAttachmentRead | AccessMask::DepthStencilAttachmentWrite,
                 PipelineStage::TopOfPipe, PipelineStage::EarlyFragmentTest);
 
             f++;
         }
 
         // Prepare render target for rendering
-        current_frame.command_buffer->pipeline_barrier(render_target_color.get(), TextureLayout::ColorAttachment,
-                                                       AccessMask::None, AccessMask::ColorAttachmentWrite,
-                                                       PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
+        pipeline_barrier_command_buffer(
+            current_frame.command_buffer, render_target_color, TextureLayout::ColorAttachment, AccessMask::None,
+            AccessMask::ColorAttachmentWrite, PipelineStage::TopOfPipe, PipelineStage::ColorAttachmentOutput);
+
+        const math::uvec2 extent = math::uvec2(get_extent_texture(render_target_color));
 
         // Flip the viewport to correct vulkan coordinate system
         const math::vec2 viewport_offset = math::vec2(0.0F, extent.y);
         auto viewport_extent = math::vec2(extent);
         viewport_extent.y = -viewport_extent.y;
 
-        current_frame.command_buffer->set_viewport(viewport_extent, viewport_offset, 0.0F, 1.0F);
-        current_frame.command_buffer->set_scissor(extent, {0.0F, 0.0F});
-
-        current_frame.command_buffer->begin_rendering(render_pass.get());
+        set_viewport_command_buffer(current_frame.command_buffer, viewport_extent, viewport_offset, 0.0F, 1.0F);
+        set_scissor_command_buffer(current_frame.command_buffer, extent, {0.0F, 0.0F});
+        begin_rendering_command_buffer(current_frame.command_buffer, current_frame.render_pass);
 
         return true;
     }
 
     b8 end_frame()
     {
+        update_pending_descriptor_sets();
+
         u32& current_frame_idx = state->current_frame;
         FrameData& current_frame = state->frames[current_frame_idx];
-        const unique<ITexture>& render_target = current_frame.render_target_color;
+        const TextureHandle render_target = current_frame.render_target_color;
 
-        const u32 image_index = state->swapchain->get_current_image_index();
-        ITexture* const swapchain_texture = state->swapchain->get_texture(image_index);
-        const unique<ISemaphore>& submit_semaphore = state->submit_semaphores[image_index];
+        const u32 image_index = get_current_image_index_swapchain();
+        const TextureHandle swapchain_texture = get_texture_swapchain(image_index);
+        const SemaphoreHandle submit_semaphore = state->submit_semaphores[image_index];
 
-        current_frame.command_buffer->end_rendering();
+        end_rendering_command_buffer(current_frame.command_buffer);
 
         // Transition render target to transfer
-        current_frame.command_buffer->pipeline_barrier(render_target.get(), TextureLayout::TransferSrc,
-                                                       AccessMask::ColorAttachmentWrite, AccessMask::TransferRead,
-                                                       PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
+        pipeline_barrier_command_buffer(current_frame.command_buffer, render_target, TextureLayout::TransferSrc,
+                                        AccessMask::ColorAttachmentWrite, AccessMask::TransferRead,
+                                        PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
         // Transition swapchain image to transfer
-        current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::TransferDst, AccessMask::None,
-                                                       AccessMask::TransferWrite, PipelineStage::ColorAttachmentOutput,
-                                                       PipelineStage::Transfer);
+        pipeline_barrier_command_buffer(current_frame.command_buffer, swapchain_texture, TextureLayout::TransferDst,
+                                        AccessMask::None, AccessMask::TransferWrite,
+                                        PipelineStage::ColorAttachmentOutput, PipelineStage::Transfer);
 
         // Copy from the render target to the swapchain image
-        current_frame.command_buffer->blit_texture(render_target.get(), swapchain_texture, Filter::Linear);
+        blit_texture_command_buffer(current_frame.command_buffer, render_target, swapchain_texture, Filter::Linear);
 
         // Transition swapchain image to present
-        current_frame.command_buffer->pipeline_barrier(swapchain_texture, TextureLayout::Present,
-                                                       AccessMask::TransferWrite, AccessMask::None,
-                                                       PipelineStage::Transfer, PipelineStage::BottomOfPipe);
+        pipeline_barrier_command_buffer(current_frame.command_buffer, swapchain_texture, TextureLayout::Present,
+                                        AccessMask::TransferWrite, AccessMask::None, PipelineStage::Transfer,
+                                        PipelineStage::BottomOfPipe);
 
-        current_frame.command_buffer->end_recording();
+        end_recording_command_buffer(current_frame.command_buffer);
 
-        state->graphics_queue->submit(current_frame.available_semaphore.get(), submit_semaphore.get(),
-                                      current_frame.in_flight_fence.get(), current_frame.command_buffer.get());
+        submit_queue(state->graphics_queue, current_frame.available_semaphore, submit_semaphore,
+                     current_frame.in_flight_fence, current_frame.command_buffer);
 
-        const Result result = state->present_queue->present(state->swapchain.get(), submit_semaphore.get());
+        const Result result = present_queue(state->present_queue, submit_semaphore);
 
         if (result == Result::ErrorOutOfDate || result == Result::SubOptimal)
         {
-            state->swapchain->resize(window::get_size());
+            resize_swapchain(window::get_size());
             return false;
         }
 
@@ -450,37 +501,33 @@ namespace mag::gfx
         return handle_counter++;
     }
 
-    static void set_buffer_data(BufferHandle buffer_handle, const void* data, u64 size, u64 offset = 0);
-
     static void set_texture_data(TextureHandle texture_handle, u64 size, const void* data);
 
     static BufferHandle create_buffer(const u64 size, const void* data, const BufferUsage usage)
     {
-        const BufferHandle handle = create_handle();
-
         IBufferDesc buffer_desc = {};
         buffer_desc.size_bytes = size;
         buffer_desc.buffer_usage = usage;
         buffer_desc.memory_usage = MemoryUsage::Auto;
 
-        state->buffers[handle] = state->device->create_buffer(buffer_desc);
+        const BufferHandle handle = create_buffer(buffer_desc);
 
         if (data != nullptr)
         {
-            state->buffers[handle]->set_data(data, size, 0);
+            set_data_buffer(handle, data, size, 0);
         }
 
         return handle;
     }
 
-    static void destroy_buffer(const BufferHandle handle)
+    static void wait_and_destroy_buffer(const BufferHandle handle)
     {
         // @TODO: we need to make sure that a buffer is not in use when we delete it. A more robust approach would
         // be adding the buffer to a deletion queue and/or finding a way to query if the buffer is in use or not
         // before deleting. WaitIdle is, however, simpler.
 
-        state->device->wait_idle();
-        state->buffers.erase(handle);
+        wait_idle();
+        destroy_buffer(handle);
     }
 
     VertexBufferHandle create_vertex_buffer(const u64 size, const void* data)
@@ -488,16 +535,24 @@ namespace mag::gfx
         return create_buffer(size, data, BufferUsage::Vertex);
     }
 
-    void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle) { destroy_buffer(vertex_buffer_handle); }
+    void destroy_vertex_buffer(const VertexBufferHandle vertex_buffer_handle)
+    {
+        wait_and_destroy_buffer(vertex_buffer_handle);
+    }
 
     IndexBufferHandle create_index_buffer(const u64 size, const void* data)
     {
         return create_buffer(size, data, BufferUsage::Index);
     }
 
+    void destroy_index_buffer(const IndexBufferHandle index_buffer_handle)
+    {
+        wait_and_destroy_buffer(index_buffer_handle);
+    }
+
     void set_buffer_data(const BufferHandle buffer_handle, const void* data, const u64 size, const u64 offset)
     {
-        state->buffers[buffer_handle]->set_data(data, size, offset);
+        set_data_buffer(buffer_handle, data, size, offset);
     }
 
     void set_uniform(const str& uniform_name, const void* data, const u32 array_element)
@@ -511,7 +566,6 @@ namespace mag::gfx
         const BindingData& binding = bindings_map[uniform_name];
 
         const BufferHandle buffer_handle = binding.buffer_handle;
-        const unique<IBuffer>& buffer = state->buffers[buffer_handle];
 
         // Set the buffer data
 
@@ -519,8 +573,8 @@ namespace mag::gfx
 
         // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-        descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element, binding.descriptor_type,
-                                               0);
+        prepare_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
+                               binding.descriptor_type, 0);
     }
 
     void set_uniform(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
@@ -533,29 +587,25 @@ namespace mag::gfx
 
         const BindingData& binding = bindings_map.at(uniform_name);
 
-        const unique<ITexture>& texture = state->textures[texture_handle].texture;
-        const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+        const SamplerHandle sampler = state->textures[texture_handle];
 
         // If we change the texture, we need to update the descriptor sets (for each frame)
 
-        descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
-                                               binding.descriptor_type);
+        prepare_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding, array_element,
+                               binding.descriptor_type);
     }
 
     void set_uniform_static(const str& uniform_name, const void* data, const u32 array_element)
     {
-        for (u32 i = 0; i < state->frames.size(); i++)
+        for (FrameData& frame : state->frames)
         {
-            FrameData& current_frame = state->frames[i];
-
-            DescriptorData& descriptor_data = current_frame.descriptor_set_map[state->current_bound_shader];
+            DescriptorData& descriptor_data = frame.descriptor_set_map[state->current_bound_shader];
 
             std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             const BindingData& binding = bindings_map[uniform_name];
 
             const BufferHandle buffer_handle = binding.buffer_handle;
-            const unique<IBuffer>& buffer = state->buffers[buffer_handle];
 
             // Set the buffer data
 
@@ -563,38 +613,33 @@ namespace mag::gfx
 
             // If we change the buffer, we need to update the descriptor sets (for each frame)
 
-            descriptor_data.descriptor_set->update(buffer.get(), binding.binding, array_element,
-                                                   binding.descriptor_type, 0);
+            update_descriptor_set(descriptor_data.descriptor_set, buffer_handle, binding.binding, array_element,
+                                  binding.descriptor_type, 0);
         }
     }
 
     void set_uniform_static(const str& uniform_name, const TextureHandle texture_handle, const u32 array_element)
     {
-        for (u32 i = 0; i < state->frames.size(); i++)
+        for (FrameData& frame : state->frames)
         {
-            const FrameData& current_frame = state->frames[i];
-
-            const DescriptorData& descriptor_data = current_frame.descriptor_set_map.at(state->current_bound_shader);
+            const DescriptorData& descriptor_data = frame.descriptor_set_map.at(state->current_bound_shader);
 
             const std::unordered_map<str, BindingData>& bindings_map = descriptor_data.bindings_map;
 
             const BindingData& binding = bindings_map.at(uniform_name);
 
-            const unique<ITexture>& texture = state->textures[texture_handle].texture;
-            const unique<ISampler>& sampler = state->textures[texture_handle].sampler;
+            const SamplerHandle sampler = state->textures[texture_handle];
 
             // If we change the texture, we need to update the descriptor sets (for each frame)
 
-            descriptor_data.descriptor_set->update(texture.get(), sampler.get(), binding.binding, array_element,
-                                                   binding.descriptor_type);
+            update_descriptor_set(descriptor_data.descriptor_set, texture_handle, sampler, binding.binding,
+                                  array_element, binding.descriptor_type);
         }
     }
 
     TextureHandle create_texture(const u32 width, const u32 height, const u64 size, const void* pixels,
                                  const Format format)
     {
-        const TextureHandle handle = create_handle();
-
         ITextureDesc texture_desc = {};
         texture_desc.extent = math::uvec3(width, height, 1);
         texture_desc.usage = TextureUsage::ColorAttachment | TextureUsage::Sampled | TextureUsage::TransferDst;
@@ -604,8 +649,9 @@ namespace mag::gfx
         sampler_desc.min_lod = 0.0F;
         sampler_desc.max_lod = static_cast<f32>(texture_desc.mip_levels);
 
-        state->textures[handle].sampler = state->device->create_sampler(sampler_desc);
-        state->textures[handle].texture = state->device->create_texture(texture_desc);
+        const TextureHandle handle = create_texture(texture_desc);
+
+        state->textures[handle] = create_sampler(sampler_desc);
 
         if ((size > 0) && (pixels != nullptr))
         {
@@ -617,7 +663,7 @@ namespace mag::gfx
 
     void set_texture_data(const TextureHandle texture_handle, const u64 size, const void* data)
     {
-        state->textures[texture_handle].texture->set_data(data, size);
+        set_data_texture(texture_handle, data, size);
     }
 
     ShaderHandle create_shader(const ShaderResource& shader)
@@ -668,20 +714,20 @@ namespace mag::gfx
             }
         }
 
-        shader_data.descriptor_layout = state->device->create_descriptor_set_layout(descriptor_layout_desc);
+        shader_data.descriptor_layout = create_descriptor_set_layout(descriptor_layout_desc);
 
-        const unique<IDescriptorSetLayout>& descriptor_layout = shader_data.descriptor_layout;
+        const DescriptorSetLayoutHandle descriptor_layout = shader_data.descriptor_layout;
 
         // Descriptor set
 
         for (FrameData& frame : state->frames)
         {
             IDescriptorSetDesc descriptor_desc = {};
-            descriptor_desc.descriptor_layout = descriptor_layout.get();
-            descriptor_desc.descriptor_pool = frame.descriptor_pool.get();
+            descriptor_desc.descriptor_layout = descriptor_layout;
+            descriptor_desc.descriptor_pool = frame.descriptor_pool;
             descriptor_desc.max_variable_descriptor_count = max_variable_descriptor_count;
 
-            frame.descriptor_set_map[handle].descriptor_set = state->device->create_descriptor_set(descriptor_desc);
+            frame.descriptor_set_map[handle].descriptor_set = create_descriptor_set(descriptor_desc);
 
             // Allocate memory for buffer uniforms
 
@@ -707,16 +753,16 @@ namespace mag::gfx
         // Graphics Pipeline
         // -------------------------------------------------------------------------------------------------
         const FrameData& current_frame = state->frames[state->current_frame];
-        const Format color_format = current_frame.render_target_color->get_format();
-        const Format depth_format = current_frame.render_target_depth->get_format();
-        const math::uvec2 extent = math::uvec2(current_frame.render_target_color->get_extent());
+        const Format color_format = get_format_texture(current_frame.render_target_color);
+        const Format depth_format = get_format_texture(current_frame.render_target_depth);
+        const math::uvec2 extent = math::uvec2(get_extent_texture(current_frame.render_target_color));
 
         IGraphicsPipelineDesc graphics_pipeline_desc = {};
         graphics_pipeline_desc.primitive_topology = convert_topology(shader.topology);
         graphics_pipeline_desc.color_attachment_format = color_format;
         graphics_pipeline_desc.depth_attachment_format = depth_format;
         graphics_pipeline_desc.extent = extent;
-        graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout.get());
+        graphics_pipeline_desc.descriptor_layouts.push_back(descriptor_layout);
 
         graphics_pipeline_desc.color_blend.blend_enable = shader.color_blend.blend_enable;
         graphics_pipeline_desc.color_blend.color_blend_op = convert_blend_op(shader.color_blend.color_blend_op);
@@ -763,27 +809,35 @@ namespace mag::gfx
             graphics_pipeline_desc.shader_modules.push_back(shader_module_desc);
         }
 
-        shader_data.pipeline = state->device->create_graphics_pipeline(graphics_pipeline_desc);
+        shader_data.pipeline = create_graphics_pipeline(graphics_pipeline_desc);
 
         return handle;
     }
 
     void destroy_shader(const ShaderHandle shader_handle)
     {
-        state->device->wait_idle();
+        wait_idle();
 
         for (FrameData& frame : state->frames)
         {
             // Destroy uniform buffers
             for (const auto& [uniform_name, binding_data] : frame.descriptor_set_map[shader_handle].bindings_map)
             {
-                destroy_buffer(binding_data.buffer_handle);
+                if (binding_data.descriptor_type == DescriptorType::Uniform ||
+                    binding_data.descriptor_type == DescriptorType::Storage)
+                {
+                    wait_and_destroy_buffer(binding_data.buffer_handle);
+                }
             }
 
+            destroy_descriptor_set(frame.descriptor_set_map[shader_handle].descriptor_set);
             frame.descriptor_set_map.erase(shader_handle);
         }
 
         // Destroy graphics pipeline and descriptor set layouts
+        destroy_graphics_pipeline(state->shaders[shader_handle].pipeline);
+        destroy_descriptor_set_layout(state->shaders[shader_handle].descriptor_layout);
+
         state->shaders.erase(shader_handle);
     }
 
@@ -797,10 +851,10 @@ namespace mag::gfx
         // descriptors sets only once and later update them
 
         // Bind pipeline
-        current_frame.command_buffer->bind_pipeline(shader.pipeline.get());
+        bind_pipeline_command_buffer(current_frame.command_buffer, shader.pipeline);
 
         // Bind the descriptor sets
-        current_frame.command_buffer->bind_descriptor(shader.pipeline.get(), descriptor_data.descriptor_set.get());
+        bind_descriptor_command_buffer(current_frame.command_buffer, shader.pipeline, descriptor_data.descriptor_set);
 
         state->current_bound_shader = handle;
     }
@@ -809,21 +863,21 @@ namespace mag::gfx
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        current_frame.command_buffer->bind_vertex_buffers(0, 1, {state->buffers[vertex_buffer_handle].get()}, {0});
+        bind_vertex_buffers_command_buffer(current_frame.command_buffer, 0, 1, {vertex_buffer_handle}, {0});
     }
 
     void bind_index_buffer(const BufferHandle index_buffer_handle)
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        current_frame.command_buffer->bind_index_buffer(state->buffers[index_buffer_handle].get(), 0);
+        bind_index_buffer_command_buffer(current_frame.command_buffer, index_buffer_handle, 0);
     }
 
     void draw(const u32 vertex_count, const u32 instance_count, const u32 first_vertex, const u32 first_instance)
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        current_frame.command_buffer->draw(vertex_count, instance_count, first_vertex, first_instance);
+        draw_command_buffer(current_frame.command_buffer, vertex_count, instance_count, first_vertex, first_instance);
     }
 
     void draw_indexed(const u32 index_count, const u32 instance_count, const u32 first_index, const i32 vertex_offset,
@@ -831,15 +885,15 @@ namespace mag::gfx
     {
         const FrameData& current_frame = state->frames[state->current_frame];
 
-        current_frame.command_buffer->draw_indexed(index_count, instance_count, first_index, vertex_offset,
-                                                   first_instance);
+        draw_indexed_command_buffer(current_frame.command_buffer, index_count, instance_count, first_index,
+                                    vertex_offset, first_instance);
     }
 
     static void on_resize(const WindowResizeEvent& e)
     {
-        state->device->wait_idle();
+        wait_idle();
 
-        state->swapchain->resize({e.width, e.height});
+        resize_swapchain({e.width, e.height});
     }
 
     void on_event(const Event& e) { mag::dispatch_event<WindowResizeEvent>(e, on_resize); }

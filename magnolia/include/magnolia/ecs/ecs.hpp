@@ -55,11 +55,12 @@ namespace mag
     {
         public:
             ECS() = default;
-            explicit ECS(ComponentAddedCallbackFn on_component_added)
-                : on_component_added(std::move(on_component_added))
-            {
-            }
             ~ECS() = default;
+
+            void initialize(ComponentAddedCallbackFn on_component_added)
+            {
+                this->on_component_added = std::move(on_component_added);
+            }
 
             EntityID create_entity()
             {

@@ -1,19 +1,25 @@
 #pragma once
 
-#include <functional>
-
 #include "magnolia/core/types.hpp"
 #include "magnolia/gfx/types.hpp"
 #include "magnolia/math/types.hpp"
 
 namespace mag::gfx
 {
-    class IRenderingAttachment;
-    class ITexture;
-    class ICommandPool;
-    class IDescriptorPool;
-    class IDescriptorSetLayout;
-    class IDescriptorSet;
+    using BufferHandle = u32;
+    using FenceHandle = u32;
+    using CommandBufferHandle = u32;
+    using CommandPoolHandle = u32;
+    using DescriptorPoolHandle = u32;
+    using DescriptorSetHandle = u32;
+    using DescriptorSetLayoutHandle = u32;
+    using GraphicsPipelineHandle = u32;
+    using QueueHandle = u32;
+    using RenderingAttachmentHandle = u32;
+    using RenderPassHandle = u32;
+    using SamplerHandle = u32;
+    using SemaphoreHandle = u32;
+    using TextureHandle = u32;
 
     struct IShaderModuleDesc
     {
@@ -71,7 +77,7 @@ namespace mag::gfx
     {
             PrimitiveTopology primitive_topology = PrimitiveTopology::TriangleList;
             std::vector<IShaderModuleDesc> shader_modules;
-            std::vector<const IDescriptorSetLayout*> descriptor_layouts;
+            std::vector<DescriptorSetLayoutHandle> descriptor_layouts;
             std::vector<IVertexAttributeDesc> vertex_attribute_descs;
             std::vector<IVertexBindingDesc> vertex_binding_descs;
             Format color_attachment_format = Format::Undefined;
@@ -88,7 +94,7 @@ namespace mag::gfx
     struct ICommandBufferDesc
     {
             CommandBufferLevel command_buffer_level = CommandBufferLevel::Primary;
-            const ICommandPool* command_pool = nullptr;
+            CommandPoolHandle command_pool = 0;
     };
 
     struct IRenderingAttachmentDesc
@@ -97,15 +103,15 @@ namespace mag::gfx
             f32 clear_depth = 0.0F;
             u32 clear_stencil = 0;
             RenderingAttachmentType type = RenderingAttachmentType::Color;
-            const ITexture* texture = nullptr;
+            TextureHandle texture = 0;
     };
 
     struct IRenderPassDesc
     {
             math::uvec2 extent = {0, 0};
             math::ivec2 offset = {0, 0};
-            std::vector<const IRenderingAttachment*> color_attachments;
-            const IRenderingAttachment* depth_attachment = nullptr;
+            std::vector<RenderingAttachmentHandle> color_attachments;
+            RenderingAttachmentHandle depth_attachment = 0;
     };
 
     struct ITextureDesc
@@ -156,8 +162,8 @@ namespace mag::gfx
 
     struct IDescriptorSetDesc
     {
-            const IDescriptorPool* descriptor_pool = nullptr;
-            const IDescriptorSetLayout* descriptor_layout = nullptr;
+            DescriptorPoolHandle descriptor_pool = 0;
+            DescriptorSetLayoutHandle descriptor_layout = 0;
             u32 max_variable_descriptor_count = 0;
     };
 
@@ -175,6 +181,22 @@ namespace mag::gfx
             f32 max_anisotropy = 0.0F;
     };
 
+    struct DescriptorUpdate
+    {
+            DescriptorSetHandle handle = Invalid_ID;
+            DescriptorType descriptor_type = DescriptorType::Uniform;
+            u32 binding = 0;
+            u32 array_element = 0;
+
+            // Buffer
+            u64 offset = 0;
+            BufferHandle buffer_handle = Invalid_ID;
+
+            // Texture
+            TextureHandle texture_handle = Invalid_ID;
+            SamplerHandle sampler_handle = Invalid_ID;
+    };
+
     struct DescriptorLimits
     {
             u32 max_per_stage_combined_image_samplers = 0;
@@ -182,257 +204,150 @@ namespace mag::gfx
             u32 max_per_stage_storage_buffers = 0;
     };
 
-    class ISampler
-    {
-        public:
-            virtual ~ISampler() = default;
-    };
+    void create_device();
 
-    class IBuffer
-    {
-        public:
-            virtual ~IBuffer() = default;
+    void destroy_device();
 
-            virtual void* map() = 0;
+    SemaphoreHandle create_semaphore(const ISemaphoreDesc& desc);
 
-            virtual void unmap() const = 0;
+    void destroy_semaphore(SemaphoreHandle handle);
 
-            virtual void set_data(const void* data, u64 size, u64 offset) const = 0;
+    FenceHandle create_fence(const IFenceDesc& desc);
 
-            virtual u64 get_size() const = 0;
+    void destroy_fence(FenceHandle handle);
 
-            virtual BufferUsage get_usage() const = 0;
+    void wait_fence(FenceHandle handle, u64 timeout);
 
-            virtual void* get_mapped_region() const = 0;
-    };
+    void create_swapchain(const ISwapchainDesc& desc);
 
-    class IRenderingAttachment
-    {
-        public:
-            virtual ~IRenderingAttachment() = default;
+    void destroy_swapchain();
 
-            virtual math::vec4 get_clear_color() const = 0;
+    Result acquire_next_image_swapchain(SemaphoreHandle signal_semaphore_handle, FenceHandle fence_handle);
 
-            virtual f32 get_clear_depth() const = 0;
+    void resize_swapchain(const math::uvec2& extent);
 
-            virtual u32 get_clear_stencil() const = 0;
-    };
+    TextureHandle get_texture_swapchain(u32 index);
 
-    class IRenderPass
-    {
-        public:
-            virtual ~IRenderPass() = default;
+    u32 get_image_count_swapchain();
 
-            virtual math::ivec2 get_offset() const = 0;
+    u32 get_current_image_index_swapchain();
 
-            virtual math::uvec2 get_extent() const = 0;
-    };
+    QueueHandle create_queue(const IQueueDesc& desc);
 
-    class ISemaphore
-    {
-        public:
-            virtual ~ISemaphore() = default;
-    };
+    void destroy_queue(QueueHandle handle);
 
-    class IFence
-    {
-        public:
-            virtual ~IFence() = default;
+    void submit_queue(QueueHandle handle, SemaphoreHandle wait_semaphore_handle,
+                      SemaphoreHandle signal_semaphore_handle, FenceHandle fence_handle,
+                      CommandBufferHandle command_buffer_handle);
 
-            virtual void wait(u64 timeout) const = 0;
+    Result present_queue(QueueHandle handle, SemaphoreHandle wait_semaphore_handle);
 
-            virtual void reset() const = 0;
-    };
+    GraphicsPipelineHandle create_graphics_pipeline(const IGraphicsPipelineDesc& desc);
 
-    class ITexture
-    {
-        public:
-            virtual ~ITexture() = default;
+    void destroy_graphics_pipeline(GraphicsPipelineHandle handle);
 
-            virtual void set_data(const void* data, u64 size) = 0;
+    CommandPoolHandle create_command_pool(const ICommandPoolDesc& desc);
 
-            virtual const math::uvec3& get_extent() const = 0;
+    void destroy_command_pool(CommandPoolHandle handle);
 
-            virtual Format get_format() const = 0;
+    CommandBufferHandle create_command_buffer(const ICommandBufferDesc& desc);
 
-            virtual TextureLayout get_layout() const = 0;
+    void destroy_command_buffer(CommandBufferHandle handle);
 
-            virtual TextureType get_type() const = 0;
+    void begin_recording_command_buffer(CommandBufferHandle handle);
 
-            virtual TextureViewType get_view_type() const = 0;
+    void end_recording_command_buffer(CommandBufferHandle handle);
 
-            virtual TextureAspect get_aspect() const = 0;
+    void pipeline_barrier_command_buffer(CommandBufferHandle handle, TextureHandle texture_handle,
+                                         TextureLayout new_layout, AccessMask src_access_mask,
+                                         AccessMask dst_access_mask, PipelineStage src_stage_mask,
+                                         PipelineStage dst_stage_mask);
 
-            virtual TextureUsage get_usage() const = 0;
+    void bind_pipeline_command_buffer(CommandBufferHandle handle, GraphicsPipelineHandle pipeline_handle);
 
-            virtual SampleCount get_sample_count() const = 0;
+    void bind_descriptor_command_buffer(CommandBufferHandle handle, GraphicsPipelineHandle pipeline_handle,
+                                        DescriptorSetHandle descriptor_handle);
 
-            virtual u32 get_mip_levels() const = 0;
+    void set_viewport_command_buffer(CommandBufferHandle handle, const math::vec2& extent, const math::vec2& offset,
+                                     f32 min_depth, f32 max_depth);
 
-            virtual u32 get_array_layers() const = 0;
-    };
+    void set_scissor_command_buffer(CommandBufferHandle handle, const math::uvec2& extent, const math::ivec2& offset);
 
-    class ISwapchain
-    {
-        public:
-            virtual ~ISwapchain() = default;
+    void begin_rendering_command_buffer(CommandBufferHandle handle, RenderPassHandle render_pass_handle);
 
-            virtual u32 get_current_image_index() const = 0;
+    void end_rendering_command_buffer(CommandBufferHandle handle);
 
-            virtual u32 get_image_count() const = 0;
+    void bind_vertex_buffers_command_buffer(CommandBufferHandle handle, u32 first_binding, u32 binding_count,
+                                            const std::vector<BufferHandle>& buffers, const std::vector<u64>& offsets);
 
-            virtual math::uvec2 get_extent() const = 0;
+    void bind_index_buffer_command_buffer(CommandBufferHandle handle, BufferHandle buffer_handle, u64 offset);
 
-            virtual Format get_format() const = 0;
+    void draw_command_buffer(CommandBufferHandle handle, u32 vertex_count, u32 instance_count, u32 first_vertex,
+                             u32 first_instance);
 
-            virtual ITexture* get_texture(u32 index) const = 0;
+    void draw_indexed_command_buffer(CommandBufferHandle handle, u32 index_count, u32 instance_count, u32 first_index,
+                                     i32 vertex_offset, u32 first_instance);
 
-            virtual Result acquire_next_image(const ISemaphore* signal_semaphore, const IFence* fence) = 0;
+    void blit_texture_command_buffer(CommandBufferHandle handle, TextureHandle src_texture_handle,
+                                     TextureHandle dst_texture_handle, Filter filter);
 
-            virtual void resize(const math::uvec2& extent) = 0;
-    };
+    RenderingAttachmentHandle create_render_attachment(const IRenderingAttachmentDesc& desc);
 
-    class IDescriptorPool
-    {
-        public:
-            virtual ~IDescriptorPool() = default;
-    };
+    void destroy_rendering_attachment(RenderingAttachmentHandle handle);
 
-    class IDescriptorSetLayout
-    {
-        public:
-            virtual ~IDescriptorSetLayout() = default;
-    };
+    RenderPassHandle create_render_pass(const IRenderPassDesc& desc);
 
-    class IDescriptorSet
-    {
-        public:
-            virtual ~IDescriptorSet() = default;
+    void destroy_render_pass(RenderPassHandle handle);
 
-            virtual void update(const IBuffer* buffer, u32 binding, u32 array_element, DescriptorType descriptor_type,
-                                u64 offset) const = 0;
+    TextureHandle create_texture(const ITextureDesc& desc);
 
-            virtual void update(const ITexture* texture, const ISampler* sampler, u32 binding, u32 array_element,
-                                DescriptorType descriptor_type) const = 0;
-    };
+    void destroy_texture(TextureHandle handle);
 
-    class IGraphicsPipeline
-    {
-        public:
-            virtual ~IGraphicsPipeline() = default;
-    };
+    void set_data_texture(TextureHandle handle, const void* data, u64 size);
 
-    class ICommandPool
-    {
-        public:
-            virtual ~ICommandPool() = default;
+    const math::uvec3& get_extent_texture(TextureHandle handle);
 
-            virtual void reset() const = 0;
-    };
+    Format get_format_texture(TextureHandle handle);
 
-    class ICommandBuffer
-    {
-        public:
-            virtual ~ICommandBuffer() = default;
+    BufferHandle create_buffer(const IBufferDesc& desc);
 
-            virtual void begin_recording() const = 0;
+    void destroy_buffer(BufferHandle handle);
 
-            virtual void end_recording() const = 0;
+    void set_data_buffer(BufferHandle handle, const void* data, u64 data_size, u64 offset);
 
-            virtual void reset() const = 0;
+    DescriptorPoolHandle create_descriptor_pool(const IDescriptorPoolDesc& desc);
 
-            virtual void set_viewport(const math::vec2& extent, const math::vec2& offset, f32 min_depth,
-                                      f32 max_depth) const = 0;
+    void destroy_descriptor_pool(DescriptorPoolHandle handle);
 
-            virtual void set_scissor(const math::uvec2& extent, const math::ivec2& offset) const = 0;
+    DescriptorSetLayoutHandle create_descriptor_set_layout(const IDescriptorSetLayoutDesc& desc);
 
-            virtual void begin_rendering(const IRenderPass* render_pass) const = 0;
+    void destroy_descriptor_set_layout(DescriptorSetLayoutHandle handle);
 
-            virtual void end_rendering() const = 0;
+    DescriptorSetHandle create_descriptor_set(const IDescriptorSetDesc& desc);
 
-            virtual void bind_pipeline(const IGraphicsPipeline* pipeline) const = 0;
+    void destroy_descriptor_set(DescriptorSetHandle handle);
 
-            virtual void bind_descriptor(const IGraphicsPipeline* pipeline, const IDescriptorSet* descriptor) const = 0;
+    // Instead of updating each descrpitor one by one, cache the updates. Then update all descriptors at the end of the
+    // frame, before submitting.
+    void prepare_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
+                                DescriptorType descriptor_type, u64 offset);
 
-            virtual void bind_vertex_buffers(u32 first_binding, u32 binding_count,
-                                             const std::vector<const IBuffer*>& buffers,
-                                             const std::vector<u64>& offsets) const = 0;
+    void prepare_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
+                                u32 binding, u32 array_element, DescriptorType descriptor_type);
 
-            virtual void bind_index_buffer(const IBuffer* buffer, u64 offset) const = 0;
+    void update_pending_descriptor_sets();
 
-            virtual void draw(u32 vertex_count, u32 instance_count, u32 first_vertex, u32 first_instance) const = 0;
+    void update_descriptor_set(DescriptorSetHandle handle, BufferHandle buffer_handle, u32 binding, u32 array_element,
+                               DescriptorType descriptor_type, u64 offset);
 
-            virtual void draw_indexed(u32 index_count, u32 instance_count, u32 first_index, i32 vertex_offset,
-                                      u32 first_instance) const = 0;
+    void update_descriptor_set(DescriptorSetHandle handle, TextureHandle texture_handle, SamplerHandle sampler_handle,
+                               u32 binding, u32 array_element, DescriptorType descriptor_type);
 
-            virtual void draw_indexed_indirect(const IBuffer* buffer, u64 offset, u32 draw_count, u32 stride) const = 0;
+    SamplerHandle create_sampler(const ISamplerDesc& desc);
 
-            virtual void pipeline_barrier(ITexture* texture, TextureLayout new_layout, AccessMask src_access_mask,
-                                          AccessMask dst_access_mask, PipelineStage src_stage_mask,
-                                          PipelineStage dst_stage_mask) const = 0;
+    void destroy_sampler(SamplerHandle handle);
 
-            virtual void blit_texture(const ITexture* src_texture, const ITexture* dst_texture,
-                                      Filter filter) const = 0;
+    void wait_idle();
 
-            virtual void copy_texture(const ITexture* src_texture, const ITexture* dst_texture) const = 0;
-
-            virtual void copy_buffer_to_texture(const IBuffer* buffer, const ITexture* texture) const = 0;
-    };
-
-    class IQueue
-    {
-        public:
-            virtual ~IQueue() = default;
-
-            virtual void submit(const ISemaphore* wait_semaphore, const ISemaphore* signal_semaphore,
-                                const IFence* fence, const ICommandBuffer* command_buffer) const = 0;
-
-            virtual Result present(const ISwapchain* swapchain, const ISemaphore* wait_semaphore) const = 0;
-    };
-
-    class IDevice
-    {
-        public:
-            virtual ~IDevice() = default;
-
-            virtual void wait_idle() const = 0;
-
-            virtual void submit_commands_immediate(const std::function<void(ICommandBuffer& cmd)>& function) const = 0;
-
-            virtual unique<ISemaphore> create_semaphore(const ISemaphoreDesc& desc) const = 0;
-
-            virtual unique<IFence> create_fence(const IFenceDesc& desc) const = 0;
-
-            virtual unique<ISwapchain> create_swapchain(const ISwapchainDesc& desc) const = 0;
-
-            virtual unique<IQueue> create_queue(const IQueueDesc& desc) const = 0;
-
-            virtual unique<IGraphicsPipeline> create_graphics_pipeline(const IGraphicsPipelineDesc& desc) const = 0;
-
-            virtual unique<ICommandPool> create_command_pool(const ICommandPoolDesc& desc) const = 0;
-
-            virtual unique<ICommandBuffer> create_command_buffer(const ICommandBufferDesc& desc) const = 0;
-
-            virtual unique<IRenderingAttachment> create_render_attachment(
-                const IRenderingAttachmentDesc& desc) const = 0;
-
-            virtual unique<IRenderPass> create_render_pass(const IRenderPassDesc& desc) const = 0;
-
-            virtual unique<ITexture> create_texture(const ITextureDesc& desc) = 0;
-
-            virtual unique<IBuffer> create_buffer(const IBufferDesc& desc) const = 0;
-
-            virtual unique<IDescriptorPool> create_descriptor_pool(const IDescriptorPoolDesc& desc) const = 0;
-
-            virtual unique<IDescriptorSetLayout> create_descriptor_set_layout(
-                const IDescriptorSetLayoutDesc& desc) const = 0;
-
-            virtual unique<IDescriptorSet> create_descriptor_set(const IDescriptorSetDesc& desc) const = 0;
-
-            virtual unique<ISampler> create_sampler(const ISamplerDesc& desc) const = 0;
-
-            virtual DescriptorLimits get_descriptor_limits() const = 0;
-    };
-
-    unique<IDevice> create_device();
+    DescriptorLimits get_descriptor_limits();
 };  // namespace mag::gfx
