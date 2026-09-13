@@ -25,7 +25,6 @@ namespace mag
 
         struct Worker
         {
-                std::thread thread;
                 JobGroupHandle job_group = {};
                 WorkerHandle handle = {};
                 b8 busy = false;
@@ -35,6 +34,7 @@ namespace mag
         {
                 Map<JobGroupHandle, Queue<Job>> job_queues;
                 std::vector<Worker> workers;
+                std::vector<std::thread> threads;
                 std::queue<JobCallbackFn> callback_queue;
                 std::queue<JobData> execute_result_queue;
                 std::mutex callback_mutex;
@@ -61,6 +61,7 @@ namespace mag
 
             state->running = true;
 
+            state->workers.reserve(max_number_of_threads);
             for (u32 i = 0; i < max_number_of_threads; i++)
             {
                 state->workers.emplace_back(create_worker());
@@ -74,6 +75,14 @@ namespace mag
             state->running = false;
 
             state->job_available.notify_all();
+
+            for (std::thread& t : state->threads)
+            {
+                if (t.joinable())
+                {
+                    t.join();
+                }
+            }
 
             state->workers.clear();
 
@@ -158,7 +167,7 @@ namespace mag
             Worker worker = {};
             worker.handle = handle;
 
-            worker.thread = std::thread([handle]
+            state->threads.emplace_back([handle]
             {
                 while (state->running)
                 {
@@ -196,8 +205,6 @@ namespace mag
                     }
                 }
             });
-
-            worker.thread.detach();
 
             return worker;
         }
