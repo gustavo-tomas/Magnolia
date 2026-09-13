@@ -25,6 +25,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${MAG_BIN_DIR})       # .exe, .dll
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${MAG_BIN_DIR}/lib)   # .so
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${MAG_BIN_DIR}/lib)   # .a, .lib
 
+# Check for memory leaks
+option(MAG_ENABLE_ASAN "Build with AddressSanitizer" OFF)
+
+set(MAG_ENABLE_ASAN OFF)
+
+if(MAG_ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g -O0)
+    add_link_options(-fsanitize=address)
+endif()
+
 # Copy vulkan libs
 
 file(GLOB PREBUILT_LIBS "${MAG_ROOT_DIR}/ext/${SYSTEM_NAME}/*.so*")
