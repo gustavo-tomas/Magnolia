@@ -575,7 +575,7 @@ namespace game
 
         mag::gfx::use_shader(shaders[FLOOR_SHADER]);
 
-        struct GlobalData
+        struct alignas(16) GlobalData
         {
                 mat4 view = mat4(1.0F);
                 mat4 projection = mat4(1.0F);
@@ -648,7 +648,7 @@ namespace game
             color = math::vec3(0.98F, 0.02F, 0.02F);
         }
 
-        struct GlobalData
+        struct alignas(16) GlobalData
         {
                 mat4 projection;
                 vec3 color;
