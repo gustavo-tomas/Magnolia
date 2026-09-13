@@ -96,26 +96,30 @@ namespace mag
         {
             const i32 width = 800;
             const i32 height = 600;
-            const SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
+            const SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_OCCLUDED;
 
             state->window = SDL_CreateWindow("Console", width, height, flags);
 
-            // @TODO: SDL3 renderer has memory leaks :( This is a workaround for fixing (most) of the leaks.
-            // Update SDL3 submodule when issues get resolved
-            // https://github.com/libsdl-org/SDL/issues/14973
-            // https://github.com/libsdl-org/SDL/issues/15125
+            MAG_ASSERT(state->window != nullptr, "Failed to create SDL window: '{}'", SDL_GetError());
 
             const SDL_PropertiesID props = SDL_CreateProperties();
+
+            // @TODO: it would be nice if vsync worked only for the console, not the whole app
             // MAG_ASSERT(SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 1),
             //            "Failed to set property: '{}'", SDL_GetError());
 
             MAG_ASSERT(SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, state->window),
                        "Failed to set property: '{}'", SDL_GetError());
 
+            // @TODO: OpenGL has leaks every frame and vulkan crashes on shutdown:
+            // https://github.com/libsdl-org/SDL/issues/12053
+            // Simply lovely <3
+
+            MAG_ASSERT(SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl"), "Failed to set SDL render backend: {}",
+                       SDL_GetError());
+
             state->renderer = SDL_CreateRendererWithProperties(props);
             SDL_DestroyProperties(props);
-
-            MAG_ASSERT(state->window != nullptr, "Failed to create SDL window: '{}'", SDL_GetError());
 
             MAG_ASSERT(state->renderer, "Failed to create SDL renderer: '{}'", SDL_GetError());
 
