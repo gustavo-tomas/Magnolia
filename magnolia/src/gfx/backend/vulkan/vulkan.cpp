@@ -1183,11 +1183,10 @@ namespace mag::gfx
 
                 write.pImageInfo = &image_infos[i];
             }
-
-            state->descriptor_updates.release_resource(i);
         }
 
         state->disp.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+        state->descriptor_updates.release_all_resources();
     }
 
     void update_descriptor_set(const DescriptorSetHandle handle, const BufferHandle buffer_handle, const u32 binding,

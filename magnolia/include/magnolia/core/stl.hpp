@@ -53,6 +53,14 @@ namespace mag::stl
                 available_resources.at(--first_available_resource) = handle;
             }
 
+            void release_all_resources()
+            {
+                while (first_available_resource > 0)
+                {
+                    release_resource(first_available_resource - 1);
+                }
+            }
+
             b8 empty() const { return first_available_resource == 0; }
 
             u32 used_size() const { return first_available_resource; }
